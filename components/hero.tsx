@@ -69,8 +69,6 @@ export function Hero() {
           className="absolute top-1/3 left-1/3 w-[800px] h-[600px] bg-amber-500/10 rounded-full blur-[150px]"
         />
 
-        {/* Precision Grid Overlay */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:100px_100px]" />
       </div>
 
       <div className="relative z-10 w-full max-w-7xl px-6 text-center">
@@ -99,10 +97,10 @@ export function Hero() {
             style={{ y: yText }}
             className="max-w-2xl mx-auto space-y-6"
           >
-            <p className="text-[10px] md:text-xs font-premium-sans tracking-[0.8em] text-amber-500/80 uppercase">
+            <p className="text-[10px] md:text-xs font-premium-sans text-amber-500/80">
               The Epitome of Craftsmanship
             </p>
-            <h1 className="text-white text-sm md:text-base font-serif italic tracking-[0.3em] opacity-40">
+            <h1 className="text-white text-base md:text-xl font-serif-luxury italic opacity-50">
               Timeless Excellence Since 1989
             </h1>
           </motion.div>

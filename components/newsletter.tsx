@@ -44,11 +44,6 @@ export function Newsletter() {
 
   return (
     <section ref={sectionRef} className="py-24 md:py-32 px-6 lg:px-12 bg-[#004028] relative overflow-hidden">
-      {/* Decorative texture overlay with parallax */}
-      <motion.div
-        style={{ y: yBg }}
-        className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] scale-110"
-      />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -59,13 +54,13 @@ export function Newsletter() {
       >
         <div className="space-y-12">
           <div className="space-y-4">
-            <p className="text-amber-500/80 text-[10px] tracking-[0.8em] uppercase font-premium-sans">
+            <p className="text-amber-500/80 text-[10px] font-premium-sans">
               Private Membership
             </p>
             <div className="w-12 h-[1px] bg-amber-500/30 mx-auto" />
           </div>
 
-          <h2 className="text-4xl md:text-6xl font-serif font-bold text-white tracking-tight italic">
+          <h2 className="text-4xl md:text-6xl font-serif font-light text-white tracking-widest italic">
             Exclusive <span className="text-amber-500">Access</span>
           </h2>
 

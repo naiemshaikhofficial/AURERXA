@@ -129,16 +129,11 @@ function ProductCard({ product }: {
           </Button>
         </div>
 
-        {/* Corner Accents */}
-        <div className="absolute top-4 left-4 w-6 h-[1px] bg-white/20" />
-        <div className="absolute top-4 left-4 w-[1px] h-6 bg-white/20" />
       </div>
 
       {/* Product Info */}
       <div className="space-y-4 px-4 w-full h-full flex flex-col">
-        <p className="text-[9px] font-premium-sans text-amber-500/60 tracking-[0.4em] uppercase">
-          {product.categories?.name || 'Exclusive'}
-        </p>
+        {product.categories?.name || 'Exclusive'}
 
         <Link href={`/products/${product.id}`}>
           <h3 className="text-xl font-serif font-medium text-white tracking-wide group-hover:text-amber-500 transition-colors duration-500">
@@ -147,6 +142,10 @@ function ProductCard({ product }: {
         </Link>
 
         <div className="w-8 h-[1px] bg-white/10 mx-auto" />
+
+        <p className="text-[9px] font-premium-sans text-amber-500/60">
+          {product.categories?.name || 'Exclusive'}
+        </p>
 
         <p className="text-[10px] font-premium-sans text-white/20 tracking-widest pb-4">
           ₹{typeof product.price === 'number' ? product.price.toLocaleString() : product.price}
@@ -177,10 +176,10 @@ export function Bestsellers() {
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
         <div className="text-center mb-24">
-          <p className="text-amber-500/80 text-[10px] tracking-[0.6em] uppercase mb-6 font-premium-sans">
+          <p className="text-amber-500/80 text-[10px] uppercase mb-6 font-premium-sans">
             Timeless Selection
           </p>
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold mb-8 text-white tracking-tight italic">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-white tracking-widest italic">
             Curated <span className="text-amber-500">Bestsellers</span>
           </h2>
           <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-8" />

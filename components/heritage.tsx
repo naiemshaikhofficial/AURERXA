@@ -52,14 +52,14 @@ export function Heritage() {
                 >
                     {/* Subtitle */}
                     <div className="space-y-6">
-                        <p className="text-[10px] md:text-xs font-premium-sans tracking-[0.8em] uppercase text-amber-500/80">
+                        <p className="text-[10px] md:text-xs font-premium-sans text-amber-500/80">
                             A Legacy of Excellence
                         </p>
                         <div className="w-12 h-[1px] bg-amber-500/30 mx-auto" />
                     </div>
 
                     {/* Main Title - SINCE 1989 */}
-                    <h2 className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold tracking-tight text-white/90 italic">
+                    <h2 className="text-6xl md:text-8xl lg:text-9xl font-serif font-light tracking-widest text-white/90 italic">
                         1989
                     </h2>
 
@@ -71,18 +71,13 @@ export function Heritage() {
 
                         <div className="flex items-center justify-center gap-8">
                             <div className="h-[1px] w-12 bg-white/10" />
-                            <span className="text-[9px] font-premium-sans tracking-[0.4em] text-amber-500 uppercase">Precision. Passion. Perfection.</span>
+                            <span className="text-[9px] font-premium-sans text-amber-500">Precision. Passion. Perfection.</span>
                             <div className="h-[1px] w-12 bg-white/10" />
                         </div>
                     </div>
                 </motion.div>
             </div>
 
-            {/* Minimalist Grid Corners */}
-            <div className="absolute top-20 left-20 w-8 h-[1px] bg-white/10" />
-            <div className="absolute top-20 left-20 w-[1px] h-8 bg-white/10" />
-            <div className="absolute bottom-20 right-20 w-8 h-[1px] bg-white/10" />
-            <div className="absolute bottom-20 right-20 w-[1px] h-8 bg-white/10" />
         </section>
     )
 }

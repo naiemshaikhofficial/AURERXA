@@ -113,7 +113,7 @@ export function Navbar() {
               <img
                 src="/logo.png"
                 alt="AURERXA Logo"
-                className="h-10 md:h-18 w-auto object-contain brightness-110 group-hover:scale-105 transition-transform duration-700"
+                className="h-14 md:h-22 w-auto object-contain brightness-110 group-hover:scale-105 transition-transform duration-700"
               />
             </Link>
 
@@ -205,7 +205,7 @@ export function Navbar() {
                 </DropdownMenu>
               ) : (
                 <Link href="/login">
-                  <Button variant="outline" className="border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-neutral-950 text-xs uppercase tracking-widest h-9 px-6 rounded-none">
+                  <Button variant="outline" className="border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-neutral-950 text-[10px] font-premium-sans h-9 px-6 rounded-none">
                     Sign In
                   </Button>
                 </Link>

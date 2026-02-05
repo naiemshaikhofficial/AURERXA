@@ -68,11 +68,6 @@ export function CustomOrderForm() {
 
   return (
     <section ref={sectionRef} id="custom" className="py-24 md:py-32 px-6 lg:px-12 bg-black relative overflow-hidden">
-      {/* Background luxe pattern with parallax */}
-      <motion.div
-        style={{ y: yPattern }}
-        className="absolute inset-0 opacity-[0.03] scale-110 bg-[url('data:image/svg+xml,%3Csvg width=%2220%22 height=%2220%22 viewBox=%220 0 20 20%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M1 1h2v2H1V1zm4 0h2v2H5V1zm4 0h2v2H9V1zm4 0h2v2h-2V1zm4 0h2v2h-2V1zM1 5h2v2H1V5zm4 0h2v2H5V5zm4 0h2v2H9V5zm4 0h2v2h-2V5zm4 0h2v2h-2V5zM1 9h2v2H1V9zm4 0h2v2H5V9zm4 0h2v2H9V9zm4 0h2v2h-2V9zm4 0h2v2h-2V9zM1 13h2v2H1v-2zm4 0h2v2H5v-2zm4 0h2v2H9v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zM1 17h2v2H1v-2zm4 0h2v2H5v-2zm4 0h2v2H9v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z%22 fill=%22%23D4AF37%22 fill-opacity=%221%22 fill-rule=%22evenodd%22/%3E%3C/svg%3E')]"
-      />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -82,10 +77,10 @@ export function CustomOrderForm() {
         className="max-w-3xl mx-auto relative z-10"
       >
         <div className="text-center mb-24">
-          <p className="text-amber-500/80 text-[10px] tracking-[0.8em] uppercase mb-6 font-premium-sans">
+          <p className="text-amber-500/80 text-[10px] font-premium-sans mb-6">
             Bespoke Service
           </p>
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold mb-8 text-white tracking-tight italic">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-white tracking-widest italic">
             Custom <span className="text-amber-500">Jewelry</span>
           </h2>
           <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-8" />
@@ -98,7 +93,7 @@ export function CustomOrderForm() {
           <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">
-                <Label htmlFor="name" className="text-white/40 text-[9px] uppercase tracking-[0.4em] font-premium-sans">
+                <Label htmlFor="name" className="text-white/40 text-[9px] font-premium-sans">
                   Full Name
                 </Label>
                 <Input
@@ -113,7 +108,7 @@ export function CustomOrderForm() {
               </div>
 
               <div className="space-y-4">
-                <Label htmlFor="email" className="text-white/40 text-[9px] uppercase tracking-[0.4em] font-premium-sans">
+                <Label htmlFor="email" className="text-white/40 text-[9px] font-premium-sans">
                   Email
                 </Label>
                 <Input
@@ -131,7 +126,7 @@ export function CustomOrderForm() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">
-                <Label htmlFor="phone" className="text-white/40 text-[9px] uppercase tracking-[0.4em] font-premium-sans">
+                <Label htmlFor="phone" className="text-white/40 text-[9px] font-premium-sans">
                   Phone Number
                 </Label>
                 <Input
@@ -145,7 +140,7 @@ export function CustomOrderForm() {
               </div>
 
               <div className="space-y-4">
-                <Label htmlFor="budget" className="text-white/40 text-[9px] uppercase tracking-[0.4em] font-premium-sans">
+                <Label htmlFor="budget" className="text-white/40 text-[9px] font-premium-sans">
                   Budget Range
                 </Label>
                 <Select value={formData.budget} onValueChange={handleBudgetChange}>
@@ -164,7 +159,7 @@ export function CustomOrderForm() {
             </div>
 
             <div className="space-y-4">
-              <Label htmlFor="description" className="text-white/40 text-[9px] uppercase tracking-[0.4em] font-premium-sans">
+              <Label htmlFor="description" className="text-white/40 text-[9px] font-premium-sans">
                 Describe Your Dream Piece
               </Label>
               <Textarea
@@ -209,9 +204,6 @@ export function CustomOrderForm() {
             </Button>
           </form>
 
-          {/* Decorative Corner Accents */}
-          <div className="absolute top-0 left-0 w-32 h-32 border-l border-t border-white/5 m-12 pointer-events-none" />
-          <div className="absolute bottom-0 right-0 w-32 h-32 border-r border-b border-white/5 m-12 pointer-events-none" />
         </div>
       </motion.div>
     </section>

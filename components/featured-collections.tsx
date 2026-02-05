@@ -80,7 +80,7 @@ function CollectionCard({ category }: { category: any }) {
           </h3>
           {/* Precision Line */}
           <div className="w-0 h-[1px] bg-amber-500 group-hover:w-16 transition-all duration-700 ease-in-out" />
-          <p className="mt-6 text-[9px] text-white/40 font-premium-sans tracking-[0.3em] uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+          <p className="mt-6 text-[9px] text-white/40 font-premium-sans opacity-0 group-hover:opacity-100 transition-opacity duration-700">
             Explore Collection
           </p>
         </div>
@@ -107,16 +107,14 @@ export function FeaturedCollections() {
 
   return (
     <section className="py-24 md:py-32 px-6 lg:px-12 bg-[#004028] relative overflow-hidden">
-      {/* Decorative texture overlay */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
         <div className="text-center mb-24">
-          <p className="text-amber-500/80 text-[10px] tracking-[0.6em] uppercase mb-6 font-premium-sans">
+          <p className="text-amber-500/80 text-[10px] uppercase mb-6 font-premium-sans">
             Crafted Excellence
           </p>
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold mb-8 text-white tracking-tight italic">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-white tracking-widest italic">
             Discovery by <span className="text-amber-500">Material</span>
           </h2>
           <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-8" />
