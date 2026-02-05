@@ -2,6 +2,8 @@
 
 import { supabase } from '@/lib/supabase'
 
+// --- Categories ---
+
 export async function getCategories() {
   const { data, error } = await supabase
     .from('categories')
@@ -10,31 +12,58 @@ export async function getCategories() {
 
   if (error) {
     console.error('Error fetching categories:', error)
-    // Return fallback data if DB fails or is empty
-    return [
-      { id: '1', slug: 'silver', name: 'Silver Collection', image: '/stock-photo-pair-of-silver-rings-with-small-diamonds-for-lovers.jpg', description: 'Premium sterling silver masterpieces' },
-      { id: '2', slug: 'gold', name: 'Gold Collection', image: '/heritage-rings.jpg', description: 'Timeless 22K gold jewelry' },
-      { id: '3', slug: 'diamond', name: 'Diamond Collection', image: '/pexels-abhishek-saini-1415858-3847212.jpg', description: 'Exquisite diamond solitaires' },
-      { id: '4', slug: 'platinum', name: 'Platinum Collection', image: '/platinum-ring.jpg', description: 'Rare platinum for rare moments' },
-    ]
+    return []
   }
-
   return data
 }
 
-export async function getProductsByCategory(categorySlug: string) {
+// --- Products ---
+
+export async function getBestsellers() {
   const { data, error } = await supabase
     .from('products')
+    .select('*, categories(*)')
+    .eq('bestseller', true)
+    .limit(4)
+
+  if (error) {
+    console.error('Error fetching bestsellers:', error)
+    return []
+  }
+  return data
+}
+
+export async function getProducts(categorySlug?: string) {
+  let query = supabase
+    .from('products')
     .select('*, categories!inner(*)')
-    .eq('categories.slug', categorySlug)
+
+  if (categorySlug) {
+    query = query.eq('categories.slug', categorySlug)
+  }
+
+  const { data, error } = await query
 
   if (error) {
     console.error('Error fetching products:', error)
     return []
   }
-
   return data
 }
+
+export async function getProductById(id: string) {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, categories(*)')
+    .eq('id', id)
+    .single()
+
+  if (error) return null
+  return data
+}
+
+
+// --- User Actions ---
 
 export async function subscribeNewsletter(email: string) {
   if (!email || !email.includes('@')) {

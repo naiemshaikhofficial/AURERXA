@@ -1,49 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { addToCart } from '@/app/actions'
+import { addToCart, getBestsellers } from '@/app/actions'
 import { Loader2 } from 'lucide-react'
 
-const bestsellers = [
-  {
-    id: '1',
-    name: 'Diamond Solitaire Ring',
-    price: '$2,499',
-    category: 'Rings',
-    description: 'A classic 1.5 carat diamond set in 18k gold',
-    image: '/pexels-janakukebal-30541170.jpg',
-  },
-  {
-    id: '2',
-    name: 'Rose Gold Locket',
-    price: '$899',
-    category: 'Necklaces',
-    description: 'Vintage-inspired locket with intricate details',
-    image: '/pexels-janakukebal-30541177.jpg',
-  },
-  {
-    id: '3',
-    name: 'Pearl Drop Earrings',
-    price: '$599',
-    category: 'Earrings',
-    description: 'Freshwater pearls suspended from gold chains',
-    image: '/pexels-punam-oishy-415017245-35059564.jpg',
-  },
-  {
-    id: '4',
-    name: 'Tennis Bracelet',
-    price: '$3,299',
-    category: 'Bracelets',
-    description: 'Startling brilliance in a continuous line',
-    image: '/pexels-the-glorious-studio-3584518-29245554.jpg',
-  },
-]
+// Define the Product interface based on standard DB schema
+interface Product {
+  id: string
+  name: string
+  description: string
+  price: number
+  image_url: string
+  category?: { name: string }
+  categories?: { name: string } // Handling potential join structure
+  stock?: number
+}
 
 export function Bestsellers() {
+  const [bestsellers, setBestsellers] = useState<Product[]>([])
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+
+  // Fetch data on client side for now to handle async server action in client component
+  // In a real app, this could be passed as initialData from a Server Component parent
+  useEffect(() => {
+    async function loadData() {
+      const data = await getBestsellers()
+      if (data) setBestsellers(data as any)
+    }
+    loadData()
+  }, [])
 
   const handleAddToCart = async (id: string, name: string) => {
     setLoadingId(id)
@@ -56,8 +44,12 @@ export function Bestsellers() {
     }
   }
 
+  // If no data yet (or DB empty), don't render or render fallback?
+  // Current user wants dynamic, so empty state if empty.
+  if (bestsellers.length === 0) return null
+
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-900">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-900 border-t border-neutral-800">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-20">
@@ -82,7 +74,7 @@ export function Bestsellers() {
             >
               <div className="relative h-72 overflow-hidden">
                 <Image
-                  src={product.image}
+                  src={product.image_url}
                   alt={product.name}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
@@ -92,7 +84,8 @@ export function Bestsellers() {
                 />
 
                 <div className="absolute top-4 right-4 bg-neutral-950/90 backdrop-blur-sm px-3 py-1 text-xs font-medium tracking-wider uppercase text-amber-400">
-                  {product.category}
+                  {/* Handle joined category name safely */}
+                  {product.categories?.name || 'Exclusive'}
                 </div>
               </div>
 
@@ -101,10 +94,15 @@ export function Bestsellers() {
                   {product.name}
                 </h3>
 
-                <p className="text-sm text-white/50 mb-4 font-light">{product.description}</p>
+                <p className="text-sm text-white/50 mb-4 font-light line-clamp-2">{product.description}</p>
 
                 <div className="flex justify-between items-center mb-5">
-                  <span className="text-2xl font-serif font-bold text-amber-400">{product.price}</span>
+                  <span className="text-2xl font-serif font-bold text-amber-400">
+                    {/* Format price if number */}
+                    {typeof product.price === 'number'
+                      ? `₹${product.price.toLocaleString()}`
+                      : product.price}
+                  </span>
                 </div>
 
                 <Button
