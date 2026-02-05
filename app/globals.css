@@ -13,27 +13,33 @@ body {
   }
 
   .gold-glow {
-    box-shadow: 0 0 20px rgba(211, 148, 114, 0.4);
-    /* Metallic Rose Gold Glow */
+    box-shadow: 0 0 20px rgba(184, 134, 11, 0.2);
+    /* Refined Deep Gold Glow */
   }
 
   .gold-glow-lg {
-    box-shadow: 0 0 30px rgba(211, 148, 114, 0.5);
-    /* Metallic Rose Gold Glow */
+    box-shadow: 0 0 35px rgba(184, 134, 11, 0.25);
   }
 
   .font-serif {
     font-family: 'Playfair Display', serif;
+    letter-spacing: -0.01em;
+  }
+
+  .font-premium-sans {
+    font-family: system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   /* Premium Metallic Gradients */
   .text-gradient-gold {
     background: linear-gradient(135deg,
-        hsl(20 60% 65%) 0%,
-        hsl(20 50% 80%) 25%,
-        hsl(20 60% 65%) 50%,
-        hsl(20 60% 55%) 75%,
-        hsl(20 60% 65%) 100%);
+        #B8860B 0%,
+        #FFD700 25%,
+        #B8860B 50%,
+        #DAA520 75%,
+        #B8860B 100%);
     background-size: 200% auto;
     background-clip: text;
     -webkit-background-clip: text;
@@ -41,11 +47,17 @@ body {
     animation: shine 8s linear infinite;
   }
 
-  .bg-gradient-gold {
-    background: linear-gradient(135deg,
-        hsl(20 60% 65%) 0%,
-        hsl(20 50% 80%) 50%,
-        hsl(20 60% 65%) 100%);
+  .bg-emerald-luxury {
+    background-color: #006039;
+    /* Rolex-inspired Deep Emerald */
+  }
+
+  .text-emerald-luxury {
+    color: #006039;
+  }
+
+  .border-premium {
+    border-color: rgba(184, 134, 11, 0.3);
   }
 
   @keyframes shine {
@@ -56,49 +68,62 @@ body {
 
   /* Luxury Selection */
   ::selection {
-    background: hsl(20 60% 65% / 0.3);
+    background: rgba(0, 96, 57, 0.2);
     color: inherit;
+  }
+
+  .glass-premium {
+    @apply bg-neutral-950/70 backdrop-blur-xl border-b border-white/5;
   }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 11 10% 10%;
-    /* Softer dark text */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
     --card: 0 0% 100%;
-    --card-foreground: 11 10% 10%;
+    --card-foreground: 0 0% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 11 10% 10%;
-    --primary: 20 60% 65%;
-    --primary-foreground: 0 0% 0%;
-    /* Pure Black for Max Contrast */
-    --secondary: 0 0% 85%;
-    --secondary-foreground: 11 10% 10%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 20 60% 65%;
-    --accent-foreground: 0 0% 0%;
-    /* Pure Black for Max Contrast */
+    --popover-foreground: 0 0% 10%;
+    --primary: 158 100% 19%;
+    /* #006039 Rolex Green */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 100% 30%;
+    /* Deep Gold */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 43 100% 45%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 85%;
-    --input: 0 0% 92%;
-    --ring: 20 60% 65%;
-    --chart-1: 20 60% 65%;
-    --chart-2: 0 0% 70%;
-    --chart-3: 0 0% 92%;
-    --chart-4: 20 40% 50%;
-    --chart-5: 11 50% 20%;
-    --radius: 0.25rem;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 11 10% 10%;
-    --sidebar-primary: 20 60% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 96%;
-    --sidebar-accent-foreground: 11 10% 10%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 20 60% 65%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 158 100% 19%;
+    --radius: 0rem;
+    /* Sharp edges for precision feel */
+  }
+
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 158 100% 19%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 43 100% 30%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 43 100% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 158 100% 19%;
   }
 }
 

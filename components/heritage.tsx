@@ -14,100 +14,64 @@ export function Heritage() {
     const yBg = useTransform(scrollYProgress, [0, 1], ['-10%', '10%'])
 
     return (
-        <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center">
-            {/* Background Image with Parallax */}
+        <section ref={ref} className="relative min-h-[60vh] md:h-screen overflow-hidden flex items-center justify-center bg-black">
+            {/* Background Image with Cinematic Parallax */}
             <motion.div style={{ y: yBg }} className="absolute inset-0 z-0">
                 <Image
                     src="/heritage-rings.jpg"
                     alt="Heritage Background"
                     fill
-                    className="object-cover scale-110"
+                    className="object-cover scale-110 grayscale-[0.5] opacity-40 group-hover:grayscale-0 transition-all duration-[2s]"
                     priority
                 />
             </motion.div>
 
-            {/* Strong Dark Overlay */}
-            <div className="absolute inset-0 z-[1] bg-black/70" />
+            {/* Precision Vignette Overlay */}
+            <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black via-transparent to-black" />
+            <div className="absolute inset-0 z-[1] bg-black/40" />
 
             {/* Content */}
-            <div className="relative z-10 text-center text-white px-4 max-w-5xl mx-auto">
-                {/* Top Decorative Line */}
-                <motion.div
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-                    viewport={{ once: true }}
-                    className="w-32 h-px mx-auto mb-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent"
-                />
-
+            <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto">
                 <motion.div
                     initial={{ opacity: 0, y: 40 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                    transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
                     viewport={{ once: true }}
+                    className="space-y-16"
                 >
                     {/* Subtitle */}
-                    <motion.p
-                        initial={{ opacity: 0, letterSpacing: '0.3em' }}
-                        whileInView={{ opacity: 1, letterSpacing: '0.5em' }}
-                        transition={{ duration: 1.5, delay: 0.2 }}
-                        viewport={{ once: true }}
-                        className="text-sm md:text-base font-light uppercase mb-8 text-amber-400"
-                    >
-                        A Legacy of Excellence
-                    </motion.p>
-
-                    {/* Main Title - SINCE 1989 */}
-                    <div className="mb-8">
-                        <motion.h2
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                            viewport={{ once: true }}
-                            className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold tracking-tight leading-none text-amber-300"
-                        >
-                            SINCE 1989
-                        </motion.h2>
+                    <div className="space-y-6">
+                        <p className="text-[10px] md:text-xs font-premium-sans tracking-[0.8em] uppercase text-amber-500/80">
+                            A Legacy of Excellence
+                        </p>
+                        <div className="w-12 h-[1px] bg-amber-500/30 mx-auto" />
                     </div>
 
-                    {/* Decorative Diamond */}
-                    <motion.div
-                        initial={{ scale: 0, rotate: 45 }}
-                        whileInView={{ scale: 1, rotate: 45 }}
-                        transition={{ duration: 0.8, delay: 0.6, ease: 'easeOut' }}
-                        viewport={{ once: true }}
-                        className="w-2 h-2 bg-amber-400 mx-auto mb-8"
-                    />
+                    {/* Main Title - SINCE 1989 */}
+                    <h2 className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold tracking-tight text-white/90 italic">
+                        1989
+                    </h2>
 
                     {/* Description */}
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 1, delay: 0.8 }}
-                        viewport={{ once: true }}
-                        className="text-lg md:text-xl font-light max-w-2xl mx-auto text-white leading-relaxed tracking-wide"
-                    >
-                        For over three decades, AURERXA has defined the pinnacle of luxury.
-                        <br className="hidden md:block" />
-                        <span className="text-amber-400 font-medium">Precision. Passion. Perfection.</span>
-                    </motion.p>
-                </motion.div>
+                    <div className="max-w-2xl mx-auto space-y-12">
+                        <p className="text-sm md:text-base font-light text-white/50 leading-[2] tracking-widest italic">
+                            For over three decades, AURERXA has defined the pinnacle of luxury, crafting stories that transcend time.
+                        </p>
 
-                {/* Bottom Decorative Line */}
-                <motion.div
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    transition={{ duration: 1.5, delay: 1, ease: [0.16, 1, 0.3, 1] }}
-                    viewport={{ once: true }}
-                    className="w-32 h-px mx-auto mt-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent"
-                />
+                        <div className="flex items-center justify-center gap-8">
+                            <div className="h-[1px] w-12 bg-white/10" />
+                            <span className="text-[9px] font-premium-sans tracking-[0.4em] text-amber-500 uppercase">Precision. Passion. Perfection.</span>
+                            <div className="h-[1px] w-12 bg-white/10" />
+                        </div>
+                    </div>
+                </motion.div>
             </div>
 
-            {/* Subtle Corner Decorations */}
-            <div className="absolute top-12 left-12 w-12 h-12 border-l border-t border-amber-400/40 z-10" />
-            <div className="absolute top-12 right-12 w-12 h-12 border-r border-t border-amber-400/40 z-10" />
-            <div className="absolute bottom-12 left-12 w-12 h-12 border-l border-b border-amber-400/40 z-10" />
-            <div className="absolute bottom-12 right-12 w-12 h-12 border-r border-b border-amber-400/40 z-10" />
+            {/* Minimalist Grid Corners */}
+            <div className="absolute top-20 left-20 w-8 h-[1px] bg-white/10" />
+            <div className="absolute top-20 left-20 w-[1px] h-8 bg-white/10" />
+            <div className="absolute bottom-20 right-20 w-8 h-[1px] bg-white/10" />
+            <div className="absolute bottom-20 right-20 w-[1px] h-8 bg-white/10" />
         </section>
     )
 }

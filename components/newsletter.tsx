@@ -34,69 +34,59 @@ export function Newsletter() {
   }
 
   return (
-    <section className="py-12 md:py-24 px-4 sm:px-6 lg:px-8 bg-neutral-950 relative overflow-hidden">
-      {/* Subtle gold gradient */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-500/30 rounded-full blur-[150px]" />
-      </div>
+    <section className="py-24 md:py-32 px-6 lg:px-12 bg-[#004028] relative overflow-hidden">
+      {/* Decorative texture overlay */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
 
-      <div className="max-w-2xl mx-auto text-center relative z-10">
-        {/* Decorative top line */}
-        <div className="w-16 h-px mx-auto mb-8 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
-
-        <p className="text-amber-400 text-sm tracking-[0.3em] uppercase mb-4 font-light">
-          Stay Connected
-        </p>
-        <h2 className="text-4xl sm:text-5xl font-serif font-bold mb-6 text-white tracking-tight">
-          Exclusive Offers
-        </h2>
-        <p className="text-base text-white/50 mb-10 font-light leading-relaxed">
-          Subscribe to receive exclusive offers, new collection launches, and insider access to our luxury pieces.
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Input
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              className="flex-1 bg-neutral-900 border-neutral-800 text-white placeholder:text-white/30 h-14 focus:border-amber-500/50 focus:ring-amber-500/20"
-            />
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="bg-amber-500 hover:bg-amber-400 text-neutral-950 font-medium uppercase tracking-[0.15em] px-10 h-14 whitespace-nowrap text-sm transition-all duration-300"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Subscribing...
-                </>
-              ) : (
-                'Subscribe'
-              )}
-            </Button>
+      <div className="max-w-xl mx-auto text-center relative z-10">
+        <div className="space-y-12">
+          <div className="space-y-4">
+            <p className="text-amber-500/80 text-[10px] tracking-[0.8em] uppercase font-premium-sans">
+              Private Membership
+            </p>
+            <div className="w-12 h-[1px] bg-amber-500/30 mx-auto" />
           </div>
 
-          {status === 'success' && (
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center gap-2">
-              <CheckCircle className="h-5 w-5 text-emerald-400" />
-              <p className="text-sm text-white">{message}</p>
-            </div>
-          )}
+          <h2 className="text-4xl md:text-6xl font-serif font-bold text-white tracking-tight italic">
+            Exclusive <span className="text-amber-500">Access</span>
+          </h2>
 
-          {status === 'error' && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 flex items-center justify-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-400" />
-              <p className="text-sm text-white">{message}</p>
-            </div>
-          )}
-        </form>
+          <p className="text-sm text-white/40 font-light leading-relaxed tracking-widest italic">
+            Join our inner circle for privileged access to collections and the latest stories of excellence.
+          </p>
 
-        {/* Decorative bottom line */}
-        <div className="w-16 h-px mx-auto mt-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex flex-col gap-4">
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
+                className="bg-black/40 border-white/5 text-white placeholder:text-white/20 h-16 rounded-none text-center font-premium-sans tracking-widest focus:border-amber-500/30 transition-all duration-500"
+              />
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-white text-black hover:bg-amber-500 hover:text-white transition-all duration-700 rounded-none h-16 text-[10px] font-premium-sans tracking-[0.4em] uppercase shadow-2xl"
+              >
+                {isLoading ? 'Processing...' : 'Request Access'}
+              </Button>
+            </div>
+
+            {status === 'success' && (
+              <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 animate-in fade-in duration-700">
+                <p className="text-[10px] text-emerald-400 font-premium-sans tracking-widest uppercase">{message}</p>
+              </div>
+            )}
+
+            {status === 'error' && (
+              <div className="p-6 bg-red-500/5 border border-red-500/20 animate-in fade-in duration-700">
+                <p className="text-[10px] text-red-400 font-premium-sans tracking-widest uppercase">{message}</p>
+              </div>
+            )}
+          </form>
+        </div>
       </div>
     </section>
   )

@@ -10,36 +10,68 @@ export function Hero() {
     offset: ['start start', 'end start'],
   })
 
-  // Reduced parallax effect for better performance and simpler look
-  const yLogo = useTransform(scrollYProgress, [0, 1], [0, 60])
+  // Smooth parallax for the logo
+  const yLogo = useTransform(scrollYProgress, [0, 1], [0, 100])
+  const opacityLogo = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
   return (
-    <section ref={ref} className="relative h-[50vh] md:h-screen flex items-center justify-center overflow-hidden bg-neutral-950">
-      {/* Background with luxury gradient and pattern */}
-      <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950">
-        <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23D4AF37%22 fill-opacity=%221%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
+    <section ref={ref} className="relative h-screen flex items-center justify-center overflow-hidden bg-black">
+      {/* Rolex-inspired Background */}
+      <div className="absolute inset-0">
+        {/* Deep Emerald to Black Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#004028] via-black to-black opacity-90" />
 
-        {/* Subtle gold glow centers */}
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px]" />
+        {/* Subtle Radial Highlights */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[800px] bg-emerald-500/5 rounded-full blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-500/10 rounded-full blur-[100px]" />
+
+        {/* Precision Grid Overlay */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:100px_100px]" />
       </div>
 
-      <div className="relative z-10 w-full max-w-5xl px-4 text-center">
+      <div className="relative z-10 w-full max-w-7xl px-6 text-center">
         <motion.div
-          style={{ y: yLogo }}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="relative"
+          style={{ y: yLogo, opacity: opacityLogo }}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-12"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo.png"
-            alt="AURERXA"
-            className="w-full h-auto object-contain max-h-40 md:max-h-[22rem] drop-shadow-2xl mx-auto"
-          />
+          {/* Logo with sophisticated glow */}
+          <div className="relative inline-block group">
+            <div className="absolute inset-0 bg-amber-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+            <img
+              src="/logo.png"
+              alt="AURERXA"
+              className="w-full h-auto object-contain max-h-48 md:max-h-[28rem] relative z-10 drop-shadow-[0_0_30px_rgba(255,215,0,0.1)]"
+            />
+          </div>
+
+          <div className="max-w-2xl mx-auto space-y-6">
+            <p className="text-[10px] md:text-xs font-premium-sans tracking-[0.5em] text-amber-500/80 uppercase">
+              The Epitome of Craftsmanship
+            </p>
+            <h1 className="text-white text-sm md:text-base font-serif italic tracking-[0.2em] opacity-40">
+              Timeless Excellence Since 1989
+            </h1>
+          </div>
         </motion.div>
       </div>
+
+      {/* Decorative Corner Accents */}
+      <div className="absolute top-10 left-10 w-32 h-32 border-t border-l border-white/5" />
+      <div className="absolute bottom-10 right-10 w-32 h-32 border-b border-r border-white/5" />
+
+      {/* Hero Scroll Indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2, duration: 1 }}
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4"
+      >
+        <div className="w-px h-16 bg-gradient-to-b from-amber-500/50 to-transparent" />
+        <span className="text-[8px] font-premium-sans tracking-[0.3em] text-white/30">Scroll</span>
+      </motion.div>
     </section>
   )
 }

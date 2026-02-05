@@ -106,69 +106,63 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-neutral-950/80 backdrop-blur-md border-b border-neutral-800/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-10 md:h-20">
-            <Link href="/" className="flex-shrink-0">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass-premium h-16 md:h-24 flex items-center transition-all duration-500">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
+          <div className="flex justify-between items-center h-full">
+            <Link href="/" className="flex-shrink-0 group">
               <img
                 src="/logo.png"
                 alt="AURERXA Logo"
-                className="h-6 md:h-12 w-auto object-contain"
+                className="h-8 md:h-14 w-auto object-contain brightness-110 group-hover:scale-105 transition-transform duration-700"
               />
             </Link>
 
             {/* Desktop Menu */}
-            <div className="hidden md:flex gap-8 items-center">
+            <div className="hidden md:flex gap-12 items-center">
               <Link
                 href="/"
-                className="text-xs uppercase tracking-[0.2em] text-white/70 hover:text-amber-400 transition-colors duration-300 font-light"
+                className="text-[10px] font-premium-sans text-white/60 hover:text-amber-500 transition-colors duration-500"
               >
                 Home
               </Link>
               <Link
                 href="/about"
-                className="text-xs uppercase tracking-[0.2em] text-white/70 hover:text-amber-400 transition-colors duration-300 font-light"
+                className="text-[10px] font-premium-sans text-white/60 hover:text-amber-500 transition-colors duration-500"
               >
                 Our Story
               </Link>
               <Link
                 href="/collections"
-                className="text-xs uppercase tracking-[0.2em] text-white/70 hover:text-amber-400 transition-colors duration-300 font-light"
+                className="text-[10px] font-premium-sans text-white/60 hover:text-amber-500 transition-colors duration-500"
               >
                 Collections
               </Link>
               <Link
                 href="/blog"
-                className="text-xs uppercase tracking-[0.2em] text-white/70 hover:text-amber-400 transition-colors duration-300 font-light"
+                className="text-[10px] font-premium-sans text-white/60 hover:text-amber-500 transition-colors duration-500"
               >
                 Blog
-              </Link>
-              <Link
-                href="/stores"
-                className="text-xs uppercase tracking-[0.2em] text-white/70 hover:text-amber-400 transition-colors duration-300 font-light"
-              >
-                Stores
               </Link>
 
               {/* Search */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="text-white/70 hover:text-amber-400 transition-colors flex items-center gap-1"
+                className="text-white/40 hover:text-amber-500 transition-colors flex items-center gap-2 group"
               >
-                <Search className="w-5 h-5" />
-                <span className="text-[10px] text-white/30 hidden lg:block">⌘K</span>
+                <Search className="w-4 h-4" />
+                <span className="text-[9px] font-premium-sans text-white/20 group-hover:text-amber-500/50 hidden lg:block">Search</span>
               </button>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative text-white/70 hover:text-amber-400 transition-colors">
-                <Heart className="w-5 h-5" />
+              <Link href="/wishlist" className="relative text-white/40 hover:text-amber-500 transition-colors">
+                <Heart className="w-4 h-4" />
               </Link>
 
               {/* Cart */}
-              <Link href="/cart" className="relative text-white/70 hover:text-amber-400 transition-colors">
-                <ShoppingBag className="w-5 h-5" />
+              <Link href="/cart" className="relative text-white/40 hover:text-amber-500 transition-colors">
+                <ShoppingBag className="w-4 h-4" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 text-neutral-950 text-xs font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-white text-[8px] font-premium-sans flex items-center justify-center">
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
