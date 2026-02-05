@@ -205,7 +205,7 @@ export function Navbar() {
                 </DropdownMenu>
               ) : (
                 <Link href="/login">
-                  <Button variant="outline" className="border-amber-500/30 text-amber-500 hover:bg-amber-500 hover:text-neutral-950 text-[10px] font-premium-sans h-9 px-6 rounded-none">
+                  <Button variant="outline" className="bg-transparent border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-neutral-950 text-[10px] font-premium-sans h-9 px-6 rounded-none transition-all">
                     Sign In
                   </Button>
                 </Link>

@@ -30,11 +30,15 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60 z-10" /> {/* Vignette */}
 
         {/* High-Res Luxury Background (Placeholder for Black Edition Jewelry) */}
-        <img
-          src="/pexels-the-glorious-studio-3584518-29245554.jpg"
-          alt="Black Edition Background"
-          className="w-full h-full object-cover object-center scale-105"
-        />
+        <div className="relative w-full h-full">
+          <img
+            src="/pexels-the-glorious-studio-3584518-29245554.jpg"
+            alt="Black Edition Background"
+            className="w-full h-full object-cover object-center scale-105"
+            loading="eager" // Force eager loading
+            decoding="async"
+          />
+        </div>
       </motion.div>
 
       {/* 2. "Cayenne Black" Atmospheric Effects */}
@@ -66,8 +70,13 @@ export function Hero() {
         >
           {/* Logo Brand Mark */}
           <div className="mb-8 relative inline-block">
-            <div className="absolute inset-[-50px] bg-amber-500/20 blur-[60px] rounded-full opacity-50" />
-            <img src="/logo.png" alt="Aurerxa Logo" className="w-24 md:w-32 h-auto relative z-10 drop-shadow-2xl" />
+            {/* Sharper, more defined gold glow */}
+            <div className="absolute inset-[-20px] bg-amber-500/10 blur-[40px] rounded-full opacity-0 animate-pulse-slow" />
+            <img
+              src="/logo.png"
+              alt="Aurerxa Logo"
+              className="w-24 md:w-32 h-auto relative z-10 drop-shadow-2xl brightness-0 invert-[.7] sepia-[1] saturate-[5] hue-rotate-[5deg]"
+            />
           </div>
 
           <div className="space-y-4">
