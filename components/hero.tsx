@@ -25,6 +25,40 @@ export function Hero() {
         {/* Deep Emerald to Black Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#004028] via-black to-black opacity-90" />
 
+        {/* Cinematic Shutter Reveal Mask */}
+        <motion.div
+          initial={{ clipPath: 'inset(100% 0 0 0)' }}
+          animate={{ clipPath: 'inset(0% 0 0 0)' }}
+          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0 bg-[#006039]/10"
+        />
+
+        {/* Golden Dust Particles */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              initial={{
+                opacity: 0,
+                x: Math.random() * 100 + '%',
+                y: Math.random() * 100 + '%'
+              }}
+              animate={{
+                opacity: [0, 0.3, 0],
+                y: [null, '-20%', '-40%'],
+                x: [null, (Math.random() - 0.5) * 20 + '%']
+              }}
+              transition={{
+                duration: 10 + Math.random() * 10,
+                repeat: Infinity,
+                ease: 'linear',
+                delay: Math.random() * 5
+              }}
+              className="absolute w-[1px] h-[1px] bg-amber-500/40 rounded-full blur-[1px]"
+            />
+          ))}
+        </div>
+
         {/* Cinematic Light Leaks (Parallax) */}
         <motion.div
           style={{ y: yLight1 }}
@@ -41,22 +75,26 @@ export function Hero() {
 
       <div className="relative z-10 w-full max-w-7xl px-6 text-center">
         <motion.div
-          style={{ y: yLogo, opacity: opacityFade, scale: scaleLogo }}
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
+          style={{ opacity: opacityFade }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-12"
         >
-          {/* Logo with sophisticated glow */}
-          <div className="relative inline-block group">
+          {/* Logo with sophisticated glow - Independent Parallax */}
+          <motion.div
+            style={{ y: yLogo, scale: scaleLogo }}
+            className="relative inline-block group"
+          >
             <div className="absolute inset-[-100px] bg-amber-500/10 blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
             <img
               src="/logo.png"
               alt="AURERXA"
               className="w-full h-auto object-contain max-h-48 md:max-h-[28rem] relative z-10 drop-shadow-[0_0_50px_rgba(255,215,0,0.15)]"
             />
-          </div>
+          </motion.div>
 
+          {/* Text Content - Independent Parallax Segment */}
           <motion.div
             style={{ y: yText }}
             className="max-w-2xl mx-auto space-y-6"

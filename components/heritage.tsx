@@ -17,6 +17,15 @@ export function Heritage() {
 
     return (
         <section ref={ref} className="relative min-h-[60vh] md:h-screen overflow-hidden flex items-center justify-center bg-black">
+            {/* Cinematic Shutter Reveal */}
+            <motion.div
+                initial={{ clipPath: 'inset(100% 0 0 0)' }}
+                whileInView={{ clipPath: 'inset(0% 0 0 0)' }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 bg-black z-10 pointer-events-none"
+            />
+
             {/* Background Image with Cinematic Parallax */}
             <motion.div style={{ y: yBg, scale: scaleBg, opacity: opacityBg }} className="absolute inset-0 z-0">
                 <Image

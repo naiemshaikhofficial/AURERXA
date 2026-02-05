@@ -64,6 +64,15 @@ export default function StoresPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 h-full">
                                 {/* Visual Showcase */}
                                 <div className="md:col-span-1 lg:col-span-2 relative min-h-[500px] bg-neutral-900 overflow-hidden">
+                                    {/* Cinematic Shutter Reveal */}
+                                    <motion.div
+                                        initial={{ clipPath: 'inset(100% 0 0 0)' }}
+                                        whileInView={{ clipPath: 'inset(0% 0 0 0)' }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+                                        className="absolute inset-0 bg-black z-10 pointer-events-none"
+                                    />
+
                                     {/* Rolex-style placeholder visual */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-[#004028]/40 via-black to-black z-0" />
                                     <motion.div style={{ y: yMap }} className="absolute inset-0 flex items-center justify-center">
