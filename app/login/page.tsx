@@ -48,11 +48,16 @@ export default function LoginPage() {
     }
 
     const handleGoogleLogin = async () => {
+        const searchParams = new URLSearchParams(window.location.search)
+        const redirect = searchParams.get('redirect') || '/'
         try {
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
+                    redirectTo: `${window.location.origin}/auth/callback?next=${redirect}`,
+                    queryParams: {
+                        prompt: 'select_account consent',
+                    },
                 },
             })
             if (error) throw error

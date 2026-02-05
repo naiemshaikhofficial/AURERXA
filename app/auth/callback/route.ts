@@ -22,13 +22,22 @@ export async function GET(request: Request) {
                         cookieStore.set({ name, value, ...options })
                     },
                     remove(name: string, options: CookieOptions) {
-                        cookieStore.set({ name, value: '', ...options })
+                        cookieStore.delete({ name, ...options })
                     },
                 },
             }
         )
-        const { error } = await supabase.auth.exchangeCodeForSession(code)
-        if (!error) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+        if (!error && data.session) {
+            const provider = data.session.user.app_metadata.provider
+
+            // If it's a social login (Google), we want to redirect directly to the home page 
+            // unless a specific 'next' destination was provided.
+            // This ensures Google login bypasses the /verify-email landing page.
+            if (provider === 'google' && (!searchParams.get('next') || searchParams.get('next') === '/verify-email')) {
+                return NextResponse.redirect(`${origin}/`)
+            }
+
             return NextResponse.redirect(`${origin}${next}`)
         }
     }
