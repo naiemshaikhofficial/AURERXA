@@ -75,7 +75,7 @@ export default function LoginPage() {
                 <div className="text-center mb-10">
                     <Link href="/">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/logo.png" alt="Aurerxa" className="h-12 mx-auto mb-6 opacity-90" />
+                        <img src="/logo.png" alt="Aurerxa" className="h-16 mx-auto mb-6 opacity-90" />
                     </Link>
                     <h2 className="text-3xl font-serif font-bold text-white mb-2">Welcome Back</h2>
                     <p className="text-white/50 text-sm">Sign in to access your bespoke collection</p>

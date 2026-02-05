@@ -94,7 +94,7 @@ export default function SignupPage() {
                 <div className="text-center mb-10">
                     <Link href="/">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/logo.png" alt="Aurerxa" className="h-12 mx-auto mb-6 opacity-90" />
+                        <img src="/logo.png" alt="Aurerxa" className="h-16 mx-auto mb-6 opacity-90" />
                     </Link>
                     <h2 className="text-3xl font-serif font-bold text-white mb-2">
                         {isSubmitted ? 'Check Your Inbox' : 'Create Account'}

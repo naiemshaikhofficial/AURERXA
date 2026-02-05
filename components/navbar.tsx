@@ -113,7 +113,7 @@ export function Navbar() {
               <img
                 src="/logo.png"
                 alt="AURERXA Logo"
-                className="h-8 md:h-14 w-auto object-contain brightness-110 group-hover:scale-105 transition-transform duration-700"
+                className="h-10 md:h-18 w-auto object-contain brightness-110 group-hover:scale-105 transition-transform duration-700"
               />
             </Link>
 
