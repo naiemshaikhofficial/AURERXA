@@ -110,6 +110,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 transform: zoomed ? 'scale(2)' : 'scale(1)'
                             }}
                             priority
+                            sizes="(max-width: 768px) 100vw, 50vw"
                         />
 
                         {/* Zoom Hint */}
@@ -131,7 +132,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                         : 'border-white/10 grayscale hover:border-white/30'
                                         }`}
                                 >
-                                    <Image src={img} alt="Thumbnail" fill className="object-cover p-1" />
+                                    <Image src={img} alt="Thumbnail" fill className="object-cover p-1" sizes="80px" />
                                 </button>
                             ))}
                         </div>
@@ -251,6 +252,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                             alt={item.name}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105 contrast-125"
+                                            sizes="(max-width: 768px) 100vw, 33vw"
                                         />
                                         <div className="absolute inset-0 bg-black/60 group-hover:bg-transparent transition-colors duration-500" />
                                         <div className="absolute bottom-0 inset-x-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
