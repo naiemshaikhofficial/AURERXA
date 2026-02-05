@@ -92,7 +92,7 @@ export default function LoginPage() {
                     <Button
                         onClick={handleGoogleLogin}
                         variant="outline"
-                        className="w-full bg-white text-black hover:bg-gray-100 h-12 font-medium flex items-center justify-center gap-3 border-none"
+                        className="w-full bg-neutral-800 text-white hover:bg-neutral-700 h-12 font-medium flex items-center justify-center gap-3 border border-neutral-700 hover:border-neutral-600 transition-all duration-300"
                     >
                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                             <path

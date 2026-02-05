@@ -38,7 +38,95 @@ const sortOptions = [
   { label: 'Price: High to Low', value: 'price_desc' },
 ]
 
-// Premium Dropdown Component
+function CollectionProductCard({ product, viewMode, index }: { product: Product, viewMode: 'grid' | 'list', index: number }) {
+  const { addItem } = useCart()
+  const router = useRouter()
+  const [isAdding, setIsAdding] = useState(false)
+  const [isBuying, setIsBuying] = useState(false)
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsAdding(true)
+    await addItem(product.id, 'Standard', 1, product)
+    setIsAdding(false)
+  }
+
+  const handleBuyNow = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsBuying(true)
+    await addItem(product.id, 'Standard', 1, product)
+    router.push('/checkout')
+  }
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.05 }}
+      className={`group relative bg-neutral-900 border border-white/5 hover:border-amber-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] overflow-hidden flex flex-col ${viewMode === 'list' ? 'md:flex-row md:items-center' : ''}`}
+    >
+      <div className={`relative overflow-hidden ${viewMode === 'grid' ? 'aspect-[3/4] w-full' : 'aspect-video md:aspect-[21/9] md:w-1/2'} group/img`}>
+        <Link href={`/products/${product.id}`} className="absolute inset-0 z-10 block" />
+
+        {/* Image */}
+        <Image
+          src={product.image_url}
+          alt={product.name}
+          fill
+          className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:contrast-125"
+        />
+
+        {/* Hover Flash Overlay - REMOVED for cleaner look */}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity pointer-events-none" />
+
+        {/* Quick Actions Buttons - Removed from Image Overlay */}
+      </div>
+
+      {/* Product Info */}
+      <div className={`p-6 space-y-4 relative z-10 bg-black flex-1 flex flex-col ${viewMode === 'list' ? 'md:p-8' : ''}`}>
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-[10px] text-amber-500 font-premium-sans tracking-widest mb-1 uppercase">
+              {product.categories?.name || 'EXCLUSIVE'}
+            </p>
+            <Link href={`/products/${product.id}`}>
+              <h3 className="text-xl font-serif text-white font-medium group-hover:text-amber-500 transition-colors">
+                {product.name}
+              </h3>
+            </Link>
+          </div>
+          <span className="text-lg font-light text-white/90">
+            ₹{product.price.toLocaleString()}
+          </span>
+        </div>
+
+        {/* Hover Reveal Buttons (Slide Down) */}
+        <div className="grid grid-cols-2 gap-2 overflow-hidden max-h-0 opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-all duration-500 ease-out pt-2">
+          <Button
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className="w-full bg-neutral-800 border border-white/10 text-white hover:bg-white hover:text-black transition-all duration-300 h-9 text-[9px] uppercase font-bold tracking-widest rounded-none"
+          >
+            {isAdding ? 'Adding...' : 'Add to Cart'}
+          </Button>
+          <Button
+            onClick={handleBuyNow}
+            disabled={isBuying}
+            className="w-full bg-amber-500 text-black hover:bg-amber-400 transition-all duration-300 h-9 text-[9px] uppercase font-bold tracking-widest rounded-none shadow-lg"
+          >
+            {isBuying ? 'Loading...' : 'Buy Now'}
+          </Button>
+        </div>
+
+        {/* Hover Reveal Line */}
+        <div className="w-full h-[1px] bg-white/10 group-hover:bg-amber-500/50 transition-colors mt-auto" />
+      </div>
+    </motion.div>
+  )
+}
+
 function FilterDropdown({
   label,
   value,
@@ -266,56 +354,12 @@ function CollectionsContent() {
               }`}
           >
             {products.map((product, i) => (
-              <motion.div
-                layout
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
+              <CollectionProductCard
                 key={product.id}
-                className="group relative bg-neutral-900 border border-white/5 hover:border-amber-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] overflow-hidden"
-              >
-                <Link href={`/products/${product.id}`} className="block h-full">
-                  {/* Image Container with "Flash" Effect */}
-                  <div className={`relative overflow-hidden ${viewMode === 'grid' ? 'aspect-[3/4]' : 'aspect-video md:aspect-[21/9]'}`}>
-                    <Image
-                      src={product.image_url}
-                      alt={product.name}
-                      fill
-                      className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:contrast-125"
-                    />
-                    {/* Hover Flash Overlay */}
-                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:animate-flash pointer-events-none mix-blend-overlay" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-
-                    {/* Quick Actions */}
-                    <div className="absolute top-4 right-4 flex flex-col gap-2 translate-x-10 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
-                      <button className="w-10 h-10 bg-black/80 backdrop-blur text-white flex items-center justify-center hover:bg-amber-500 hover:text-black transition-colors">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Product Info - Minimalist High Contrast */}
-                  <div className="p-6 space-y-4 relative z-10 bg-black">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-[10px] text-amber-500 font-premium-sans tracking-widest mb-1">
-                          {product.categories?.name || 'EXCLUSIVE'}
-                        </p>
-                        <h3 className="text-xl font-serif text-white font-medium group-hover:text-amber-500 transition-colors">
-                          {product.name}
-                        </h3>
-                      </div>
-                      <span className="text-lg font-light text-white/90">
-                        ₹{product.price.toLocaleString()}
-                      </span>
-                    </div>
-
-                    {/* Hover Reveal Line */}
-                    <div className="w-full h-[1px] bg-white/10 group-hover:bg-amber-500/50 transition-colors" />
-                  </div>
-                </Link>
-              </motion.div>
+                product={product}
+                viewMode={viewMode}
+                index={i}
+              />
             ))}
           </motion.div>
         )}
