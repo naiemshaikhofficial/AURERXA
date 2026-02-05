@@ -25,6 +25,12 @@ export function Navbar() {
               Home
             </Link>
             <Link
+              href="/about"
+              className="text-xs uppercase tracking-[0.2em] text-white/70 hover:text-amber-400 transition-colors duration-300 font-light"
+            >
+              Our Story
+            </Link>
+            <Link
               href="/collections"
               className="text-xs uppercase tracking-[0.2em] text-white/70 hover:text-amber-400 transition-colors duration-300 font-light"
             >
