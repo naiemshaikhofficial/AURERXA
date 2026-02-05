@@ -22,6 +22,7 @@ interface Product {
   stock: number
   sizes?: string[]
   categories?: { name: string; slug: string }
+  slug: string
 }
 
 const priceRanges = [
@@ -67,7 +68,7 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
       className={`group relative bg-neutral-900 border border-white/5 hover:border-amber-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] overflow-hidden flex flex-col ${viewMode === 'list' ? 'md:flex-row md:items-center' : ''}`}
     >
       <div className={`relative overflow-hidden ${viewMode === 'grid' ? 'aspect-[3/4] w-full' : 'aspect-video md:aspect-[21/9] md:w-1/2'} group/img`}>
-        <Link href={`/products/${product.id}`} className="absolute inset-0 z-10 block" />
+        <Link href={`/products/${product.slug}`} className="absolute inset-0 z-10 block" />
 
         {/* Image */}
         <Image
@@ -91,7 +92,7 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
             <p className="text-[10px] text-amber-500 font-premium-sans tracking-widest mb-1 uppercase">
               {product.categories?.name || 'EXCLUSIVE'}
             </p>
-            <Link href={`/products/${product.id}`}>
+            <Link href={`/products/${product.slug}`}>
               <h3 className="text-xl font-serif text-white font-medium group-hover:text-amber-500 transition-colors">
                 {product.name}
               </h3>

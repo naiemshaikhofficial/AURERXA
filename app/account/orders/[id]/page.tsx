@@ -100,13 +100,57 @@ export default function OrderDetailPage() {
                                         </p>
                                     </div>
                                     <span className={`px-3 py-1 text-xs uppercase tracking-wider ${order.status === 'delivered' ? 'text-emerald-400 bg-emerald-500/10' :
-                                            order.status === 'shipped' ? 'text-blue-400 bg-blue-500/10' :
-                                                order.status === 'cancelled' ? 'text-red-400 bg-red-500/10' :
-                                                    'text-amber-400 bg-amber-500/10'
+                                        order.status === 'shipped' ? 'text-blue-400 bg-blue-500/10' :
+                                            order.status === 'cancelled' ? 'text-red-400 bg-red-500/10' :
+                                                'text-amber-400 bg-amber-500/10'
                                         }`}>
                                         {order.status}
                                     </span>
                                 </div>
+
+                                {/* Tracking & Delivery Info */}
+                                {order.status !== 'cancelled' && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 p-4 bg-neutral-950/50 border border-neutral-800/50">
+                                        <div className="flex items-center gap-3">
+                                            <Truck className="w-5 h-5 text-amber-500" />
+                                            <div>
+                                                <p className="text-xs text-white/50 uppercase tracking-wider">Estimated Delivery</p>
+                                                <p className="text-sm font-medium text-white">
+                                                    {new Date(new Date(order.created_at).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
+                                                        day: 'numeric',
+                                                        month: 'long',
+                                                        year: 'numeric'
+                                                    })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <Package className="w-5 h-5 text-amber-500" />
+                                            <div>
+                                                <p className="text-xs text-white/50 uppercase tracking-wider">Tracking Number</p>
+                                                <p className="text-sm font-family-mono text-white/80">
+                                                    {order.tracking_number || 'Pending Assignment'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Cancellation Option */}
+                                {(order.status === 'pending' || order.status === 'confirmed') && (
+                                    <div className="mb-6 p-4 border border-red-500/20 bg-red-500/5 flex items-center justify-between">
+                                        <div>
+                                            <p className="text-white text-sm font-medium">Changed your mind?</p>
+                                            <p className="text-white/50 text-xs">You can cancel this order before shipping.</p>
+                                        </div>
+                                        <button
+                                            onClick={() => alert('Implementation Needed: Call Cancel API')}
+                                            className="px-4 py-2 bg-red-500/10 text-red-500 text-xs uppercase tracking-wider hover:bg-red-500/20 transition-colors border border-red-500/20"
+                                        >
+                                            Cancel Order
+                                        </button>
+                                    </div>
+                                )}
 
                                 {/* Status Timeline */}
                                 {order.status !== 'cancelled' && (

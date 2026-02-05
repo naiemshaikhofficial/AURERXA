@@ -248,6 +248,19 @@ export default function SignupPage() {
                                     />
                                 </div>
 
+                                <div className="flex items-start gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="policies-signup"
+                                        defaultChecked
+                                        required
+                                        className="mt-1 accent-amber-500 w-3 h-3 bg-neutral-900 border-neutral-700 rounded-sm focus:ring-amber-500/20"
+                                    />
+                                    <label htmlFor="policies-signup" className="text-[10px] text-white/50 leading-relaxed">
+                                        By creating an account, I agree to the <Link href="/terms" className="text-amber-500 hover:underline">Terms & Conditions</Link>, <Link href="/privacy" className="text-amber-500 hover:underline">Privacy Policy</Link>, and <Link href="/returns" className="text-amber-500 hover:underline">Refund Policy</Link>.
+                                    </label>
+                                </div>
+
                                 <Button
                                     type="submit"
                                     disabled={loading}

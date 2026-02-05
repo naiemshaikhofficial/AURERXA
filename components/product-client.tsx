@@ -58,7 +58,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const handleBuyNow = async () => {
         if (!product) return
         setAddingToCart(true)
-        await addItem(product.id, selectedSize, quantity, product)
+        await addItem(product.id, selectedSize || 'One Size', 1, product)
+        setAddingToCart(false)
         router.push('/checkout')
     }
 
@@ -99,7 +100,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                         onMouseMove={handleMouseMove}
                         onMouseEnter={() => setZoomed(true)}
                         onMouseLeave={() => setZoomed(false)}
-                        className="relative flex-1 w-full bg-neutral-900 border border-white/5 overflow-hidden group cursor-crosshair"
+                        className="relative w-full h-[50vh] lg:h-auto lg:flex-1 bg-neutral-900 border border-white/5 overflow-hidden group cursor-crosshair"
                     >
                         <Image
                             src={allImages[selectedImage]}
@@ -222,7 +223,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 <Button
                                     onClick={handleAddToCart}
                                     disabled={addingToCart || product.stock === 0}
-                                    className="flex-1 bg-white text-black h-14 uppercase tracking-[0.2em] text-xs font-bold hover:bg-amber-500 hover:text-black transition-all rounded-none border-none"
+                                    className="flex-1 bg-neutral-900 border border-white/20 text-white h-14 uppercase tracking-[0.2em] text-xs font-bold hover:bg-white hover:text-black transition-all rounded-none"
                                 >
                                     {addingToCart ? <Loader2 className="animate-spin" /> : 'Add to Cart'}
                                 </Button>
@@ -241,9 +242,9 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             <Button
                                 onClick={handleBuyNow}
                                 disabled={addingToCart || product.stock === 0}
-                                className="w-full bg-neutral-900 border border-white/20 text-white h-12 uppercase tracking-[0.2em] text-[10px] hover:bg-neutral-800 rounded-none"
+                                className="w-full bg-amber-500 text-black h-14 uppercase tracking-[0.2em] text-sm font-bold hover:bg-amber-400 rounded-none shadow-[0_0_20px_rgba(245,158,11,0.3)] animate-pulse hover:animate-none"
                             >
-                                Secure Checkout
+                                Buy Now
                             </Button>
                         </div>
                     </div>

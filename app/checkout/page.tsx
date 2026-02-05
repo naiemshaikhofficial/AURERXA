@@ -32,8 +32,8 @@ export default function CheckoutPage() {
     const [addresses, setAddresses] = useState<any[]>([])
     const [selectedAddress, setSelectedAddress] = useState<string>('')
     const [paymentMethod, setPaymentMethod] = useState<string>('online')
-    const [termsAccepted, setTermsAccepted] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [termsAccepted, setTermsAccepted] = useState(true)
     const [placing, setPlacing] = useState(false)
     const [showAddressForm, setShowAddressForm] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -404,11 +404,9 @@ export default function CheckoutPage() {
                                                 className="mt-1 accent-amber-500 w-4 h-4"
                                             />
                                             <div className="space-y-1">
-                                                <span className="text-sm font-medium text-white/90">I accept the Strict Return Policy</span>
+                                                <span className="text-sm font-medium text-white/90">I accept all Policy Agreements</span>
                                                 <p className="text-xs text-white/50 leading-relaxed">
-                                                    I understand that this is a <span className="text-amber-500">High Value Item</span>.
-                                                    Returns are <span className="text-red-400 font-bold underline">NOT accepted</span> unless the product is damaged during transit.
-                                                    I confirm I have checked the purity and weight details.
+                                                    I have read and agree to the <Link href="/terms" target="_blank" className="text-amber-500 underline">Terms & Conditions</Link>, <Link href="/privacy" target="_blank" className="text-amber-500 underline">Privacy Policy</Link>, and <Link href="/returns" target="_blank" className="text-amber-500 underline">Refund/Cancellation Policy</Link>.
                                                 </p>
                                             </div>
                                         </label>

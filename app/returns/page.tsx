@@ -1,5 +1,6 @@
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
+import Link from 'next/link'
 import { RefreshCw, Clock, AlertCircle, CheckCircle } from 'lucide-react'
 
 export const metadata = {
@@ -18,6 +19,22 @@ export default function ReturnsPage() {
                     <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-12" />
 
                     <div className="space-y-12">
+                        {/* Cancellation Policy */}
+                        <section className="bg-neutral-900 border border-neutral-800 p-8">
+                            <div className="flex items-start gap-4">
+                                <AlertCircle className="w-8 h-8 text-amber-500 flex-shrink-0" />
+                                <div>
+                                    <h2 className="text-xl font-serif font-medium mb-3">Cancellation Policy</h2>
+                                    <p className="text-white/60 leading-relaxed">
+                                        You can cancel your order <span className="text-amber-400 font-medium">only before it has been shipped</span>. Once the order is marked as 'Shipped', it cannot be cancelled.
+                                    </p>
+                                    <p className="text-white/60 leading-relaxed mt-2">
+                                        To cancel, visit your <Link href="/account/orders" className="text-amber-500 hover:text-amber-400 underline">Order History</Link> and select "Cancel Order" if eligible.
+                                    </p>
+                                </div>
+                            </div>
+                        </section>
+
                         {/* Return Policy */}
                         <section className="bg-neutral-900 border border-neutral-800 p-8">
                             <div className="flex items-start gap-4">
@@ -85,23 +102,50 @@ export default function ReturnsPage() {
                             </div>
                         </section>
 
+                        {/* Anti-Fraud & Weight Verification */}
+                        <section className="bg-neutral-900 border border-red-900/30 p-8 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-10">
+                                <AlertCircle className="w-24 h-24 text-red-500" />
+                            </div>
+                            <div className="flex items-start gap-4 relative z-10">
+                                <AlertCircle className="w-8 h-8 text-red-500 flex-shrink-0" />
+                                <div>
+                                    <h2 className="text-xl font-serif font-medium mb-3 text-red-400">Anti-Fraud & Weight Verification</h2>
+                                    <div className="space-y-4 text-white/70 leading-relaxed text-sm">
+                                        <p>
+                                            <strong className="text-white">High Value Item Protection:</strong> To prevent fraudulent claims and "loss in weight" scams, all our shipments are video-recorded during packing.
+                                        </p>
+                                        <p>
+                                            <strong className="text-white">Delivery Protocol:</strong> You strictly must verify the package weight and temper-proof seal <strong>before accepting delivery</strong>. Open delivery is recommended where available.
+                                        </p>
+                                        <p>
+                                            <strong className="text-white">No Post-Delivery Weight Claims:</strong> Once the package is accepted and signed for, we <strong>do not accept</strong> any claims regarding missing items, empty boxes, or weight discrepancies (loss in weight).
+                                        </p>
+                                        <p className="text-xs text-white/50 italic border-t border-white/5 pt-2 mt-2">
+                                            * Any attempt to return counterfeit items or tampered products will result in immediate legal action under applicable fraud laws.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
                         {/* Non-Returnable */}
                         <section className="bg-neutral-900 border border-neutral-800 p-8">
                             <div className="flex items-start gap-4">
-                                <AlertCircle className="w-8 h-8 text-red-400 flex-shrink-0" />
+                                <AlertCircle className="w-8 h-8 text-amber-500 flex-shrink-0" />
                                 <div>
                                     <h2 className="text-xl font-serif font-medium mb-3">Non-Returnable Items</h2>
                                     <ul className="text-white/60 space-y-2">
                                         <li className="flex items-start gap-2">
-                                            <span className="text-red-400">•</span>
+                                            <span className="text-amber-500">•</span>
                                             Custom-made or personalized jewelry
                                         </li>
                                         <li className="flex items-start gap-2">
-                                            <span className="text-red-400">•</span>
+                                            <span className="text-amber-500">•</span>
                                             Items with engraving or special modifications
                                         </li>
                                         <li className="flex items-start gap-2">
-                                            <span className="text-red-400">•</span>
+                                            <span className="text-amber-500">•</span>
                                             Items showing signs of wear or damage
                                         </li>
                                     </ul>
