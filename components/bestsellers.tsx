@@ -4,7 +4,10 @@ import React, { useEffect, useState, useRef } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { addToCart, getBestsellers } from '@/app/actions'
+import { getBestsellers } from '@/app/actions'
+import { useCart } from '@/context/cart-context'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 // Define the Product interface based on standard DB schema
 interface Product {
@@ -18,12 +21,15 @@ interface Product {
   stock?: number
 }
 
-function ProductCard({ product, handleAddToCart, loadingId }: {
-  product: Product,
-  handleAddToCart: any,
-  loadingId: string | null
+function ProductCard({ product }: {
+  product: Product
 }) {
   const cardRef = useRef<HTMLDivElement>(null)
+  const { addItem } = useCart()
+  const router = useRouter()
+  const [isAdding, setIsAdding] = useState(false)
+  const [isBuying, setIsBuying] = useState(false)
+
   const { scrollYProgress } = useScroll({
     target: cardRef,
     offset: ['start end', 'end start']
@@ -60,6 +66,20 @@ function ProductCard({ product, handleAddToCart, loadingId }: {
     y.set(0)
   }
 
+  const handleProductAdd = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsAdding(true)
+    await addItem(product.id, 'Standard', 1, product)
+    setIsAdding(false)
+  }
+
+  const handleBuyNow = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsBuying(true)
+    await addItem(product.id, 'Standard', 1, product)
+    router.push('/checkout')
+  }
+
   return (
     <motion.div
       ref={cardRef}
@@ -74,29 +94,38 @@ function ProductCard({ product, handleAddToCart, loadingId }: {
     >
       {/* Image Container with Luxury Glow */}
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-900 mb-8 group/img">
-        <div className="absolute inset-0 z-0 h-[110%] -top-[5%] w-full">
-          <motion.div style={{ y: yImage }} className="relative h-full w-full">
-            <Image
-              src={product.image_url}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover transition-grayscale duration-700 grayscale-[0.2] group-hover:grayscale-0"
-            />
-          </motion.div>
-        </div>
+        <Link href={`/products/${product.id}`} className="absolute inset-0 z-10 w-full h-full">
+          <div className="absolute inset-0 z-0 h-[110%] -top-[5%] w-full">
+            <motion.div style={{ y: yImage }} className="relative h-full w-full">
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                className="object-cover transition-grayscale duration-700 grayscale-[0.2] group-hover:grayscale-0"
+              />
+            </motion.div>
+          </div>
+        </Link>
 
         {/* Subtle Overlay */}
-        <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors duration-700" />
+        <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors duration-700 pointer-events-none" />
 
-        {/* Hover Quick View Button */}
-        <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out z-20">
+        {/* Hover Action Buttons */}
+        <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-all duration-500 ease-out z-20 flex flex-col gap-2">
           <Button
-            onClick={() => handleAddToCart(product.id, product.name)}
-            disabled={loadingId !== null}
-            className="w-full bg-white text-black hover:bg-amber-500 hover:text-white transition-all duration-500 rounded-none h-12 text-[10px] font-premium-sans tracking-[0.2em] shadow-2xl"
+            onClick={handleBuyNow}
+            disabled={isBuying}
+            className="w-full bg-amber-500 text-neutral-950 hover:bg-amber-400 transition-all duration-500 rounded-none h-11 text-[9px] font-premium-sans tracking-[0.2em] font-bold shadow-2xl"
           >
-            {loadingId === product.id ? 'Adding...' : 'Add to Collection'}
+            {isBuying ? 'Processing...' : 'Buy Now'}
+          </Button>
+          <Button
+            onClick={handleProductAdd}
+            disabled={isAdding}
+            className="w-full bg-white/10 backdrop-blur-md text-white border border-white/10 hover:bg-white hover:text-black transition-all duration-500 rounded-none h-11 text-[9px] font-premium-sans tracking-[0.2em] shadow-lg"
+          >
+            {isAdding ? 'Adding...' : 'Add to Collection'}
           </Button>
         </div>
 
@@ -111,9 +140,11 @@ function ProductCard({ product, handleAddToCart, loadingId }: {
           {product.categories?.name || 'Exclusive'}
         </p>
 
-        <h3 className="text-xl font-serif font-medium text-white tracking-wide group-hover:text-amber-500 transition-colors duration-500">
-          {product.name}
-        </h3>
+        <Link href={`/products/${product.id}`}>
+          <h3 className="text-xl font-serif font-medium text-white tracking-wide group-hover:text-amber-500 transition-colors duration-500">
+            {product.name}
+          </h3>
+        </Link>
 
         <div className="w-8 h-[1px] bg-white/10 mx-auto" />
 
@@ -138,19 +169,6 @@ export function Bestsellers() {
     }
     loadData()
   }, [])
-
-  const handleAddToCart = async (id: string, name: string) => {
-    setLoadingId(id)
-    try {
-      const result = await addToCart(id, name)
-      setMessage(result.message || 'Product added to collection')
-      setTimeout(() => setMessage(null), 3000)
-    } catch (error) {
-      console.error('Failed to add to cart', error)
-    } finally {
-      setLoadingId(null)
-    }
-  }
 
   if (bestsellers.length === 0) return null
 
@@ -177,19 +195,9 @@ export function Bestsellers() {
             <ProductCard
               key={product.id}
               product={product}
-              handleAddToCart={handleAddToCart}
-              loadingId={loadingId}
             />
           ))}
         </div>
-
-        {message && (
-          <div className="mt-16 text-center animate-in fade-in duration-700">
-            <span className="text-[10px] font-premium-sans text-amber-500 tracking-[0.4em] bg-amber-500/5 px-8 py-4 border border-amber-500/10 uppercase">
-              {message}
-            </span>
-          </div>
-        )}
       </div>
     </section>
   )

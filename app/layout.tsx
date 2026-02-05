@@ -27,6 +27,8 @@ export const viewport: Viewport = {
   themeColor: '#D4AF37',
 }
 
+import { CartProvider } from '@/context/cart-context'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,10 +37,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased bg-background text-foreground">
-        <SmoothScroll>
-          {children}
-          <BottomNav />
-        </SmoothScroll>
+        <CartProvider>
+          <SmoothScroll>
+            {children}
+            <BottomNav />
+          </SmoothScroll>
+        </CartProvider>
       </body>
     </html>
   )

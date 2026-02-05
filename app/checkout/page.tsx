@@ -12,8 +12,21 @@ import { Label } from '@/components/ui/label'
 import { getCart, getAddresses, addAddress, createOrder, validateCoupon } from '@/app/actions'
 import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X } from 'lucide-react'
 
+import { supabase } from '@/lib/supabase'
+
 export default function CheckoutPage() {
     const router = useRouter()
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) {
+                router.push('/login?redirect=/checkout')
+            }
+        }
+        checkAuth()
+    }, [])
+
     const [cart, setCart] = useState<any[]>([])
     const [addresses, setAddresses] = useState<any[]>([])
     const [selectedAddress, setSelectedAddress] = useState<string>('')

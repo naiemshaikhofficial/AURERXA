@@ -6,35 +6,22 @@ import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
-import { getCart, updateCartItem, removeFromCart } from '@/app/actions'
+import { useCart } from '@/context/cart-context'
 import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight } from 'lucide-react'
 
 export default function CartPage() {
-    const [cart, setCart] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
+    const { items: cart, loading, updateQuantity, removeItem } = useCart()
     const [updating, setUpdating] = useState<string | null>(null)
-
-    useEffect(() => {
-        loadCart()
-    }, [])
-
-    async function loadCart() {
-        const data = await getCart()
-        setCart(data)
-        setLoading(false)
-    }
 
     const handleUpdateQuantity = async (cartId: string, newQuantity: number) => {
         setUpdating(cartId)
-        await updateCartItem(cartId, newQuantity)
-        await loadCart()
+        await updateQuantity(cartId, newQuantity)
         setUpdating(null)
     }
 
     const handleRemove = async (cartId: string) => {
         setUpdating(cartId)
-        await removeFromCart(cartId)
-        await loadCart()
+        await removeItem(cartId)
         setUpdating(null)
     }
 
