@@ -6,10 +6,12 @@ import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
-import { getWishlist, removeFromWishlist, addToCart } from '@/app/actions'
+import { getWishlist, removeFromWishlist } from '@/app/actions'
+import { useCart } from '@/context/cart-context'
 import { Heart, ShoppingBag, Trash2, Loader2 } from 'lucide-react'
 
 export default function WishlistPage() {
+    const { addItem } = useCart()
     const [wishlist, setWishlist] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [actionId, setActionId] = useState<string | null>(null)
@@ -31,9 +33,9 @@ export default function WishlistPage() {
         setActionId(null)
     }
 
-    const handleMoveToCart = async (productId: string) => {
+    const handleMoveToCart = async (productId: string, productData: any) => {
         setActionId(productId)
-        await addToCart(productId)
+        await addItem(productId, 'Standard', 1, productData)
         await removeFromWishlist(productId)
         await loadWishlist()
         setActionId(null)
@@ -94,7 +96,7 @@ export default function WishlistPage() {
 
                                         <div className="flex gap-2">
                                             <Button
-                                                onClick={() => handleMoveToCart(item.product_id)}
+                                                onClick={() => handleMoveToCart(item.product_id, item.products)}
                                                 disabled={actionId === item.product_id}
                                                 size="sm"
                                                 className="flex-1 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs h-9"

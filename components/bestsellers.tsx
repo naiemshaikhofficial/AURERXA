@@ -125,7 +125,7 @@ function ProductCard({ product }: {
             disabled={isAdding}
             className="w-full bg-white/10 backdrop-blur-md text-white border border-white/10 hover:bg-white hover:text-black transition-all duration-500 rounded-none h-11 text-[9px] font-premium-sans tracking-[0.2em] shadow-lg"
           >
-            {isAdding ? 'Adding...' : 'Add to Collection'}
+            {isAdding ? 'Adding...' : 'Add to Cart'}
           </Button>
         </div>
 

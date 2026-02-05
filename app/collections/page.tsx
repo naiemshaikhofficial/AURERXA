@@ -3,7 +3,8 @@
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
-import { addToCart, getFilteredProducts, getCategories } from '@/app/actions'
+import { getFilteredProducts, getCategories } from '@/app/actions'
+import { useCart } from '@/context/cart-context'
 import { useState, Suspense, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Loader2, SlidersHorizontal, X, ChevronDown, Eye, Check } from 'lucide-react'
@@ -107,6 +108,7 @@ function CollectionsContent() {
   const router = useRouter()
 
   const categoryParam = searchParams.get('category') || searchParams.get('material') || ''
+  const { addItem } = useCart()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -142,11 +144,11 @@ function CollectionsContent() {
     loadProducts()
   }, [selectedCategory, selectedPriceRange, selectedSort])
 
-  const handleAddToCart = async (id: string, name: string) => {
-    setLoadingId(id)
+  const handleAddToCart = async (product: Product) => {
+    setLoadingId(product.id)
     try {
-      const result = await addToCart(id, name)
-      setMessage(result.message || 'Product added to cart')
+      await addItem(product.id, 'Standard', 1, product)
+      setMessage('Added to your cart')
       setTimeout(() => setMessage(null), 3000)
     } finally {
       setLoadingId(null)
@@ -376,7 +378,7 @@ function CollectionsContent() {
                     </div>
 
                     <Button
-                      onClick={() => handleAddToCart(product.id, product.name)}
+                      onClick={() => handleAddToCart(product)}
                       disabled={loadingId !== null || product.stock === 0}
                       className={`w-full font-medium uppercase tracking-[0.2em] h-12 text-[10px] transition-all duration-500 rounded-none border ${product.stock === 0
                         ? 'bg-transparent border-neutral-800 text-white/20'
@@ -386,7 +388,7 @@ function CollectionsContent() {
                       {product.stock === 0 ? 'Out of Stock' : (
                         loadingId === product.id ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : 'Reserve Piece'
+                        ) : 'Add to Cart'
                       )}
                     </Button>
                   </div>

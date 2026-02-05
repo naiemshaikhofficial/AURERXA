@@ -8,13 +8,15 @@ import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
-import { getProductById, getRelatedProducts, addToCart, addToWishlist, isInWishlist } from '@/app/actions'
+import { getProductById, getRelatedProducts, addToWishlist, isInWishlist } from '@/app/actions'
+import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
 import { Heart, ShoppingBag, Minus, Plus, ChevronRight, Loader2, Check, Truck, Shield, RefreshCw, ZoomIn, X } from 'lucide-react'
 
 export default function ProductPage() {
     const params = useParams()
     const router = useRouter()
+    const { addItem } = useCart()
     const [product, setProduct] = useState<any>(null)
     const [related, setRelated] = useState<any[]>([])
     const [selectedSize, setSelectedSize] = useState<string>('')
@@ -58,27 +60,17 @@ export default function ProductPage() {
     const handleAddToCart = async () => {
         if (!product) return
         setAddingToCart(true)
-        const result = await addToCart(product.id, selectedSize, quantity)
-        if (result.success) {
-            setMessage('Added to cart!')
-        } else {
-            setMessage(result.error || 'Failed to add')
-        }
+        await addItem(product.id, selectedSize, quantity, product)
+        setMessage('Added to your cart')
         setAddingToCart(false)
         setTimeout(() => setMessage(null), 3000)
     }
 
     const handleBuyNow = async () => {
         if (!product) return
-        setAddingToCart(true) // Use addingToCart state for buy now as well
-        const result = await addToCart(product.id, selectedSize, quantity)
-        if (result.success) {
-            router.push('/checkout')
-        } else {
-            setMessage(result.error || 'Failed to add to cart for checkout')
-            setAddingToCart(false)
-            setTimeout(() => setMessage(null), 3000)
-        }
+        setAddingToCart(true)
+        await addItem(product.id, selectedSize, quantity, product)
+        router.push('/checkout')
     }
 
     const handleAddToWishlist = async () => {
@@ -282,7 +274,7 @@ export default function ProductPage() {
                                     ) : (
                                         <>
                                             <ShoppingBag className="w-4 h-4 mr-2" />
-                                            {product.stock === 0 ? 'Out of Stock' : 'Add to Collection'}
+                                            {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
                                         </>
                                     )}
                                 </Button>
