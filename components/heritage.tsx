@@ -68,8 +68,9 @@ export function Heritage() {
                             "We don't just craft jewelry. We forge <span className="text-amber-500">identity</span>."
                         </p>
                         <p className="text-sm md:text-base font-light text-white/50 leading-loose tracking-widest italic">
-                            For over three decades, AURERXA has defined the pinnacle of luxury.
-                            From the dust of the workshop to the glare of the spotlight.
+                            For over three decades, we've built trust <strong>Shop-to-Shop</strong>.
+                            From raw <span className="text-white/80">scrap</span> to the final <span className="text-amber-500">finished masterpiece</span>,
+                            we control every spark of the process. Genuine gold, genuine legacy.
                         </p>
                     </div>
                 </motion.div>

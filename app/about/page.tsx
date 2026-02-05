@@ -182,6 +182,41 @@ export default function AboutPage() {
                     </div>
                 </section>
 
+                {/* Section 2.5: The Process (Genuine Manufacturing) */}
+                <section className="py-32 px-4 sm:px-6 lg:px-8 relative border-t border-white/5">
+                    <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                        <div className="order-2 md:order-1 relative aspect-square bg-neutral-900 border border-white/5 overflow-hidden group">
+                            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1626947346165-4c2288cadec2?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center grayscale opacity-60 hover:opacity-80 transition-opacity duration-700" />
+                            <div className="absolute inset-0 bg-black/40" />
+                            <div className="absolute bottom-6 left-6 border-l-2 border-amber-500 pl-4">
+                                <p className="text-white font-serif text-xl italic">Pure Manufacturing</p>
+                                <p className="text-white/40 text-xs tracking-widest uppercase mt-1">Scrap to Finish</p>
+                            </div>
+                        </div>
+
+                        <motion.div
+                            className="order-1 md:order-2 space-y-8"
+                            initial={{ opacity: 0, x: 50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 1 }}
+                        >
+                            <h2 className="text-4xl md:text-5xl font-serif font-bold text-white italic">
+                                The <span className="text-amber-500">Genuine</span> Way
+                            </h2>
+                            <p className="text-lg text-white/70 leading-relaxed font-light tracking-wide">
+                                We are not just a label. We are the <span className="text-white font-medium">manufacturers</span>.
+                                Since 1989, we have been collecting raw scrap gold and transforming it into finished luxury ornaments,
+                                delivering directly <span className="text-amber-500 font-medium">Shop-to-Shop</span>.
+                            </p>
+                            <p className="text-lg text-white/50 leading-relaxed font-light italic">
+                                "Trust isn't bought. It's forged in the fire, one piece at a time.
+                                When you buy from us, you buy directly from the hands that melted the gold."
+                            </p>
+                        </motion.div>
+                    </div>
+                </section>
+
                 {/* Section 3: Rising from the Shadows (Stuck & Scroll Layout) */}
                 <section className="relative px-4 sm:px-6 lg:px-8 min-h-[150vh] flex flex-col md:flex-row items-start justify-between">
                     {/* Background Gradient */}

@@ -14,6 +14,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Menu } from "lucide-react"
 import { SearchModal } from './search-modal'
 
 export function Navbar() {
@@ -128,6 +136,46 @@ export function Navbar() {
                   </span>
                 )}
               </Link>
+
+              <Sheet>
+                <SheetTrigger asChild>
+                  <button className="text-white hover:text-amber-500 transition-colors p-2">
+                    <Menu className="w-6 h-6" />
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="left" className="bg-black border-r border-white/10 text-white w-[300px] p-0">
+                  <SheetHeader className="p-6 border-b border-white/10 text-left">
+                    <SheetTitle className="text-2xl font-serif font-bold text-white">AURERXA</SheetTitle>
+                    <p className="text-xs text-white/50 uppercase tracking-widest">Est. 1989</p>
+                  </SheetHeader>
+                  <div className="flex flex-col py-6">
+                    <Link href="/" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
+                      Home
+                    </Link>
+                    <Link href="/collections" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
+                      Shop Collections
+                    </Link>
+                    <Link href="/custom-jewelry" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
+                      Custom Jewelry
+                    </Link>
+                    <Link href="/about" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
+                      Our Story
+                    </Link>
+                    <Link href="/blog" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
+                      Blog
+                    </Link>
+                    <Link href="/contact" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
+                      Contact Us
+                    </Link>
+                    <Link href="/faq" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
+                      FAQs
+                    </Link>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/10 bg-neutral-900/50">
+                    <p className="text-xs text-white/40 text-center">© 2024 AURERXA. All rights reserved.</p>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
 
             {/* Desktop Menu */}
