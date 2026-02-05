@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, User, ShoppingBag, Heart, Package } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ export function Navbar() {
   const router = useRouter()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
+  const [cartCount, setCartCount] = useState(0)
 
   useEffect(() => {
     // Get initial user
@@ -33,6 +34,13 @@ export function Navbar() {
           .eq('id', user.id)
           .single()
         setProfile(data)
+
+        // Get cart count
+        const { count } = await supabase
+          .from('cart')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+        setCartCount(count || 0)
       }
     }
     getUser()
@@ -48,11 +56,17 @@ export function Navbar() {
           .single()
         if (data) setProfile(data)
         else {
-          // Fallback if profile not found immediately (rare with trigger, but possible)
           setProfile({ full_name: session.user.user_metadata.full_name || session.user.email })
         }
+
+        const { count } = await supabase
+          .from('cart')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', session.user.id)
+        setCartCount(count || 0)
       } else {
         setProfile(null)
+        setCartCount(0)
       }
     })
 
@@ -120,6 +134,21 @@ export function Navbar() {
               Contact
             </Link>
 
+            {/* Wishlist */}
+            <Link href="/wishlist" className="relative text-white/70 hover:text-amber-400 transition-colors">
+              <Heart className="w-5 h-5" />
+            </Link>
+
+            {/* Cart */}
+            <Link href="/cart" className="relative text-white/70 hover:text-amber-400 transition-colors">
+              <ShoppingBag className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 w-5 h-5 bg-amber-500 text-neutral-950 text-xs font-bold rounded-full flex items-center justify-center">
+                  {cartCount > 9 ? '9+' : cartCount}
+                </span>
+              )}
+            </Link>
+
             {/* Auth Section */}
             {user ? (
               <DropdownMenu>
@@ -136,10 +165,19 @@ export function Navbar() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-neutral-800" />
-                  <DropdownMenuItem className="focus:bg-neutral-800 focus:text-white cursor-pointer group">
-                    <User className="mr-2 h-4 w-4 text-white/50 group-hover:text-amber-400" />
-                    <span>Profile</span>
+                  <DropdownMenuItem asChild className="focus:bg-neutral-800 focus:text-white cursor-pointer group">
+                    <Link href="/account">
+                      <User className="mr-2 h-4 w-4 text-white/50 group-hover:text-amber-400" />
+                      <span>Profile</span>
+                    </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="focus:bg-neutral-800 focus:text-white cursor-pointer group">
+                    <Link href="/account/orders">
+                      <Package className="mr-2 h-4 w-4 text-white/50 group-hover:text-amber-400" />
+                      <span>My Orders</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-neutral-800" />
                   <DropdownMenuItem className="focus:bg-neutral-800 focus:text-white cursor-pointer group" onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4 text-white/50 group-hover:text-red-400" />
                     <span>Sign Out</span>
