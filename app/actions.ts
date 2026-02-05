@@ -773,6 +773,39 @@ export async function getBlogPosts(category?: string) {
   }
 }
 
+// Product Actions
+export async function getProductById(id: string) {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, categories(*)')
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.error('Product fetch error:', err)
+    return null
+  }
+}
+
+export async function getProductBySlug(slug: string) {
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, categories(*)')
+      .eq('slug', slug)
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.error('Product fetch by slug error:', err)
+    return null
+  }
+}
+
 export async function getBlogPost(slug: string) {
   try {
     const { data, error } = await supabase
