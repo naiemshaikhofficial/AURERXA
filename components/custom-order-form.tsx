@@ -175,17 +175,25 @@ export function CustomOrderForm() {
             </div>
 
             {status === 'success' && (
-              <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 flex items-start gap-4">
-                <CheckCircle className="h-4 w-4 text-emerald-400 mt-1 flex-shrink-0" />
-                <p className="text-[10px] text-white font-premium-sans tracking-widest uppercase">{message}</p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="alert-luxury-success text-center"
+              >
+                <CheckCircle size={20} className="mx-auto mb-4 text-emerald-500" />
+                <p>{message}</p>
+              </motion.div>
             )}
 
             {status === 'error' && (
-              <div className="p-6 bg-red-500/5 border border-red-500/20 flex items-start gap-4">
-                <AlertCircle className="h-4 w-4 text-red-400 mt-1 flex-shrink-0" />
-                <p className="text-[10px] text-white font-premium-sans tracking-widest uppercase">{message}</p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="alert-luxury-error text-center"
+              >
+                <AlertCircle size={20} className="mx-auto mb-4 text-red-500" />
+                <p>{message}</p>
+              </motion.div>
             )}
 
             <Button

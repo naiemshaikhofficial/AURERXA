@@ -601,13 +601,13 @@ export async function subscribeNewsletter(email: string) {
       if (error.code === '23505') {
         return { success: false, error: 'You are already subscribed!' }
       }
-      throw error
+      return { success: false, error: `Subscription Error: ${error.message}` }
     }
 
     return { success: true, message: 'Thank you for subscribing to AURERXA!' }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Subscribe error:', err)
-    return { success: false, error: 'Failed to subscribe. Please try again.' }
+    return { success: false, error: `System Error: ${err.message || 'Please try again.'}` }
   }
 }
 
@@ -622,12 +622,12 @@ export async function submitCustomOrder(formData: any) {
       .from('custom_orders')
       .insert([{ ...formData, status: 'pending', created_at: new Date().toISOString() }])
 
-    if (error) throw error
+    if (error) return { success: false, error: `Order Error: ${error.message}` }
 
     return { success: true, message: 'Your custom order request has been received.' }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Custom order error:', err)
-    return { success: false, error: 'Failed to submit order. Please try again later.' }
+    return { success: false, error: `System Error: ${err.message || 'Failed to submit order.'}` }
   }
 }
 

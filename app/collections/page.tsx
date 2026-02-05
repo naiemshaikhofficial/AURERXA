@@ -398,10 +398,9 @@ function CollectionsContent() {
           )}
 
           {message && (
-            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 duration-500">
-              <div className="bg-amber-500 text-neutral-950 px-8 py-4 font-bold uppercase tracking-[0.2em] text-xs shadow-2xl">
-                {message}
-              </div>
+            <div className="notification-luxury flex items-center gap-4 animate-in slide-in-from-right-10 duration-500">
+              <Check size={14} className="text-amber-500" />
+              <p>{message}</p>
             </div>
           )}
         </div>

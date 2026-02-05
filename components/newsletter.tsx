@@ -88,14 +88,20 @@ export function Newsletter() {
             </div>
 
             {status === 'success' && (
-              <div className="p-6 bg-emerald-500/5 border border-emerald-500/20 animate-in fade-in duration-700">
-                <p className="text-[10px] text-emerald-400 font-premium-sans tracking-widest uppercase">{message}</p>
+              <div className="alert-luxury-success animate-in fade-in slide-in-from-bottom-2 duration-700">
+                <div className="flex items-center justify-center gap-3">
+                  <CheckCircle size={14} className="text-emerald-500" />
+                  <p>{message}</p>
+                </div>
               </div>
             )}
 
             {status === 'error' && (
-              <div className="p-6 bg-red-500/5 border border-red-500/20 animate-in fade-in duration-700">
-                <p className="text-[10px] text-red-400 font-premium-sans tracking-widest uppercase">{message}</p>
+              <div className="alert-luxury-error animate-in fade-in slide-in-from-bottom-2 duration-700">
+                <div className="flex items-center justify-center gap-3">
+                  <AlertCircle size={14} className="text-red-500" />
+                  <p>{message}</p>
+                </div>
               </div>
             )}
           </form>

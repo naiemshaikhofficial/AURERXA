@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2 } from 'lucide-react'
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react'
 
 export default function SignupPage() {
     const router = useRouter()
@@ -114,9 +114,9 @@ export default function SignupPage() {
                             <p className="text-white/70 text-sm leading-relaxed">
                                 We have sent a luxurious invitation to verify your account at <span className="text-amber-500 font-medium">{formData.email}</span>.
                             </p>
-                            <p className="text-[10px] text-white/30 uppercase tracking-[0.2em]">
-                                Verification is required to access your bespoke portal.
-                            </p>
+                            <div className="alert-luxury-success mt-8">
+                                <p className="text-[10px]">Verification is required to access your bespoke portal.</p>
+                            </div>
                         </div>
 
                         <div className="pt-4 space-y-4">
@@ -137,8 +137,11 @@ export default function SignupPage() {
                 ) : (
                     <>
                         {error && (
-                            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
-                                {error}
+                            <div className="alert-luxury-error mb-6 text-center">
+                                <div className="flex items-center justify-center gap-3">
+                                    <AlertCircle size={14} className="text-red-500" />
+                                    <p>{error}</p>
+                                </div>
                             </div>
                         )}
 

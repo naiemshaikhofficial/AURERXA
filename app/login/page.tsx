@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, ArrowRight } from 'lucide-react'
+import { Loader2, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react'
 
 export default function LoginPage() {
     const router = useRouter()
@@ -80,8 +80,11 @@ export default function LoginPage() {
                 </div>
 
                 {error && (
-                    <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
-                        {error}
+                    <div className="alert-luxury-error mb-6 text-center">
+                        <div className="flex items-center justify-center gap-3">
+                            <AlertCircle size={14} className="text-red-500" />
+                            <p>{error}</p>
+                        </div>
                     </div>
                 )}
 

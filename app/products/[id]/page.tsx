@@ -296,8 +296,8 @@ export default function ProductPage() {
 
                             {/* Message */}
                             {message && (
-                                <div className="mb-6 p-3 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm text-center flex items-center justify-center gap-2">
-                                    <Check className="w-4 h-4" />
+                                <div className="alert-luxury-success mt-8 flex items-center justify-center gap-2">
+                                    <Check className="w-4 h-4 text-emerald-500" />
                                     {message}
                                 </div>
                             )}

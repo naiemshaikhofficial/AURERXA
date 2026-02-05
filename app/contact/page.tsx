@@ -194,16 +194,20 @@ export default function ContactPage() {
                 </div>
 
                 {status === 'success' && (
-                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-white">{message}</p>
+                  <div className="alert-luxury-success animate-in fade-in slide-in-from-bottom-2 duration-700">
+                    <div className="flex items-center justify-center gap-3">
+                      <CheckCircle size={14} className="text-emerald-500" />
+                      <p>{message}</p>
+                    </div>
                   </div>
                 )}
 
                 {status === 'error' && (
-                  <div className="p-4 bg-red-500/10 border border-red-500/30 flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-white">{message}</p>
+                  <div className="alert-luxury-error animate-in fade-in slide-in-from-bottom-2 duration-700">
+                    <div className="flex items-center justify-center gap-3">
+                      <AlertCircle size={14} className="text-red-500" />
+                      <p>{message}</p>
+                    </div>
                   </div>
                 )}
 

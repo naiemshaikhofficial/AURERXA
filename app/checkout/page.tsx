@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getAddresses, addAddress, createOrder, validateCoupon } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
-import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X } from 'lucide-react'
+import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
 
@@ -184,8 +184,11 @@ export default function CheckoutPage() {
                     <h1 className="text-3xl md:text-4xl font-serif font-bold mb-8 text-center">Checkout</h1>
 
                     {error && (
-                        <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 text-red-400 text-center">
-                            {error}
+                        <div className="alert-luxury-error mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="flex items-center justify-center gap-3">
+                                <AlertCircle size={14} className="text-red-500" />
+                                <p>{error}</p>
+                            </div>
                         </div>
                     )}
 
@@ -459,14 +462,17 @@ export default function CheckoutPage() {
                                         Coupon Code
                                     </label>
                                     {couponApplied ? (
-                                        <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/30">
-                                            <div>
-                                                <span className="text-green-400 font-medium">{couponApplied.code}</span>
-                                                <p className="text-xs text-green-400/70">{couponApplied.message}</p>
+                                        <div className="alert-luxury-success animate-in fade-in duration-500">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Check size={12} className="text-emerald-500" />
+                                                    <span className="text-emerald-400 font-medium">{couponApplied.code}</span>
+                                                </div>
+                                                <button onClick={removeCoupon} className="text-white/30 hover:text-white transition-colors">
+                                                    <X className="w-4 h-4" />
+                                                </button>
                                             </div>
-                                            <button onClick={removeCoupon} className="text-white/50 hover:text-white">
-                                                <X className="w-4 h-4" />
-                                            </button>
+                                            <p className="text-[9px] text-emerald-400/70 mt-1">{couponApplied.message}</p>
                                         </div>
                                     ) : (
                                         <div className="flex gap-2">
@@ -486,7 +492,7 @@ export default function CheckoutPage() {
                                         </div>
                                     )}
                                     {couponError && (
-                                        <p className="text-xs text-red-400 mt-2">{couponError}</p>
+                                        <p className="text-[10px] font-premium-sans text-red-400 mt-2 px-1 tracking-widest">{couponError}</p>
                                     )}
                                 </div>
 
