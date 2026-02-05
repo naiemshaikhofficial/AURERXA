@@ -10,6 +10,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Loader2, SlidersHorizontal, X, ChevronDown, Eye, Check } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { ParallaxScroll } from '@/components/parallax-scroll'
 
 interface Product {
   id: string
@@ -174,7 +175,9 @@ function CollectionsContent() {
 
       {/* Hero Section */}
       <section className="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-neutral-950 to-neutral-900 overflow-hidden relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+        <ParallaxScroll offset={40} direction="down" className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px]">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+        </ParallaxScroll>
         <div className="max-w-7xl mx-auto text-center relative z-10">
           <p className="text-amber-500 text-xs tracking-[0.4em] uppercase mb-4 font-medium animate-in fade-in slide-in-from-bottom-4 duration-700">
             Heritage & Craft

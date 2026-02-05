@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { submitContact } from '@/app/actions'
+import { ParallaxScroll } from '@/components/parallax-scroll'
 import { Loader2, CheckCircle, AlertCircle, Mail, Phone, MapPin } from 'lucide-react'
 
 export default function ContactPage() {
@@ -57,8 +58,9 @@ export default function ContactPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-neutral-950 to-neutral-900">
-        <div className="max-w-7xl mx-auto text-center">
+      <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 to-neutral-900 z-0" />
+        <ParallaxScroll offset={50} direction="up" className="max-w-7xl mx-auto text-center relative z-10">
           <p className="text-amber-400 text-sm tracking-[0.3em] uppercase mb-4 font-light">
             Get in Touch
           </p>
@@ -69,7 +71,7 @@ export default function ContactPage() {
           <p className="text-base text-white/50 max-w-xl mx-auto font-light">
             Get in touch with our team for any inquiries or assistance
           </p>
-        </div>
+        </ParallaxScroll>
       </section>
 
       <section className="py-20 px-4 sm:px-6 lg:px-8">

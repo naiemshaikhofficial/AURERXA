@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { getProductById, getRelatedProducts, addToWishlist, isInWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
+import { ParallaxScroll } from '@/components/parallax-scroll'
 import { Heart, ShoppingBag, Minus, Plus, ChevronRight, Loader2, Check, Truck, Shield, RefreshCw, ZoomIn, X } from 'lucide-react'
 
 export default function ProductPage() {
@@ -136,43 +137,45 @@ export default function ProductPage() {
                         {/* Image Gallery */}
                         <div className="space-y-4">
                             {/* Main Image */}
-                            <div
-                                ref={imageRef}
-                                className="relative aspect-square bg-neutral-900 overflow-hidden cursor-zoom-in group"
-                                onMouseMove={handleMouseMove}
-                                onMouseEnter={() => setZoomed(true)}
-                                onMouseLeave={() => setZoomed(false)}
-                                onClick={() => setZoomed(!zoomed)}
-                            >
-                                <Image
-                                    src={allImages[selectedImage] || product.image_url}
-                                    alt={product.name}
-                                    fill
-                                    className={`object-cover transition-transform duration-200 ${zoomed ? 'scale-150' : ''}`}
-                                    style={zoomed ? {
-                                        transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
-                                    } : {}}
-                                    priority
-                                />
+                            <ParallaxScroll offset={60} direction="up" className="relative aspect-square bg-neutral-900 overflow-hidden cursor-zoom-in group">
+                                <div
+                                    ref={imageRef}
+                                    className="relative w-full h-full"
+                                    onMouseMove={handleMouseMove}
+                                    onMouseEnter={() => setZoomed(true)}
+                                    onMouseLeave={() => setZoomed(false)}
+                                    onClick={() => setZoomed(!zoomed)}
+                                >
+                                    <Image
+                                        src={allImages[selectedImage] || product.image_url}
+                                        alt={product.name}
+                                        fill
+                                        className={`object-cover transition-transform duration-200 ${zoomed ? 'scale-150' : ''}`}
+                                        style={zoomed ? {
+                                            transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
+                                        } : {}}
+                                        priority
+                                    />
 
-                                {/* Stock Badge */}
-                                {product.stock <= 5 && product.stock > 0 && (
-                                    <div className="absolute top-4 left-4 bg-amber-500 text-neutral-950 px-3 py-1 text-xs font-bold uppercase z-10">
-                                        Only {product.stock} Left
-                                    </div>
-                                )}
-                                {product.stock === 0 && (
-                                    <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 text-xs font-bold uppercase z-10">
-                                        Out of Stock
-                                    </div>
-                                )}
+                                    {/* Stock Badge */}
+                                    {product.stock <= 5 && product.stock > 0 && (
+                                        <div className="absolute top-4 left-4 bg-amber-500 text-neutral-950 px-3 py-1 text-xs font-bold uppercase z-10">
+                                            Only {product.stock} Left
+                                        </div>
+                                    )}
+                                    {product.stock === 0 && (
+                                        <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 text-xs font-bold uppercase z-10">
+                                            Out of Stock
+                                        </div>
+                                    )}
 
-                                {/* Zoom Hint */}
-                                <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-neutral-950/80 backdrop-blur-sm px-2 py-1 text-xs text-white/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <ZoomIn className="w-3 h-3" />
-                                    Hover to zoom
+                                    {/* Zoom Hint */}
+                                    <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-neutral-950/80 backdrop-blur-sm px-2 py-1 text-xs text-white/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <ZoomIn className="w-3 h-3" />
+                                        Hover to zoom
+                                    </div>
                                 </div>
-                            </div>
+                            </ParallaxScroll>
 
                             {/* Thumbnails */}
                             {allImages.length > 1 && (

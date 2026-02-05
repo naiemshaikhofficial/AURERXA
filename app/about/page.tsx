@@ -2,8 +2,9 @@
 
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { SectionTitle } from '@/components/section-title' // Assuming this component exists or I'll create inline
 import Image from 'next/image'
+import { ParallaxScroll } from '@/components/parallax-scroll'
+import { motion } from 'framer-motion'
 
 export default function AboutPage() {
     return (
@@ -12,23 +13,32 @@ export default function AboutPage() {
 
             {/* Hero Section */}
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                    <Image
-                        src="/heritage-rings.jpg"
-                        alt="Heritage"
-                        fill
-                        className="object-cover opacity-30"
-                    />
+                <div className="absolute inset-0 z-0 h-[120%] -top-[10%]">
+                    <ParallaxScroll offset={80} className="relative h-full w-full">
+                        <Image
+                            src="/heritage-rings.jpg"
+                            alt="Heritage"
+                            fill
+                            className="object-cover opacity-30"
+                            priority
+                        />
+                    </ParallaxScroll>
                     <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
                 </div>
 
                 <div className="relative z-10 text-center max-w-4xl px-4">
-                    <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 tracking-tight text-white drop-shadow-2xl">
-                        Our Story
-                    </h1>
-                    <p className="text-xl md:text-2xl font-light text-amber-400 tracking-[0.2em] uppercase">
-                        From Dust to Diamond
-                    </p>
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                        <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 tracking-tight text-white drop-shadow-2xl">
+                            Our Story
+                        </h1>
+                        <p className="text-xl md:text-2xl font-light text-amber-400 tracking-[0.2em] uppercase">
+                            From Dust to Diamond
+                        </p>
+                    </motion.div>
                 </div>
             </section>
 
