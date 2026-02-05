@@ -874,3 +874,85 @@ export async function getFilteredProducts(options: {
     return []
   }
 }
+
+// ============================================
+// CUSTOMER SUPPORT (TICKETS & REPAIRS)
+// ============================================
+
+export async function createTicket(formData: { subject: string; message: string; urgency: string }) {
+  const client = await getAuthClient()
+  const { data: { user } } = await client.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: 'Please login to raise a ticket' }
+  }
+
+  const { error } = await client
+    .from('tickets')
+    .insert({
+      user_id: user.id,
+      subject: formData.subject,
+      message: formData.message,
+      urgency: formData.urgency
+    })
+
+  if (error) {
+    console.error('Create ticket error:', error)
+    return { success: false, error: 'Failed to submit ticket' }
+  }
+  return { success: true, message: 'Ticket raised successfully' }
+}
+
+export async function getTickets() {
+  const client = await getAuthClient()
+  const { data: { user } } = await client.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await client
+    .from('tickets')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error) return []
+  return data
+}
+
+export async function createRepairRequest(formData: { productName: string; orderNumber?: string; issue: string }) {
+  const client = await getAuthClient()
+  const { data: { user } } = await client.auth.getUser()
+
+  if (!user) {
+    return { success: false, error: 'Please login to request repair' }
+  }
+
+  const { error } = await client
+    .from('repairs')
+    .insert({
+      user_id: user.id,
+      product_name: formData.productName,
+      order_number: formData.orderNumber || null,
+      issue_description: formData.issue
+    })
+
+  if (error) {
+    console.error('Create repair error:', error)
+    return { success: false, error: 'Failed to submit repair request' }
+  }
+  return { success: true, message: 'Repair request submitted' }
+}
+
+export async function getRepairs() {
+  const client = await getAuthClient()
+  const { data: { user } } = await client.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await client
+    .from('repairs')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error) return []
+  return data
+}

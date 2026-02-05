@@ -145,10 +145,25 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                         {/* Header */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <Link href={`/collections?material=${product.category_id}`} className="text-amber-500 text-xs font-bold tracking-[0.3em] uppercase hover:underline underline-offset-4">
-                                    {product.category_id || 'Collection'}
+                                <Link href={`/collections?category=${product.categories?.slug}`} className="text-amber-500 text-xs font-bold tracking-[0.3em] uppercase hover:underline underline-offset-4">
+                                    {product.categories?.name || 'Collection'}
                                 </Link>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap gap-2">
+                                    {product.gender && (
+                                        <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase tracking-wider text-white/60">
+                                            {product.gender}
+                                        </span>
+                                    )}
+                                    {product.purity && (
+                                        <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-[10px] uppercase tracking-wider text-amber-500 font-medium">
+                                            {product.purity}
+                                        </span>
+                                    )}
+                                    {product.weight_grams && (
+                                        <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase tracking-wider text-white/60">
+                                            {product.weight_grams} g
+                                        </span>
+                                    )}
                                     {product.stock < 5 && product.stock > 0 && (
                                         <span className="bg-red-500/20 text-red-500 text-[10px] px-2 py-1 uppercase tracking-widest font-bold border border-red-500/20">
                                             Low Stock

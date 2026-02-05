@@ -31,7 +31,8 @@ export default function CheckoutPage() {
     const { items: cart, loading: cartLoading, refreshCart } = useCart()
     const [addresses, setAddresses] = useState<any[]>([])
     const [selectedAddress, setSelectedAddress] = useState<string>('')
-    const [paymentMethod, setPaymentMethod] = useState<string>('cod')
+    const [paymentMethod, setPaymentMethod] = useState<string>('online')
+    const [termsAccepted, setTermsAccepted] = useState(false)
     const [loading, setLoading] = useState(true)
     const [placing, setPlacing] = useState(false)
     const [showAddressForm, setShowAddressForm] = useState(false)
@@ -374,50 +375,44 @@ export default function CheckoutPage() {
                                     Payment Method
                                 </h2>
 
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     <label
-                                        className={`block p-4 border cursor-pointer transition-all ${paymentMethod === 'cod'
-                                            ? 'border-amber-500 bg-amber-500/5'
-                                            : 'border-neutral-700 hover:border-neutral-600'
-                                            }`}
+                                        className={`block p-4 border cursor-pointer transition-all border-amber-500 bg-amber-500/5`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="radio"
                                                 name="payment"
-                                                checked={paymentMethod === 'cod'}
-                                                onChange={() => setPaymentMethod('cod')}
+                                                checked={true}
+                                                readOnly
                                                 className="accent-amber-500"
                                             />
-                                            <Banknote className="w-5 h-5 text-white/60" />
+                                            <CreditCard className="w-5 h-5 text-amber-500" />
                                             <div>
-                                                <span className="font-medium">Cash on Delivery</span>
-                                                <p className="text-xs text-white/50">Pay when you receive</p>
+                                                <span className="font-medium text-amber-500">Secure Online Payment</span>
+                                                <p className="text-xs text-white/50">UPI, Credit/Debit Card, Net Banking</p>
                                             </div>
                                         </div>
                                     </label>
 
-                                    <label
-                                        className={`block p-4 border cursor-pointer transition-all ${paymentMethod === 'online'
-                                            ? 'border-amber-500 bg-amber-500/5'
-                                            : 'border-neutral-700 hover:border-neutral-600'
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-3">
+                                    <div className="bg-neutral-950/50 p-4 border border-red-900/30 rounded">
+                                        <label className="flex items-start gap-3 cursor-pointer">
                                             <input
-                                                type="radio"
-                                                name="payment"
-                                                checked={paymentMethod === 'online'}
-                                                onChange={() => setPaymentMethod('online')}
-                                                className="accent-amber-500"
+                                                type="checkbox"
+                                                checked={termsAccepted}
+                                                onChange={(e) => setTermsAccepted(e.target.checked)}
+                                                className="mt-1 accent-amber-500 w-4 h-4"
                                             />
-                                            <CreditCard className="w-5 h-5 text-white/60" />
-                                            <div>
-                                                <span className="font-medium">Pay Online</span>
-                                                <p className="text-xs text-white/50">UPI, Card, Net Banking</p>
+                                            <div className="space-y-1">
+                                                <span className="text-sm font-medium text-white/90">I accept the Strict Return Policy</span>
+                                                <p className="text-xs text-white/50 leading-relaxed">
+                                                    I understand that this is a <span className="text-amber-500">High Value Item</span>.
+                                                    Returns are <span className="text-red-400 font-bold underline">NOT accepted</span> unless the product is damaged during transit.
+                                                    I confirm I have checked the purity and weight details.
+                                                </p>
                                             </div>
-                                        </div>
-                                    </label>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -525,14 +520,14 @@ export default function CheckoutPage() {
 
                                 <Button
                                     onClick={handlePlaceOrder}
-                                    disabled={placing || !selectedAddress}
-                                    className="w-full mt-6 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-12"
+                                    disabled={placing || !selectedAddress || !termsAccepted}
+                                    className="w-full mt-6 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-12 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {placing ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
                                         <>
-                                            Place Order
+                                            Pay Securely
                                             <ChevronRight className="w-4 h-4 ml-2" />
                                         </>
                                     )}
