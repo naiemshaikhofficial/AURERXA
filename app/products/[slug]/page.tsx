@@ -4,9 +4,12 @@ import { notFound } from 'next/navigation'
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
+    console.log('🔹 Product Page Slug:', slug)
     const product = await getProductBySlug(slug)
+    console.log('🔹 Fetch Result:', product ? 'Found' : 'Not Found')
 
     if (!product) {
+        console.error('❌ Product not found for slug:', slug)
         notFound()
     }
 
