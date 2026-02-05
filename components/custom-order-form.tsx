@@ -58,7 +58,7 @@ export function CustomOrderForm() {
   }
 
   return (
-    <section id="custom" className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-900 relative">
+    <section id="custom" className="py-12 md:py-24 px-4 sm:px-6 lg:px-8 bg-neutral-900 relative">
       {/* Background luxe pattern */}
       <div className="absolute inset-0 opacity-5 bg-[url('data:image/svg+xml,%3Csvg width=%2220%22 height=%2220%22 viewBox=%220 0 20 20%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cpath d=%22M1 1h2v2H1V1zm4 0h2v2H5V1zm4 0h2v2H9V1zm4 0h2v2h-2V1zm4 0h2v2h-2V1zM1 5h2v2H1V5zm4 0h2v2H5V5zm4 0h2v2H9V5zm4 0h2v2h-2V5zm4 0h2v2h-2V5zM1 9h2v2H1V9zm4 0h2v2H5V9zm4 0h2v2H9V9zm4 0h2v2h-2V9zm4 0h2v2h-2V9zM1 13h2v2H1v-2zm4 0h2v2H5v-2zm4 0h2v2H9v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zM1 17h2v2H1v-2zm4 0h2v2H5v-2zm4 0h2v2H9v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z%22 fill=%22%23D4AF37%22 fill-opacity=%221%22 fill-rule=%22evenodd%22/%3E%3C/svg%3E')]" />
 

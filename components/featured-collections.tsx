@@ -11,7 +11,7 @@ export async function FeaturedCollections() {
   }
 
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-950">
+    <section className="py-12 md:py-24 px-4 sm:px-6 lg:px-8 bg-neutral-950">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-20">

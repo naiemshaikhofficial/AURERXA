@@ -49,7 +49,7 @@ export function Bestsellers() {
   if (bestsellers.length === 0) return null
 
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-900 border-t border-neutral-800">
+    <section className="py-12 md:py-24 px-4 sm:px-6 lg:px-8 bg-neutral-900 border-t border-neutral-800">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-20">

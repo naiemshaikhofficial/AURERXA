@@ -34,7 +34,7 @@ export function Newsletter() {
   }
 
   return (
-    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-950 relative overflow-hidden">
+    <section className="py-12 md:py-24 px-4 sm:px-6 lg:px-8 bg-neutral-950 relative overflow-hidden">
       {/* Subtle gold gradient */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-500/30 rounded-full blur-[150px]" />
