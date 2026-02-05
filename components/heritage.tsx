@@ -11,17 +11,19 @@ export function Heritage() {
         offset: ['start end', 'end start'],
     })
 
-    const yBg = useTransform(scrollYProgress, [0, 1], ['-10%', '10%'])
+    const yBg = useTransform(scrollYProgress, [0, 1], ['-20%', '20%'])
+    const scaleBg = useTransform(scrollYProgress, [0, 1], [1.1, 1.3])
+    const opacityBg = useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 0.6, 0.4])
 
     return (
         <section ref={ref} className="relative min-h-[60vh] md:h-screen overflow-hidden flex items-center justify-center bg-black">
             {/* Background Image with Cinematic Parallax */}
-            <motion.div style={{ y: yBg }} className="absolute inset-0 z-0">
+            <motion.div style={{ y: yBg, scale: scaleBg, opacity: opacityBg }} className="absolute inset-0 z-0">
                 <Image
                     src="/heritage-rings.jpg"
                     alt="Heritage Background"
                     fill
-                    className="object-cover scale-110 grayscale-[0.5] opacity-40 group-hover:grayscale-0 transition-all duration-[2s]"
+                    className="object-cover grayscale-[0.5] transition-all duration-[2s]"
                     priority
                 />
             </motion.div>

@@ -1,7 +1,7 @@
 'use client'
 
-import React from "react"
-import { useState } from 'react'
+import React, { useState, useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { subscribeNewsletter } from '@/app/actions'
@@ -12,6 +12,15 @@ export function Newsletter() {
   const [isLoading, setIsLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
+
+  const sectionRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start']
+  })
+
+  // Very subtle background drift
+  const yBg = useTransform(scrollYProgress, [0, 1], [-20, 20])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,11 +43,20 @@ export function Newsletter() {
   }
 
   return (
-    <section className="py-24 md:py-32 px-6 lg:px-12 bg-[#004028] relative overflow-hidden">
-      {/* Decorative texture overlay */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+    <section ref={sectionRef} className="py-24 md:py-32 px-6 lg:px-12 bg-[#004028] relative overflow-hidden">
+      {/* Decorative texture overlay with parallax */}
+      <motion.div
+        style={{ y: yBg }}
+        className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] scale-110"
+      />
 
-      <div className="max-w-xl mx-auto text-center relative z-10">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-xl mx-auto text-center relative z-10"
+      >
         <div className="space-y-12">
           <div className="space-y-4">
             <p className="text-amber-500/80 text-[10px] tracking-[0.8em] uppercase font-premium-sans">
@@ -87,7 +105,7 @@ export function Newsletter() {
             )}
           </form>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }
