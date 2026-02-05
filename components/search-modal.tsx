@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, X, Loader2 } from 'lucide-react'
+import { Search, X, Loader2, ArrowRight } from 'lucide-react'
 import { searchProducts } from '@/app/actions'
 
 export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -20,7 +20,7 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
 
     useEffect(() => {
         const handleSearch = async () => {
-            if (query.length < 2) {
+            if (query.trim().length < 2) {
                 setResults([])
                 return
             }
@@ -45,89 +45,119 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-[100] bg-neutral-950/90 backdrop-blur-md">
-            <div className="max-w-2xl mx-auto pt-20 px-4">
-                {/* Search Input */}
-                <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
-                    <input
-                        ref={inputRef}
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Search for jewelry..."
-                        className="w-full h-14 pl-12 pr-12 bg-neutral-900 border border-neutral-700 text-white text-lg focus:outline-none focus:border-amber-500"
-                    />
-                    <button
-                        onClick={onClose}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white"
-                    >
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-24 md:pt-32 animate-in fade-in duration-300">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-neutral-950/95 backdrop-blur-xl"
+                onClick={onClose}
+            />
 
-                {/* Results */}
-                <div className="mt-4 max-h-[60vh] overflow-y-auto">
-                    {loading && (
-                        <div className="flex items-center justify-center py-8">
-                            <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />
-                        </div>
-                    )}
+            <div className="relative w-full max-w-4xl px-4 md:px-6">
+                {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute -top-12 right-4 md:right-0 p-2 text-white/40 hover:text-amber-500 transition-colors"
+                >
+                    <X className="w-6 h-6" />
+                </button>
 
-                    {!loading && query.length >= 2 && results.length === 0 && (
-                        <p className="text-center text-white/50 py-8">No products found for "{query}"</p>
-                    )}
-
-                    {!loading && results.length > 0 && (
-                        <div className="space-y-2">
-                            {results.map((product) => (
-                                <Link
-                                    key={product.id}
-                                    href={`/products/${product.id}`}
-                                    onClick={onClose}
-                                    className="flex items-center gap-4 p-3 bg-neutral-900 border border-neutral-800 hover:border-amber-500/30 transition-all"
-                                >
-                                    <div className="relative w-16 h-16 bg-neutral-800 flex-shrink-0">
-                                        <Image
-                                            src={product.image_url}
-                                            alt={product.name}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-medium truncate">{product.name}</p>
-                                        <p className="text-sm text-white/50">{product.categories?.name}</p>
-                                    </div>
-                                    <p className="text-amber-400 font-medium">₹{product.price.toLocaleString('en-IN')}</p>
-                                </Link>
-                            ))}
-                        </div>
-                    )}
-
-                    {!loading && query.length < 2 && (
-                        <div className="text-center py-12 text-white/40">
-                            <Search className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                            <p>Start typing to search products</p>
-                        </div>
-                    )}
-                </div>
-
-                {/* Quick Links */}
-                <div className="mt-8 pt-6 border-t border-neutral-800">
-                    <p className="text-sm text-white/40 mb-3">Popular Categories</p>
-                    <div className="flex flex-wrap gap-2">
-                        {['Gold', 'Silver', 'Diamond', 'Platinum'].map((cat) => (
-                            <Link
-                                key={cat}
-                                href={`/collections?category=${cat.toLowerCase()}`}
-                                onClick={onClose}
-                                className="px-4 py-2 bg-neutral-900 border border-neutral-700 text-sm hover:border-amber-500/50 transition-colors"
-                            >
-                                {cat}
-                            </Link>
-                        ))}
+                {/* Search Header */}
+                <div className="relative mb-12 animate-in slide-in-from-bottom-8 duration-500">
+                    <div className="flex items-center gap-6 border-b border-neutral-800 pb-4 group focus-within:border-amber-500 transition-colors">
+                        <Search className="w-8 h-8 text-white/20 group-focus-within:text-amber-500 transition-colors" />
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="SEARCH OUR HERITAGE..."
+                            className="w-full bg-transparent border-none text-2xl md:text-5xl font-serif text-white placeholder:text-white/10 focus:outline-none uppercase tracking-widest"
+                        />
+                        {loading && <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />}
                     </div>
+                </div>
+
+                {/* Results Area */}
+                <div className="min-h-[200px]">
+                    {query.trim().length >= 2 ? (
+                        <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                            {results.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {results.map((product, idx) => (
+                                        <Link
+                                            key={product.id}
+                                            href={`/products/${product.id}`}
+                                            onClick={onClose}
+                                            className="group flex gap-4 p-4 bg-neutral-900/50 border border-neutral-800 hover:border-amber-500/30 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
+                                            style={{ animationDelay: `${idx * 50}ms` }}
+                                        >
+                                            <div className="relative w-24 h-24 flex-shrink-0 bg-neutral-800 overflow-hidden">
+                                                <Image
+                                                    src={product.image_url}
+                                                    alt={product.name}
+                                                    fill
+                                                    className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col justify-between py-1">
+                                                <div>
+                                                    <p className="text-[10px] text-amber-500 uppercase tracking-widest mb-1">
+                                                        {product.categories?.name || 'Exclusive'}
+                                                    </p>
+                                                    <h3 className="text-white font-serif text-base line-clamp-1 group-hover:text-amber-400 transition-colors italic">
+                                                        {product.name}
+                                                    </h3>
+                                                </div>
+                                                <p className="text-amber-400 font-bold text-sm tracking-widest">
+                                                    ₹{product.price.toLocaleString('en-IN')}
+                                                </p>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : !loading && (
+                                <div className="text-center py-20 animate-in zoom-in-95 duration-300">
+                                    <p className="text-white/20 text-lg md:text-2xl font-serif italic mb-2">No masterpieces found for "{query}"</p>
+                                    <p className="text-white/40 text-sm tracking-widest uppercase font-light">Try exploring our collections instead</p>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="animate-in fade-in duration-700">
+                            {/* Popular Searches */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                                <div>
+                                    <h4 className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-6">Popular Collections</h4>
+                                    <div className="flex flex-col gap-4">
+                                        {['Gold', 'Silver', 'Diamond', 'Platinum'].map((cat) => (
+                                            <Link
+                                                key={cat}
+                                                href={`/collections?category=${cat.toLowerCase()}`}
+                                                onClick={onClose}
+                                                className="group flex items-center justify-between text-xl font-serif text-white/60 hover:text-white transition-all"
+                                            >
+                                                <span className="group-hover:translate-x-4 transition-transform duration-300 italic">{cat} Collection</span>
+                                                <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all text-amber-500" />
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="hidden md:block">
+                                    <h4 className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-6">Discovery</h4>
+                                    <div className="p-8 bg-neutral-900 border border-neutral-800 text-center space-y-4">
+                                        <p className="text-white font-serif text-lg italic">"Jewelry is more than art; it's heritage."</p>
+                                        <Link
+                                            href="/collections"
+                                            onClick={onClose}
+                                            className="inline-block text-[10px] text-amber-500 uppercase tracking-widest border-b border-amber-500/30 pb-1 hover:border-amber-500 transition-colors"
+                                        >
+                                            Explore Complete Vault
+                                        </Link>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

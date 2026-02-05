@@ -1,7 +1,7 @@
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { getStores } from '@/app/actions'
-import { MapPin, Phone, Mail, Clock, Navigation } from 'lucide-react'
+import { MapPin, Phone, Mail, Clock, Navigation, Sparkles } from 'lucide-react'
 
 export const metadata = {
     title: 'Store Locator | AURERXA',
@@ -15,87 +15,102 @@ export default async function StoresPage() {
         <div className="min-h-screen bg-neutral-950 text-white">
             <Navbar />
 
-            <main className="pt-24 pb-24">
+            <main className="pt-32 pb-32">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
-                    <div className="text-center mb-16">
-                        <div className="flex items-center justify-center gap-2 text-amber-400 mb-4">
-                            <MapPin className="w-5 h-5" />
-                            <span className="text-sm uppercase tracking-[0.2em]">Find Us</span>
+                    <div className="text-center mb-24 relative">
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
+                        <div className="flex items-center justify-center gap-2 text-amber-500 mb-6 animate-in fade-in duration-700">
+                            <Sparkles className="w-4 h-4" />
+                            <span className="text-[10px] uppercase tracking-[0.4em] font-medium">Boutiques</span>
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">Our Stores</h1>
-                        <p className="text-white/50 max-w-2xl mx-auto">
-                            Experience our exquisite collection in person. Our jewelry experts are ready to help you find the perfect piece.
+                        <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight animate-in slide-in-from-bottom-4 duration-700">
+                            Our <span className="text-amber-500 italic">Presence</span>
+                        </h1>
+                        <p className="text-white/40 max-w-xl mx-auto font-light text-sm md:text-base animate-in slide-in-from-bottom-6 duration-700">
+                            Experience the radiance of AURERXA excellence in person at our flagship boutiques across the nation.
                         </p>
                     </div>
 
                     {/* Stores Grid */}
                     {stores.length === 0 ? (
-                        <div className="text-center py-16">
-                            <MapPin className="w-16 h-16 mx-auto mb-6 text-white/20" />
-                            <p className="text-xl text-white/50">No stores found. Coming soon to your city!</p>
+                        <div className="text-center py-32 animate-in zoom-in-95 duration-500">
+                            <div className="mb-8 inline-flex p-8 rounded-full bg-neutral-900 border border-neutral-800">
+                                <MapPin className="w-12 h-12 text-white/10" />
+                            </div>
+                            <h3 className="text-xl font-serif text-white mb-2 italic">AWAITING OUR DEBUT</h3>
+                            <p className="text-white/40 text-sm tracking-widest uppercase font-light">New stores are appearing on the map soon</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {stores.map((store) => (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                            {stores.map((store, idx) => (
                                 <div
                                     key={store.id}
-                                    className="bg-neutral-900 border border-neutral-800 hover:border-amber-500/30 transition-all"
+                                    className="group bg-neutral-900/40 border border-neutral-800 hover:border-amber-500/30 transition-all duration-500 animate-in fade-in slide-in-from-bottom-8"
+                                    style={{ animationDelay: `${idx * 150}ms` }}
                                 >
-                                    {/* Store Image */}
-                                    <div className="relative h-48 bg-neutral-800 overflow-hidden">
+                                    {/* Store Image / Map Placeholder */}
+                                    <div className="relative h-64 bg-neutral-900 overflow-hidden border-b border-neutral-800">
+                                        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent z-10 opactiy-60" />
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <MapPin className="w-16 h-16 text-amber-500/20" />
+                                            <MapPin className="w-20 h-20 text-neutral-800 group-hover:text-amber-500/20 transition-colors duration-700" />
+                                        </div>
+                                        {/* You can replace this with actual store images if available */}
+                                        <div className="absolute bottom-6 left-6 z-20">
+                                            <span className="text-[10px] uppercase tracking-[0.4em] text-amber-500 font-bold">
+                                                {store.city} Boutique
+                                            </span>
                                         </div>
                                     </div>
 
                                     {/* Store Info */}
-                                    <div className="p-6">
-                                        <h2 className="font-serif text-xl font-medium mb-2">{store.name}</h2>
-                                        <p className="text-amber-400 text-sm uppercase tracking-wider mb-4">{store.city}</p>
+                                    <div className="p-8">
+                                        <h2 className="font-serif text-2xl font-bold mb-6 text-white group-hover:text-amber-400 transition-colors italic">
+                                            {store.name}
+                                        </h2>
 
-                                        <div className="space-y-3 text-sm text-white/60">
-                                            <div className="flex items-start gap-3">
-                                                <MapPin className="w-4 h-4 mt-1 text-amber-500 flex-shrink-0" />
-                                                <span>{store.address}</span>
+                                        <div className="space-y-5 text-sm">
+                                            <div className="flex items-start gap-4 group/item">
+                                                <MapPin className="w-4 h-4 mt-1 text-amber-500 group-hover/item:scale-110 transition-transform" />
+                                                <span className="text-white/60 font-light leading-relaxed">{store.address}</span>
                                             </div>
 
                                             {store.phone && (
-                                                <div className="flex items-center gap-3">
-                                                    <Phone className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                                                    <a href={`tel:${store.phone}`} className="hover:text-amber-400 transition-colors">
+                                                <div className="flex items-center gap-4 group/item">
+                                                    <Phone className="w-4 h-4 text-amber-500 group-hover/item:scale-110 transition-transform" />
+                                                    <a href={`tel:${store.phone}`} className="text-white/60 hover:text-white transition-colors font-light">
                                                         {store.phone}
                                                     </a>
                                                 </div>
                                             )}
 
                                             {store.email && (
-                                                <div className="flex items-center gap-3">
-                                                    <Mail className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                                                    <a href={`mailto:${store.email}`} className="hover:text-amber-400 transition-colors">
+                                                <div className="flex items-center gap-4 group/item">
+                                                    <Mail className="w-4 h-4 text-amber-500 group-hover/item:scale-110 transition-transform" />
+                                                    <a href={`mailto:${store.email}`} className="text-white/60 hover:text-white transition-colors font-light">
                                                         {store.email}
                                                     </a>
                                                 </div>
                                             )}
 
                                             {store.hours && (
-                                                <div className="flex items-start gap-3">
-                                                    <Clock className="w-4 h-4 mt-1 text-amber-500 flex-shrink-0" />
-                                                    <span>{store.hours}</span>
+                                                <div className="flex items-start gap-4 group/item">
+                                                    <Clock className="w-4 h-4 mt-1 text-amber-500 group-hover/item:scale-110 transition-transform" />
+                                                    <span className="text-white/60 font-light italic">{store.hours}</span>
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* Get Directions */}
+                                        {/* Get Directions Button */}
                                         {store.lat && store.lng && (
                                             <a
                                                 href={`https://maps.google.com/?q=${store.lat},${store.lng}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-amber-500 text-neutral-950 text-sm font-medium hover:bg-amber-400 transition-colors"
+                                                className="inline-flex items-center justify-center gap-3 mt-10 w-full py-4 border border-neutral-800 text-[10px] uppercase tracking-[0.3em] font-bold text-white hover:bg-white hover:text-neutral-950 hover:border-white transition-all duration-500"
                                             >
-                                                <Navigation className="w-4 h-4" />
-                                                Get Directions
+                                                <Navigation className="w-3.5 h-3.5" />
+                                                Locate Boutique
                                             </a>
                                         )}
                                     </div>
@@ -105,17 +120,25 @@ export default async function StoresPage() {
                     )}
 
                     {/* Book Appointment CTA */}
-                    <div className="mt-16 text-center p-8 bg-neutral-900 border border-neutral-800">
-                        <h3 className="font-serif text-2xl font-medium mb-3">Book a Personal Appointment</h3>
-                        <p className="text-white/60 mb-6 max-w-xl mx-auto">
-                            Get one-on-one attention from our jewelry experts. We'll help you find or create your perfect piece.
-                        </p>
-                        <a
-                            href="mailto:appointments@aurerxa.com?subject=Store Appointment Request"
-                            className="inline-block px-8 py-3 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-medium uppercase tracking-widest text-sm transition-colors"
-                        >
-                            Request Appointment
-                        </a>
+                    <div className="mt-32 relative group border border-neutral-800 p-[1px]">
+                        <div className="bg-neutral-900 px-8 py-16 md:py-24 text-center overflow-hidden relative">
+                            {/* Subtle Background Elements */}
+                            <div className="absolute top-0 left-0 w-20 h-20 border-t border-l border-amber-500/20" />
+                            <div className="absolute bottom-0 right-0 w-20 h-20 border-b border-r border-amber-500/20" />
+
+                            <h3 className="font-serif text-3xl md:text-5xl font-bold mb-6 text-white relative z-10">
+                                Royal <span className="text-amber-500 italic">Consultation</span>
+                            </h3>
+                            <p className="text-white/40 mb-10 max-w-xl mx-auto font-light leading-relaxed relative z-10">
+                                Arrange a private one-on-one session with our master jewelry consultants to discover or create your next heirloom.
+                            </p>
+                            <a
+                                href="mailto:appointments@aurerxa.com?subject=Boutique Appointment Request"
+                                className="inline-block px-12 py-4 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-[0.3em] text-[10px] transition-all duration-500 relative z-10 shadow-2xl"
+                            >
+                                Request Private Session
+                            </a>
+                        </div>
                     </div>
                 </div>
             </main>

@@ -4,9 +4,9 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { addToCart, getFilteredProducts, getCategories } from '@/app/actions'
-import { useState, Suspense, useEffect } from 'react'
+import { useState, Suspense, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Loader2, SlidersHorizontal, X, ChevronDown, Eye } from 'lucide-react'
+import { Loader2, SlidersHorizontal, X, ChevronDown, Eye, Check } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -35,6 +35,73 @@ const sortOptions = [
   { label: 'Price: High to Low', value: 'price_desc' },
 ]
 
+// Premium Dropdown Component
+function FilterDropdown({
+  label,
+  value,
+  options,
+  onChange,
+  placeholder
+}: {
+  label: string,
+  value: any,
+  options: { label: string, value: any }[],
+  onChange: (val: any) => void,
+  placeholder?: string
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const selectedOption = options.find(opt => opt.value === value) || options[0]
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex items-center justify-between gap-4 px-5 py-2.5 bg-neutral-900/50 border transition-all duration-300 min-w-[180px] group ${isOpen ? 'border-amber-500 bg-neutral-900' : 'border-neutral-800 hover:border-neutral-700'
+          }`}
+      >
+        <div className="flex flex-col items-start">
+          <span className="text-[10px] text-white/40 uppercase tracking-widest leading-none mb-1">{label}</span>
+          <span className="text-sm font-medium text-white group-hover:text-amber-400 transition-colors">
+            {selectedOption.label}
+          </span>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-300 ${isOpen ? 'rotate-180 text-amber-500' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-full min-w-[220px] bg-neutral-900 border border-neutral-800 shadow-2xl py-2 animate-in fade-in slide-in-from-top-2 duration-300">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => {
+                onChange(opt.value)
+                setIsOpen(false)
+              }}
+              className={`w-full flex items-center justify-between px-5 py-3 text-sm transition-all hover:bg-neutral-800 ${value === opt.value ? 'text-amber-500 bg-neutral-800/50' : 'text-white/70 hover:text-white'
+                }`}
+            >
+              <span>{opt.label}</span>
+              {value === opt.value && <Check className="w-4 h-4" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function CollectionsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -53,7 +120,10 @@ function CollectionsContent() {
   const [showFilters, setShowFilters] = useState(false)
 
   useEffect(() => {
-    getCategories().then(setCategories)
+    getCategories().then(data => {
+      const formatted = data.map((c: any) => ({ label: c.name, value: c.slug }))
+      setCategories(formatted)
+    })
   }, [])
 
   useEffect(() => {
@@ -76,7 +146,7 @@ function CollectionsContent() {
     setLoadingId(id)
     try {
       const result = await addToCart(id, name)
-      setMessage(result.message)
+      setMessage(result.message || 'Product added to cart')
       setTimeout(() => setMessage(null), 3000)
     } finally {
       setLoadingId(null)
@@ -101,206 +171,222 @@ function CollectionsContent() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-neutral-950 to-neutral-900">
-        <div className="max-w-7xl mx-auto text-center">
-          <p className="text-amber-400 text-sm tracking-[0.3em] uppercase mb-4 font-light">
-            Discover
+      <section className="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-neutral-950 to-neutral-900 overflow-hidden relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+        <div className="max-w-7xl mx-auto text-center relative z-10">
+          <p className="text-amber-500 text-xs tracking-[0.4em] uppercase mb-4 font-medium animate-in fade-in slide-in-from-bottom-4 duration-700">
+            Heritage & Craft
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold text-white mb-4 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold text-white mb-6 tracking-tight animate-in fade-in slide-in-from-bottom-6 duration-700">
             {categoryTitle}
           </h1>
-          <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-4" />
-          <p className="text-white/50 max-w-xl mx-auto font-light">
-            {products.length} products
+          <div className="w-20 h-px mx-auto bg-gradient-to-r from-transparent via-amber-500 to-transparent mb-6" />
+          <p className="text-white/40 max-w-xl mx-auto font-light text-sm md:text-base animate-in fade-in slide-in-from-bottom-8 duration-700">
+            Displaying {products.length} exclusive pieces from our master craftsmen
           </p>
         </div>
       </section>
 
-      {/* Filters Bar */}
-      <section className="sticky top-[40px] md:top-[80px] z-40 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            {/* Filter Toggle (Mobile) */}
+      {/* Premium Filters Bar */}
+      <section className="sticky top-[40px] md:top-[80px] z-40 bg-neutral-950/80 backdrop-blur-xl border-y border-neutral-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 md:gap-8">
+
+            {/* Left: Filter Toggle (Mobile) */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 border border-neutral-700 text-sm hover:border-amber-500 transition-colors md:hidden"
+              className="flex items-center gap-3 px-5 py-2.5 bg-neutral-900 border border-neutral-800 text-sm font-medium text-white hover:border-amber-500 transition-all md:hidden"
             >
-              <SlidersHorizontal className="w-4 h-4" />
-              Filters
+              <SlidersHorizontal className="w-4 h-4 text-amber-500" />
+              Filter By
               {activeFiltersCount > 0 && (
-                <span className="w-5 h-5 bg-amber-500 text-neutral-950 text-xs rounded-full flex items-center justify-center">
+                <span className="w-5 h-5 bg-amber-500 text-neutral-950 text-[10px] font-bold rounded-full flex items-center justify-center">
                   {activeFiltersCount}
                 </span>
               )}
             </button>
 
-            {/* Desktop Filters */}
-            <div className="hidden md:flex items-center gap-4">
-              {/* Category */}
-              <div className="relative">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="appearance-none bg-neutral-900 border border-neutral-700 px-4 py-2 pr-10 text-sm focus:outline-none focus:border-amber-500 cursor-pointer"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map((cat) => (
-                    <option key={cat.slug} value={cat.slug}>{cat.name}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
-              </div>
+            {/* Middle: Desktop Filters with Premium Dropdowns */}
+            <div className="hidden md:flex items-center gap-6">
+              <FilterDropdown
+                label="Category"
+                value={selectedCategory}
+                options={[{ label: 'All Categories', value: '' }, ...categories]}
+                onChange={setSelectedCategory}
+              />
 
-              {/* Price Range */}
-              <div className="relative">
-                <select
-                  value={selectedPriceRange}
-                  onChange={(e) => setSelectedPriceRange(Number(e.target.value))}
-                  className="appearance-none bg-neutral-900 border border-neutral-700 px-4 py-2 pr-10 text-sm focus:outline-none focus:border-amber-500 cursor-pointer"
-                >
-                  {priceRanges.map((range, i) => (
-                    <option key={i} value={i}>{range.label}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
-              </div>
+              <FilterDropdown
+                label="Price Range"
+                value={selectedPriceRange}
+                options={priceRanges.map((r, i) => ({ label: r.label, value: i }))}
+                onChange={setSelectedPriceRange}
+              />
 
               {activeFiltersCount > 0 && (
-                <button onClick={clearFilters} className="text-amber-500 text-sm hover:text-amber-400 flex items-center gap-1">
-                  <X className="w-4 h-4" /> Clear
+                <button
+                  onClick={clearFilters}
+                  className="group flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-widest text-white/50 hover:text-red-400 transition-all ml-2"
+                >
+                  <div className="p-1 rounded-full border border-neutral-800 group-hover:border-red-400/30 transition-all">
+                    <X className="w-3 h-3" />
+                  </div>
+                  Reset Filters
                 </button>
               )}
             </div>
 
-            {/* Sort */}
-            <div className="relative">
-              <select
+            {/* Right: Sort Dropdown */}
+            <div className="w-full md:w-auto ml-auto">
+              <FilterDropdown
+                label="Sort By"
                 value={selectedSort}
-                onChange={(e) => setSelectedSort(e.target.value)}
-                className="appearance-none bg-neutral-900 border border-neutral-700 px-4 py-2 pr-10 text-sm focus:outline-none focus:border-amber-500 cursor-pointer"
-              >
-                {sortOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
+                options={sortOptions}
+                onChange={setSelectedSort}
+              />
             </div>
           </div>
 
-          {/* Mobile Filters Panel */}
+          {/* Mobile Filters Panel (Accordion style) */}
           {showFilters && (
-            <div className="mt-4 pt-4 border-t border-neutral-800 md:hidden space-y-4">
-              <div>
-                <label className="text-xs text-white/50 uppercase tracking-wider mb-2 block">Category</label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full appearance-none bg-neutral-900 border border-neutral-700 px-4 py-2 text-sm focus:outline-none focus:border-amber-500"
-                >
-                  <option value="">All Categories</option>
-                  {categories.map((cat) => (
-                    <option key={cat.slug} value={cat.slug}>{cat.name}</option>
-                  ))}
-                </select>
+            <div className="mt-4 pt-4 border-t border-neutral-800 md:hidden space-y-6 animate-in slide-in-from-top-4 duration-300">
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] text-white/30 uppercase tracking-[0.2em] px-1">Category</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[{ label: 'All', value: '' }, ...categories].map((cat) => (
+                      <button
+                        key={cat.value}
+                        onClick={() => setSelectedCategory(cat.value)}
+                        className={`px-4 py-3 text-sm text-left border transition-all ${selectedCategory === cat.value
+                          ? 'border-amber-500 bg-amber-500/5 text-amber-400'
+                          : 'border-neutral-800 bg-neutral-900/50 text-white/60'
+                          }`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] text-white/30 uppercase tracking-[0.2em] px-1">Price Range</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {priceRanges.map((range, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setSelectedPriceRange(i)}
+                        className={`px-4 py-3 text-sm text-left border transition-all ${selectedPriceRange === i
+                          ? 'border-amber-500 bg-amber-500/5 text-amber-400'
+                          : 'border-neutral-800 bg-neutral-900/50 text-white/60'
+                          }`}
+                      >
+                        {range.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {activeFiltersCount > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={clearFilters}
+                    className="w-full py-4 border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-none h-14 uppercase tracking-[0.2em] text-xs"
+                  >
+                    Clear All Filters
+                  </Button>
+                )}
               </div>
-              <div>
-                <label className="text-xs text-white/50 uppercase tracking-wider mb-2 block">Price Range</label>
-                <select
-                  value={selectedPriceRange}
-                  onChange={(e) => setSelectedPriceRange(Number(e.target.value))}
-                  className="w-full appearance-none bg-neutral-900 border border-neutral-700 px-4 py-2 text-sm focus:outline-none focus:border-amber-500"
-                >
-                  {priceRanges.map((range, i) => (
-                    <option key={i} value={i}>{range.label}</option>
-                  ))}
-                </select>
-              </div>
-              {activeFiltersCount > 0 && (
-                <button onClick={clearFilters} className="w-full py-2 border border-amber-500 text-amber-500 text-sm hover:bg-amber-500/10">
-                  Clear All Filters
-                </button>
-              )}
             </div>
           )}
         </div>
       </section>
 
       {/* Products Grid */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
+      <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           {loading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+            <div className="flex flex-col items-center justify-center py-32 space-y-4">
+              <div className="relative w-12 h-12">
+                <div className="absolute inset-0 border-2 border-amber-500/20 rounded-full" />
+                <div className="absolute inset-0 border-2 border-transparent border-t-amber-500 rounded-full animate-spin" />
+              </div>
+              <p className="text-amber-500/50 text-xs uppercase tracking-[0.3em] font-light">Loading Collection</p>
             </div>
           ) : products.length === 0 ? (
-            <div className="text-center text-white/50 py-20">
-              <p>No products found matching your filters.</p>
-              <button onClick={clearFilters} className="mt-4 text-amber-500 hover:text-amber-400">
-                Clear filters
+            <div className="text-center py-32 animate-in fade-in duration-700">
+              <div className="mb-6 inline-flex p-6 rounded-full bg-neutral-900 border border-neutral-800">
+                <SlidersHorizontal className="w-10 h-10 text-white/20" />
+              </div>
+              <h3 className="text-xl font-serif text-white mb-2">No masterpieces found</h3>
+              <p className="text-white/40 mb-8 max-w-sm mx-auto">Try adjusting your filters or search criteria to explore other parts of our heritage collection.</p>
+              <button
+                onClick={clearFilters}
+                className="text-amber-500 hover:text-amber-400 border-b border-amber-500/30 pb-1 text-sm tracking-widest uppercase transition-all"
+              >
+                Reset All Filters
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10">
               {products.map((product) => (
                 <div
                   key={product.id}
-                  className="group bg-neutral-900 border border-neutral-800 hover:border-amber-500/30 transition-all duration-500"
+                  className="group animate-in fade-in slide-in-from-bottom-6 duration-700"
                 >
-                  <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden">
-                    <Image
-                      src={product.image_url}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 to-transparent" />
+                  <div className="relative aspect-[4/5] overflow-hidden bg-neutral-900">
+                    <Link href={`/products/${product.id}`} className="block h-full">
+                      <Image
+                        src={product.image_url}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors duration-500" />
+
+                      {/* Floating Info Overlay */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                        <div className="w-full bg-neutral-950/80 backdrop-blur-md p-4 border border-amber-500/20 text-center">
+                          <p className="text-[10px] text-amber-500 uppercase tracking-widest mb-1">View Piece</p>
+                          <p className="text-xs text-white uppercase tracking-widest font-light">AURERXA Heritage</p>
+                        </div>
+                      </div>
+                    </Link>
 
                     {product.stock > 0 && product.stock <= 5 && (
-                      <div className="absolute top-2 right-2 bg-red-900/80 text-white text-[10px] px-2 py-1 uppercase tracking-wider">
-                        Only {product.stock} Left
+                      <div className="absolute top-4 right-4 bg-red-600 text-white text-[9px] font-bold px-2 py-1 uppercase tracking-widest">
+                        Rare Acquisition
                       </div>
                     )}
+                  </div>
 
-                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-8 h-8 bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center">
-                        <Eye className="w-4 h-4 text-white" />
-                      </div>
-                    </div>
-                  </Link>
-
-                  <div className="p-4">
+                  <div className="mt-6 text-center">
                     <Link href={`/products/${product.id}`}>
-                      <h3 className="text-sm md:text-base font-serif font-medium mb-1 text-white line-clamp-1 hover:text-amber-400 transition-colors">
+                      <h3 className="text-base font-serif text-white hover:text-amber-400 transition-colors duration-300">
                         {product.name}
                       </h3>
                     </Link>
 
-                    {product.categories?.name && (
-                      <p className="text-xs text-white/40 mb-2">{product.categories.name}</p>
-                    )}
-
-                    <div className="flex justify-between items-center">
-                      <span className="text-base md:text-lg font-serif font-bold text-amber-400">
+                    <div className="flex items-center justify-center gap-4 mt-2 mb-4">
+                      <div className="w-4 h-px bg-neutral-800" />
+                      <span className="text-amber-500 font-serif text-lg">
                         ₹{product.price.toLocaleString('en-IN')}
                       </span>
+                      <div className="w-4 h-px bg-neutral-800" />
                     </div>
 
                     <Button
                       onClick={() => handleAddToCart(product.id, product.name)}
                       disabled={loadingId !== null || product.stock === 0}
-                      className={`w-full mt-3 font-medium uppercase tracking-wider h-9 text-xs transition-all duration-300 ${product.stock === 0
-                          ? 'bg-neutral-800 text-white/30 cursor-not-allowed'
-                          : 'bg-amber-500 hover:bg-amber-400 text-neutral-950'
+                      className={`w-full font-medium uppercase tracking-[0.2em] h-12 text-[10px] transition-all duration-500 rounded-none border ${product.stock === 0
+                        ? 'bg-transparent border-neutral-800 text-white/20'
+                        : 'bg-transparent border-neutral-800 text-white hover:bg-white hover:text-neutral-950 hover:border-white'
                         }`}
                     >
                       {product.stock === 0 ? 'Out of Stock' : (
                         loadingId === product.id ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Adding...
-                          </>
-                        ) : 'Add to Cart'
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : 'Reserve Piece'
                       )}
                     </Button>
                   </div>
@@ -310,8 +396,10 @@ function CollectionsContent() {
           )}
 
           {message && (
-            <div className="mt-8 p-4 bg-amber-500/10 border border-amber-500/30 text-center text-sm text-white fixed bottom-4 left-4 right-4 z-50 max-w-md mx-auto">
-              {message}
+            <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 duration-500">
+              <div className="bg-amber-500 text-neutral-950 px-8 py-4 font-bold uppercase tracking-[0.2em] text-xs shadow-2xl">
+                {message}
+              </div>
             </div>
           )}
         </div>
