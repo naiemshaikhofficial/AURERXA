@@ -12,7 +12,7 @@ export function Footer() {
               <img
                 src="/logo.png"
                 alt="AURERXA"
-                className="h-10 w-auto object-contain brightness-110 group-hover:scale-105 transition-transform duration-700"
+                className="h-12 w-auto object-contain brightness-110 group-hover:scale-105 transition-transform duration-700"
               />
             </Link>
             <p className="text-xs text-white/30 font-light leading-loose tracking-widest italic">
@@ -22,7 +22,7 @@ export function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-10">
-            <h4 className="text-[10px] font-premium-sans tracking-[0.4em] text-amber-500 uppercase">Collections</h4>
+            <h4 className="text-[10px] font-premium-sans text-amber-500 uppercase">Collections</h4>
             <ul className="space-y-4">
               <li>
                 <Link href="/collections" className="text-xs text-white/40 hover:text-white transition-colors tracking-widest">Bridal Legacy</Link>
@@ -37,7 +37,7 @@ export function Footer() {
           </div>
 
           <div className="space-y-10">
-            <h4 className="text-[10px] font-premium-sans tracking-[0.4em] text-amber-500 uppercase">Discover</h4>
+            <h4 className="text-[10px] font-premium-sans text-amber-500 uppercase">Discover</h4>
             <ul className="space-y-4">
               <li>
                 <Link href="/about" className="text-xs text-white/40 hover:text-white transition-colors tracking-widest">Our Story</Link>
@@ -53,7 +53,7 @@ export function Footer() {
 
           {/* Contact */}
           <div className="space-y-10">
-            <h4 className="text-[10px] font-premium-sans tracking-[0.4em] text-amber-500 uppercase">Visit Us</h4>
+            <h4 className="text-[10px] font-premium-sans text-amber-500 uppercase">Visit Us</h4>
             <div className="space-y-6">
               <div className="flex items-start gap-4 group cursor-pointer">
                 <MapPin size={14} className="text-amber-500/40 mt-1" />
@@ -77,12 +77,10 @@ export function Footer() {
 
         {/* Bottom copyright section */}
         <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
-          <p className="text-[9px] font-premium-sans text-white/10 tracking-[0.3em] uppercase italic">
-            © {new Date().getFullYear()} AURERXA. All Rights Reserved.
-          </p>
+          © {new Date().getFullYear()} AURERXA. All Rights Reserved.
           <div className="flex gap-12">
-            <Link href="/privacy" className="text-[9px] font-premium-sans text-white/10 hover:text-white transition-colors tracking-[0.2em] uppercase">Privacy</Link>
-            <Link href="/terms" className="text-[9px] font-premium-sans text-white/10 hover:text-white transition-colors tracking-[0.2em] uppercase">Terms</Link>
+            <Link href="/privacy" className="text-[9px] font-premium-sans text-white/10 hover:text-white transition-colors uppercase">Privacy</Link>
+            <Link href="/terms" className="text-[9px] font-premium-sans text-white/10 hover:text-white transition-colors uppercase">Terms</Link>
           </div>
         </div>
       </div>
