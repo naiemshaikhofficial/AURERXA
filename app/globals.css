@@ -1,0 +1,113 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gold-glow {
+    box-shadow: 0 0 20px rgba(211, 148, 114, 0.4);
+    /* Metallic Rose Gold Glow */
+  }
+
+  .gold-glow-lg {
+    box-shadow: 0 0 30px rgba(211, 148, 114, 0.5);
+    /* Metallic Rose Gold Glow */
+  }
+
+  .font-serif {
+    font-family: 'Playfair Display', serif;
+  }
+
+  /* Premium Metallic Gradients */
+  .text-gradient-gold {
+    background: linear-gradient(135deg,
+        hsl(20 60% 65%) 0%,
+        hsl(20 50% 80%) 25%,
+        hsl(20 60% 65%) 50%,
+        hsl(20 60% 55%) 75%,
+        hsl(20 60% 65%) 100%);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 8s linear infinite;
+  }
+
+  .bg-gradient-gold {
+    background: linear-gradient(135deg,
+        hsl(20 60% 65%) 0%,
+        hsl(20 50% 80%) 50%,
+        hsl(20 60% 65%) 100%);
+  }
+
+  @keyframes shine {
+    to {
+      background-position: 200% center;
+    }
+  }
+
+  /* Luxury Selection */
+  ::selection {
+    background: hsl(20 60% 65% / 0.3);
+    color: inherit;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 11 10% 10%;
+    /* Softer dark text */
+    --card: 0 0% 100%;
+    --card-foreground: 11 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 11 10% 10%;
+    --primary: 20 60% 65%;
+    --primary-foreground: 0 0% 0%;
+    /* Pure Black for Max Contrast */
+    --secondary: 0 0% 85%;
+    --secondary-foreground: 11 10% 10%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 20 60% 65%;
+    --accent-foreground: 0 0% 0%;
+    /* Pure Black for Max Contrast */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 85%;
+    --input: 0 0% 92%;
+    --ring: 20 60% 65%;
+    --chart-1: 20 60% 65%;
+    --chart-2: 0 0% 70%;
+    --chart-3: 0 0% 92%;
+    --chart-4: 20 40% 50%;
+    --chart-5: 11 50% 20%;
+    --radius: 0.25rem;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 11 10% 10%;
+    --sidebar-primary: 20 60% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 11 10% 10%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 20 60% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
