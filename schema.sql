@@ -184,3 +184,101 @@ insert into categories (slug, name, description, image_url) values
   ('diamond', 'Diamond', 'Exquisite diamond masterpieces', '/pexels-abhishek-saini-1415858-3847212.jpg'),
   ('platinum', 'Platinum', 'The rarest metal for unique moments', '/platinum-ring.jpg')
 on conflict (slug) do update set image_url = excluded.image_url;
+
+-- ============================================
+-- COUPONS TABLE
+-- ============================================
+create table if not exists coupons (
+  id uuid default gen_random_uuid() primary key,
+  code text not null unique,
+  discount_type text not null default 'percentage', -- percentage, fixed
+  discount_value decimal(10, 2) not null,
+  min_order_value decimal(10, 2) default 0,
+  max_discount decimal(10, 2), -- cap for percentage discounts
+  valid_from timestamp with time zone default now(),
+  valid_until timestamp with time zone,
+  usage_limit integer,
+  used_count integer default 0,
+  is_active boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table coupons enable row level security;
+create policy "Allow public read active coupons" on coupons for select using (is_active = true);
+
+-- Add coupon fields to orders
+alter table orders add column if not exists coupon_code text;
+alter table orders add column if not exists coupon_discount decimal(10, 2) default 0;
+alter table orders add column if not exists gift_wrap boolean default false;
+alter table orders add column if not exists gift_message text;
+
+-- ============================================
+-- BLOG POSTS TABLE
+-- ============================================
+create table if not exists blog_posts (
+  id uuid default gen_random_uuid() primary key,
+  slug text not null unique,
+  title text not null,
+  excerpt text,
+  content text not null,
+  cover_image text,
+  category text default 'Guide', -- Guide, Care Tips, Trends, News
+  tags text[] default '{}',
+  author text default 'AURERXA',
+  is_published boolean default true,
+  published_at timestamp with time zone default now(),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table blog_posts enable row level security;
+create policy "Allow public read published posts" on blog_posts for select using (is_published = true);
+
+-- ============================================
+-- STORES TABLE
+-- ============================================
+create table if not exists stores (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  city text not null,
+  address text not null,
+  phone text,
+  email text,
+  hours text, -- e.g., "Mon-Sat: 10AM-8PM, Sun: 11AM-6PM"
+  lat decimal(10, 8),
+  lng decimal(11, 8),
+  image_url text,
+  is_active boolean default true,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table stores enable row level security;
+create policy "Allow public read active stores" on stores for select using (is_active = true);
+
+-- ============================================
+-- SEED DATA: Sample Coupons
+-- ============================================
+insert into coupons (code, discount_type, discount_value, min_order_value, max_discount, is_active) values
+  ('WELCOME10', 'percentage', 10, 5000, 2000, true),
+  ('FLAT500', 'fixed', 500, 10000, null, true),
+  ('LUXURY20', 'percentage', 20, 50000, 10000, true)
+on conflict (code) do nothing;
+
+-- ============================================
+-- SEED DATA: Sample Blog Posts
+-- ============================================
+insert into blog_posts (slug, title, excerpt, content, cover_image, category, tags) values
+  ('how-to-care-for-gold-jewelry', 'How to Care for Your Gold Jewelry', 'Essential tips to keep your gold jewelry shining for generations.', 'Gold jewelry is a timeless investment that can last for generations if properly cared for. Here are some essential tips:\n\n## 1. Regular Cleaning\nClean your gold jewelry with a mixture of mild soap and warm water. Use a soft brush to gently remove dirt and oils.\n\n## 2. Proper Storage\nStore each piece separately in a soft cloth or jewelry box to prevent scratches.\n\n## 3. Avoid Chemicals\nRemove jewelry before swimming, cleaning, or applying lotions and perfumes.\n\n## 4. Professional Cleaning\nGet your fine jewelry professionally cleaned every 6 months.', '/blog/gold-care.jpg', 'Care Tips', ARRAY['gold', 'jewelry care', 'tips']),
+  ('choosing-the-perfect-engagement-ring', 'Choosing the Perfect Engagement Ring', 'A comprehensive guide to finding the ring of her dreams.', 'An engagement ring is one of the most significant purchases you will ever make. Here is how to choose wisely:\n\n## Understanding the 4Cs\nCut, Clarity, Color, and Carat - learn what each means for your diamond.\n\n## Setting Styles\nFrom solitaire to halo, explore different setting options.\n\n## Metal Options\nPlatinum, white gold, yellow gold, or rose gold - each has its charm.\n\n## Budget Planning\nHow to get the best value without compromising quality.', '/blog/engagement-ring.jpg', 'Guide', ARRAY['engagement', 'diamond', 'ring', 'guide']),
+  ('jewelry-trends-2026', 'Jewelry Trends to Watch in 2026', 'Discover the hottest jewelry trends setting the fashion world ablaze.', 'Stay ahead of the curve with these trending jewelry styles:\n\n## Bold Gold\nChunky gold chains and statement pieces are making a comeback.\n\n## Layering\nMix and match necklaces, bracelets, and rings for a personalized look.\n\n## Colored Gemstones\nMove over diamonds - sapphires, emeralds, and rubies are in demand.\n\n## Sustainable Luxury\nEthically sourced and recycled metals are becoming the norm.', '/blog/trends-2026.jpg', 'Trends', ARRAY['trends', 'fashion', '2026'])
+on conflict (slug) do nothing;
+
+-- ============================================
+-- SEED DATA: Sample Stores
+-- ============================================
+insert into stores (name, city, address, phone, email, hours, lat, lng, image_url) values
+  ('AURERXA Mumbai Flagship', 'Mumbai', 'Shop No. 15, Linking Road, Bandra West, Mumbai 400050', '+91 22 2640 5555', 'mumbai@aurerxa.com', 'Mon-Sat: 11AM-9PM, Sun: 12PM-8PM', 19.0596, 72.8295, '/stores/mumbai.jpg'),
+  ('AURERXA Delhi', 'Delhi', 'DLF Emporio, Vasant Kunj, New Delhi 110070', '+91 11 4605 5555', 'delhi@aurerxa.com', 'Mon-Sun: 11AM-8PM', 28.5490, 77.1583, '/stores/delhi.jpg'),
+  ('AURERXA Bangalore', 'Bangalore', 'UB City, Vittal Mallya Road, Bangalore 560001', '+91 80 4125 5555', 'bangalore@aurerxa.com', 'Mon-Sun: 10AM-9PM', 12.9716, 77.5946, '/stores/bangalore.jpg')
+on conflict do nothing;
+

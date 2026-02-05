@@ -647,3 +647,213 @@ export async function submitContact(formData: any) {
     return { success: false, error: 'Failed to send message.' }
   }
 }
+
+// ============================================
+// SEARCH
+// ============================================
+
+export async function searchProducts(query: string) {
+  try {
+    if (!query || query.length < 2) return []
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('id, name, price, image_url, categories:category_id(name)')
+      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+      .limit(10)
+
+    if (error) throw error
+    return data || []
+  } catch (err) {
+    console.error('Search error:', err)
+    return []
+  }
+}
+
+// ============================================
+// COUPONS
+// ============================================
+
+export async function validateCoupon(code: string, orderTotal: number) {
+  try {
+    if (!code) return { valid: false, error: 'Please enter a coupon code' }
+
+    const { data, error } = await supabase
+      .from('coupons')
+      .select('*')
+      .eq('code', code.toUpperCase())
+      .eq('is_active', true)
+      .single()
+
+    if (error || !data) {
+      return { valid: false, error: 'Invalid coupon code' }
+    }
+
+    // Check validity dates
+    const now = new Date()
+    if (data.valid_from && new Date(data.valid_from) > now) {
+      return { valid: false, error: 'Coupon is not yet active' }
+    }
+    if (data.valid_until && new Date(data.valid_until) < now) {
+      return { valid: false, error: 'Coupon has expired' }
+    }
+
+    // Check usage limit
+    if (data.usage_limit && data.used_count >= data.usage_limit) {
+      return { valid: false, error: 'Coupon usage limit reached' }
+    }
+
+    // Check minimum order value
+    if (data.min_order_value && orderTotal < data.min_order_value) {
+      return { valid: false, error: `Minimum order value is ₹${data.min_order_value}` }
+    }
+
+    // Calculate discount
+    let discount = 0
+    if (data.discount_type === 'percentage') {
+      discount = (orderTotal * data.discount_value) / 100
+      if (data.max_discount && discount > data.max_discount) {
+        discount = data.max_discount
+      }
+    } else {
+      discount = data.discount_value
+    }
+
+    return {
+      valid: true,
+      discount,
+      coupon: data,
+      message: `₹${discount.toLocaleString('en-IN')} discount applied!`
+    }
+  } catch (err) {
+    console.error('Coupon validation error:', err)
+    return { valid: false, error: 'Failed to validate coupon' }
+  }
+}
+
+// ============================================
+// BLOG
+// ============================================
+
+export async function getBlogPosts(category?: string) {
+  try {
+    let query = supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('is_published', true)
+      .order('published_at', { ascending: false })
+
+    if (category) {
+      query = query.eq('category', category)
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+    return data || []
+  } catch (err) {
+    console.error('Blog fetch error:', err)
+    return []
+  }
+}
+
+export async function getBlogPost(slug: string) {
+  try {
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .single()
+
+    if (error) throw error
+    return data
+  } catch (err) {
+    console.error('Blog post fetch error:', err)
+    return null
+  }
+}
+
+// ============================================
+// STORES
+// ============================================
+
+export async function getStores() {
+  try {
+    const { data, error } = await supabase
+      .from('stores')
+      .select('*')
+      .eq('is_active', true)
+      .order('city')
+
+    if (error) throw error
+    return data || []
+  } catch (err) {
+    console.error('Stores fetch error:', err)
+    return []
+  }
+}
+
+// ============================================
+// FILTERS (for collections page)
+// ============================================
+
+export async function getFilteredProducts(options: {
+  category?: string
+  minPrice?: number
+  maxPrice?: number
+  sortBy?: string
+  search?: string
+}) {
+  try {
+    let query = supabase
+      .from('products')
+      .select('*, categories:category_id(name, slug)')
+
+    // Category filter
+    if (options.category) {
+      const { data: cat } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', options.category)
+        .single()
+      if (cat) {
+        query = query.eq('category_id', cat.id)
+      }
+    }
+
+    // Price filters
+    if (options.minPrice) {
+      query = query.gte('price', options.minPrice)
+    }
+    if (options.maxPrice) {
+      query = query.lte('price', options.maxPrice)
+    }
+
+    // Search
+    if (options.search) {
+      query = query.or(`name.ilike.%${options.search}%,description.ilike.%${options.search}%`)
+    }
+
+    // Sorting
+    switch (options.sortBy) {
+      case 'price_asc':
+        query = query.order('price', { ascending: true })
+        break
+      case 'price_desc':
+        query = query.order('price', { ascending: false })
+        break
+      case 'newest':
+        query = query.order('created_at', { ascending: false })
+        break
+      default:
+        query = query.order('created_at', { ascending: false })
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+    return data || []
+  } catch (err) {
+    console.error('Filter products error:', err)
+    return []
+  }
+}

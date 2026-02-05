@@ -9,8 +9,8 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getCart, getAddresses, addAddress, createOrder } from '@/app/actions'
-import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight } from 'lucide-react'
+import { getCart, getAddresses, addAddress, createOrder, validateCoupon } from '@/app/actions'
+import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X } from 'lucide-react'
 
 export default function CheckoutPage() {
     const router = useRouter()
@@ -22,6 +22,17 @@ export default function CheckoutPage() {
     const [placing, setPlacing] = useState(false)
     const [showAddressForm, setShowAddressForm] = useState(false)
     const [error, setError] = useState<string | null>(null)
+
+    // Coupon state
+    const [couponCode, setCouponCode] = useState('')
+    const [couponApplied, setCouponApplied] = useState<any>(null)
+    const [couponLoading, setCouponLoading] = useState(false)
+    const [couponError, setCouponError] = useState<string | null>(null)
+
+    // Gift wrap state
+    const [giftWrap, setGiftWrap] = useState(false)
+    const [giftMessage, setGiftMessage] = useState('')
+    const GIFT_WRAP_PRICE = 199
 
     const [newAddress, setNewAddress] = useState({
         label: 'Home',
@@ -70,6 +81,35 @@ export default function CheckoutPage() {
         }
     }
 
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) return
+
+        setCouponLoading(true)
+        setCouponError(null)
+
+        const result = await validateCoupon(couponCode.toUpperCase(), subtotal)
+
+        if (result.valid) {
+            setCouponApplied({
+                code: couponCode.toUpperCase(),
+                discount: result.discount,
+                message: result.message
+            })
+            setCouponError(null)
+        } else {
+            setCouponError(result.error || 'Invalid coupon')
+            setCouponApplied(null)
+        }
+
+        setCouponLoading(false)
+    }
+
+    const removeCoupon = () => {
+        setCouponApplied(null)
+        setCouponCode('')
+        setCouponError(null)
+    }
+
     const handlePlaceOrder = async () => {
         if (!selectedAddress) {
             setError('Please select a delivery address')
@@ -91,7 +131,9 @@ export default function CheckoutPage() {
 
     const subtotal = cart.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0)
     const shipping = subtotal >= 50000 ? 0 : 500
-    const total = subtotal + shipping
+    const discount = couponApplied?.discount || 0
+    const giftWrapCost = giftWrap ? GIFT_WRAP_PRICE : 0
+    const total = subtotal + shipping + giftWrapCost - discount
 
     if (loading) {
         return (
@@ -134,7 +176,7 @@ export default function CheckoutPage() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left: Address & Payment */}
-                        <div className="lg:col-span-2 space-y-8">
+                        <div className="lg:col-span-2 space-y-6">
                             {/* Delivery Address */}
                             <div className="bg-neutral-900 border border-neutral-800 p-6">
                                 <div className="flex items-center justify-between mb-6">
@@ -238,8 +280,8 @@ export default function CheckoutPage() {
                                             <label
                                                 key={addr.id}
                                                 className={`block p-4 border cursor-pointer transition-all ${selectedAddress === addr.id
-                                                        ? 'border-amber-500 bg-amber-500/5'
-                                                        : 'border-neutral-700 hover:border-neutral-600'
+                                                    ? 'border-amber-500 bg-amber-500/5'
+                                                    : 'border-neutral-700 hover:border-neutral-600'
                                                     }`}
                                             >
                                                 <div className="flex items-start gap-3">
@@ -269,6 +311,44 @@ export default function CheckoutPage() {
                                 )}
                             </div>
 
+                            {/* Gift Wrapping */}
+                            <div className="bg-neutral-900 border border-neutral-800 p-6">
+                                <h2 className="font-serif text-lg font-medium mb-4 flex items-center gap-2">
+                                    <Gift className="w-5 h-5 text-amber-500" />
+                                    Gift Options
+                                </h2>
+
+                                <label className={`flex items-start gap-3 p-4 border cursor-pointer transition-all ${giftWrap ? 'border-amber-500 bg-amber-500/5' : 'border-neutral-700 hover:border-neutral-600'}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={giftWrap}
+                                        onChange={(e) => setGiftWrap(e.target.checked)}
+                                        className="mt-1 accent-amber-500"
+                                    />
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="font-medium">Add Premium Gift Wrapping</span>
+                                            <span className="text-amber-400 text-sm font-medium">+₹{GIFT_WRAP_PRICE}</span>
+                                        </div>
+                                        <p className="text-xs text-white/50 mt-1">Elegant packaging with ribbon and personalized message card</p>
+                                    </div>
+                                </label>
+
+                                {giftWrap && (
+                                    <div className="mt-4">
+                                        <Label className="text-white/70 text-xs">Gift Message (optional)</Label>
+                                        <textarea
+                                            value={giftMessage}
+                                            onChange={(e) => setGiftMessage(e.target.value)}
+                                            placeholder="Write a personal message..."
+                                            maxLength={200}
+                                            className="w-full mt-1 p-3 bg-neutral-950 border border-neutral-700 text-white text-sm resize-none h-20 focus:outline-none focus:border-amber-500"
+                                        />
+                                        <p className="text-xs text-white/40 text-right mt-1">{giftMessage.length}/200</p>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Payment Method */}
                             <div className="bg-neutral-900 border border-neutral-800 p-6">
                                 <h2 className="font-serif text-lg font-medium mb-6 flex items-center gap-2">
@@ -279,8 +359,8 @@ export default function CheckoutPage() {
                                 <div className="space-y-3">
                                     <label
                                         className={`block p-4 border cursor-pointer transition-all ${paymentMethod === 'cod'
-                                                ? 'border-amber-500 bg-amber-500/5'
-                                                : 'border-neutral-700 hover:border-neutral-600'
+                                            ? 'border-amber-500 bg-amber-500/5'
+                                            : 'border-neutral-700 hover:border-neutral-600'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
@@ -301,8 +381,8 @@ export default function CheckoutPage() {
 
                                     <label
                                         className={`block p-4 border cursor-pointer transition-all ${paymentMethod === 'online'
-                                                ? 'border-amber-500 bg-amber-500/5'
-                                                : 'border-neutral-700 hover:border-neutral-600'
+                                            ? 'border-amber-500 bg-amber-500/5'
+                                            : 'border-neutral-700 hover:border-neutral-600'
                                             }`}
                                     >
                                         <div className="flex items-center gap-3">
@@ -329,10 +409,10 @@ export default function CheckoutPage() {
                             <div className="bg-neutral-900 border border-neutral-800 p-6 sticky top-24">
                                 <h2 className="font-serif text-lg font-medium mb-6">Order Summary</h2>
 
-                                <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
+                                <div className="space-y-4 mb-6 max-h-48 overflow-y-auto">
                                     {cart.map((item) => (
                                         <div key={item.id} className="flex gap-3">
-                                            <div className="relative w-16 h-16 flex-shrink-0 bg-neutral-800">
+                                            <div className="relative w-14 h-14 flex-shrink-0 bg-neutral-800">
                                                 <Image
                                                     src={item.products?.image_url || '/placeholder.jpg'}
                                                     alt={item.products?.name || 'Product'}
@@ -349,6 +429,44 @@ export default function CheckoutPage() {
                                     ))}
                                 </div>
 
+                                {/* Coupon Code */}
+                                <div className="border-t border-neutral-800 pt-4 mb-4">
+                                    <label className="text-xs text-white/60 uppercase tracking-wider flex items-center gap-1 mb-2">
+                                        <Tag className="w-3 h-3" />
+                                        Coupon Code
+                                    </label>
+                                    {couponApplied ? (
+                                        <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/30">
+                                            <div>
+                                                <span className="text-green-400 font-medium">{couponApplied.code}</span>
+                                                <p className="text-xs text-green-400/70">{couponApplied.message}</p>
+                                            </div>
+                                            <button onClick={removeCoupon} className="text-white/50 hover:text-white">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex gap-2">
+                                            <Input
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                                                placeholder="Enter code"
+                                                className="bg-neutral-950 border-neutral-700 text-white h-10 uppercase"
+                                            />
+                                            <Button
+                                                onClick={handleApplyCoupon}
+                                                disabled={couponLoading || !couponCode.trim()}
+                                                className="bg-neutral-800 hover:bg-neutral-700 text-white h-10 px-4"
+                                            >
+                                                {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                                            </Button>
+                                        </div>
+                                    )}
+                                    {couponError && (
+                                        <p className="text-xs text-red-400 mt-2">{couponError}</p>
+                                    )}
+                                </div>
+
                                 <div className="border-t border-neutral-800 pt-4 space-y-2 text-sm">
                                     <div className="flex justify-between text-white/70">
                                         <span>Subtotal</span>
@@ -358,6 +476,18 @@ export default function CheckoutPage() {
                                         <span>Shipping</span>
                                         <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
                                     </div>
+                                    {giftWrap && (
+                                        <div className="flex justify-between text-white/70">
+                                            <span>Gift Wrapping</span>
+                                            <span>₹{giftWrapCost}</span>
+                                        </div>
+                                    )}
+                                    {discount > 0 && (
+                                        <div className="flex justify-between text-green-400">
+                                            <span>Discount</span>
+                                            <span>-₹{discount.toLocaleString('en-IN')}</span>
+                                        </div>
+                                    )}
                                     <div className="border-t border-neutral-800 pt-2 flex justify-between font-medium text-lg">
                                         <span>Total</span>
                                         <span className="text-amber-400">₹{total.toLocaleString('en-IN')}</span>

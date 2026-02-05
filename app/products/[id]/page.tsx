@@ -1,18 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { getProductById, getRelatedProducts, addToCart, addToWishlist, isInWishlist } from '@/app/actions'
-import { Heart, ShoppingBag, Minus, Plus, ChevronRight, Loader2, Check, Truck, Shield, RefreshCw } from 'lucide-react'
+import { addToRecentlyViewed } from '@/components/recently-viewed'
+import { Heart, ShoppingBag, Minus, Plus, ChevronRight, Loader2, Check, Truck, Shield, RefreshCw, ZoomIn, X } from 'lucide-react'
 
 export default function ProductPage() {
     const params = useParams()
-    const router = useRouter()
     const [product, setProduct] = useState<any>(null)
     const [related, setRelated] = useState<any[]>([])
     const [selectedSize, setSelectedSize] = useState<string>('')
@@ -21,6 +21,12 @@ export default function ProductPage() {
     const [addingToCart, setAddingToCart] = useState(false)
     const [inWishlist, setInWishlist] = useState(false)
     const [message, setMessage] = useState<string | null>(null)
+
+    // Image gallery state
+    const [selectedImage, setSelectedImage] = useState(0)
+    const [zoomed, setZoomed] = useState(false)
+    const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 })
+    const imageRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         async function loadProduct() {
@@ -33,6 +39,13 @@ export default function ProductPage() {
                     setRelated(relatedData)
                     const wishlistStatus = await isInWishlist(data.id)
                     setInWishlist(wishlistStatus)
+                    // Add to recently viewed
+                    addToRecentlyViewed({
+                        id: data.id,
+                        name: data.name,
+                        price: data.price,
+                        image_url: data.image_url
+                    })
                 }
                 setLoading(false)
             }
@@ -64,6 +77,17 @@ export default function ProductPage() {
         }
         setTimeout(() => setMessage(null), 3000)
     }
+
+    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!imageRef.current) return
+        const rect = imageRef.current.getBoundingClientRect()
+        const x = ((e.clientX - rect.left) / rect.width) * 100
+        const y = ((e.clientY - rect.top) / rect.height) * 100
+        setZoomPosition({ x, y })
+    }
+
+    // Get all images
+    const allImages = product ? [product.image_url, ...(product.images || [])] : []
 
     if (loading) {
         return (
@@ -102,23 +126,67 @@ export default function ProductPage() {
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-                        {/* Product Image */}
-                        <div className="relative aspect-square bg-neutral-900 overflow-hidden">
-                            <Image
-                                src={product.image_url}
-                                alt={product.name}
-                                fill
-                                className="object-cover"
-                                priority
-                            />
-                            {product.stock <= 5 && product.stock > 0 && (
-                                <div className="absolute top-4 left-4 bg-amber-500 text-neutral-950 px-3 py-1 text-xs font-bold uppercase">
-                                    Only {product.stock} Left
+                        {/* Image Gallery */}
+                        <div className="space-y-4">
+                            {/* Main Image */}
+                            <div
+                                ref={imageRef}
+                                className="relative aspect-square bg-neutral-900 overflow-hidden cursor-zoom-in group"
+                                onMouseMove={handleMouseMove}
+                                onMouseEnter={() => setZoomed(true)}
+                                onMouseLeave={() => setZoomed(false)}
+                                onClick={() => setZoomed(!zoomed)}
+                            >
+                                <Image
+                                    src={allImages[selectedImage] || product.image_url}
+                                    alt={product.name}
+                                    fill
+                                    className={`object-cover transition-transform duration-200 ${zoomed ? 'scale-150' : ''}`}
+                                    style={zoomed ? {
+                                        transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
+                                    } : {}}
+                                    priority
+                                />
+
+                                {/* Stock Badge */}
+                                {product.stock <= 5 && product.stock > 0 && (
+                                    <div className="absolute top-4 left-4 bg-amber-500 text-neutral-950 px-3 py-1 text-xs font-bold uppercase z-10">
+                                        Only {product.stock} Left
+                                    </div>
+                                )}
+                                {product.stock === 0 && (
+                                    <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 text-xs font-bold uppercase z-10">
+                                        Out of Stock
+                                    </div>
+                                )}
+
+                                {/* Zoom Hint */}
+                                <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-neutral-950/80 backdrop-blur-sm px-2 py-1 text-xs text-white/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <ZoomIn className="w-3 h-3" />
+                                    Hover to zoom
                                 </div>
-                            )}
-                            {product.stock === 0 && (
-                                <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 text-xs font-bold uppercase">
-                                    Out of Stock
+                            </div>
+
+                            {/* Thumbnails */}
+                            {allImages.length > 1 && (
+                                <div className="flex gap-2 overflow-x-auto pb-2">
+                                    {allImages.map((img, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setSelectedImage(i)}
+                                            className={`relative w-16 h-16 flex-shrink-0 border-2 transition-all ${selectedImage === i
+                                                    ? 'border-amber-500'
+                                                    : 'border-neutral-700 hover:border-neutral-500'
+                                                }`}
+                                        >
+                                            <Image
+                                                src={img}
+                                                alt={`${product.name} ${i + 1}`}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </button>
+                                    ))}
                                 </div>
                             )}
                         </div>
@@ -156,8 +224,8 @@ export default function ProductPage() {
                                                 key={size}
                                                 onClick={() => setSelectedSize(size)}
                                                 className={`w-12 h-12 border text-sm font-medium transition-all ${selectedSize === size
-                                                        ? 'border-amber-500 bg-amber-500/10 text-amber-500'
-                                                        : 'border-neutral-700 text-white/70 hover:border-amber-500/50'
+                                                    ? 'border-amber-500 bg-amber-500/10 text-amber-500'
+                                                    : 'border-neutral-700 text-white/70 hover:border-amber-500/50'
                                                     }`}
                                             >
                                                 {size}
