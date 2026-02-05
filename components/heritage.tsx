@@ -14,7 +14,7 @@ export function Heritage() {
     const yBg = useTransform(scrollYProgress, [0, 1], ['-10%', '10%'])
 
     return (
-        <section ref={ref} className="relative h-screen overflow-hidden flex items-center justify-center">
+        <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center">
             {/* Background Image with Parallax */}
             <motion.div style={{ y: yBg }} className="absolute inset-0 z-0">
                 <Image
