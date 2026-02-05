@@ -99,13 +99,7 @@ create table if not exists products (
 alter table products add column if not exists purity text;
 alter table products add column if not exists gender text default 'Unisex';
 alter table products add column if not exists weight_grams decimal(10, 2);
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
 
--- Ensure new columns exist
-alter table products add column if not exists purity text;
-alter table products add column if not exists gender text default 'Unisex';
-alter table products add column if not exists weight_grams decimal(10, 2);
 alter table products add column if not exists images text[] default '{}';
 alter table products add column if not exists slug text unique;
 

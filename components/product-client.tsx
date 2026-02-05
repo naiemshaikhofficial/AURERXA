@@ -40,7 +40,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                 id: product.id,
                 name: product.name,
                 price: product.price,
-                image_url: product.image_url
+                image_url: product.image_url,
+                slug: product.slug
             })
         }
     }, [product])

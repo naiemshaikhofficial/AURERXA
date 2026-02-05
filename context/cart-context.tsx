@@ -14,6 +14,7 @@ interface CartItem {
         name: string
         price: number
         image_url: string
+        slug: string
     }
 }
 

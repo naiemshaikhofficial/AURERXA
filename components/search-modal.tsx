@@ -86,7 +86,7 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                                     {results.map((product, idx) => (
                                         <Link
                                             key={product.id}
-                                            href={`/products/${product.id}`}
+                                            href={`/products/${product.slug}`}
                                             onClick={onClose}
                                             className="group flex gap-4 p-4 bg-neutral-900/50 border border-neutral-800 hover:border-amber-500/30 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
                                             style={{ animationDelay: `${idx * 50}ms` }}

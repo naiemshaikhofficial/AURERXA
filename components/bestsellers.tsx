@@ -16,6 +16,7 @@ interface Product {
   description: string
   price: number
   image_url: string
+  slug: string
   category?: { name: string }
   categories?: { name: string } // Handling potential join structure
   stock?: number
@@ -94,7 +95,7 @@ function ProductCard({ product }: {
     >
       {/* Image Container with Luxury Glow */}
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-900 mb-8 group/img">
-        <Link href={`/products/${product.id}`} className="absolute inset-0 z-10 w-full h-full">
+        <Link href={`/products/${product.slug}`} className="absolute inset-0 z-10 w-full h-full">
           <div className="absolute inset-0 z-0 h-[110%] -top-[5%] w-full">
             <motion.div style={{ y: yImage }} className="relative h-full w-full">
               <Image

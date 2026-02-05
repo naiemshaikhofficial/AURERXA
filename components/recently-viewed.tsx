@@ -13,6 +13,7 @@ interface Product {
     name: string
     price: number
     image_url: string
+    slug: string
 }
 
 // Helper to get from localStorage
@@ -83,7 +84,7 @@ export function RecentlyViewed() {
                     {products.map((product, idx) => (
                         <Link
                             key={product.id}
-                            href={`/products/${product.id}`}
+                            href={`/products/${product.slug}`}
                             className="group relative animate-in fade-in slide-in-from-bottom-6 duration-700"
                             style={{ animationDelay: `${idx * 100}ms` }}
                         >

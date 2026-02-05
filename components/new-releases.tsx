@@ -41,7 +41,7 @@ export function NewReleases({ products }: { products: any[] }) {
                 <div className="flex overflow-x-auto pb-8 gap-8 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
                     {products.map((product, i) => (
                         <Link
-                            href={`/products/${product.id}`}
+                            href={`/products/${product.slug}`}
                             key={product.id}
                             className="flex-shrink-0 w-[280px] md:w-[320px] snap-center group relative cursor-pointer"
                         >
