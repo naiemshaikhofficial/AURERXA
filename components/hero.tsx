@@ -1,9 +1,6 @@
 'use client'
 
 import React, { useRef } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { Button } from '@/components/ui/button'
 import { motion, useScroll, useTransform } from 'framer-motion'
 
 export function Hero() {
@@ -13,105 +10,36 @@ export function Hero() {
     offset: ['start start', 'end start'],
   })
 
-  const yLogo = useTransform(scrollYProgress, [0, 1], [0, 200])
-  const yText = useTransform(scrollYProgress, [0, 1], [0, 100])
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  // Reduced parallax effect for better performance and simpler look
+  const yLogo = useTransform(scrollYProgress, [0, 1], [0, 100])
 
   return (
-    <section ref={ref} className="relative h-screen flex items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-secondary via-background to-background">
-      {/* Decorative background element */}
-      <motion.div
-        style={{ y: yText, opacity }}
-        className="absolute inset-0 opacity-10"
-      >
-        <div className="absolute top-20 left-10 w-72 h-72 bg-accent rounded-full mix-blend-multiply filter blur-3xl animate-pulse" />
-        <div className="absolute bottom-20 right-10 w-72 h-72 bg-card rounded-full mix-blend-multiply filter blur-3xl animate-pulse" />
-      </motion.div>
+    <section ref={ref} className="relative h-screen flex items-center justify-center overflow-hidden bg-neutral-950">
+      {/* Background with luxury gradient and pattern */}
+      <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950">
+        <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23D4AF37%22 fill-opacity=%221%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
 
-      <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8">
+        {/* Subtle gold glow centers */}
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-5xl px-4 text-center">
         <motion.div
           style={{ y: yLogo }}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="relative w-full max-w-lg mx-auto mb-8"
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          className="relative"
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/logo.png"
             alt="AURERXA"
-            width={600}
-            height={200}
-            className="w-full h-auto object-contain drop-shadow-2xl"
-            priority
+            className="w-full h-auto object-contain max-h-[22rem] drop-shadow-2xl mx-auto"
           />
         </motion.div>
-
-        <motion.p
-          style={{ y: yText }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
-          className="text-xl sm:text-2xl md:text-3xl font-light mb-8 text-foreground/80 max-w-3xl mx-auto text-balance tracking-wide"
-        >
-          Timeless Luxury Crafted to Perfection
-        </motion.p>
-
-        <motion.p
-          style={{ y: yText }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.6, ease: "easeOut" }}
-          className="text-sm sm:text-base md:text-lg text-muted-foreground mb-16 max-w-xl mx-auto leading-relaxed"
-        >
-          Discover our exquisite collection of premium jewelry, each piece a masterpiece of elegance
-          and sophistication
-        </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-        >
-          <Link href="/collections">
-            <Button
-              size="lg"
-              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold uppercase tracking-widest px-8 h-12"
-            >
-              Explore Collection
-            </Button>
-          </Link>
-
-          <Link href="#custom">
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-accent text-accent hover:bg-accent/10 font-semibold uppercase tracking-widest px-8 h-12 bg-transparent"
-            >
-              Custom Order
-            </Button>
-          </Link>
-        </motion.div>
       </div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        animate={{ y: [0, 10, 0] }}
-        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <svg
-          className="w-6 h-6 text-accent"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
-      </motion.div>
     </section>
   )
 }

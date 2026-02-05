@@ -1,7 +1,6 @@
 'use client'
 
 import React from "react"
-
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,14 +34,24 @@ export function Newsletter() {
   }
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-secondary to-background">
-      <div className="max-w-2xl mx-auto text-center">
-        <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold mb-4 text-gradient-gold tracking-wider">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-950 relative overflow-hidden">
+      {/* Subtle gold gradient */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-amber-500/30 rounded-full blur-[150px]" />
+      </div>
+
+      <div className="max-w-2xl mx-auto text-center relative z-10">
+        {/* Decorative top line */}
+        <div className="w-16 h-px mx-auto mb-8 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+
+        <p className="text-amber-400 text-sm tracking-[0.3em] uppercase mb-4 font-light">
+          Stay Connected
+        </p>
+        <h2 className="text-4xl sm:text-5xl font-serif font-bold mb-6 text-white tracking-tight">
           Exclusive Offers
         </h2>
-        <p className="text-lg text-muted-foreground mb-8">
-          Subscribe to receive exclusive offers, new collection launches, and insider access to our
-          luxury pieces.
+        <p className="text-base text-white/50 mb-10 font-light leading-relaxed">
+          Subscribe to receive exclusive offers, new collection launches, and insider access to our luxury pieces.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -53,12 +62,12 @@ export function Newsletter() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={isLoading}
-              className="flex-1 bg-background border-border text-foreground placeholder:text-muted-foreground h-12"
+              className="flex-1 bg-neutral-900 border-neutral-800 text-white placeholder:text-white/30 h-14 focus:border-amber-500/50 focus:ring-amber-500/20"
             />
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold uppercase tracking-widest px-8 h-12 whitespace-nowrap"
+              className="bg-amber-500 hover:bg-amber-400 text-neutral-950 font-medium uppercase tracking-[0.15em] px-10 h-14 whitespace-nowrap text-sm transition-all duration-300"
             >
               {isLoading ? (
                 <>
@@ -72,19 +81,22 @@ export function Newsletter() {
           </div>
 
           {status === 'success' && (
-            <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-sm flex items-center justify-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <p className="text-sm text-foreground">{message}</p>
+            <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center gap-2">
+              <CheckCircle className="h-5 w-5 text-emerald-400" />
+              <p className="text-sm text-white">{message}</p>
             </div>
           )}
 
           {status === 'error' && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-sm flex items-center justify-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-500" />
-              <p className="text-sm text-foreground">{message}</p>
+            <div className="p-4 bg-red-500/10 border border-red-500/30 flex items-center justify-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+              <p className="text-sm text-white">{message}</p>
             </div>
           )}
         </form>
+
+        {/* Decorative bottom line */}
+        <div className="w-16 h-px mx-auto mt-12 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
       </div>
     </section>
   )

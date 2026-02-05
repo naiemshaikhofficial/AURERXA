@@ -1,50 +1,72 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { Mail, Phone, MapPin, Instagram, Facebook, Twitter } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="bg-secondary border-t border-border mt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-          {/* Brand */}
+    <footer className="bg-neutral-950 border-t border-neutral-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div>
-            <div className="relative w-40 h-12 mb-6">
-              <Image
+            <div className="mb-6">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/logo.png"
                 alt="AURERXA"
-                fill
-                className="object-contain object-left"
+                className="h-14 w-auto object-contain"
               />
             </div>
-            <p className="text-sm text-muted-foreground">
-              Timeless luxury crafted to perfection
+            <p className="text-sm text-white/40 font-light leading-relaxed mb-6">
+              Timeless luxury crafted to perfection. Since 1989.
             </p>
+            {/* Social Icons */}
+            <div className="flex gap-4">
+              <a
+                href="#"
+                className="w-10 h-10 border border-neutral-800 flex items-center justify-center text-white/40 hover:text-amber-400 hover:border-amber-400/50 transition-all duration-300"
+                aria-label="Instagram"
+              >
+                <Instagram size={18} />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 border border-neutral-800 flex items-center justify-center text-white/40 hover:text-amber-400 hover:border-amber-400/50 transition-all duration-300"
+                aria-label="Facebook"
+              >
+                <Facebook size={18} />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 border border-neutral-800 flex items-center justify-center text-white/40 hover:text-amber-400 hover:border-amber-400/50 transition-all duration-300"
+                aria-label="Twitter"
+              >
+                <Twitter size={18} />
+              </a>
+            </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-widest mb-4">
+            <h4 className="text-xs font-medium uppercase tracking-[0.2em] mb-6 text-amber-400">
               Collections
             </h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <ul className="space-y-3 text-sm text-white/40 font-light">
               <li>
-                <a href="/collections?category=rings" className="hover:text-accent transition-colors">
+                <a href="/collections?category=rings" className="hover:text-amber-400 transition-colors duration-300">
                   Rings
                 </a>
               </li>
               <li>
-                <a href="/collections?category=necklaces" className="hover:text-accent transition-colors">
+                <a href="/collections?category=necklaces" className="hover:text-amber-400 transition-colors duration-300">
                   Necklaces
                 </a>
               </li>
               <li>
-                <a href="/collections?category=bracelets" className="hover:text-accent transition-colors">
+                <a href="/collections?category=bracelets" className="hover:text-amber-400 transition-colors duration-300">
                   Bracelets
                 </a>
               </li>
               <li>
-                <a href="/collections?category=wedding" className="hover:text-accent transition-colors">
+                <a href="/collections?category=wedding" className="hover:text-amber-400 transition-colors duration-300">
                   Wedding
                 </a>
               </li>
@@ -53,66 +75,51 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-widest mb-4">
+            <h4 className="text-xs font-medium uppercase tracking-[0.2em] mb-6 text-amber-400">
               Contact
             </h4>
-            <ul className="space-y-3 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <Mail size={16} className="text-accent" />
+            <ul className="space-y-4 text-sm text-white/40 font-light">
+              <li className="flex items-center gap-3">
+                <Mail size={14} className="text-amber-400/60" />
                 hello@aurerxa.com
               </li>
-              <li className="flex items-center gap-2">
-                <Phone size={16} className="text-accent" />
+              <li className="flex items-center gap-3">
+                <Phone size={14} className="text-amber-400/60" />
                 +1 (555) 123-4567
               </li>
-              <li className="flex items-center gap-2">
-                <MapPin size={16} className="text-accent" />
+              <li className="flex items-center gap-3">
+                <MapPin size={14} className="text-amber-400/60" />
                 New York, USA
               </li>
             </ul>
           </div>
 
-          {/* Social */}
+          {/* Newsletter Teaser */}
           <div>
-            <h4 className="text-sm font-semibold uppercase tracking-widest mb-4">
-              Follow
+            <h4 className="text-xs font-medium uppercase tracking-[0.2em] mb-6 text-amber-400">
+              Visit Us
             </h4>
-            <div className="flex gap-4">
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-accent transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-accent transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-accent transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter size={20} />
-              </a>
-            </div>
+            <p className="text-sm text-white/40 font-light leading-relaxed mb-4">
+              Experience our collections in person at our flagship boutique.
+            </p>
+            <p className="text-sm text-white/60">
+              Fifth Avenue, New York<br />
+              Mon - Sat: 10AM - 8PM
+            </p>
           </div>
         </div>
 
-        <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground">
-          <p>&copy; 2026 AURERXA. All rights reserved.</p>
-          <div className="flex gap-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-accent transition-colors">
+        {/* Bottom Bar */}
+        <div className="border-t border-neutral-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-white/30 font-light">
+          <p>© 2026 AURERXA. All rights reserved.</p>
+          <div className="flex gap-8 mt-4 md:mt-0">
+            <a href="#" className="hover:text-amber-400 transition-colors duration-300">
               Privacy Policy
             </a>
-            <a href="#" className="hover:text-accent transition-colors">
+            <a href="#" className="hover:text-amber-400 transition-colors duration-300">
               Terms of Service
             </a>
-            <a href="#" className="hover:text-accent transition-colors">
+            <a href="#" className="hover:text-amber-400 transition-colors duration-300">
               Shipping Info
             </a>
           </div>

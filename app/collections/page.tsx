@@ -7,6 +7,7 @@ import { addToCart } from '@/app/actions'
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 const allProducts = [
   {
@@ -15,6 +16,7 @@ const allProducts = [
     category: 'rings',
     price: '₹285,000',
     description: 'Classic solitaire engagement ring with 1.5 carat diamond',
+    image: '/pexels-abhishek-saini-1415858-3847212.jpg',
   },
   {
     id: '2',
@@ -22,6 +24,7 @@ const allProducts = [
     category: 'rings',
     price: '₹425,000',
     description: 'Premium 2 carat diamond with platinum band',
+    image: '/pexels-janakukebal-30541170.jpg',
   },
   {
     id: '3',
@@ -29,6 +32,7 @@ const allProducts = [
     category: 'rings',
     price: '₹195,000',
     description: 'Burmese ruby with diamond accents',
+    image: '/pexels-janakukebal-30541177.jpg',
   },
   {
     id: '4',
@@ -36,6 +40,7 @@ const allProducts = [
     category: 'necklaces',
     price: '₹95,000',
     description: '18K gold chain with pearl pendant',
+    image: '/pexels-janakukebal-30541179.jpg',
   },
   {
     id: '5',
@@ -43,6 +48,7 @@ const allProducts = [
     category: 'necklaces',
     price: '₹185,000',
     description: 'Tennis necklace with VS clarity diamonds',
+    image: '/pexels-punam-oishy-415017245-35059564.jpg',
   },
   {
     id: '6',
@@ -50,6 +56,7 @@ const allProducts = [
     category: 'necklaces',
     price: '₹275,000',
     description: 'Colombian emerald with gold detailing',
+    image: '/pexels-the-glorious-studio-3584518-29245554.jpg',
   },
   {
     id: '7',
@@ -57,6 +64,7 @@ const allProducts = [
     category: 'bracelets',
     price: '₹125,000',
     description: 'South sea pearls with diamond accents',
+    image: '/pexels-janakukebal-30541184.jpg',
   },
   {
     id: '8',
@@ -64,6 +72,7 @@ const allProducts = [
     category: 'bracelets',
     price: '₹325,000',
     description: 'Premium quality VS diamonds in 18K gold',
+    image: '/pexels-janakukebal-30541185.jpg',
   },
   {
     id: '9',
@@ -71,6 +80,7 @@ const allProducts = [
     category: 'bracelets',
     price: '₹215,000',
     description: 'Ceylon sapphires with diamond spacers',
+    image: '/pexels-vikashkr50-27155546.jpg',
   },
   {
     id: '10',
@@ -78,6 +88,7 @@ const allProducts = [
     category: 'wedding',
     price: '₹325,000',
     description: 'Emerald center stone with diamond side stones',
+    image: '/heritage-rings.jpg',
   },
   {
     id: '11',
@@ -85,6 +96,7 @@ const allProducts = [
     category: 'wedding',
     price: '₹245,000',
     description: 'Blue sapphire with diamond band',
+    image: '/stock-photo-pair-of-silver-rings-with-small-diamonds-for-lovers.jpg',
   },
   {
     id: '12',
@@ -92,6 +104,7 @@ const allProducts = [
     category: 'wedding',
     price: '₹625,000',
     description: 'Complete set with engagement ring and wedding band',
+    image: '/pexels-abhishek-saini-1415858-3847212.jpg',
   },
 ]
 
@@ -116,53 +129,65 @@ function CollectionsContent() {
     }
   }
 
+  const categoryTitle = category === 'rings'
+    ? 'Engagement Rings'
+    : category === 'necklaces'
+      ? 'Necklaces'
+      : category === 'bracelets'
+        ? 'Bracelets'
+        : category === 'wedding'
+          ? 'Wedding Collection'
+          : 'All Collections'
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-neutral-950">
       <Navbar />
 
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-secondary to-background">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-accent mb-4">
-            {category === 'rings'
-              ? 'Engagement Rings'
-              : category === 'necklaces'
-                ? 'Necklaces'
-                : category === 'bracelets'
-                  ? 'Bracelets'
-                  : category === 'wedding'
-                    ? 'Wedding Collection'
-                    : 'All Collections'}
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-neutral-950 to-neutral-900">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-amber-400 text-sm tracking-[0.3em] uppercase mb-4 font-light">
+            Discover
+          </p>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-white mb-6 tracking-tight">
+            {categoryTitle}
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-6" />
+          <p className="text-base text-white/50 max-w-xl mx-auto font-light">
             Discover our handpicked selection of premium jewelry pieces
           </p>
         </div>
       </section>
 
+      {/* Products Grid */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
-                className="group border border-border rounded-sm overflow-hidden bg-background hover:border-accent transition-all duration-300"
+                className="group bg-neutral-900 border border-neutral-800 hover:border-amber-500/30 transition-all duration-500"
               >
-                {/* Image placeholder */}
-                <div className="h-64 bg-gradient-to-br from-accent/10 to-card/10 flex items-center justify-center overflow-hidden relative group-hover:shadow-lg">
-                  <div className="text-center">
-                    <div className="text-5xl mb-2">💎</div>
-                  </div>
+                <div className="relative h-64 overflow-hidden">
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 to-transparent" />
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-xl font-serif font-semibold mb-2 text-foreground group-hover:text-accent transition-colors">
+                  <h3 className="text-lg font-serif font-medium mb-2 text-white">
                     {product.name}
                   </h3>
 
-                  <p className="text-sm text-muted-foreground mb-4">{product.description}</p>
+                  <p className="text-sm text-white/50 mb-4 font-light">{product.description}</p>
 
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-2xl font-serif font-bold text-accent">
+                  <div className="flex justify-between items-center mb-5">
+                    <span className="text-xl font-serif font-bold text-amber-400">
                       {product.price}
                     </span>
                   </div>
@@ -170,7 +195,7 @@ function CollectionsContent() {
                   <Button
                     onClick={() => handleAddToCart(product.id, product.name)}
                     disabled={loadingId !== null}
-                    className="w-full bg-accent hover:bg-accent/90 text-primary font-semibold uppercase tracking-widest h-10"
+                    className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-medium uppercase tracking-[0.15em] h-11 text-xs transition-all duration-300"
                   >
                     {loadingId === product.id ? (
                       <>
@@ -187,7 +212,7 @@ function CollectionsContent() {
           </div>
 
           {message && (
-            <div className="p-4 bg-accent/10 border border-accent rounded-sm text-center text-sm text-foreground">
+            <div className="mt-8 p-4 bg-amber-500/10 border border-amber-500/30 text-center text-sm text-white">
               {message}
             </div>
           )}

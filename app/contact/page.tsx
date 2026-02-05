@@ -1,7 +1,6 @@
 'use client'
 
 import React from "react"
-
 import { useState } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
@@ -54,15 +53,20 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-neutral-950">
       <Navbar />
 
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-secondary to-background">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-accent mb-4">
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-neutral-950 to-neutral-900">
+        <div className="max-w-7xl mx-auto text-center">
+          <p className="text-amber-400 text-sm tracking-[0.3em] uppercase mb-4 font-light">
+            Get in Touch
+          </p>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-white mb-6 tracking-tight">
             Contact Us
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-6" />
+          <p className="text-base text-white/50 max-w-xl mx-auto font-light">
             Get in touch with our team for any inquiries or assistance
           </p>
         </div>
@@ -73,34 +77,34 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
             {/* Contact Info */}
             <div className="lg:col-span-1 space-y-8">
-              <div>
-                <h3 className="text-xl font-serif font-semibold mb-4 text-foreground flex items-center gap-3">
-                  <Mail className="text-accent" size={24} />
+              <div className="p-6 bg-neutral-900 border border-neutral-800">
+                <h3 className="text-lg font-serif font-medium mb-3 text-white flex items-center gap-3">
+                  <Mail className="text-amber-400" size={20} />
                   Email
                 </h3>
-                <p className="text-muted-foreground">hello@aurerxa.com</p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-white/60 font-light">hello@aurerxa.com</p>
+                <p className="text-sm text-white/40 mt-1 font-light">
                   We respond to all inquiries within 24 hours
                 </p>
               </div>
 
-              <div>
-                <h3 className="text-xl font-serif font-semibold mb-4 text-foreground flex items-center gap-3">
-                  <Phone className="text-accent" size={24} />
+              <div className="p-6 bg-neutral-900 border border-neutral-800">
+                <h3 className="text-lg font-serif font-medium mb-3 text-white flex items-center gap-3">
+                  <Phone className="text-amber-400" size={20} />
                   Phone
                 </h3>
-                <p className="text-muted-foreground">+1 (555) 123-4567</p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-white/60 font-light">+1 (555) 123-4567</p>
+                <p className="text-sm text-white/40 mt-1 font-light">
                   Monday - Saturday, 10 AM - 6 PM EST
                 </p>
               </div>
 
-              <div>
-                <h3 className="text-xl font-serif font-semibold mb-4 text-foreground flex items-center gap-3">
-                  <MapPin className="text-accent" size={24} />
+              <div className="p-6 bg-neutral-900 border border-neutral-800">
+                <h3 className="text-lg font-serif font-medium mb-3 text-white flex items-center gap-3">
+                  <MapPin className="text-amber-400" size={20} />
                   Address
                 </h3>
-                <p className="text-muted-foreground">
+                <p className="text-white/60 font-light">
                   AURERXA Flagship Boutique
                   <br />
                   Madison Avenue
@@ -109,11 +113,11 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              <div className="pt-8 border-t border-border">
-                <h3 className="text-sm font-semibold uppercase tracking-widest text-foreground mb-4">
+              <div className="p-6 bg-neutral-900 border border-neutral-800">
+                <h4 className="text-xs font-medium uppercase tracking-[0.2em] text-amber-400 mb-4">
                   Business Hours
-                </h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
+                </h4>
+                <ul className="space-y-2 text-sm text-white/50 font-light">
                   <li>Monday - Friday: 10 AM - 8 PM</li>
                   <li>Saturday: 10 AM - 6 PM</li>
                   <li>Sunday: 12 PM - 5 PM</li>
@@ -122,13 +126,13 @@ export default function ContactPage() {
             </div>
 
             {/* Contact Form */}
-            <div className="lg:col-span-2 border border-border rounded-sm p-8 bg-secondary/20">
-              <h2 className="text-3xl font-serif font-bold mb-8 text-accent">Send us a Message</h2>
+            <div className="lg:col-span-2 border border-neutral-800 p-8 bg-neutral-900">
+              <h2 className="text-2xl font-serif font-bold mb-8 text-white">Send us a Message</h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-foreground font-semibold">
+                    <Label htmlFor="name" className="text-white/80 font-light text-sm">
                       Full Name
                     </Label>
                     <Input
@@ -138,12 +142,12 @@ export default function ContactPage() {
                       onChange={handleChange}
                       placeholder="Your name"
                       required
-                      className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                      className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/30 h-12 focus:border-amber-500/50"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-foreground font-semibold">
+                    <Label htmlFor="email" className="text-white/80 font-light text-sm">
                       Email Address
                     </Label>
                     <Input
@@ -154,13 +158,13 @@ export default function ContactPage() {
                       onChange={handleChange}
                       placeholder="your@email.com"
                       required
-                      className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                      className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/30 h-12 focus:border-amber-500/50"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="subject" className="text-foreground font-semibold">
+                  <Label htmlFor="subject" className="text-white/80 font-light text-sm">
                     Subject
                   </Label>
                   <Input
@@ -169,12 +173,12 @@ export default function ContactPage() {
                     value={formData.subject}
                     onChange={handleChange}
                     placeholder="What is this about?"
-                    className="bg-background border-border text-foreground placeholder:text-muted-foreground"
+                    className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/30 h-12 focus:border-amber-500/50"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="message" className="text-foreground font-semibold">
+                  <Label htmlFor="message" className="text-white/80 font-light text-sm">
                     Message
                   </Label>
                   <Textarea
@@ -184,29 +188,29 @@ export default function ContactPage() {
                     onChange={handleChange}
                     placeholder="Tell us more about your inquiry..."
                     required
-                    rows={8}
-                    className="bg-background border-border text-foreground placeholder:text-muted-foreground resize-none"
+                    rows={6}
+                    className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/30 resize-none focus:border-amber-500/50"
                   />
                 </div>
 
                 {status === 'success' && (
-                  <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-sm flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-foreground">{message}</p>
+                  <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-emerald-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-white">{message}</p>
                   </div>
                 )}
 
                 {status === 'error' && (
-                  <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-sm flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-foreground">{message}</p>
+                  <div className="p-4 bg-red-500/10 border border-red-500/30 flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-white">{message}</p>
                   </div>
                 )}
 
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-accent hover:bg-accent/90 text-primary font-semibold uppercase tracking-widest h-12"
+                  className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-medium uppercase tracking-[0.15em] h-14 text-sm transition-all duration-300"
                 >
                   {isLoading ? (
                     <>

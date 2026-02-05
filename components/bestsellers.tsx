@@ -57,54 +57,60 @@ export function Bestsellers() {
   }
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-secondary/30">
+    <section className="py-24 px-4 sm:px-6 lg:px-8 bg-neutral-900">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold mb-4 text-gradient-gold tracking-wider">
+        {/* Section Header */}
+        <div className="text-center mb-20">
+          <p className="text-amber-400 text-sm tracking-[0.3em] uppercase mb-4 font-light">
+            Most Loved
+          </p>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold mb-6 text-white tracking-tight">
             Bestsellers
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-6" />
+          <p className="text-base text-white/50 max-w-xl mx-auto font-light leading-relaxed">
             Discover our most beloved pieces loved by discerning customers worldwide
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {bestsellers.map((product) => (
             <div
               key={product.id}
-              className="group border border-border rounded-sm overflow-hidden bg-background hover:border-accent transition-colors duration-300 hover:shadow-lg"
+              className="group bg-neutral-950 border border-neutral-800 hover:border-amber-500/30 transition-all duration-500"
             >
-              <div className="relative h-72 overflow-hidden bg-secondary/10">
+              <div className="relative h-72 overflow-hidden">
                 <Image
                   src={product.image}
                   alt={product.name}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   placeholder="blur"
-                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAYH/8QAIhAAAgIBAwQDAAAAAAAAAAAAAQIDBAUABhEHEiExQVFh/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAZEQEAAwEBAAAAAAAAAAAAAAABAAIDESH/2gAMAwEAAhEDEEQA/9bNxfbt+3eYLNGWSOKZywiifj4/n+6jxfU3c2Ot1oI8bUkiikKo8kzH3+flRGp0yLrXE1qT/9k="
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAYH/8QAIhAAAgIBAwQDAAAAAAAAAAAAAQIDBAUABhEHEiExQVFh/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAZEQEAAwEBAAAAAAAAAAAAAAABAAIDESH/2gAMAwEAAhEDEQA/9bNxfbt+3eYLNGWSOKZywiifj4/n+6jxfU3c2Ot1oI8bUkiikKo8kzH3+flRGp0yLrXE1qT/9k="
                 />
 
-                <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold tracking-wide uppercase text-foreground">
+                <div className="absolute top-4 right-4 bg-neutral-950/90 backdrop-blur-sm px-3 py-1 text-xs font-medium tracking-wider uppercase text-amber-400">
                   {product.category}
                 </div>
               </div>
 
               <div className="p-6">
-                <h3 className="text-xl font-serif font-semibold mb-2 text-foreground">
+                <h3 className="text-lg font-serif font-medium mb-2 text-white">
                   {product.name}
                 </h3>
 
-                <p className="text-sm text-muted-foreground mb-4">{product.description}</p>
+                <p className="text-sm text-white/50 mb-4 font-light">{product.description}</p>
 
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-2xl font-serif font-bold text-accent">{product.price}</span>
+                <div className="flex justify-between items-center mb-5">
+                  <span className="text-2xl font-serif font-bold text-amber-400">{product.price}</span>
                 </div>
 
                 <Button
                   onClick={() => handleAddToCart(product.id, product.name)}
                   disabled={loadingId !== null}
-                  className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold uppercase tracking-widest h-10"
+                  className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-medium uppercase tracking-[0.15em] h-12 text-xs transition-all duration-300"
                 >
                   {loadingId === product.id ? (
                     <>
@@ -121,7 +127,7 @@ export function Bestsellers() {
         </div>
 
         {message && (
-          <div className="mt-8 p-4 bg-accent/10 border border-accent rounded-sm text-center text-sm text-foreground">
+          <div className="mt-8 p-4 bg-amber-500/10 border border-amber-500/30 text-center text-sm text-white">
             {message}
           </div>
         )}

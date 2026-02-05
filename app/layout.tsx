@@ -11,13 +11,15 @@ const _geist = Geist({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'AURERXA - Premium Luxury Jewelry',
   description: 'Timeless Luxury Crafted to Perfection. Explore our exquisite collection of premium jewelry.',
-  generator: 'v0.app',
   openGraph: {
     title: 'AURERXA - Premium Luxury Jewelry',
     description: 'Timeless Luxury Crafted to Perfection',
+    images: ['/logo.png'],
   },
   icons: {
-    icon: '/favicon.png',
+    icon: '/Favicon.ico',
+    shortcut: '/Favicon.ico',
+    apple: '/logo.png',
   },
 }
 
