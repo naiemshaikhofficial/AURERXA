@@ -60,6 +60,20 @@ export async function getBestsellers() {
   return data
 }
 
+export async function getNewReleases(limit: number = 8) {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, categories(*)')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('Error fetching new releases:', error)
+    return []
+  }
+  return data
+}
+
 export async function getProducts(categorySlug?: string, sortBy?: string) {
   let query = supabase
     .from('products')

@@ -16,13 +16,13 @@ export function Heritage() {
     const opacityBg = useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 0.6, 0.4])
 
     return (
-        <section ref={ref} className="relative min-h-[80vh] md:h-screen overflow-hidden flex items-center justify-center bg-black">
+        <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center bg-black py-12 md:py-0">
             {/* Cinematic Shutter Reveal */}
             <motion.div
                 initial={{ clipPath: 'inset(100% 0 0 0)' }}
                 whileInView={{ clipPath: 'inset(0% 0 0 0)' }}
                 viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="absolute inset-0 bg-neutral-950 z-20 pointer-events-none"
             />
 
@@ -48,17 +48,17 @@ export function Heritage() {
                     whileInView={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 1, ease: "easeOut" }}
                     viewport={{ once: true }}
-                    className="space-y-16"
+                    className="space-y-8 md:space-y-16"
                 >
                     {/* Subtitle */}
-                    <div className="space-y-6 flex flex-col items-center">
+                    <div className="space-y-4 md:space-y-6 flex flex-col items-center">
                         <span className="px-4 py-2 border border-white/10 bg-white/5 backdrop-blur-md text-[10px] md:text-xs font-premium-sans text-white/80 uppercase tracking-[0.3em]">
                             The Legacy
                         </span>
                     </div>
 
                     {/* Main Title - SINCE 1989 - BOLD */}
-                    <h2 className="text-8xl md:text-[12rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 italic drop-shadow-2xl">
+                    <h2 className="text-6xl md:text-[12rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 italic drop-shadow-2xl">
                         1989
                     </h2>
 

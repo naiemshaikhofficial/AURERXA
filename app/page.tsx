@@ -6,17 +6,24 @@ import { CustomOrderForm } from '@/components/custom-order-form'
 import { Newsletter } from '@/components/newsletter'
 import { Footer } from '@/components/footer'
 import { Heritage } from '@/components/heritage'
+import { NewReleases } from '@/components/new-releases'
+import { getNewReleases } from './actions'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const newReleases = await getNewReleases()
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <Hero />
       <Heritage />
+      <NewReleases products={newReleases} />
       <FeaturedCollections />
       <Bestsellers />
-      <CustomOrderForm />
-      <Newsletter />
+      <div className="hidden md:block">
+        <CustomOrderForm />
+        <Newsletter />
+      </div>
       <Footer />
     </div>
   )

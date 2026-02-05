@@ -106,16 +106,29 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10 h-16 md:h-24 flex items-center transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
-          <div className="flex justify-between items-center h-full">
-            <Link href="/" className="flex-shrink-0 group">
+      <nav className="fixed top-0 left-0 right-0 z-50 md:bg-black/90 md:backdrop-blur-xl md:border-b md:border-white/10 h-auto md:h-24 flex items-center transition-all duration-500 md:shadow-[0_4px_30px_rgba(0,0,0,0.5)] p-4 md:p-0">
+        <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
+          <div className="flex justify-between items-start md:items-center h-full">
+            <Link href="/" className="flex-shrink-0 group relative z-50">
               <img
                 src="/logo.png"
                 alt="AURERXA Logo"
-                className="h-24 md:h-22 w-auto object-contain brightness-110 group-hover:scale-105 transition-transform duration-700"
+                // Mobile: Smaller, nicely positioned. Desktop: Larger.
+                className="h-12 md:h-24 w-auto object-contain brightness-0 invert-[.7] sepia-[1] saturate-[5] hue-rotate-[5deg] drop-shadow-lg"
               />
             </Link>
+
+            {/* Mobile Cart & Search Actions (Visible only on mobile) */}
+            <div className="flex gap-4 items-center md:hidden relative z-50 pt-1">
+              <Link href="/cart" className="relative text-amber-500 hover:text-white transition-colors p-2 bg-black/50 rounded-full backdrop-blur-sm border border-white/10">
+                <ShoppingBag className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-black">
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
+              </Link>
+            </div>
 
             {/* Desktop Menu */}
             <div className="hidden md:flex gap-12 items-center">

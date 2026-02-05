@@ -65,7 +65,7 @@ export function Hero() {
           style={{ y: yText, opacity: opacityFade }}
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-12"
         >
           {/* Logo Brand Mark */}

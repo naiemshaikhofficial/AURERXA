@@ -3,7 +3,7 @@ import { Mail, Phone, MapPin, Instagram, Facebook, Twitter } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="py-24 px-6 lg:px-12 bg-neutral-950 text-white relative border-t border-white/10 overflow-hidden">
+    <footer className="hidden md:block py-24 px-6 lg:px-12 bg-neutral-950 text-white relative border-t border-white/10 overflow-hidden">
       {/* Black Edition Background Effect */}
       <div className="absolute inset-0 bg-[url('/scanline.png')] opacity-[0.02] bg-repeat pointer-events-none" />
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />

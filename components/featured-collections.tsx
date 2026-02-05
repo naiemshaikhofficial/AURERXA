@@ -120,18 +120,18 @@ export function FeaturedCollections() {
   if (categories.length === 0) return null
 
   return (
-    <section className="py-24 md:py-32 px-6 lg:px-12 bg-[#004028] relative overflow-hidden">
+    <section className="py-12 md:py-32 px-4 md:px-6 lg:px-12 bg-[#004028] relative overflow-hidden">
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-24">
-          <p className="text-amber-500/80 text-[10px] uppercase mb-6 font-premium-sans">
+        <div className="text-center mb-12 md:mb-24">
+          <p className="text-amber-500/80 text-[10px] uppercase mb-4 md:mb-6 font-premium-sans">
             Crafted Excellence
           </p>
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-white tracking-widest italic">
+          <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-6 md:mb-8 text-white tracking-widest italic">
             Discovery by <span className="text-amber-500">Material</span>
           </h2>
-          <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-8" />
+          <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-6 md:mb-8" />
           <p className="text-sm md:text-base text-white/50 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
             Each piece is a testament to our legacy of precision, crafted from the world's most precious elements.
           </p>

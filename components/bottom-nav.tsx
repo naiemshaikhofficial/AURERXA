@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, ShoppingBag, Heart, User } from 'lucide-react'
+import { Home, ShoppingBag, Heart, User, PenTool } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 
@@ -62,6 +62,11 @@ export function BottomNav() {
             href: user ? '/account' : '/login',
             label: 'Account',
             icon: User,
+        },
+        {
+            href: '/custom-jewelry',
+            label: 'Custom',
+            icon: PenTool,
         },
     ]
 
