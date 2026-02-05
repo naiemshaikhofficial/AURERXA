@@ -592,7 +592,8 @@ export async function subscribeNewsletter(email: string) {
   }
 
   try {
-    const { error } = await supabase
+    const client = await getAuthClient()
+    const { error } = await client
       .from('newsletter_subscribers')
       .insert([{ email, created_at: new Date().toISOString() }])
 
@@ -616,7 +617,8 @@ export async function submitCustomOrder(formData: any) {
   }
 
   try {
-    const { error } = await supabase
+    const client = await getAuthClient()
+    const { error } = await client
       .from('custom_orders')
       .insert([{ ...formData, status: 'pending', created_at: new Date().toISOString() }])
 
@@ -625,7 +627,7 @@ export async function submitCustomOrder(formData: any) {
     return { success: true, message: 'Your custom order request has been received.' }
   } catch (err) {
     console.error('Custom order error:', err)
-    return { success: false, error: 'Failed to submit order.' }
+    return { success: false, error: 'Failed to submit order. Please try again later.' }
   }
 }
 
@@ -635,13 +637,14 @@ export async function submitContact(formData: any) {
   }
 
   try {
-    const { error } = await supabase
+    const client = await getAuthClient()
+    const { error } = await client
       .from('contact_messages')
       .insert([{ ...formData, created_at: new Date().toISOString() }])
 
     if (error) throw error
 
-    return { success: true, message: 'Thank you for your message.' }
+    return { success: true, message: 'Thank you for your message. We will get back to you soon.' }
   } catch (err) {
     console.error('Contact error:', err)
     return { success: false, error: 'Failed to send message.' }
