@@ -11,6 +11,7 @@ import { Loader2, SlidersHorizontal, X, ChevronDown, Eye, Check } from 'lucide-r
 import Image from 'next/image'
 import Link from 'next/link'
 import { ParallaxScroll } from '@/components/parallax-scroll'
+import { motion } from 'framer-motion'
 
 interface Product {
   id: string
@@ -107,308 +108,218 @@ function FilterDropdown({
 function CollectionsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-
-  const categoryParam = searchParams.get('category') || searchParams.get('material') || ''
-  const { addItem } = useCart()
-  const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadingId, setLoadingId] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
 
-  // Filters
-  const [selectedCategory, setSelectedCategory] = useState(categoryParam)
-  const [selectedPriceRange, setSelectedPriceRange] = useState(0)
+  // States
+  const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedSort, setSelectedSort] = useState('newest')
-  const [showFilters, setShowFilters] = useState(false)
+  const [selectedPriceRange, setSelectedPriceRange] = useState(priceRanges[0])
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [loading, setLoading] = useState(true)
+  const [products, setProducts] = useState<Product[]>([])
 
+  // Load Categories & Initial Filter from URL
   useEffect(() => {
-    getCategories().then(data => {
-      const formatted = data.map((c: any) => ({ label: c.name, value: c.slug }))
-      setCategories(formatted)
-    })
-  }, [])
+    async function init() {
+      const cats = await getCategories()
+      setCategories([{ name: 'All Collections', slug: 'all' }, ...cats])
 
+      const materialParam = searchParams.get('material')
+      if (materialParam) setSelectedCategory(materialParam)
+    }
+    init()
+  }, [searchParams])
+
+  // Fetch Products when filters change
   useEffect(() => {
-    async function loadProducts() {
+    async function fetchProducts() {
       setLoading(true)
-      const priceRange = priceRanges[selectedPriceRange]
-      const data = await getFilteredProducts({
-        category: selectedCategory || undefined,
-        minPrice: priceRange.min || undefined,
-        maxPrice: priceRange.max || undefined,
-        sortBy: selectedSort
-      })
-      setProducts(data as Product[])
-      setLoading(false)
+      // Simulate "Heavy" Luxurious Loading delay
+      await new Promise(r => setTimeout(r, 600))
+
+      try {
+        const data = await getFilteredProducts({
+          sortBy: selectedSort,
+          category: selectedCategory === 'all' ? undefined : selectedCategory,
+          minPrice: selectedPriceRange.min,
+          maxPrice: selectedPriceRange.max || undefined
+        })
+        setProducts(data as Product[])
+      } catch (error) {
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
     }
-    loadProducts()
-  }, [selectedCategory, selectedPriceRange, selectedSort])
-
-  const handleAddToCart = async (product: Product) => {
-    setLoadingId(product.id)
-    try {
-      await addItem(product.id, 'Standard', 1, product)
-      setMessage('Added to your cart')
-      setTimeout(() => setMessage(null), 3000)
-    } finally {
-      setLoadingId(null)
-    }
-  }
-
-  const clearFilters = () => {
-    setSelectedCategory('')
-    setSelectedPriceRange(0)
-    setSelectedSort('newest')
-    router.push('/collections')
-  }
-
-  const activeFiltersCount = (selectedCategory ? 1 : 0) + (selectedPriceRange !== 0 ? 1 : 0)
-
-  const categoryTitle = selectedCategory
-    ? `${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)} Collection`
-    : 'All Collections'
+    fetchProducts()
+  }, [selectedCategory, selectedSort, selectedPriceRange])
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-black text-white relative">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-neutral-950 to-neutral-900 overflow-hidden relative">
-        <ParallaxScroll offset={40} direction="down" className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px]">
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
-        </ParallaxScroll>
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <p className="text-amber-500 text-xs tracking-[0.4em] uppercase mb-4 font-medium animate-in fade-in slide-in-from-bottom-4 duration-700">
-            Heritage & Craft
-          </p>
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold text-white mb-6 tracking-tight animate-in fade-in slide-in-from-bottom-6 duration-700">
-            {categoryTitle}
-          </h1>
-          <div className="w-20 h-px mx-auto bg-gradient-to-r from-transparent via-amber-500 to-transparent mb-6" />
-          <p className="text-white/40 max-w-xl mx-auto font-light text-sm md:text-base animate-in fade-in slide-in-from-bottom-8 duration-700">
-            Displaying {products.length} exclusive pieces from our master craftsmen
-          </p>
+      {/* Global Scanline Overlay - REMOVED */}
+
+      {/* Hero Header - Black Edition */}
+      <div className="relative pt-40 pb-20 px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/heritage-rings.jpg')] bg-cover bg-center opacity-20 grayscale brightness-50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-black/80 to-black" />
+
+        <div className="relative z-10 max-w-7xl mx-auto text-center space-y-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1 }}
+          >
+            <div className="inline-flex items-center gap-4 mb-6">
+              <div className="h-[1px] w-12 bg-amber-500/50" />
+              <span className="text-amber-500 font-premium-sans text-[10px] tracking-[0.4em] uppercase">Curated Excellence</span>
+              <div className="h-[1px] w-12 bg-amber-500/50" />
+            </div>
+            <h1 className="text-5xl md:text-8xl font-serif font-black text-white tracking-tight uppercase italic drop-shadow-2xl">
+              The <span className="text-transparent bg-clip-text bg-gradient-to-br from-amber-200 to-amber-700">Collection</span>
+            </h1>
+          </motion.div>
         </div>
-      </section>
+      </div>
 
-      {/* Premium Filters Bar */}
-      <section className="sticky top-[40px] md:top-[80px] z-40 bg-neutral-950/80 backdrop-blur-xl border-y border-neutral-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-5">
-          <div className="flex flex-wrap items-center justify-between gap-4 md:gap-8">
-
-            {/* Left: Filter Toggle (Mobile) */}
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-3 px-5 py-2.5 bg-neutral-900 border border-neutral-800 text-sm font-medium text-white hover:border-amber-500 transition-all md:hidden"
-            >
-              <SlidersHorizontal className="w-4 h-4 text-amber-500" />
-              Filter By
-              {activeFiltersCount > 0 && (
-                <span className="w-5 h-5 bg-amber-500 text-neutral-950 text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {activeFiltersCount}
-                </span>
-              )}
-            </button>
-
-            {/* Middle: Desktop Filters with Premium Dropdowns */}
-            <div className="hidden md:flex items-center gap-6">
-              <FilterDropdown
-                label="Category"
-                value={selectedCategory}
-                options={[{ label: 'All Categories', value: '' }, ...categories]}
-                onChange={setSelectedCategory}
-              />
-
-              <FilterDropdown
-                label="Price Range"
-                value={selectedPriceRange}
-                options={priceRanges.map((r, i) => ({ label: r.label, value: i }))}
-                onChange={setSelectedPriceRange}
-              />
-
-              {activeFiltersCount > 0 && (
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 pb-32 relative z-10">
+        {/* Cinematic Toolbar */}
+        <div className="sticky top-24 z-40 mb-16 p-1 backdrop-blur-xl bg-neutral-900/80 border border-white/10 rounded-sm shadow-2xl">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-6 p-4">
+            {/* Scrollable Category Filter */}
+            <div className="w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0 no-scrollbar flex items-center gap-2">
+              {categories.map((cat) => (
                 <button
-                  onClick={clearFilters}
-                  className="group flex items-center gap-2 px-3 py-1.5 text-[10px] uppercase tracking-widest text-white/50 hover:text-red-400 transition-all ml-2"
+                  key={cat.slug}
+                  onClick={() => setSelectedCategory(cat.slug)}
+                  className={`px-6 py-3 text-xs uppercase tracking-widest font-bold transition-all duration-300 border ${selectedCategory === cat.slug
+                    ? 'bg-amber-500 text-black border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]'
+                    : 'bg-transparent text-white/50 border-white/5 hover:border-white/20 hover:text-white'
+                    }`}
                 >
-                  <div className="p-1 rounded-full border border-neutral-800 group-hover:border-red-400/30 transition-all">
-                    <X className="w-3 h-3" />
-                  </div>
-                  Reset Filters
+                  {cat.name}
                 </button>
-              )}
+              ))}
             </div>
 
-            {/* Right: Sort Dropdown */}
-            <div className="w-full md:w-auto ml-auto">
+            <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-end">
               <FilterDropdown
                 label="Sort By"
                 value={selectedSort}
                 options={sortOptions}
                 onChange={setSelectedSort}
               />
+              <div className="w-[1px] h-8 bg-white/10 hidden md:block" />
+
+              {/* View Toggle */}
+              <div className="flex items-center gap-1 border border-white/10 p-1 bg-neutral-900">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 transition-all ${viewMode === 'grid' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
+                >
+                  <div className="grid grid-cols-2 gap-0.5 w-4 h-4">
+                    <div className="bg-current" />
+                    <div className="bg-current" />
+                    <div className="bg-current" />
+                    <div className="bg-current" />
+                  </div>
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 transition-all ${viewMode === 'list' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
+                >
+                  <div className="flex flex-col gap-0.5 w-4 h-[14px]">
+                    <div className="h-full w-full bg-current" />
+                    <div className="h-full w-full bg-current" />
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
-
-          {/* Mobile Filters Panel (Accordion style) */}
-          {showFilters && (
-            <div className="mt-4 pt-4 border-t border-neutral-800 md:hidden space-y-6 animate-in slide-in-from-top-4 duration-300">
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] text-white/30 uppercase tracking-[0.2em] px-1">Category</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[{ label: 'All', value: '' }, ...categories].map((cat) => (
-                      <button
-                        key={cat.value}
-                        onClick={() => setSelectedCategory(cat.value)}
-                        className={`px-4 py-3 text-sm text-left border transition-all ${selectedCategory === cat.value
-                          ? 'border-amber-500 bg-amber-500/5 text-amber-400'
-                          : 'border-neutral-800 bg-neutral-900/50 text-white/60'
-                          }`}
-                      >
-                        {cat.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] text-white/30 uppercase tracking-[0.2em] px-1">Price Range</label>
-                  <div className="grid grid-cols-1 gap-2">
-                    {priceRanges.map((range, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setSelectedPriceRange(i)}
-                        className={`px-4 py-3 text-sm text-left border transition-all ${selectedPriceRange === i
-                          ? 'border-amber-500 bg-amber-500/5 text-amber-400'
-                          : 'border-neutral-800 bg-neutral-900/50 text-white/60'
-                          }`}
-                      >
-                        {range.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {activeFiltersCount > 0 && (
-                  <Button
-                    variant="outline"
-                    onClick={clearFilters}
-                    className="w-full py-4 border-red-500/30 text-red-500 hover:bg-red-500/10 rounded-none h-14 uppercase tracking-[0.2em] text-xs"
-                  >
-                    Clear All Filters
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
         </div>
-      </section>
 
-      {/* Products Grid */}
-      <section className="py-12 md:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-32 space-y-4">
-              <div className="relative w-12 h-12">
-                <div className="absolute inset-0 border-2 border-amber-500/20 rounded-full" />
-                <div className="absolute inset-0 border-2 border-transparent border-t-amber-500 rounded-full animate-spin" />
-              </div>
-              <p className="text-amber-500/50 text-xs uppercase tracking-[0.3em] font-light">Loading Collection</p>
-            </div>
-          ) : products.length === 0 ? (
-            <div className="text-center py-32 animate-in fade-in duration-700">
-              <div className="mb-6 inline-flex p-6 rounded-full bg-neutral-900 border border-neutral-800">
-                <SlidersHorizontal className="w-10 h-10 text-white/20" />
-              </div>
-              <h3 className="text-xl font-serif text-white mb-2">No masterpieces found</h3>
-              <p className="text-white/40 mb-8 max-w-sm mx-auto">Try adjusting your filters or search criteria to explore other parts of our heritage collection.</p>
-              <button
-                onClick={clearFilters}
-                className="text-amber-500 hover:text-amber-400 border-b border-amber-500/30 pb-1 text-sm tracking-widest uppercase transition-all"
+        {/* Product Grid - "Jyada Animative" */}
+        {loading ? (
+          <div className="min-h-[50vh] flex flex-col items-center justify-center gap-6">
+            <Loader2 className="w-12 h-12 text-amber-500 animate-spin" />
+            <span className="text-xs font-premium-sans text-amber-500/50 animate-pulse tracking-[0.3em]">RETRIEVING ARTIFACTS...</span>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="min-h-[50vh] flex flex-col items-center justify-center text-center space-y-6 opacity-50">
+            <span className="text-6xl text-white/10">∅</span>
+            <h3 className="text-xl font-serif text-white/40">No Treasures Found</h3>
+            <p className="text-sm text-white/30">Refine your search to uncover hidden gems.</p>
+            <button
+              onClick={() => { setSelectedCategory('all'); setSelectedPriceRange(priceRanges[0]) }}
+              className="text-amber-500 underline underline-offset-4 hover:text-amber-400"
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          <motion.div
+            layout
+            className={`grid gap-8 ${viewMode === 'grid'
+              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+              : 'grid-cols-1'
+              }`}
+          >
+            {products.map((product, i) => (
+              <motion.div
+                layout
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                key={product.id}
+                className="group relative bg-neutral-900 border border-white/5 hover:border-amber-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] overflow-hidden"
               >
-                Reset All Filters
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="group animate-in fade-in slide-in-from-bottom-6 duration-700"
-                >
-                  <div className="relative aspect-[4/5] overflow-hidden bg-neutral-900">
-                    <Link href={`/products/${product.id}`} className="block h-full">
-                      <Image
-                        src={product.image_url}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                        className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors duration-500" />
+                <Link href={`/products/${product.id}`} className="block h-full">
+                  {/* Image Container with "Flash" Effect */}
+                  <div className={`relative overflow-hidden ${viewMode === 'grid' ? 'aspect-[3/4]' : 'aspect-video md:aspect-[21/9]'}`}>
+                    <Image
+                      src={product.image_url}
+                      alt={product.name}
+                      fill
+                      className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:contrast-125"
+                    />
+                    {/* Hover Flash Overlay */}
+                    <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:animate-flash pointer-events-none mix-blend-overlay" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
 
-                      {/* Floating Info Overlay */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
-                        <div className="w-full bg-neutral-950/80 backdrop-blur-md p-4 border border-amber-500/20 text-center">
-                          <p className="text-[10px] text-amber-500 uppercase tracking-widest mb-1">View Piece</p>
-                          <p className="text-xs text-white uppercase tracking-widest font-light">AURERXA Heritage</p>
-                        </div>
-                      </div>
-                    </Link>
-
-                    {product.stock > 0 && product.stock <= 5 && (
-                      <div className="absolute top-4 right-4 bg-red-600 text-white text-[9px] font-bold px-2 py-1 uppercase tracking-widest">
-                        Rare Acquisition
-                      </div>
-                    )}
+                    {/* Quick Actions */}
+                    <div className="absolute top-4 right-4 flex flex-col gap-2 translate-x-10 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
+                      <button className="w-10 h-10 bg-black/80 backdrop-blur text-white flex items-center justify-center hover:bg-amber-500 hover:text-black transition-colors">
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="mt-6 text-center">
-                    <Link href={`/products/${product.id}`}>
-                      <h3 className="text-base font-serif text-white hover:text-amber-400 transition-colors duration-300">
-                        {product.name}
-                      </h3>
-                    </Link>
-
-                    <div className="flex items-center justify-center gap-4 mt-2 mb-4">
-                      <div className="w-4 h-px bg-neutral-800" />
-                      <span className="text-amber-500 font-serif text-lg">
-                        ₹{product.price.toLocaleString('en-IN')}
+                  {/* Product Info - Minimalist High Contrast */}
+                  <div className="p-6 space-y-4 relative z-10 bg-black">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-[10px] text-amber-500 font-premium-sans tracking-widest mb-1">
+                          {product.categories?.name || 'EXCLUSIVE'}
+                        </p>
+                        <h3 className="text-xl font-serif text-white font-medium group-hover:text-amber-500 transition-colors">
+                          {product.name}
+                        </h3>
+                      </div>
+                      <span className="text-lg font-light text-white/90">
+                        ₹{product.price.toLocaleString()}
                       </span>
-                      <div className="w-4 h-px bg-neutral-800" />
                     </div>
 
-                    <Button
-                      onClick={() => handleAddToCart(product)}
-                      disabled={loadingId !== null || product.stock === 0}
-                      className={`w-full font-medium uppercase tracking-[0.2em] h-12 text-[10px] transition-all duration-500 rounded-none border ${product.stock === 0
-                        ? 'bg-transparent border-neutral-800 text-white/20'
-                        : 'bg-transparent border-neutral-800 text-white hover:bg-white hover:text-neutral-950 hover:border-white'
-                        }`}
-                    >
-                      {product.stock === 0 ? 'Out of Stock' : (
-                        loadingId === product.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : 'Add to Cart'
-                      )}
-                    </Button>
+                    {/* Hover Reveal Line */}
+                    <div className="w-full h-[1px] bg-white/10 group-hover:bg-amber-500/50 transition-colors" />
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {message && (
-            <div className="notification-luxury flex items-center gap-4 animate-in slide-in-from-right-10 duration-500">
-              <Check size={14} className="text-amber-500" />
-              <p>{message}</p>
-            </div>
-          )}
-        </div>
-      </section>
-
+                </Link>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </div>
       <Footer />
     </div>
   )

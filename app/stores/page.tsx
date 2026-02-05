@@ -30,6 +30,8 @@ export default function StoresPage() {
         <div className="min-h-screen bg-black text-white">
             <Navbar />
 
+            {/* Global Atmosphere - REMOVED */}
+
             <main className="pt-40 pb-40">
                 <div className="max-w-7xl mx-auto px-6 lg:px-12">
                     {/* Header */}

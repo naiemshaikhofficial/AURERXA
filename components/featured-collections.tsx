@@ -53,7 +53,7 @@ function CollectionCard({ category }: { category: any }) {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         href={`/collections?material=${category.slug}`}
-        className="group relative block aspect-[4/5] overflow-hidden bg-neutral-950 transition-all duration-300 hover:z-20 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(184,134,11,0.3)] border border-white/5 hover:border-amber-500/50"
+        className="group relative block aspect-[4/5] overflow-hidden bg-neutral-950 transition-all duration-300 hover:z-20 hover:scale-[1.02] border border-white/5"
       >
         {/* Image with Parallax Drift & Aggressive Scale */}
         <div className="absolute inset-0 z-0 h-[120%] -top-[10%]">
@@ -70,8 +70,7 @@ function CollectionCard({ category }: { category: any }) {
           {/* Default Dark Overlay */}
           <div className="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-300" />
 
-          {/* Flash Tint on Hover */}
-          <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/10 transition-colors duration-300 mix-blend-overlay" />
+          {/* Flash Tint REMOVED for cleaner look */}
 
           {/* Cinematic Vignette */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/80 opacity-90" />
@@ -81,18 +80,15 @@ function CollectionCard({ category }: { category: any }) {
         <div
           className="absolute inset-x-0 bottom-0 z-10 p-8 text-left"
         >
-          {/* Category Number/ID Style */}
-          <span className="text-[10px] font-premium-sans text-amber-500 block mb-2 opacity-60 group-hover:opacity-100 transition-opacity">
-            0{category.id || Math.floor(Math.random() * 9) + 1}
-          </span>
+          {/* Category Number REMOVED */}
 
-          <h3 className="text-3xl md:text-4xl font-serif font-bold text-white uppercase tracking-tighter leading-none mb-6 group-hover:text-amber-500 transition-colors duration-300 drop-shadow-lg">
+          <h3 className="text-3xl md:text-4xl font-serif font-bold text-white uppercase tracking-tighter leading-none mb-6 group-hover:text-white transition-colors duration-300 drop-shadow-lg">
             {category.name}
           </h3>
 
           {/* Button-like CTA that slides in */}
           <div className="overflow-hidden h-0 group-hover:h-auto transition-all duration-300 ease-out">
-            <span className="inline-block px-4 py-2 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500 transition-colors">
+            <span className="inline-block px-4 py-2 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors">
               View Collection
             </span>
           </div>

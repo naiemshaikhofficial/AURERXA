@@ -14,34 +14,40 @@ export default function AboutPage() {
         offset: ['start start', 'end start']
     })
 
-    // Parallax transforms for hero layers
-    const yBg = useTransform(scrollYProgress, [0, 1], [0, 200])
-    const yText = useTransform(scrollYProgress, [0, 1], [0, -50])
-    const opacityFade = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+    // Deep "Black Edition" Parallax
+    const yBg = useTransform(scrollYProgress, [0, 1], [0, 250])
+    const yText = useTransform(scrollYProgress, [0, 1], [0, 100])
+    const opacityFade = useTransform(scrollYProgress, [0, 0.6], [1, 0])
+    const scaleHero = useTransform(scrollYProgress, [0, 1], [1, 1.1])
 
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-amber-500/30">
+        <div className="min-h-screen bg-black text-white selection:bg-amber-500/50">
             <Navbar />
 
-            {/* Hero Section with Deep Parallax */}
+            {/* Global Black Edition Overlay */}
+            <div className="fixed inset-0 z-50 pointer-events-none opacity-[0.03] bg-[url('/scanline.png')] bg-repeat mix-blend-overlay" />
+            <div className="fixed inset-0 z-50 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.9)]" />
+
+            {/* Hero Section with Aggressive Parallax */}
             <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden">
                 {/* Background Layer (Deepest) */}
-                <motion.div style={{ y: yBg }} className="absolute inset-0 z-0 scale-125">
+                <motion.div style={{ y: yBg, scale: scaleHero }} className="absolute inset-0 z-0">
                     <ParallaxScroll scaleOffset={0.2} opacityOffset={0.3} className="h-full w-full">
                         <Image
                             src="/heritage-rings.jpg"
                             alt="Heritage"
                             fill
-                            className="object-cover opacity-20 grayscale"
+                            className="object-cover opacity-40 grayscale contrast-125 brightness-50"
                             priority
                         />
                     </ParallaxScroll>
-                    <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+                    {/* Heavy Vignette */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/80" />
                 </motion.div>
 
-                {/* Particle Layer (Floating Dust) */}
+                {/* Particle Layer (Floating Dust) - Increased Density */}
                 <div className="absolute inset-0 z-10 pointer-events-none">
-                    {[...Array(30)].map((_, i) => (
+                    {[...Array(50)].map((_, i) => (
                         <motion.div
                             key={i}
                             initial={{
@@ -50,16 +56,16 @@ export default function AboutPage() {
                                 y: Math.random() * 100 + '%'
                             }}
                             animate={{
-                                opacity: [0, 0.4, 0],
-                                y: [null, '-20%', '-50%'],
+                                opacity: [0, 0.6, 0],
+                                y: [null, '-30%', '-60%'],
                                 transition: {
-                                    duration: 15 + Math.random() * 15,
+                                    duration: 10 + Math.random() * 15,
                                     repeat: Infinity,
                                     ease: 'linear',
-                                    delay: Math.random() * 10
+                                    delay: Math.random() * 5
                                 }
                             }}
-                            className="absolute w-[1.5px] h-[1.5px] bg-amber-500/50 rounded-full blur-[1px]"
+                            className="absolute w-[2px] h-[2px] bg-amber-500/60 rounded-full blur-[0.5px] shadow-[0_0_5px_#f59e0b]"
                         />
                     ))}
                 </div>
@@ -67,36 +73,36 @@ export default function AboutPage() {
                 {/* Content Layer (Foreground) */}
                 <motion.div
                     style={{ y: yText, opacity: opacityFade }}
-                    className="relative z-20 text-center max-w-4xl px-4"
+                    className="relative z-20 text-center max-w-7xl px-6"
                 >
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-                        className="space-y-8"
+                        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                        className="space-y-10"
                     >
-                        <div className="flex flex-col items-center gap-6">
-                            <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: '4rem' }}
-                                transition={{ delay: 0.5, duration: 1.5 }}
-                                className="h-[1px] bg-amber-500/50"
-                            />
-                            <p className="text-amber-500 text-xs tracking-[0.6em] uppercase font-premium-sans">
-                                The Legacy
-                            </p>
+                        {/* Brand Tag */}
+                        <div className="inline-flex items-center gap-4 justify-center mb-6">
+                            <div className="h-[1px] w-12 bg-amber-500/50" />
+                            <span className="text-amber-500 text-[10px] md:text-xs tracking-[0.5em] uppercase font-bold font-premium-sans">
+                                The Origin Story
+                            </span>
+                            <div className="h-[1px] w-12 bg-amber-500/50" />
                         </div>
-                        <h1 className="text-6xl md:text-9xl font-serif font-bold tracking-tighter text-white drop-shadow-2xl italic leading-none">
-                            Our <span className="text-amber-500">Story</span>
-                        </h1>
-                        <p className="text-lg md:text-xl font-light text-white/40 tracking-[0.3em] uppercase italic">
-                            Forged in struggle, polished to perfection
+
+                        {/* Massive "Black Edition" Typography */}
+                        <div className="relative">
+                            <h1 className="text-7xl md:text-[10rem] font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white/80 to-white/10 italic leading-[0.85] drop-shadow-2xl">
+                                FORGED<br />
+                                <span className="text-stroke-1 text-transparent bg-clip-text bg-gradient-to-b from-amber-500 to-amber-900/50">IN FIRE</span>
+                            </h1>
+                        </div>
+
+                        <p className="max-w-2xl mx-auto text-lg md:text-xl font-light text-white/60 tracking-widest leading-relaxed border-l-2 border-amber-500 pl-6 text-left">
+                            We don't tell stories. We craft legends from the dust of struggle and the glare of gold.
                         </p>
                     </motion.div>
                 </motion.div>
-
-                {/* Decorative Frame */}
-                <div className="absolute inset-10 border border-white/5 pointer-events-none" />
             </section>
 
             {/* Narrative Sections with Scroll-Triggered Reveals */}
