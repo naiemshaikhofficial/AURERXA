@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 
 export function Hero() {
   const ref = useRef(null)
@@ -10,117 +10,97 @@ export function Hero() {
     offset: ['start start', 'end start'],
   })
 
-  // Multi-layered parallax transforms
-  const yLogo = useTransform(scrollYProgress, [0, 1], [0, 150])
-  const yText = useTransform(scrollYProgress, [0, 1], [0, 80])
-  const yLight1 = useTransform(scrollYProgress, [0, 1], [0, -100])
-  const yLight2 = useTransform(scrollYProgress, [0, 1], [0, -50])
-  const opacityFade = useTransform(scrollYProgress, [0, 0.7], [1, 0])
-  const scaleLogo = useTransform(scrollYProgress, [0, 1], [1, 1.05])
+  // Deep Parallax with Spring Physics for "Heavy" Premium Feel
+  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 }
+  const yBg = useSpring(useTransform(scrollYProgress, [0, 1], [0, 200]), springConfig)
+  const yText = useSpring(useTransform(scrollYProgress, [0, 1], [0, 100]), springConfig)
+  const opacityFade = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+
+  // Spotlight Parallax
+  const ySpotlight = useTransform(scrollYProgress, [0, 1], [0, -150])
 
   return (
-    <section ref={ref} className="relative h-screen flex items-center justify-center overflow-hidden bg-black">
-      {/* Rolex-inspired Background Layers */}
-      <div className="absolute inset-0">
-        {/* Deep Emerald to Black Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#004028] via-black to-black opacity-90" />
+    <section ref={ref} className="relative h-screen flex items-center justify-center overflow-hidden bg-black text-white">
+      {/* 1. Cinematic Background Layer */}
+      <motion.div
+        style={{ y: yBg }}
+        className="absolute inset-0 z-0"
+      >
+        <div className="absolute inset-0 bg-black/40 z-10" /> {/* Dimmer */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60 z-10" /> {/* Vignette */}
 
-        {/* Cinematic Shutter Reveal Mask */}
-        <motion.div
-          initial={{ clipPath: 'inset(100% 0 0 0)' }}
-          animate={{ clipPath: 'inset(0% 0 0 0)' }}
-          transition={{ duration: 2.5, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute inset-0 bg-[#006039]/10"
+        {/* High-Res Luxury Background (Placeholder for Black Edition Jewelry) */}
+        <img
+          src="/pexels-the-glorious-studio-3584518-29245554.jpg"
+          alt="Black Edition Background"
+          className="w-full h-full object-cover object-center scale-105"
+        />
+      </motion.div>
+
+      {/* 2. "Cayenne Black" Atmospheric Effects */}
+      <div className="absolute inset-0 z-[5] pointer-events-none">
+        {/* Scanlines for that "Tech/Auto" precision feel - CSS Implementation */}
+        <div
+          className="absolute inset-0 opacity-[0.05] pointer-events-none"
+          style={{
+            backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.5) 50%, transparent 50%)',
+            backgroundSize: '100% 3px'
+          }}
         />
 
-        {/* Golden Dust Particles */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{
-                opacity: 0,
-                x: Math.random() * 100 + '%',
-                y: Math.random() * 100 + '%'
-              }}
-              animate={{
-                opacity: [0, 0.3, 0],
-                y: [null, '-20%', '-40%'],
-                x: [null, (Math.random() - 0.5) * 20 + '%']
-              }}
-              transition={{
-                duration: 10 + Math.random() * 10,
-                repeat: Infinity,
-                ease: 'linear',
-                delay: Math.random() * 5
-              }}
-              className="absolute w-[1px] h-[1px] bg-amber-500/40 rounded-full blur-[1px]"
-            />
-          ))}
-        </div>
-
-        {/* Cinematic Light Leaks (Parallax) */}
+        {/* Spotlight Effect */}
         <motion.div
-          style={{ y: yLight1 }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1400px] h-[1000px] bg-emerald-500/5 rounded-full blur-[180px]"
+          style={{ y: ySpotlight }}
+          className="absolute -top-[50%] left-1/2 -translate-x-1/2 w-[150vw] h-[150vw] bg-white/[0.05] rounded-full blur-[100px] mix-blend-overlay"
         />
-        <motion.div
-          style={{ y: yLight2 }}
-          className="absolute top-1/3 left-1/3 w-[800px] h-[600px] bg-amber-500/10 rounded-full blur-[150px]"
-        />
-
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl px-6 text-center">
+      {/* 3. Main Content - High Contrast & Bold Typography */}
+      <div className="relative z-10 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center">
         <motion.div
-          style={{ opacity: opacityFade }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
+          style={{ y: yText, opacity: opacityFade }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-12"
         >
-          {/* Logo with sophisticated glow - Independent Parallax */}
-          <motion.div
-            style={{ y: yLogo, scale: scaleLogo }}
-            className="relative inline-block group"
-          >
-            <div className="absolute inset-[-100px] bg-amber-500/10 blur-[100px] opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
-            <img
-              src="/logo.png"
-              alt="AURERXA"
-              className="w-full h-auto object-contain max-h-48 md:max-h-[28rem] relative z-10 drop-shadow-[0_0_50px_rgba(255,215,0,0.15)]"
-            />
-          </motion.div>
+          {/* Logo Brand Mark */}
+          <div className="mb-8 relative inline-block">
+            <div className="absolute inset-[-50px] bg-amber-500/20 blur-[60px] rounded-full opacity-50" />
+            <img src="/logo.png" alt="Aurerxa Logo" className="w-24 md:w-32 h-auto relative z-10 drop-shadow-2xl" />
+          </div>
 
-          {/* Text Content - Independent Parallax Segment */}
-          <motion.div
-            style={{ y: yText }}
-            className="max-w-2xl mx-auto space-y-6"
-          >
-            <p className="text-[10px] md:text-xs font-premium-sans text-amber-500/80">
-              The Epitome of Craftsmanship
-            </p>
-            <h1 className="text-white text-base md:text-xl font-serif-luxury italic opacity-50">
-              Timeless Excellence Since 1989
+          <div className="space-y-4">
+
+
+            {/* Massive Bold Headline */}
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-black tracking-tighter text-white leading-[0.9] mix-blend-hard-light drop-shadow-2xl">
+              PURE<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-white/80 to-white/20">PRESTIGE</span>
             </h1>
-          </motion.div>
+          </div>
+
+          <p className="max-w-xl mx-auto text-white/60 font-medium text-lg md:text-xl tracking-wide leading-relaxed border-l-2 border-amber-500 pl-6 text-left">
+            Forged in shadow. Defined by brilliance. <br />
+            Experience the darker side of luxury.
+          </p>
+
+          <div className="pt-8">
+            <button className="group relative px-12 py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-colors duration-500 overflow-hidden">
+              <span className="relative z-10">Discover Collection</span>
+              <div className="absolute inset-0 bg-neutral-900 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500 -z-0" />
+            </button>
+          </div>
         </motion.div>
       </div>
 
-      {/* Decorative Corner Accents */}
-      <div className="absolute top-20 left-20 w-32 h-32 border-t border-l border-white/5" />
-      <div className="absolute bottom-20 right-20 w-32 h-32 border-b border-r border-white/5" />
-
-      {/* Hero Scroll Indicator */}
+      {/* 4. Scroll Indicator */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2.5, duration: 1.5 }}
-        className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-6"
-      >
-        <div className="w-[1px] h-24 bg-gradient-to-b from-amber-500/50 via-amber-500/20 to-transparent" />
-        <span className="text-[10px] font-premium-sans tracking-[0.5em] text-white/20 uppercase">Explore</span>
-      </motion.div>
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: 100 }}
+        transition={{ delay: 1, duration: 1.5 }}
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-amber-500/50 hidden md:block"
+      />
     </section>
   )
 }

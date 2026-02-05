@@ -106,7 +106,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-premium h-16 md:h-24 flex items-center transition-all duration-500">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-b border-white/10 h-16 md:h-24 flex items-center transition-all duration-500 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
           <div className="flex justify-between items-center h-full">
             <Link href="/" className="flex-shrink-0 group">

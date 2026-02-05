@@ -16,14 +16,14 @@ export function Heritage() {
     const opacityBg = useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 0.6, 0.4])
 
     return (
-        <section ref={ref} className="relative min-h-[60vh] md:h-screen overflow-hidden flex items-center justify-center bg-black">
+        <section ref={ref} className="relative min-h-[80vh] md:h-screen overflow-hidden flex items-center justify-center bg-black">
             {/* Cinematic Shutter Reveal */}
             <motion.div
                 initial={{ clipPath: 'inset(100% 0 0 0)' }}
                 whileInView={{ clipPath: 'inset(0% 0 0 0)' }}
                 viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 bg-black z-10 pointer-events-none"
+                transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 bg-neutral-950 z-20 pointer-events-none"
             />
 
             {/* Background Image with Cinematic Parallax */}
@@ -32,48 +32,45 @@ export function Heritage() {
                     src="/heritage-rings.jpg"
                     alt="Heritage Background"
                     fill
-                    className="object-cover grayscale-[0.5] transition-all duration-[2s]"
+                    className="object-cover grayscale contrast-125 brightness-50"
                     priority
                 />
             </motion.div>
 
-            {/* Precision Vignette Overlay */}
-            <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black via-transparent to-black" />
-            <div className="absolute inset-0 z-[1] bg-black/40" />
+            {/* Precision "Black Edition" Vignette */}
+            <div className="absolute inset-0 z-[1] bg-gradient-to-r from-black/90 via-transparent to-black/90" />
+            <div className="absolute inset-0 z-[1] bg-black/20" />
 
             {/* Content */}
-            <div className="relative z-10 text-center text-white px-6 max-w-5xl mx-auto">
+            <div className="relative z-10 text-center text-white px-6 max-w-7xl mx-auto">
                 <motion.div
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+                    initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 1, ease: "easeOut" }}
                     viewport={{ once: true }}
                     className="space-y-16"
                 >
                     {/* Subtitle */}
-                    <div className="space-y-6">
-                        <p className="text-[10px] md:text-xs font-premium-sans text-amber-500/80">
-                            A Legacy of Excellence
-                        </p>
-                        <div className="w-12 h-[1px] bg-amber-500/30 mx-auto" />
+                    <div className="space-y-6 flex flex-col items-center">
+                        <span className="px-4 py-2 border border-white/10 bg-white/5 backdrop-blur-md text-[10px] md:text-xs font-premium-sans text-white/80 uppercase tracking-[0.3em]">
+                            The Legacy
+                        </span>
                     </div>
 
-                    {/* Main Title - SINCE 1989 */}
-                    <h2 className="text-6xl md:text-8xl lg:text-9xl font-serif font-light tracking-widest text-white/90 italic">
+                    {/* Main Title - SINCE 1989 - BOLD */}
+                    <h2 className="text-8xl md:text-[12rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 italic drop-shadow-2xl">
                         1989
                     </h2>
 
                     {/* Description */}
-                    <div className="max-w-2xl mx-auto space-y-12">
-                        <p className="text-sm md:text-base font-light text-white/50 leading-[2] tracking-widest italic">
-                            For over three decades, AURERXA has defined the pinnacle of luxury, crafting stories that transcend time.
+                    <div className="max-w-3xl mx-auto space-y-12 border-l-4 border-amber-500 pl-8 md:pl-12 text-left bg-gradient-to-r from-black/50 to-transparent p-8 backdrop-blur-sm">
+                        <p className="text-lg md:text-2xl font-medium text-white/90 leading-relaxed tracking-wide">
+                            "We don't just craft jewelry. We forge <span className="text-amber-500">identity</span>."
                         </p>
-
-                        <div className="flex items-center justify-center gap-8">
-                            <div className="h-[1px] w-12 bg-white/10" />
-                            <span className="text-[9px] font-premium-sans text-amber-500">Precision. Passion. Perfection.</span>
-                            <div className="h-[1px] w-12 bg-white/10" />
-                        </div>
+                        <p className="text-sm md:text-base font-light text-white/50 leading-loose tracking-widest italic">
+                            For over three decades, AURERXA has defined the pinnacle of luxury.
+                            From the dust of the workshop to the glare of the spotlight.
+                        </p>
                     </div>
                 </motion.div>
             </div>

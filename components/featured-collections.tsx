@@ -53,9 +53,9 @@ function CollectionCard({ category }: { category: any }) {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         href={`/collections?material=${category.slug}`}
-        className="group relative block aspect-[4/5] overflow-hidden bg-black transition-shadow duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+        className="group relative block aspect-[4/5] overflow-hidden bg-neutral-950 transition-all duration-300 hover:z-20 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(184,134,11,0.3)] border border-white/5 hover:border-amber-500/50"
       >
-        {/* Image with Parallax Drift */}
+        {/* Image with Parallax Drift & Aggressive Scale */}
         <div className="absolute inset-0 z-0 h-[120%] -top-[10%]">
           <motion.div style={{ y: yImage }} className="relative h-full w-full">
             <Image
@@ -63,30 +63,40 @@ function CollectionCard({ category }: { category: any }) {
               alt={category.name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover transition-grayscale duration-700 grayscale-[0.3] group-hover:grayscale-0 scale-110"
+              className="object-cover transition-all duration-300 grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 group-hover:scale-110"
             />
           </motion.div>
-          {/* Minimalist Gradient overlay */}
-          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-700" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
+
+          {/* Default Dark Overlay */}
+          <div className="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-300" />
+
+          {/* Flash Tint on Hover */}
+          <div className="absolute inset-0 bg-amber-500/0 group-hover:bg-amber-500/10 transition-colors duration-300 mix-blend-overlay" />
+
+          {/* Cinematic Vignette */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/80 opacity-90" />
         </div>
 
-        {/* Content */}
+        {/* Content - Bottom Aligned & Sharp */}
         <div
-          className="absolute inset-x-0 bottom-0 z-10 p-10 text-center flex flex-col items-center"
+          className="absolute inset-x-0 bottom-0 z-10 p-8 text-left"
         >
-          <h3 className="text-xl md:text-2xl font-serif font-medium mb-4 tracking-wider text-white">
+          {/* Category Number/ID Style */}
+          <span className="text-[10px] font-premium-sans text-amber-500 block mb-2 opacity-60 group-hover:opacity-100 transition-opacity">
+            0{category.id || Math.floor(Math.random() * 9) + 1}
+          </span>
+
+          <h3 className="text-3xl md:text-4xl font-serif font-bold text-white uppercase tracking-tighter leading-none mb-6 group-hover:text-amber-500 transition-colors duration-300 drop-shadow-lg">
             {category.name}
           </h3>
-          {/* Precision Line */}
-          <div className="w-0 h-[1px] bg-amber-500 group-hover:w-16 transition-all duration-700 ease-in-out" />
-          <p className="mt-6 text-[9px] text-white/40 font-premium-sans opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-            Explore Collection
-          </p>
-        </div>
 
-        {/* Ultra-thin precise border */}
-        <div className="absolute inset-0 border border-white/5 group-hover:border-amber-500/20 transition-colors duration-700" />
+          {/* Button-like CTA that slides in */}
+          <div className="overflow-hidden h-0 group-hover:h-auto transition-all duration-300 ease-out">
+            <span className="inline-block px-4 py-2 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-amber-500 transition-colors">
+              View Collection
+            </span>
+          </div>
+        </div>
       </Link>
     </motion.div>
   )
