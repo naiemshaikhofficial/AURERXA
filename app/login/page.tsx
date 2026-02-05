@@ -35,8 +35,10 @@ export default function LoginPage() {
 
             if (error) throw error
 
-            // Successful login
-            router.push('/')
+            // Successful login - handle redirect
+            const searchParams = new URLSearchParams(window.location.search)
+            const redirect = searchParams.get('redirect') || '/'
+            router.push(redirect)
             router.refresh()
         } catch (err: any) {
             setError(err.message || 'Failed to sign in')

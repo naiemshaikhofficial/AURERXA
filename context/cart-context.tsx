@@ -54,47 +54,88 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         refreshCart()
     }, [user])
 
-    const refreshCart = async () => {
-        if (user) {
-            const data = await getCart()
-            setItems(data as any)
-        } else {
-            // Load from localStorage for guests
-            const localCart = localStorage.getItem('aurerxa_cart')
-            if (localCart) {
-                setItems(JSON.parse(localCart))
-            } else {
-                setItems([])
+    const syncCart = async () => {
+        const localCart = localStorage.getItem('aurerxa_cart')
+        if (localCart && user) {
+            try {
+                const guestItems = JSON.parse(localCart)
+                let allSuccess = true
+                for (const item of guestItems) {
+                    const result = await addToCartAction(item.product_id, item.size, item.quantity)
+                    if (!result.success) allSuccess = false
+                }
+                // Only clear if we processed everything
+                if (allSuccess) {
+                    localStorage.removeItem('aurerxa_cart')
+                }
+            } catch (error) {
+                console.error('Error syncing cart:', error)
             }
         }
-        setLoading(false)
+    }
+
+    const refreshCart = async () => {
+        setLoading(true)
+        try {
+            if (user) {
+                // Sync guest items if any exist before loading from DB
+                const localCart = localStorage.getItem('aurerxa_cart')
+                if (localCart) {
+                    await syncCart()
+                }
+                const data = await getCart()
+                setItems(data as any)
+            } else {
+                // Load from localStorage for guests
+                const localCart = localStorage.getItem('aurerxa_cart')
+                if (localCart) {
+                    setItems(JSON.parse(localCart))
+                } else {
+                    setItems([])
+                }
+            }
+        } catch (error) {
+            console.error('Error refreshing cart:', error)
+        } finally {
+            setLoading(false)
+        }
     }
 
     const addItem = async (productId: string, size?: string, quantity: number = 1, productData?: any) => {
-        if (user) {
-            await addToCartAction(productId, size, quantity)
-            await refreshCart()
-        } else {
-            // Guest Cart Logic
-            const currentCart = [...items]
-            const existingItemIndex = currentCart.findIndex(
-                item => item.product_id === productId && item.size === size
-            )
-
-            if (existingItemIndex > -1) {
-                currentCart[existingItemIndex].quantity += quantity
+        setLoading(true)
+        try {
+            if (user) {
+                const result = await addToCartAction(productId, size, quantity)
+                if (!result.success) {
+                    console.error('Failed to add to cart:', result.error)
+                }
+                await refreshCart()
             } else {
-                currentCart.push({
-                    id: `guest_${Math.random().toString(36).substr(2, 9)}`,
-                    product_id: productId,
-                    quantity,
-                    size,
-                    products: productData // We pass product data for guest display
-                })
-            }
+                // Guest Cart Logic
+                const currentCart = [...items]
+                const existingItemIndex = currentCart.findIndex(
+                    item => item.product_id === productId && item.size === size
+                )
 
-            setItems(currentCart)
-            localStorage.setItem('aurerxa_cart', JSON.stringify(currentCart))
+                if (existingItemIndex > -1) {
+                    currentCart[existingItemIndex].quantity += quantity
+                } else {
+                    currentCart.push({
+                        id: `guest_${Math.random().toString(36).substr(2, 9)}`,
+                        product_id: productId,
+                        quantity,
+                        size,
+                        products: productData // We pass product data for guest display
+                    })
+                }
+
+                setItems(currentCart)
+                localStorage.setItem('aurerxa_cart', JSON.stringify(currentCart))
+                setLoading(false)
+            }
+        } catch (error) {
+            console.error('Error adding item:', error)
+            setLoading(false)
         }
     }
 

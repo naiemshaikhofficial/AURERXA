@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
@@ -13,6 +14,7 @@ import { Heart, ShoppingBag, Minus, Plus, ChevronRight, Loader2, Check, Truck, S
 
 export default function ProductPage() {
     const params = useParams()
+    const router = useRouter()
     const [product, setProduct] = useState<any>(null)
     const [related, setRelated] = useState<any[]>([])
     const [selectedSize, setSelectedSize] = useState<string>('')
@@ -64,6 +66,19 @@ export default function ProductPage() {
         }
         setAddingToCart(false)
         setTimeout(() => setMessage(null), 3000)
+    }
+
+    const handleBuyNow = async () => {
+        if (!product) return
+        setAddingToCart(true) // Use addingToCart state for buy now as well
+        const result = await addToCart(product.id, selectedSize, quantity)
+        if (result.success) {
+            router.push('/checkout')
+        } else {
+            setMessage(result.error || 'Failed to add to cart for checkout')
+            setAddingToCart(false)
+            setTimeout(() => setMessage(null), 3000)
+        }
     }
 
     const handleAddToWishlist = async () => {
@@ -175,8 +190,8 @@ export default function ProductPage() {
                                             key={i}
                                             onClick={() => setSelectedImage(i)}
                                             className={`relative w-16 h-16 flex-shrink-0 border-2 transition-all ${selectedImage === i
-                                                    ? 'border-amber-500'
-                                                    : 'border-neutral-700 hover:border-neutral-500'
+                                                ? 'border-amber-500'
+                                                : 'border-neutral-700 hover:border-neutral-500'
                                                 }`}
                                         >
                                             <Image
@@ -256,25 +271,32 @@ export default function ProductPage() {
                             </div>
 
                             {/* Actions */}
-                            <div className="flex gap-4 mb-8">
+                            <div className="flex flex-col sm:flex-row gap-4 mb-8">
                                 <Button
                                     onClick={handleAddToCart}
                                     disabled={addingToCart || product.stock === 0}
-                                    className="flex-1 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-14 text-sm"
+                                    className="flex-1 bg-white/5 border border-white/10 hover:bg-white hover:text-neutral-950 text-white font-bold uppercase tracking-widest h-14 text-sm transition-all duration-500"
                                 >
                                     {addingToCart ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
                                         <>
                                             <ShoppingBag className="w-4 h-4 mr-2" />
-                                            {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+                                            {product.stock === 0 ? 'Out of Stock' : 'Add to Collection'}
                                         </>
                                     )}
                                 </Button>
                                 <Button
+                                    onClick={handleBuyNow}
+                                    disabled={addingToCart || product.stock === 0}
+                                    className="flex-1 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-14 text-sm shadow-xl shadow-amber-500/10"
+                                >
+                                    Buy Now
+                                </Button>
+                                <Button
                                     onClick={handleAddToWishlist}
                                     variant="outline"
-                                    className={`w-14 h-14 border-neutral-700 hover:border-amber-500 ${inWishlist ? 'bg-amber-500/10 border-amber-500' : ''}`}
+                                    className={`w-14 h-14 border-neutral-700 hover:border-amber-500 flex-shrink-0 transition-all ${inWishlist ? 'bg-amber-500/10 border-amber-500' : ''}`}
                                 >
                                     <Heart className={`w-5 h-5 ${inWishlist ? 'fill-amber-500 text-amber-500' : ''}`} />
                                 </Button>
@@ -295,7 +317,14 @@ export default function ProductPage() {
                                     <span>Free shipping on orders above ₹50,000</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm text-white/60">
-                                    <Shield className="w-5 h-5 text-amber-500" />
+                                    <div className="relative w-8 h-8 flex-shrink-0 grayscale opacity-80 group-hover:grayscale-0 transition-all">
+                                        <Image
+                                            src="/pngegg.png"
+                                            alt="Hallmark Badge"
+                                            fill
+                                            className="object-contain"
+                                        />
+                                    </div>
                                     <span>Certified & Hallmarked Jewelry</span>
                                 </div>
                                 <div className="flex items-center gap-4 text-sm text-white/60">

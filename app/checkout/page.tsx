@@ -9,7 +9,8 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getCart, getAddresses, addAddress, createOrder, validateCoupon } from '@/app/actions'
+import { getAddresses, addAddress, createOrder, validateCoupon } from '@/app/actions'
+import { useCart } from '@/context/cart-context'
 import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X } from 'lucide-react'
 
 import { supabase } from '@/lib/supabase'
@@ -27,7 +28,7 @@ export default function CheckoutPage() {
         checkAuth()
     }, [])
 
-    const [cart, setCart] = useState<any[]>([])
+    const { items: cart, loading: cartLoading, refreshCart } = useCart()
     const [addresses, setAddresses] = useState<any[]>([])
     const [selectedAddress, setSelectedAddress] = useState<string>('')
     const [paymentMethod, setPaymentMethod] = useState<string>('cod')
@@ -59,12 +60,13 @@ export default function CheckoutPage() {
     })
 
     useEffect(() => {
+        refreshCart()
         loadData()
     }, [])
 
     async function loadData() {
-        const [cartData, addressData] = await Promise.all([getCart(), getAddresses()])
-        setCart(cartData)
+        setLoading(true)
+        const addressData = await getAddresses()
         setAddresses(addressData)
         if (addressData.length > 0) {
             const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0]
@@ -148,7 +150,7 @@ export default function CheckoutPage() {
     const giftWrapCost = giftWrap ? GIFT_WRAP_PRICE : 0
     const total = subtotal + shipping + giftWrapCost - discount
 
-    if (loading) {
+    if (loading || cartLoading) {
         return (
             <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
@@ -156,15 +158,15 @@ export default function CheckoutPage() {
         )
     }
 
-    if (cart.length === 0) {
+    if (cart.length === 0 && !cartLoading && !loading) {
         return (
             <div className="min-h-screen bg-neutral-950 text-white">
                 <Navbar />
                 <main className="pt-24 pb-24 min-h-[70vh] flex flex-col items-center justify-center">
-                    <p className="text-xl text-white/50 mb-8">Your cart is empty</p>
+                    <p className="text-xl text-white/50 mb-8 font-serif italic">Your bespoke collection is currently empty</p>
                     <Link href="/collections">
-                        <Button className="bg-amber-500 hover:bg-amber-400 text-neutral-950">
-                            Continue Shopping
+                        <Button className="bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest px-8 h-12">
+                            Explore Collections
                         </Button>
                     </Link>
                 </main>
@@ -420,7 +422,15 @@ export default function CheckoutPage() {
                         {/* Right: Order Summary */}
                         <div className="lg:col-span-1">
                             <div className="bg-neutral-900 border border-neutral-800 p-6 sticky top-24">
-                                <h2 className="font-serif text-lg font-medium mb-6">Order Summary</h2>
+                                <div className="font-serif text-lg font-medium mb-6 flex items-center justify-between">
+                                    <span>Order Summary</span>
+                                    <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-help" title="BIS Hallmarked & Certified">
+                                        <div className="relative w-6 h-6">
+                                            <Image src="/pngegg.png" alt="Hallmark" fill className="object-contain" />
+                                        </div>
+                                        <span className="text-[8px] font-premium-sans tracking-widest uppercase">Certified</span>
+                                    </div>
+                                </div>
 
                                 <div className="space-y-4 mb-6 max-h-48 overflow-y-auto">
                                     {cart.map((item) => (
