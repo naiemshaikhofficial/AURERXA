@@ -594,7 +594,11 @@ export async function createOrder(
 
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => sum + (item.products.price * item.quantity), 0)
-  const shipping = subtotal >= 50000 ? 0 : 500 // Free shipping above ₹50,000
+
+  // Calculate dynamic shipping
+  const shippingResult = await calculateShippingRate(address.pincode, cart)
+  const shipping = subtotal >= 50000 ? 0 : (shippingResult.rate || 500)
+
   const giftWrapCost = options?.giftWrap ? 199 : 0
   const couponDiscount = options?.couponDiscount || 0
   const total = subtotal + shipping + giftWrapCost - couponDiscount
@@ -1259,6 +1263,60 @@ export async function checkDeliveryAvailability(pincode: string) {
       success: false,
       error: 'Unable to check delivery availability. Please try again.'
     }
+  }
+}
+
+export async function calculateShippingRate(pincode: string, cartItems: any[]) {
+  try {
+    const delhiveryToken = process.env.DELHIVERY_API_TOKEN
+    const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
+    const originPincode = '110001' // Default origin (Delhi)
+
+    if (!delhiveryToken) return { success: true, rate: 500 } // Fallback
+
+    // Calculate total weight and volume
+    let totalWeightGrams = 0
+    let totalVolumetricWeight = 0
+
+    cartItems.forEach(item => {
+      const product = item.products
+      const weight = product.weight_grams || 500 // Default 500g for jewelry
+      const w = parseFloat(product.dimensions_width) || 10
+      const h = parseFloat(product.dimensions_height) || 5
+      const l = parseFloat(product.dimensions_length) || 10
+
+      const volumetricWeight = (w * h * l) / 5000 // Standard Delhivery factor
+
+      totalWeightGrams += (weight * item.quantity)
+      totalVolumetricWeight += (volumetricWeight * item.quantity)
+    })
+
+    const chargeWeight = Math.max(totalWeightGrams / 1000, totalVolumetricWeight)
+
+    // Call Delhivery Rate Calculation API
+    // Note: This endpoint might vary by account, using a standard one.
+    const response = await fetch(
+      `${delhiveryUrl}/api/backend/client/warehouse/rate_calculation/?ss=${originPincode}&dd=${pincode}&w=${totalWeightGrams}&md=E`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${delhiveryToken}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    if (!response.ok) throw new Error('Delhivery Rate API failed')
+
+    const data = await response.json()
+    // Delhivery usually returns total_amount or similar
+    const rate = data?.[0]?.total_amount || (chargeWeight > 1 ? 500 + (chargeWeight * 50) : 500)
+
+    return { success: true, rate: Math.round(rate) }
+
+  } catch (error) {
+    console.warn('Shipping calculation failed, using fallback:', error)
+    return { success: true, rate: 500 }
   }
 }
 

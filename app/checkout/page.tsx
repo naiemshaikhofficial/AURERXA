@@ -39,6 +39,8 @@ export default function CheckoutPage() {
     const [placing, setPlacing] = useState(false)
     const [showAddressForm, setShowAddressForm] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [shippingCharge, setShippingCharge] = useState<number>(500)
+    const [shippingLoading, setShippingLoading] = useState(false)
 
     // Coupon state
     const [couponCode, setCouponCode] = useState('')
@@ -77,8 +79,25 @@ export default function CheckoutPage() {
         if (addressData.length > 0) {
             const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0]
             setSelectedAddress(defaultAddr.id)
+            updateShippingRate(defaultAddr.pincode)
         }
         setLoading(false)
+    }
+
+    const updateShippingRate = async (pincode: string) => {
+        if (!pincode || cart.length === 0) return
+        setShippingLoading(true)
+        try {
+            const { calculateShippingRate } = await import('@/app/actions')
+            const res = await calculateShippingRate(pincode, cart)
+            if (res.success) {
+                setShippingCharge(res.rate)
+            }
+        } catch (err) {
+            console.error('Failed to update shipping rate:', err)
+        } finally {
+            setShippingLoading(false)
+        }
     }
 
     const handleAddAddress = async (e: React.FormEvent) => {
@@ -157,7 +176,7 @@ export default function CheckoutPage() {
     }
 
     const subtotal = cart.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0)
-    const shipping = subtotal >= 50000 ? 0 : 500
+    const shipping = subtotal >= 50000 ? 0 : shippingCharge
     const discount = couponApplied?.discount || 0
     const giftWrapCost = giftWrap ? GIFT_WRAP_PRICE : 0
     const total = subtotal + shipping + giftWrapCost - discount
@@ -319,7 +338,10 @@ export default function CheckoutPage() {
                                                         type="radio"
                                                         name="address"
                                                         checked={selectedAddress === addr.id}
-                                                        onChange={() => setSelectedAddress(addr.id)}
+                                                        onChange={() => {
+                                                            setSelectedAddress(addr.id)
+                                                            updateShippingRate(addr.pincode)
+                                                        }}
                                                         className="mt-1 accent-amber-500"
                                                     />
                                                     <div className="flex-1">
@@ -397,8 +419,8 @@ export default function CheckoutPage() {
                                         <label
                                             key={slot.id}
                                             className={`flex items-center gap-3 p-4 border cursor-pointer transition-all ${deliveryTimeSlot === slot.id
-                                                    ? 'border-amber-500 bg-amber-500/5'
-                                                    : 'border-neutral-700 hover:border-neutral-600'
+                                                ? 'border-amber-500 bg-amber-500/5'
+                                                : 'border-neutral-700 hover:border-neutral-600'
                                                 }`}
                                         >
                                             <input
@@ -545,7 +567,13 @@ export default function CheckoutPage() {
                                     </div>
                                     <div className="flex justify-between text-white/70">
                                         <span>Shipping</span>
-                                        <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+                                        <span>
+                                            {shippingLoading ? (
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                            ) : (
+                                                shipping === 0 ? 'FREE' : `₹${shipping}`
+                                            )}
+                                        </span>
                                     </div>
                                     {giftWrap && (
                                         <div className="flex justify-between text-white/70">
