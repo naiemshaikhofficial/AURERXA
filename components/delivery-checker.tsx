@@ -248,11 +248,18 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
                                                 {deliveryInfo.message}
                                             </span>
                                         </div>
-                                        <span className="text-[10px] uppercase tracking-wider text-amber-500/60 font-medium bg-amber-500/10 px-2 py-0.5 rounded-sm">
-                                            {deliveryInfo.zone === 'metro' && 'Metro City'}
-                                            {deliveryInfo.zone === 'tier2' && 'Tier-2 City'}
-                                            {deliveryInfo.zone === 'other' && 'Remote Area'}
-                                        </span>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <span className="text-[10px] uppercase tracking-wider text-amber-500/60 font-medium bg-amber-500/10 px-2 py-0.5 rounded-sm">
+                                                {deliveryInfo.zone === 'metro' && 'Metro City'}
+                                                {deliveryInfo.zone === 'tier2' && 'Tier-2 City'}
+                                                {deliveryInfo.zone === 'other' && 'Remote Area'}
+                                            </span>
+                                            {!freeShipping && (
+                                                <span className="text-[9px] text-white/40 uppercase tracking-widest font-medium">
+                                                    Standard Shipping: ₹90
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 )}
                             </>

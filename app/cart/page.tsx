@@ -21,7 +21,7 @@ export default function CartPage() {
     }
 
     const subtotal = cart.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0)
-    const shipping = subtotal >= 50000 ? 0 : 500
+    const shipping = subtotal >= 50000 ? 0 : 90
     const total = subtotal + shipping
 
     if (loading) {
@@ -131,7 +131,7 @@ export default function CartPage() {
                                         </div>
                                         <div className="flex justify-between text-white/70">
                                             <span>Shipping</span>
-                                            <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+                                            <span>{subtotal >= 50000 ? 'FREE' : '₹90'}</span>
                                         </div>
                                         {subtotal < 50000 && (
                                             <p className="text-xs text-amber-500">

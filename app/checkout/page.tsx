@@ -39,7 +39,7 @@ export default function CheckoutPage() {
     const [placing, setPlacing] = useState(false)
     const [showAddressForm, setShowAddressForm] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    const [shippingCharge, setShippingCharge] = useState<number>(500)
+    const [shippingCharge, setShippingCharge] = useState<number>(90)
     const [shippingLoading, setShippingLoading] = useState(false)
 
     // Coupon state

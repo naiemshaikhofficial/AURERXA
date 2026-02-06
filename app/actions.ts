@@ -597,7 +597,7 @@ export async function createOrder(
 
   // Calculate dynamic shipping
   const shippingResult = await calculateShippingRate(address.pincode, cart)
-  const shipping = subtotal >= 50000 ? 0 : (shippingResult.rate || 500)
+  const shipping = subtotal >= 50000 ? 0 : (shippingResult.rate || 90)
 
   const giftWrapCost = options?.giftWrap ? 199 : 0
   const couponDiscount = options?.couponDiscount || 0
@@ -1272,7 +1272,7 @@ export async function calculateShippingRate(pincode: string, cartItems: any[]) {
     const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
     const originPincode = '110001' // Default origin (Delhi)
 
-    if (!delhiveryToken) return { success: true, rate: 500 } // Fallback
+    if (!delhiveryToken) return { success: true, rate: 90 } // Fallback
 
     // Calculate total weight and volume
     let totalWeightGrams = 0
@@ -1310,13 +1310,13 @@ export async function calculateShippingRate(pincode: string, cartItems: any[]) {
 
     const data = await response.json()
     // Delhivery usually returns total_amount or similar
-    const rate = data?.[0]?.total_amount || (chargeWeight > 1 ? 500 + (chargeWeight * 50) : 500)
+    const rate = data?.[0]?.total_amount || (chargeWeight > 1 ? 90 + (chargeWeight * 50) : 90)
 
     return { success: true, rate: Math.round(rate) }
 
   } catch (error) {
     console.warn('Shipping calculation failed, using fallback:', error)
-    return { success: true, rate: 500 }
+    return { success: true, rate: 90 }
   }
 }
 
