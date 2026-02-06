@@ -80,6 +80,7 @@ export function NotificationManager() {
     return (
         <AnimatePresence>
             <motion.div
+                key="desktop-notification-prompt"
                 initial={{ x: 300, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: 300, opacity: 0 }}
@@ -109,6 +110,7 @@ export function NotificationManager() {
 
             {/* Mobile Version - Bottom Bar */}
             <motion.div
+                key="mobile-notification-prompt"
                 initial={{ y: 200 }}
                 animate={{ y: 0 }}
                 className="fixed bottom-32 left-4 right-4 z-[110] md:hidden"
