@@ -104,13 +104,13 @@ export default function AboutPage() {
                             </p>
                         </motion.div>
 
-                        <div className="relative aspect-[3/4] overflow-hidden group border border-white/5 bg-neutral-900 shadow-2xl">
-                            <ParallaxScroll offset={50} scaleOffset={0.15} className="h-full w-full">
+                        <div className="relative aspect-[2/3] overflow-hidden group border border-white/5 bg-neutral-900 shadow-2xl">
+                            <ParallaxScroll offset={20} scaleOffset={0.1} className="h-full w-full">
                                 <Image
                                     src="/451c3977-ad4e-4b7d-a918-730286647544.jpg"
                                     alt="Artisan Craftsmanship"
                                     fill
-                                    className="object-cover grayscale hover:grayscale-0 transition-all duration-1000 opacity-60 group-hover:opacity-100 object-top"
+                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-60 group-hover:opacity-100 object-top"
                                 />
                             </ParallaxScroll>
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
@@ -141,13 +141,13 @@ export default function AboutPage() {
                 {/* Section 3: The Birth of AURERXA */}
                 <section className="py-20 md:py-40 px-6 relative">
                     <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
-                        <div className="order-2 md:order-1 relative aspect-[4/5] md:aspect-square overflow-hidden group border border-white/5 bg-neutral-900">
-                            <ParallaxScroll offset={60} direction="down" scaleOffset={0.1} className="h-full w-full">
+                        <div className="order-2 md:order-1 relative aspect-[2/3] md:aspect-[3/4] overflow-hidden group border border-white/5 bg-neutral-900">
+                            <ParallaxScroll offset={30} direction="down" scaleOffset={0.05} className="h-full w-full">
                                 <Image
                                     src="/832831ea-66ff-4efd-8186-4b4f69e1094d.jpg"
                                     alt="Forging integrity"
                                     fill
-                                    className="object-cover grayscale brightness-75 opacity-70 object-center"
+                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 brightness-75 opacity-70 group-hover:opacity-100 object-top"
                                 />
                             </ParallaxScroll>
                             <div className="absolute bottom-4 left-4 md:bottom-10 md:left-10 p-4 md:p-6 bg-black/40 backdrop-blur-xl border-l-2 border-amber-500">
@@ -214,11 +214,21 @@ export default function AboutPage() {
                         </motion.div>
 
                         <div className="hidden lg:flex flex-col gap-6 justify-center">
-                            <div className="relative h-72 aspect-[3/4] overflow-hidden border border-white/5">
-                                <Image src="/ec354a72-24f4-415b-af0c-f96b278e43ae.jpg" alt="Hands" fill className="object-cover grayscale opacity-60 object-center" />
+                            <div className="relative h-[450px] aspect-[2/3] overflow-hidden border border-white/5 group">
+                                <Image
+                                    src="/photo_6066572646712807069_y.jpg"
+                                    alt="Master Craftsman"
+                                    fill
+                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-60 group-hover:opacity-100 object-top"
+                                />
                             </div>
-                            <div className="relative h-72 aspect-[3/4] overflow-hidden border border-white/5 ml-12">
-                                <Image src="/e33d5d87-edcb-48b6-af62-978811e21455.jpg" alt="Machines" fill className="object-cover grayscale opacity-60 object-center" />
+                            <div className="relative h-80 aspect-[3/4] overflow-hidden border border-white/5 ml-12 group">
+                                <Image
+                                    src="/35b9384a-ab6d-4958-a3aa-d7d5668b6137.jpg"
+                                    alt="Artisan at Work"
+                                    fill
+                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-60 group-hover:opacity-100 object-top"
+                                />
                             </div>
                         </div>
                     </div>
@@ -228,13 +238,13 @@ export default function AboutPage() {
                 <section className="py-24 md:py-48 bg-black relative overflow-hidden">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-                            <div className="relative aspect-[3/4] md:aspect-[4/5] overflow-hidden border border-white/10 shadow-2xl">
-                                <ParallaxScroll offset={40} scaleOffset={0.05} className="h-full w-full">
+                            <div className="relative aspect-[2/3] md:aspect-[3/4] overflow-hidden border border-white/10 shadow-2xl group">
+                                <ParallaxScroll offset={25} scaleOffset={0.05} className="h-full w-full">
                                     <Image
                                         src="/ceo.jpg"
                                         alt="Nijam Shaikh - Founder & CEO"
                                         fill
-                                        className="object-cover object-top filter contrast-[1.1] grayscale hover:grayscale-0 transition-all duration-1000"
+                                        className="object-cover object-top filter contrast-[1.1] grayscale group-hover:grayscale-0 transition-all duration-1000"
                                     />
                                 </ParallaxScroll>
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />

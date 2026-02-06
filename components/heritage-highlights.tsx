@@ -13,30 +13,30 @@ export function HeritageHighlights() {
                     <div className="order-2 lg:order-1 relative">
                         <div className="grid grid-cols-2 gap-4 md:gap-8">
                             <div className="space-y-4 md:space-y-8">
-                                <div className="relative aspect-[3/4] overflow-hidden border border-white/5 group">
+                                <div className="relative aspect-[2/3] overflow-hidden border border-white/5 group">
                                     <Image
                                         src="/ec354a72-24f4-415b-af0c-f96b278e43ae.jpg"
                                         alt="Artisan Hands"
                                         fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-top"
                                     />
                                 </div>
                                 <div className="relative aspect-square overflow-hidden border border-white/5 group">
                                     <Image
-                                        src="/e33d5d87-edcb-48b6-af62-978811e21455.jpg"
-                                        alt="Tools of Craft"
+                                        src="/photo_6066572646712807069_y.jpg"
+                                        alt="Focused Craft"
                                         fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-top"
                                     />
                                 </div>
                             </div>
                             <div className="pt-12 space-y-4 md:space-y-8">
-                                <div className="relative aspect-[3/4] overflow-hidden border border-white/5 group">
+                                <div className="relative aspect-[2/3] overflow-hidden border border-white/5 group">
                                     <Image
                                         src="/832831ea-66ff-4efd-8186-4b4f69e1094d.jpg"
                                         alt="Forging Gold"
                                         fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-top"
                                     />
                                 </div>
                                 <div className="relative aspect-square overflow-hidden border border-white/5 group font-serif p-6 bg-neutral-900/50 flex flex-col justify-center text-center">
