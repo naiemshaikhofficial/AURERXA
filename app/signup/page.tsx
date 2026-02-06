@@ -7,12 +7,18 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, AlertCircle, CheckCircle } from 'lucide-react'
+import { Loader2, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 
 export default function SignupPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
+    const redirect = searchParams.get('redirect') || '/'
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -69,11 +75,16 @@ export default function SignupPage() {
     }
 
     const handleGoogleSignup = async () => {
+        setLoading(true)
+        setError(null)
         try {
+            const redirectUrl = new URL('/auth/callback', window.location.origin)
+            redirectUrl.searchParams.set('next', redirect)
+
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback?next=/`,
+                    redirectTo: redirectUrl.toString(),
                     queryParams: {
                         prompt: 'select_account consent',
                     },
@@ -82,6 +93,7 @@ export default function SignupPage() {
             if (error) throw error
         } catch (err: any) {
             setError(err.message)
+            setLoading(false)
         }
     }
 
@@ -225,27 +237,45 @@ export default function SignupPage() {
 
                                 <div className="space-y-2">
                                     <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="password">Password</Label>
-                                    <Input
-                                        id="password"
-                                        name="password"
-                                        type="password"
-                                        required
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50"
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            id="password"
+                                            name="password"
+                                            type={showPassword ? 'text' : 'password'}
+                                            required
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="confirmPassword">Confirm Password</Label>
-                                    <Input
-                                        id="confirmPassword"
-                                        name="confirmPassword"
-                                        type="password"
-                                        required
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50"
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            id="confirmPassword"
+                                            name="confirmPassword"
+                                            type={showConfirmPassword ? 'text' : 'password'}
+                                            required
+                                            value={formData.confirmPassword}
+                                            onChange={handleChange}
+                                            className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                        >
+                                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div className="flex items-start gap-2">
@@ -272,7 +302,7 @@ export default function SignupPage() {
 
                             <div className="text-center text-sm text-white/50">
                                 Already have an account?{' '}
-                                <Link href="/login" className="text-amber-500 hover:text-amber-400 font-medium">
+                                <Link href={`/login${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`} className="text-amber-500 hover:text-amber-400 font-medium">
                                     Sign In
                                 </Link>
                             </div>

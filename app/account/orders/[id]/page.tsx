@@ -7,8 +7,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { getOrderById, getOrderTracking } from '@/app/actions'
-import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle } from 'lucide-react'
+import { getOrderById, getOrderTracking, verifyCashfreePayment } from '@/app/actions'
+import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw } from 'lucide-react'
 
 export default function OrderDetailPage() {
     const params = useParams()
@@ -16,26 +16,42 @@ export default function OrderDetailPage() {
     const isSuccess = searchParams.get('success') === 'true'
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [verifying, setVerifying] = useState(false)
     const [trackingData, setTrackingData] = useState<any>(null)
 
     useEffect(() => {
         async function load() {
             if (params.id) {
                 const data = await getOrderById(params.id as string)
-                setOrder(data)
+                if (data) {
+                    setOrder(data)
 
-                // Fetch tracking if available
-                if (data && data.tracking_number) {
-                    const tracking = await getOrderTracking(data.tracking_number)
-                    if (tracking.success) {
-                        setTrackingData(tracking)
+                    // Auto-verify if payment success param is present
+                    const paymentStatus = searchParams.get('payment')
+                    if (paymentStatus === 'success' && data.status === 'pending' && data.payment_method === 'online') {
+                        setVerifying(true)
+                        const verifyResult = await verifyCashfreePayment(params.id as string)
+                        if (verifyResult.success) {
+                            // Refresh order data
+                            const updatedData = await getOrderById(params.id as string)
+                            setOrder(updatedData)
+                        }
+                        setVerifying(false)
+                    }
+
+                    // Fetch tracking if available
+                    if (data.tracking_number) {
+                        const tracking = await getOrderTracking(data.tracking_number)
+                        if (tracking.success) {
+                            setTrackingData(tracking)
+                        }
                     }
                 }
             }
             setLoading(false)
         }
         load()
-    }, [params.id])
+    }, [params.id, searchParams])
 
     const getStatusStep = (status: string) => {
         switch (status) {
@@ -83,6 +99,15 @@ export default function OrderDetailPage() {
                         <ChevronRight className="w-4 h-4" />
                         <span className="text-white">{order.order_number}</span>
                     </div>
+
+                    {/* Verifying Overlay */}
+                    {verifying && (
+                        <div className="mb-8 p-6 bg-amber-500/10 border border-amber-500/30 text-center animate-in fade-in duration-500">
+                            <RefreshCw className="w-12 h-12 mx-auto mb-4 text-amber-500 animate-spin" />
+                            <h2 className="text-xl font-serif font-bold mb-2">Verifying Payment...</h2>
+                            <p className="text-white/60 text-sm">Please do not refresh or close this page.</p>
+                        </div>
+                    )}
 
                     {/* Success Banner */}
                     {isSuccess && (

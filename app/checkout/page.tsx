@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import Script from 'next/script'
 import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
@@ -204,7 +205,36 @@ export default function CheckoutPage() {
         })
 
         if (result.success) {
-            router.push(`/account/orders/${result.orderId}?success=true`)
+            if (paymentMethod === 'online') {
+                try {
+                    const { initiateCashfreePayment } = await import('@/app/actions')
+                    const paymentResult = await initiateCashfreePayment(result.orderId)
+
+                    if (paymentResult.success && paymentResult.paymentSessionId) {
+                        // Initialize Cashfree
+                        // @ts-ignore
+                        const cashfree = window.Cashfree({
+                            mode: "sandbox" // Default to sandbox, should be dynamic if possible
+                        });
+
+                        const checkoutOptions = {
+                            paymentSessionId: paymentResult.paymentSessionId,
+                            redirectTarget: "_self", // Using self to avoid popup issues, or _modal for popup
+                        };
+
+                        cashfree.checkout(checkoutOptions);
+                    } else {
+                        setError(paymentResult.error || 'Failed to initiate payment')
+                        setPlacing(false)
+                    }
+                } catch (err: any) {
+                    console.error('Payment Error:', err)
+                    setError('Payment gateway error. Please try again.')
+                    setPlacing(false)
+                }
+            } else {
+                router.push(`/account/orders/${result.orderId}?success=true`)
+            }
         } else {
             setError(result.error || 'Failed to place order')
             setPlacing(false)
@@ -710,6 +740,10 @@ export default function CheckoutPage() {
                 </div>
             </main>
 
+            <Script
+                src="https://sdk.cashfree.com/js/v3/cashfree.js"
+                strategy="beforeInteractive"
+            />
             <Footer />
         </div>
     )

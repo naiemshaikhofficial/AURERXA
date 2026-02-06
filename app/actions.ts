@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { notifyNewProduct } from './push-actions'
+import { createCashfreeOrder, getCashfreePayments } from '@/lib/cashfree'
 
 // Helper to get authenticated supabase client
 async function getAuthClient() {
@@ -1530,6 +1531,108 @@ export async function broadcastNotification(title: string, body: string, url: st
     return await broadcastOffer(title, body, url)
   } catch (e: any) {
     return { success: false, error: e.message }
+  }
+}
+
+// ============================================
+// CASHFREE PAYMENTS
+// ============================================
+
+export async function initiateCashfreePayment(orderId: string) {
+  try {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    // Get order details
+    const { data: order, error: orderError } = await client
+      .from('orders')
+      .select('*, order_items(*)')
+      .eq('id', orderId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (orderError || !order) {
+      return { success: false, error: 'Order not found' }
+    }
+
+    const customerDetails = {
+      customer_id: user.id,
+      customer_phone: order.shipping_address.phone || '9999999999',
+      customer_email: user.email,
+      customer_name: order.shipping_address.full_name || 'Customer'
+    }
+
+    const cashfreeOrder = await createCashfreeOrder({
+      order_id: order.order_number,
+      order_amount: Number(order.total),
+      order_currency: 'INR',
+      customer_details: customerDetails,
+      order_meta: {
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/account/orders/${order.id}?payment=success`,
+        notify_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/cashfree`
+      }
+    })
+
+    // Store the Cashfree order ID in our database if needed
+    // In this case, we use order_number as the order_id in Cashfree
+
+    return {
+      success: true,
+      paymentSessionId: cashfreeOrder.payment_session_id,
+      cfOrderId: cashfreeOrder.cf_order_id
+    }
+  } catch (error: any) {
+    console.error('Payment initiation error:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function verifyCashfreePayment(orderId: string) {
+  try {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    // Get order details
+    const { data: order, error: orderError } = await client
+      .from('orders')
+      .select('*')
+      .eq('id', orderId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (orderError || !order) {
+      return { success: false, error: 'Order not found' }
+    }
+
+    // Call Cashfree to get payments for this order
+    // Order ID in Cashfree is order.order_number
+    const payments = await getCashfreePayments(order.order_number)
+
+    // Find a successful payment
+    const successPayment = payments.find((p: any) => p.payment_status === 'SUCCESS')
+
+    if (successPayment) {
+      // Update order status
+      const { error: updateError } = await client
+        .from('orders')
+        .update({
+          status: 'paid', // Or 'processing'
+          payment_id: successPayment.cf_payment_id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', order.id)
+
+      if (updateError) throw updateError
+
+      return { success: true, status: 'paid' }
+    }
+
+    return { success: false, error: 'Payment not completed or failed' }
+  } catch (error: any) {
+    console.error('Payment verification error:', error)
+    return { success: false, error: error.message }
   }
 }
 

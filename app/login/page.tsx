@@ -2,17 +2,19 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react'
+import { Loader2, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 
 export default function LoginPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [showPassword, setShowPassword] = useState(false)
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -153,17 +155,26 @@ export default function LoginPage() {
                         <div className="space-y-2">
                             <div className="flex justify-between">
                                 <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="password">Password</Label>
-                                <Link href="#" className="text-xs text-amber-500 hover:text-amber-400">Forgot password?</Link>
+                                <Link href="/forgot-password" title="Reset Password" className="text-xs text-amber-500 hover:text-amber-400">Forgot password?</Link>
                             </div>
-                            <Input
-                                id="password"
-                                name="password"
-                                type="password"
-                                required
-                                value={formData.password}
-                                onChange={handleChange}
-                                className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50"
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    required
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 pr-10"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex items-start gap-2">
@@ -190,7 +201,7 @@ export default function LoginPage() {
 
                     <div className="text-center text-sm text-white/50">
                         Don&apos;t have an account?{' '}
-                        <Link href="/signup" className="text-amber-500 hover:text-amber-400 font-medium">
+                        <Link href={`/signup${searchParams.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`} className="text-amber-500 hover:text-amber-400 font-medium">
                             Create Account
                         </Link>
                     </div>

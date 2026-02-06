@@ -76,8 +76,13 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const handleBuyNow = async () => {
         if (!product) return
         setAddingToCart(true)
+
+        // Add to cart (handles guest/user automatically via CartContext)
         await addItem(product.id, selectedSize || 'One Size', 1, product)
+
         setAddingToCart(false)
+
+        // Redirect to checkout - the checkout page will handle login redirect if needed
         router.push('/checkout')
     }
 
