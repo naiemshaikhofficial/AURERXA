@@ -596,7 +596,8 @@ export async function createOrder(
   const subtotal = cart.reduce((sum, item) => sum + (item.products.price * item.quantity), 0)
 
   // Calculate dynamic shipping
-  const shippingResult = await calculateShippingRate(address.pincode, cart)
+  const isCod = paymentMethod === 'cod'
+  const shippingResult = await calculateShippingRate(address.pincode, cart, isCod)
   const shipping = subtotal >= 50000 ? 0 : (shippingResult.rate || 90)
 
   const giftWrapCost = options?.giftWrap ? 199 : 0
@@ -1266,53 +1267,174 @@ export async function checkDeliveryAvailability(pincode: string) {
   }
 }
 
-export async function calculateShippingRate(pincode: string, cartItems: any[]) {
+// ============================================
+// SHIPPING RATE CALCULATION (Custom Business Rates)
+// ============================================
+
+const SHIPPING_RATES_CHART = {
+  'A': { base500g: 30, addl500g: 29, base2kg: 92, addl1kg_2to4: 27, base5kg: 159, addl1kg_5to9: 22, base10kg: 226, addl1kg_10plus: 19 },
+  'B': { base500g: 33, addl500g: 32, base2kg: 102, addl1kg_2to4: 30, base5kg: 170, addl1kg_5to9: 24, base10kg: 245, addl1kg_10plus: 21 },
+  'C': { base500g: 44, addl500g: 42, base2kg: 141, addl1kg_2to4: 34, base5kg: 186, addl1kg_5to9: 31, base10kg: 311, addl1kg_10plus: 28 },
+  'D': { base500g: 52, addl500g: 49, base2kg: 166, addl1kg_2to4: 38, base5kg: 212, addl1kg_5to9: 35, base10kg: 359, addl1kg_10plus: 33 },
+  'E': { base500g: 64, addl500g: 61, base2kg: 195, addl1kg_2to4: 44, base5kg: 239, addl1kg_5to9: 41, base10kg: 419, addl1kg_10plus: 40 },
+  'F': { base500g: 75, addl500g: 72, base2kg: 230, addl1kg_2to4: 52, base5kg: 270, addl1kg_5to9: 49, base10kg: 484, addl1kg_10plus: 46 }
+}
+
+const CITY_SURCHARGES: Record<string, number[]> = {
+  'Ahmedabad': [2.5, 5, 5, 10, 10, 25],
+  'Gandhinagar': [2.5, 5, 5, 10, 10, 25],
+  'Bangalore': [2.5, 5, 5, 10, 10, 25],
+  'Hoskote': [2.5, 5, 5, 10, 10, 25],
+  'Hosur': [2.5, 5, 5, 10, 10, 25],
+  'Chandigarh': [2.5, 5, 5, 10, 10, 25],
+  'Mohali': [2.5, 5, 5, 10, 10, 25],
+  'Rajpura': [2.5, 5, 5, 10, 10, 25],
+  'Zirakpur': [2.5, 5, 5, 10, 10, 25],
+  'Chennai': [2.5, 5, 5, 10, 10, 25],
+  'Sriperumbudur': [2.5, 5, 5, 10, 10, 25],
+  'Bahadurgarh': [2.5, 5, 5, 10, 10, 25],
+  'Delhi': [2.5, 5, 5, 10, 10, 25],
+  'Faridabad': [2.5, 5, 5, 10, 10, 25],
+  'Ghaziabad': [2.5, 5, 5, 10, 10, 25],
+  'Gurgaon': [2.5, 5, 5, 10, 10, 25],
+  'Meerut': [2.5, 5, 5, 10, 10, 25],
+  'Noida': [2.5, 5, 5, 10, 10, 25],
+  'Panipat': [2.5, 5, 5, 10, 10, 25],
+  'Rewari': [2.5, 5, 5, 10, 10, 25],
+  'Rohtak': [2.5, 5, 5, 10, 10, 25],
+  'Sonipat': [2.5, 5, 5, 10, 10, 25],
+  'Hyderabad': [2.5, 5, 5, 10, 10, 25],
+  'Kolkata': [2.5, 5, 5, 10, 10, 25],
+  'Mumbai': [2.5, 5, 5, 10, 10, 25],
+  'Navi mumbai': [2.5, 5, 5, 10, 10, 25],
+  'Thane': [2.5, 5, 5, 10, 10, 25],
+  'Pune': [2.5, 5, 5, 10, 10, 25],
+  'Goa': [2.5, 5, 5, 10, 10, 25]
+}
+
+function getZone(pincode: string): keyof typeof SHIPPING_RATES_CHART {
+  const prefix = pincode.substring(0, 2)
+  const fullPrefix = pincode.substring(0, 3)
+
+  if (prefix === '11') return 'A' // Intra-city (Delhi)
+
+  // Zone B: NCR/North (Simplified)
+  if (['12', '13', '20', '21', '24', '25'].includes(prefix)) return 'B'
+
+  // Zone C: Metros
+  if (['40', '56', '60', '70', '50', '41'].includes(prefix)) return 'C'
+
+  // Zone E: NE & Special
+  if (['78', '79', '18', '19'].includes(prefix)) return 'E'
+
+  // Zone F: Very Remote
+  if (fullPrefix === '744') return 'F' // Andaman
+
+  return 'D' // Rest of India
+}
+
+function getCitySurcharge(pincode: string, weightKg: number): number {
+  // Ideally we need a pincode to city mapping. For now, we'll use common city prefixes.
+  const prefix = pincode.substring(0, 2)
+  let city = 'Other'
+
+  if (prefix === '38' || prefix === '39') city = 'Ahmedabad' // Gujarat
+  if (prefix === '56') city = 'Bangalore'
+  if (prefix === '60') city = 'Chennai'
+  if (prefix === '11') city = 'Delhi'
+  if (prefix === '50') city = 'Hyderabad'
+  if (prefix === '70') city = 'Kolkata'
+  if (prefix === '40') city = 'Mumbai'
+  if (prefix === '41') city = 'Pune'
+
+  const surcharges = CITY_SURCHARGES[city] || [0, 0, 0, 0, 0, 0]
+
+  if (weightKg <= 0.5) return surcharges[0]
+  if (weightKg <= 1) return surcharges[1]
+  if (weightKg <= 2) return surcharges[2]
+  if (weightKg <= 3) return surcharges[3]
+  if (weightKg <= 5) return surcharges[4]
+  return surcharges[5]
+}
+
+export async function calculateShippingRate(pincode: string, cartItems: any[], isCod: boolean = false) {
   try {
-    const delhiveryToken = process.env.DELHIVERY_API_TOKEN
-    const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
-    const originPincode = '110001' // Default origin (Delhi)
+    const originPincode = '110001'
 
-    if (!delhiveryToken) return { success: true, rate: 90 } // Fallback
-
-    // Calculate total weight and volume
+    // Calculate total weight and volumetric weight
     let totalWeightGrams = 0
-    let totalVolumetricWeight = 0
+    let totalVolWeightGrams = 0
+    let cartTotal = 0
 
     cartItems.forEach(item => {
       const product = item.products
-      const weight = product.weight_grams || 500 // Default 500g for jewelry
-      const w = parseFloat(product.dimensions_width) || 10
+      const weight = product.weight_grams || 200 // Gold items are light
+      const w = parseFloat(product.dimensions_width) || 10 // cm
       const h = parseFloat(product.dimensions_height) || 5
       const l = parseFloat(product.dimensions_length) || 10
 
-      const volumetricWeight = (w * h * l) / 5000 // Standard Delhivery factor
+      const volWeightGrams = (w * h * l / 5000) * 1000
 
       totalWeightGrams += (weight * item.quantity)
-      totalVolumetricWeight += (volumetricWeight * item.quantity)
+      totalVolWeightGrams += (volWeightGrams * item.quantity)
+      cartTotal += (product.price * item.quantity)
     })
 
-    const chargeWeight = Math.max(totalWeightGrams / 1000, totalVolumetricWeight)
+    const finalWeightGrams = Math.max(totalWeightGrams, totalVolWeightGrams)
+    const weightKg = finalWeightGrams / 1000
+    const zone = getZone(pincode)
+    const rates = SHIPPING_RATES_CHART[zone]
 
-    // Call Delhivery Rate Calculation API
-    // Note: This endpoint might vary by account, using a standard one.
-    const response = await fetch(
-      `${delhiveryUrl}/api/backend/client/warehouse/rate_calculation/?ss=${originPincode}&dd=${pincode}&w=${totalWeightGrams}&md=E`,
-      {
-        method: 'GET',
-        headers: {
-          'Authorization': `Token ${delhiveryToken}`,
-          'Content-Type': 'application/json'
-        }
+    let baseRate = 0
+
+    // Rate Calculation Logic based on weight slabs
+    if (weightKg <= 1.5) {
+      baseRate = rates.base500g
+      if (weightKg > 0.5) {
+        const extraUnits500g = Math.ceil((weightKg - 0.5) / 0.5)
+        baseRate += (extraUnits500g * rates.addl500g)
       }
-    )
+    } else if (weightKg <= 4.5) { // Assuming discounted slab up to 4kg+ extra buffer
+      baseRate = rates.base2kg
+      if (weightKg > 2) {
+        const extraKg = Math.ceil(weightKg - 2)
+        baseRate += (extraKg * rates.addl1kg_2to4)
+      }
+    } else if (weightKg <= 9.5) {
+      baseRate = rates.base5kg
+      if (weightKg > 5) {
+        const extraKg = Math.ceil(weightKg - 5)
+        baseRate += (extraKg * rates.addl1kg_5to9)
+      }
+    } else {
+      baseRate = rates.base10kg
+      if (weightKg > 10) {
+        const extraKg = Math.ceil(weightKg - 10)
+        baseRate += (extraKg * rates.addl1kg_10plus)
+      }
+    }
 
-    if (!response.ok) throw new Error('Delhivery Rate API failed')
+    const surcharge = getCitySurcharge(pincode, weightKg)
 
-    const data = await response.json()
-    // Delhivery usually returns total_amount or similar
-    const rate = data?.[0]?.total_amount || (chargeWeight > 1 ? 90 + (chargeWeight * 50) : 90)
+    let totalShipping = baseRate + surcharge
 
-    return { success: true, rate: Math.round(rate) }
+    // COD Charges: 40 or 2% whichever is higher
+    if (isCod) {
+      const codFee = Math.max(40, cartTotal * 0.02)
+      totalShipping += codFee
+    }
+
+    // GST (Diesel price hike is usually ~10-20% but we'll stick to a standard multiplier if needed, 
+    // or just assume the user wants the raw chart total + 18% GST)
+    const totalWithGST = totalShipping * 1.18
+
+    // Return the final rate (Round to match the user's preference for ₹90 or similar)
+    // If the calculated rate is very low (intra-city single ring), it might be ₹30-50, 
+    // we'll return at least 90 as per user's "warna normal shipping 90" request if it falls below.
+    return {
+      success: true,
+      rate: Math.max(90, Math.round(totalWithGST))
+    }
 
   } catch (error) {
     console.warn('Shipping calculation failed, using fallback:', error)

@@ -79,17 +79,16 @@ export default function CheckoutPage() {
         if (addressData.length > 0) {
             const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0]
             setSelectedAddress(defaultAddr.id)
-            updateShippingRate(defaultAddr.pincode)
         }
         setLoading(false)
     }
 
-    const updateShippingRate = async (pincode: string) => {
+    const updateShippingRate = async (pincode: string, isCod: boolean) => {
         if (!pincode || cart.length === 0) return
         setShippingLoading(true)
         try {
             const { calculateShippingRate } = await import('@/app/actions')
-            const res = await calculateShippingRate(pincode, cart)
+            const res = await calculateShippingRate(pincode, cart, isCod)
             if (res.success) {
                 setShippingCharge(res.rate)
             }
@@ -99,6 +98,14 @@ export default function CheckoutPage() {
             setShippingLoading(false)
         }
     }
+
+    // React to changes in address or payment method
+    useEffect(() => {
+        const addr = addresses.find(a => a.id === selectedAddress)
+        if (addr) {
+            updateShippingRate(addr.pincode, paymentMethod === 'cod')
+        }
+    }, [selectedAddress, paymentMethod])
 
     const handleAddAddress = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -338,10 +345,7 @@ export default function CheckoutPage() {
                                                         type="radio"
                                                         name="address"
                                                         checked={selectedAddress === addr.id}
-                                                        onChange={() => {
-                                                            setSelectedAddress(addr.id)
-                                                            updateShippingRate(addr.pincode)
-                                                        }}
+                                                        onChange={() => setSelectedAddress(addr.id)}
                                                         className="mt-1 accent-amber-500"
                                                     />
                                                     <div className="flex-1">
