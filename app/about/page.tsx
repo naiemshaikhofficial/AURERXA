@@ -128,12 +128,12 @@ export default function AboutPage() {
                             viewport={{ once: true }}
                             className="space-y-8 md:space-y-12"
                         >
-                            <p className="text-2xl md:text-4xl font-serif italic text-white/90 leading-snug">
-                                "Many small artisans — the true backbone of this industry — were rarely valued the way they deserved."
+                            <p className="text-2xl md:text-3xl font-serif italic text-white/90 leading-snug">
+                                "For generations, a strict monopoly ruled the industry. Traditional goldsmith shops held all the power, creating a system where <span className="text-amber-500">Bengali artisans were forbidden from selling directly</span> to the world."
                             </p>
-                            <p className="text-base md:text-lg text-white/50 font-light tracking-widest leading-loose max-w-2xl mx-auto">
-                                Their hands created beauty, but their efforts were not always respected.
-                                Their payments were often delayed or underpaid. We saw the pain behind the polish.
+                            <p className="text-base md:text-lg text-white/50 font-light tracking-widest leading-loose max-w-2xl mx-auto space-y-4">
+                                <span className="block italic mt-4">"The creators were silenced."</span>
+                                Their hands created the beauty, but the system ensured they remained invisible, forced to work for pennies while the middle-men took the glory. We saw the legacy of talent being strangled by monopoly, and we knew we had to break it.
                             </p>
                         </motion.div>
                     </div>
