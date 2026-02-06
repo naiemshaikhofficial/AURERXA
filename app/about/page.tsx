@@ -107,10 +107,10 @@ export default function AboutPage() {
                         <div className="relative aspect-[3/4] md:aspect-[4/5] overflow-hidden group border border-amber-500/10 bg-neutral-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                             <ParallaxScroll offset={15} scaleOffset={0.05} className="h-full w-full">
                                 <Image
-                                    src="/451c3977-ad4e-4b7d-a918-730286647544.jpg"
-                                    alt="Artisan Craftsmanship"
+                                    src="/photo_6066572646712807064_y.jpg"
+                                    alt="Senior Artist Bapan Hembromb"
                                     fill
-                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-80 group-hover:opacity-100 object-top scale-105"
+                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100 object-center scale-105"
                                 />
                             </ParallaxScroll>
                             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
@@ -201,26 +201,18 @@ export default function AboutPage() {
                             initial={{ opacity: 0, y: 50 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="bg-black/95 md:bg-black/80 backdrop-blur-3xl border border-white/10 p-8 md:p-12 lg:p-20 space-y-10 shadow-[0_0_100px_rgba(0,0,0,0.8)]"
+                            className="h-fit bg-black/95 md:bg-black/80 backdrop-blur-3xl border border-white/10 p-8 md:p-10 lg:p-14 space-y-6 md:space-y-8 shadow-[0_0_100px_rgba(0,0,0,0.8)] self-center"
                         >
                             <h2 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold italic tracking-tighter">
                                 They are <br />
                                 <span className="text-amber-500 underline decoration-amber-500/20 underline-offset-8">Family.</span>
                             </h2>
-                            <div className="space-y-6">
+                            <div className="space-y-4 md:space-y-6">
                                 <p className="text-lg md:text-xl lg:text-2xl text-white/90 font-light leading-relaxed italic">
                                     Over the decades, we have worked with <span className="text-white font-medium">thousands of craftsmen</span>, together delivering <span className="text-white font-medium">millions of pieces of jewelry</span> to the world.
                                 </p>
                                 <p className="text-base md:text-lg text-white/80 font-medium italic tracking-tight leading-relaxed text-amber-500/90">
                                     "Most importantly, we do not see them as workers or employees. They are family. Because without them, there is no AURERXA."
-                                </p>
-                            </div>
-                            <div className="pt-6 border-t border-white/5 space-y-6">
-                                <p className="text-base md:text-lg text-white/50 font-light leading-relaxed">
-                                    Every artisan in our workshop, from <span className="text-white">Bapan Hembromb</span> to the youngest apprentice, carries a story of resilience. Many came from homes where survival was a daily battle, finding their dignity in the absolute precision of their tools.
-                                </p>
-                                <p className="text-base md:text-lg text-white/50 font-light leading-relaxed">
-                                    Their hands, calloused and wise, are the architects of our luxury. We don't just give them a workshop; we give them a legacy. We promised that their names would be remembered as long as the diamonds they set. When you wear AURERXA, you wear their heartbeat.
                                 </p>
                             </div>
                         </motion.div>
