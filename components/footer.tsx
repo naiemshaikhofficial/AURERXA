@@ -20,7 +20,7 @@ export function Footer() {
               />
             </Link>
             <p className="text-xs text-white/30 font-light leading-loose tracking-widest italic">
-              Crafting legends since 1989. Where every piece is a journey into the heart of excellence.
+              A 50-year legacy forged in respect. Working with 1000+ craftsmen to deliver millions of handcrafted masterpieces.
             </p>
           </div>
 

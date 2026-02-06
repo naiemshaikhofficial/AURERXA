@@ -7,6 +7,7 @@ import { Newsletter } from '@/components/newsletter'
 import { Footer } from '@/components/footer'
 import { Heritage } from '@/components/heritage'
 import { NewReleases } from '@/components/new-releases'
+import { HeritageHighlights } from '@/components/heritage-highlights'
 import { getNewReleases } from './actions'
 
 export default async function HomePage() {
@@ -20,6 +21,7 @@ export default async function HomePage() {
       <NewReleases products={newReleases} />
       <FeaturedCollections />
       <Bestsellers />
+      <HeritageHighlights />
       <div className="hidden md:block">
         <CustomOrderForm />
         <Newsletter />

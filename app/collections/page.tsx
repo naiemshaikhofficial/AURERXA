@@ -12,6 +12,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ParallaxScroll } from '@/components/parallax-scroll'
 import { motion } from 'framer-motion'
+import { HeritageHighlights } from '@/components/heritage-highlights'
 
 interface Product {
   id: string
@@ -365,6 +366,7 @@ function CollectionsContent() {
           </motion.div>
         )}
       </div>
+      <HeritageHighlights />
       <Footer />
     </div>
   )

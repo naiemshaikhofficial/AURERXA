@@ -1,0 +1,86 @@
+'use client'
+
+import React from 'react'
+import Image from 'next/image'
+import { motion } from 'framer-motion'
+import { ParallaxScroll } from './parallax-scroll'
+
+export function HeritageHighlights() {
+    return (
+        <section className="py-24 md:py-48 bg-black relative overflow-hidden border-y border-white/5">
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center">
+                    <div className="order-2 lg:order-1 relative">
+                        <div className="grid grid-cols-2 gap-4 md:gap-8">
+                            <div className="space-y-4 md:space-y-8">
+                                <div className="relative aspect-[3/4] overflow-hidden border border-white/5 group">
+                                    <Image
+                                        src="/ec354a72-24f4-415b-af0c-f96b278e43ae.jpg"
+                                        alt="Artisan Hands"
+                                        fill
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                                    />
+                                </div>
+                                <div className="relative aspect-square overflow-hidden border border-white/5 group">
+                                    <Image
+                                        src="/e33d5d87-edcb-48b6-af62-978811e21455.jpg"
+                                        alt="Tools of Craft"
+                                        fill
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                                    />
+                                </div>
+                            </div>
+                            <div className="pt-12 space-y-4 md:space-y-8">
+                                <div className="relative aspect-[3/4] overflow-hidden border border-white/5 group">
+                                    <Image
+                                        src="/832831ea-66ff-4efd-8186-4b4f69e1094d.jpg"
+                                        alt="Forging Gold"
+                                        fill
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000"
+                                    />
+                                </div>
+                                <div className="relative aspect-square overflow-hidden border border-white/5 group font-serif p-6 bg-neutral-900/50 flex flex-col justify-center text-center">
+                                    <span className="text-amber-500 text-3xl md:text-5xl font-bold italic">1000+</span>
+                                    <span className="text-white/40 text-[10px] md:text-xs uppercase tracking-[0.2em] mt-2">Master Artisans</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <motion.div
+                        initial={{ opacity: 0, x: 50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1.2 }}
+                        className="order-1 lg:order-2 space-y-8 md:space-y-12"
+                    >
+                        <div className="space-y-4 md:space-y-6">
+                            <span className="text-amber-500 text-xs tracking-[0.5em] font-bold uppercase">The Scale of Respect</span>
+                            <h2 className="text-4xl md:text-7xl font-serif font-black italic text-white tracking-tighter leading-[0.9]">
+                                Millions of <br />
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600">Masterpieces.</span>
+                            </h2>
+                        </div>
+
+                        <div className="space-y-6 md:space-y-8 text-lg md:text-xl text-white/50 font-light leading-relaxed italic">
+                            <p>
+                                What started as a child's dream in 1989 has grown into a family of
+                                <span className="text-white"> over a thousand master craftsmen.</span> Together, we have
+                                meticulously handcrafted millions of jewelry pieces, each carrying a promise of fair pay and absolute integrity.
+                            </p>
+                            <p className="text-base md:text-lg border-l border-amber-500/30 pl-6">
+                                Rooted in a 50-year heritage of resilience. We don't just sell jewelry; we honor the legacy of those who make it.
+                            </p>
+                        </div>
+
+                        <div className="pt-8">
+                            <button className="px-8 py-4 border border-amber-500/30 text-amber-500 text-xs uppercase tracking-[0.3em] font-bold hover:bg-amber-500 hover:text-black transition-all duration-500">
+                                Discover Our Story
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+        </section>
+    )
+}
