@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -34,6 +34,22 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const [zoomed, setZoomed] = useState(false)
     const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 })
     const imageRef = useRef<HTMLDivElement>(null)
+    const rafRef = useRef<number | null>(null)
+
+    // Memoize image array to prevent re-calculations on every render
+    const allImages = React.useMemo(() => {
+        if (!product) return []
+        const imgs = product.images
+        let additional: string[] = []
+
+        if (Array.isArray(imgs)) {
+            additional = imgs
+        } else if (typeof imgs === 'string' && imgs.startsWith('{')) {
+            additional = imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+        }
+
+        return [product.image_url, ...additional]
+    }, [product])
 
     // Add to recently viewed on mount
     useEffect(() => {
@@ -46,7 +62,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                 slug: product.slug
             })
         }
-    }, [product])
+    }, [product.id]) // Only depend on ID
 
     const handleAddToCart = async () => {
         if (!product) return
@@ -78,26 +94,33 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     }
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!imageRef.current) return
-        const rect = imageRef.current.getBoundingClientRect()
-        const x = ((e.clientX - rect.left) / rect.width) * 100
-        const y = ((e.clientY - rect.top) / rect.height) * 100
-        setZoomPosition({ x, y })
+        if (!imageRef.current || !zoomed) return
+
+        if (rafRef.current) cancelAnimationFrame(rafRef.current)
+
+        const clientX = e.clientX
+        const clientY = e.clientY
+
+        rafRef.current = requestAnimationFrame(() => {
+            if (!imageRef.current) return
+            const rect = imageRef.current.getBoundingClientRect()
+            const x = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100))
+            const y = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100))
+
+            // Only update if change is significant to avoid noise/loops
+            setZoomPosition(prev => {
+                if (Math.abs(prev.x - x) < 0.1 && Math.abs(prev.y - y) < 0.1) return prev
+                return { x, y }
+            })
+        })
     }
 
-    // Get all images (defensive check for both text[] and jsonb)
-    const getImagesArray = () => {
-        if (!product) return []
-        const imgs = product.images
-        if (Array.isArray(imgs)) return imgs
-        if (typeof imgs === 'string' && imgs.startsWith('{')) {
-            // Fix for Postgres array literal string if it exists
-            return imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+    // Cleanup RAF
+    useEffect(() => {
+        return () => {
+            if (rafRef.current) cancelAnimationFrame(rafRef.current)
         }
-        return []
-    }
-
-    const allImages = product ? [product.image_url, ...getImagesArray()] : []
+    }, [])
 
     if (!product) return null // Should be handled by server page redirect or 404
 
@@ -119,10 +142,10 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             src={allImages[selectedImage]}
                             alt={product.name}
                             fill
-                            className="object-contain p-8 lg:p-16 transition-transform duration-500"
+                            className={`object-contain p-8 lg:p-16 ${zoomed ? '' : 'transition-transform duration-500'}`}
                             style={{
                                 transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                                transform: zoomed ? 'scale(2)' : 'scale(1)'
+                                transform: zoomed ? 'scale(2.5)' : 'scale(1)'
                             }}
                             priority
                             sizes="(max-width: 768px) 100vw, 50vw"
