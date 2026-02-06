@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getAddresses, addAddress, createOrder, validateCoupon } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
-import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle, Clock } from 'lucide-react'
+import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle, Clock, Pencil } from 'lucide-react'
 import { DeliveryEstimate } from '@/components/delivery-checker'
 
 
@@ -41,6 +41,7 @@ export default function CheckoutPage() {
     const [error, setError] = useState<string | null>(null)
     const [shippingCharge, setShippingCharge] = useState<number>(90)
     const [shippingLoading, setShippingLoading] = useState(false)
+    const [editingAddressId, setEditingAddressId] = useState<string | null>(null)
 
     // Coupon state
     const [couponCode, setCouponCode] = useState('')
@@ -79,6 +80,8 @@ export default function CheckoutPage() {
         if (addressData.length > 0) {
             const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0]
             setSelectedAddress(defaultAddr.id)
+        } else {
+            setShowAddressForm(true)
         }
         setLoading(false)
     }
@@ -107,12 +110,22 @@ export default function CheckoutPage() {
         }
     }, [selectedAddress, paymentMethod])
 
-    const handleAddAddress = async (e: React.FormEvent) => {
+    const handleSaveAddress = async (e: React.FormEvent) => {
         e.preventDefault()
-        const result = await addAddress(newAddress)
+        setError(null)
+
+        let result
+        if (editingAddressId) {
+            const { updateAddress } = await import('@/app/actions')
+            result = await updateAddress(editingAddressId, newAddress)
+        } else {
+            result = await addAddress(newAddress)
+        }
+
         if (result.success) {
             await loadData()
             setShowAddressForm(false)
+            setEditingAddressId(null)
             setNewAddress({
                 label: 'Home',
                 full_name: '',
@@ -124,8 +137,24 @@ export default function CheckoutPage() {
                 is_default: false
             })
         } else {
-            setError(result.error || 'Failed to add address')
+            setError(result.error || 'Failed to save address')
         }
+    }
+
+    const handleEditAddress = (addr: any) => {
+        setNewAddress({
+            label: addr.label,
+            full_name: addr.full_name,
+            phone: addr.phone,
+            street_address: addr.street_address,
+            city: addr.city,
+            state: addr.state,
+            pincode: addr.pincode,
+            is_default: addr.is_default
+        })
+        setEditingAddressId(addr.id)
+        setShowAddressForm(true)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
     const handleApplyCoupon = async () => {
@@ -240,9 +269,22 @@ export default function CheckoutPage() {
                                         <MapPin className="w-5 h-5 text-amber-500" />
                                         Delivery Address
                                     </h2>
-                                    {addresses.length < 5 && (
+                                    {!showAddressForm && addresses.length < 5 && (
                                         <button
-                                            onClick={() => setShowAddressForm(!showAddressForm)}
+                                            onClick={() => {
+                                                setEditingAddressId(null)
+                                                setNewAddress({
+                                                    label: 'Home',
+                                                    full_name: '',
+                                                    phone: '',
+                                                    street_address: '',
+                                                    city: '',
+                                                    state: '',
+                                                    pincode: '',
+                                                    is_default: false
+                                                })
+                                                setShowAddressForm(true)
+                                            }}
                                             className="text-sm text-amber-500 hover:text-amber-400 flex items-center gap-1"
                                         >
                                             <Plus className="w-4 h-4" />
@@ -252,7 +294,22 @@ export default function CheckoutPage() {
                                 </div>
 
                                 {showAddressForm && (
-                                    <form onSubmit={handleAddAddress} className="mb-6 p-4 border border-neutral-700 space-y-4">
+                                    <form onSubmit={handleSaveAddress} className="mb-6 p-4 border border-amber-500/30 bg-amber-500/5 space-y-4 rounded-xl">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-sm font-medium text-amber-500 uppercase tracking-widest">
+                                                {editingAddressId ? 'Edit Address' : 'New Address'}
+                                            </h3>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowAddressForm(false)
+                                                    setEditingAddressId(null)
+                                                }}
+                                                className="text-white/40 hover:text-white"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <Label className="text-white/70 text-xs">Label</Label>
@@ -322,9 +379,23 @@ export default function CheckoutPage() {
                                                 />
                                             </div>
                                         </div>
-                                        <Button type="submit" size="sm" className="bg-amber-500 hover:bg-amber-400 text-neutral-950">
-                                            Save Address
-                                        </Button>
+                                        <div className="flex gap-3">
+                                            <Button type="submit" size="sm" className="bg-amber-500 hover:bg-amber-400 text-neutral-950 px-8">
+                                                {editingAddressId ? 'Update Address' : 'Save Address'}
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setShowAddressForm(false)
+                                                    setEditingAddressId(null)
+                                                }}
+                                                className="text-white/50 hover:text-white"
+                                            >
+                                                Cancel
+                                            </Button>
+                                        </div>
                                     </form>
                                 )}
 
@@ -333,11 +404,11 @@ export default function CheckoutPage() {
                                 ) : (
                                     <div className="space-y-3">
                                         {addresses.map((addr) => (
-                                            <label
+                                            <div
                                                 key={addr.id}
-                                                className={`block p-4 border cursor-pointer transition-all ${selectedAddress === addr.id
+                                                className={`group block p-4 border transition-all rounded-xl relative ${selectedAddress === addr.id
                                                     ? 'border-amber-500 bg-amber-500/5'
-                                                    : 'border-neutral-700 hover:border-neutral-600'
+                                                    : 'border-neutral-800 hover:border-neutral-700'
                                                     }`}
                                             >
                                                 <div className="flex items-start gap-3">
@@ -346,22 +417,34 @@ export default function CheckoutPage() {
                                                         name="address"
                                                         checked={selectedAddress === addr.id}
                                                         onChange={() => setSelectedAddress(addr.id)}
-                                                        className="mt-1 accent-amber-500"
+                                                        className="mt-1 accent-amber-500 cursor-pointer"
                                                     />
-                                                    <div className="flex-1">
+                                                    <div className="flex-1 cursor-pointer" onClick={() => setSelectedAddress(addr.id)}>
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <span className="font-medium">{addr.full_name}</span>
-                                                            <span className="text-xs bg-neutral-800 px-2 py-0.5 text-white/60">{addr.label}</span>
+                                                            <span className="text-[10px] bg-neutral-800 px-2 py-0.5 text-white/60 uppercase tracking-widest">{addr.label}</span>
                                                             {addr.is_default && (
-                                                                <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5">Default</span>
+                                                                <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 uppercase tracking-widest">Default</span>
                                                             )}
                                                         </div>
                                                         <p className="text-sm text-white/60">{addr.street_address}</p>
                                                         <p className="text-sm text-white/60">{addr.city}, {addr.state} - {addr.pincode}</p>
                                                         <p className="text-sm text-white/50 mt-1">Phone: {addr.phone}</p>
                                                     </div>
+
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault()
+                                                            e.stopPropagation()
+                                                            handleEditAddress(addr)
+                                                        }}
+                                                        className="p-2 text-white/20 hover:text-amber-500 transition-colors"
+                                                        title="Edit Address"
+                                                    >
+                                                        <Pencil size={14} />
+                                                    </button>
                                                 </div>
-                                            </label>
+                                            </div>
                                         ))}
                                     </div>
                                 )}
