@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { addToWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
-import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Copy } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
 
 
@@ -91,6 +91,25 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             setMessage(result.error || 'Failed to add')
         }
         setTimeout(() => setMessage(null), 3000)
+    }
+
+    const handleShare = async () => {
+        const shareData = {
+            title: product.name,
+            text: `Check out this exquisite piece at AURERXA: ${product.name}`,
+            url: window.location.href,
+        }
+
+        try {
+            if (navigator.share) {
+                await navigator.share(shareData)
+            } else {
+                await navigator.clipboard.writeText(window.location.href)
+                setMessage('Legacy Link Copied to Clipboard')
+            }
+        } catch (err) {
+            console.error('Share failed:', err)
+        }
     }
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -176,6 +195,19 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 </button>
                             </div>
                         )}
+
+                        {/* Share Button Overlay */}
+                        <div className="absolute top-6 right-6 z-20 group/share">
+                            <button
+                                onClick={handleShare}
+                                className="w-12 h-12 bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all duration-500 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+                            >
+                                <Share2 className="w-4 h-4" />
+                            </button>
+                            <span className="absolute right-14 top-1/2 -translate-y-1/2 bg-black/80 backdrop-blur border border-white/5 text-[9px] uppercase tracking-widest px-3 py-1 text-white opacity-0 group-hover/share:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                Share Masterpiece
+                            </span>
+                        </div>
 
                         {/* Zoom Hint */}
                         <div className="absolute bottom-6 right-6 opacity-0 group-hover/gallery:opacity-100 transition-opacity bg-black/60 backdrop-blur px-3 py-1 flex items-center gap-2 border border-white/10">
