@@ -973,3 +973,134 @@ export async function getRepairs() {
   if (error) return []
   return data
 }
+
+// ============================================
+// DELIVERY AVAILABILITY
+// ============================================
+
+// Metro city pincode prefixes (first 2 digits)
+const METRO_PINCODES = [
+  '11', // Delhi
+  '40', // Mumbai
+  '56', // Bangalore
+  '60', // Chennai
+  '70', // Kolkata
+  '50', // Hyderabad
+  '41', // Pune/Thane
+]
+
+// Tier-2 city pincode prefixes
+const TIER2_PINCODES = [
+  '30', '31', '32', '33', '34', // Rajasthan (Jaipur, Jodhpur, etc.)
+  '22', '23', '24', '25', '26', // UP (Lucknow, etc.)
+  '38', '39', // Gujarat (Ahmedabad, Surat)
+  '42', '43', '44', // Maharashtra (Nagpur, etc.)
+  '45', '46', // MP (Indore, Bhopal)
+  '52', '53', // Andhra Pradesh (Visakhapatnam)
+  '62', '63', '64', // Tamil Nadu (Coimbatore, Madurai)
+  '80', // Karnataka (Mysore, Hubli)
+  '14', '15', '16', // Punjab/Haryana (Chandigarh, Ludhiana)
+]
+
+// List of pincodes where COD is NOT available (remote areas)
+const NO_COD_PREFIXES = ['79', '84', '85', '86', '87', '88', '89', '19']
+
+export async function checkDeliveryAvailability(pincode: string) {
+  try {
+    // Validate pincode format (6 digits, Indian pincode)
+    if (!pincode || pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
+      return {
+        success: false,
+        error: 'Please enter a valid 6-digit pincode'
+      }
+    }
+
+    const prefix = pincode.substring(0, 2)
+    const firstDigit = pincode.charAt(0)
+
+    // Check if pincode is valid (Indian pincodes start with 1-8)
+    if (!['1', '2', '3', '4', '5', '6', '7', '8'].includes(firstDigit)) {
+      return {
+        success: false,
+        error: 'Invalid pincode. Please enter a valid Indian pincode.'
+      }
+    }
+
+    // Determine delivery zone
+    let deliveryDays: { min: number; max: number }
+    let zone: 'metro' | 'tier2' | 'other'
+    let expressAvailable = false
+
+    if (METRO_PINCODES.includes(prefix)) {
+      deliveryDays = { min: 3, max: 5 }
+      zone = 'metro'
+      expressAvailable = true
+    } else if (TIER2_PINCODES.some(p => prefix.startsWith(p.substring(0, 2)) || p === prefix)) {
+      deliveryDays = { min: 5, max: 7 }
+      zone = 'tier2'
+    } else {
+      deliveryDays = { min: 7, max: 10 }
+      zone = 'other'
+    }
+
+    // Calculate estimated delivery dates
+    const today = new Date()
+    const minDate = new Date(today)
+    const maxDate = new Date(today)
+
+    // Add business days (skip weekends)
+    let minDaysAdded = 0
+    let maxDaysAdded = 0
+
+    while (minDaysAdded < deliveryDays.min) {
+      minDate.setDate(minDate.getDate() + 1)
+      if (minDate.getDay() !== 0) { // Skip Sunday
+        minDaysAdded++
+      }
+    }
+
+    while (maxDaysAdded < deliveryDays.max) {
+      maxDate.setDate(maxDate.getDate() + 1)
+      if (maxDate.getDay() !== 0) { // Skip Sunday
+        maxDaysAdded++
+      }
+    }
+
+    // Format dates
+    const formatDate = (date: Date) => {
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+      return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`
+    }
+
+    // Check COD availability
+    const codAvailable = !NO_COD_PREFIXES.includes(prefix)
+
+    return {
+      success: true,
+      available: true,
+      pincode,
+      zone,
+      deliveryDays,
+      estimatedDelivery: {
+        from: formatDate(minDate),
+        to: formatDate(maxDate),
+        fromDate: minDate.toISOString(),
+        toDate: maxDate.toISOString()
+      },
+      expressAvailable,
+      codAvailable,
+      message: zone === 'metro'
+        ? 'Express Delivery Available'
+        : zone === 'tier2'
+          ? 'Standard Delivery'
+          : 'Extended Delivery Area'
+    }
+  } catch (err) {
+    console.error('Delivery check error:', err)
+    return {
+      success: false,
+      error: 'Unable to check delivery availability. Please try again.'
+    }
+  }
+}

@@ -11,6 +11,8 @@ import { addToWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
 import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2 } from 'lucide-react'
+import { DeliveryChecker } from '@/components/delivery-checker'
+
 
 interface ProductClientProps {
     product: any
@@ -194,6 +196,10 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 <li className="flex items-center gap-3"><RefreshCw className="w-3 h-3 text-amber-500" /> Lifetime Maintenance</li>
                             </ul>
                         </div>
+
+                        {/* Delivery Check */}
+                        <DeliveryChecker productPrice={product.price} />
+
 
                         {/* Selectors */}
                         <div className="space-y-6 pt-4">

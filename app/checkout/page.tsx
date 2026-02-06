@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/label'
 import { getAddresses, addAddress, createOrder, validateCoupon } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle } from 'lucide-react'
+import { DeliveryEstimate } from '@/components/delivery-checker'
+
 
 import { supabase } from '@/lib/supabase'
 
@@ -514,7 +516,13 @@ export default function CheckoutPage() {
                                         <span>Total</span>
                                         <span className="text-amber-400">₹{total.toLocaleString('en-IN')}</span>
                                     </div>
+
+                                    {/* Estimated Delivery */}
+                                    {selectedAddress && (
+                                        <DeliveryEstimate pincode={addresses.find((a: any) => a.id === selectedAddress)?.pincode} />
+                                    )}
                                 </div>
+
 
                                 <Button
                                     onClick={handlePlaceOrder}
