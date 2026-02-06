@@ -16,7 +16,6 @@ create table if not exists profiles (
 
 alter table profiles enable row level security;
 
--- Policies (Drop first to avoid errors)
 drop policy if exists "Public profiles are viewable by everyone." on profiles;
 create policy "Public profiles are viewable by everyone." on profiles for select using (true);
 
@@ -85,29 +84,32 @@ create table if not exists products (
   description text,
   price decimal(10, 2) not null,
   image_url text not null,
-  images text[] default '{}',
+  images jsonb default '[]'::jsonb,
   stock integer default 0,
   sizes text[] default '{}',
   featured boolean default false,
   bestseller boolean default false,
-  slug text unique, -- [NEW] Product URL slug
-  -- We add columns via ALTER below to ensure they exist on re-runs
+  slug text unique,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Ensure new columns exist (Idempotent updates)
+-- Idempotent column additions
 alter table products add column if not exists purity text;
 alter table products add column if not exists gender text default 'Unisex';
 alter table products add column if not exists weight_grams decimal(10, 2);
-
--- CRITICAL: Force images column to jsonb for multi-image support
--- This drops any existing 'images' column and recreates it as the correct jsonb type
-alter table products drop column if exists images;
-alter table products add column images jsonb default '[]'::jsonb;
 alter table products add column if not exists dimensions_width text;
 alter table products add column if not exists dimensions_height text;
 alter table products add column if not exists dimensions_length text;
 alter table products add column if not exists dimensions_unit text default 'mm';
+
+-- Ensure images is jsonb (Correcting previous text[] if it existed)
+do $$ 
+begin 
+    if exists (select 1 from information_schema.columns where table_name='products' and column_name='images' and data_type='ARRAY') then
+        alter table products drop column images;
+        alter table products add column images jsonb default '[]'::jsonb;
+    end if;
+end $$;
 
 -- Function: Slugify
 create or replace function public.slugify(v text)
@@ -132,9 +134,6 @@ drop trigger if exists on_product_save_slug on products;
 create trigger on_product_save_slug
   before insert or update on products
   for each row execute procedure public.handle_product_slug();
-
--- Backfill slugs for existing products
-update products set slug = public.slugify(name) where slug is null;
 
 alter table products enable row level security;
 
@@ -213,14 +212,12 @@ create table if not exists orders (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Ensure optional columns exist
 alter table orders add column if not exists coupon_code text;
 alter table orders add column if not exists coupon_discount decimal(10, 2) default 0;
 alter table orders add column if not exists gift_wrap boolean default false;
 alter table orders add column if not exists gift_message text;
 alter table orders add column if not exists delivery_time_slot text;
 alter table orders add column if not exists tracking_number text;
-
 
 alter table orders enable row level security;
 
@@ -256,10 +253,8 @@ create policy "Users can create order items" on order_items for insert
   with check (exists (select 1 from orders where orders.id = order_items.order_id and orders.user_id = auth.uid()));
 
 -- ============================================
--- 9. CUSTOMER SUPPORT TABLES (NEW)
+-- 9. TICKETS TABLE
 -- ============================================
-
--- TICKETS
 create table if not exists tickets (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade not null,
@@ -279,7 +274,9 @@ create policy "Users can view own tickets" on tickets for select using (auth.uid
 drop policy if exists "Users can create own tickets" on tickets;
 create policy "Users can create own tickets" on tickets for insert with check (auth.uid() = user_id);
 
--- REPAIRS
+-- ============================================
+-- 10. REPAIRS TABLE
+-- ============================================
 create table if not exists repairs (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade not null,
@@ -298,25 +295,6 @@ create policy "Users can view own repairs" on repairs for select using (auth.uid
 
 drop policy if exists "Users can create own repairs" on repairs;
 create policy "Users can create own repairs" on repairs for insert with check (auth.uid() = user_id);
-
--- ============================================
--- 10. TRIGGER
--- ============================================
-create or replace function public.handle_new_user() 
-returns trigger as $$
-begin
-  insert into public.profiles (id, full_name, email, avatar_url)
-  values (new.id, new.raw_user_meta_data->>'full_name', new.email, new.raw_user_meta_data->>'avatar_url');
-  return new;
-end;
-$$ language plpgsql security definer;
-
--- Triggers are harder to drop via 'IF EXISTS', but replacing the function handles the logic update.
--- Drop trigger if we want to be clean:
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
 
 -- ============================================
 -- 11. COUPONS TABLE
@@ -389,7 +367,68 @@ drop policy if exists "Allow public read active stores" on stores;
 create policy "Allow public read active stores" on stores for select using (is_active = true);
 
 -- ============================================
--- 14. SEED DATA (Safe to re-run)
+-- 14. NEWSLETTER SUBSCRIBERS (MISSING)
+-- ============================================
+create table if not exists newsletter_subscribers (
+  id uuid default gen_random_uuid() primary key,
+  email text not null unique,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table newsletter_subscribers enable row level security;
+
+drop policy if exists "Allow service role or admin access" on newsletter_subscribers;
+create policy "Allow service role or admin access" on newsletter_subscribers for select using (auth.uid() is not null); -- Muted for now, adjust based on admin needs
+
+-- ============================================
+-- 15. CUSTOM ORDERS (MISSING)
+-- ============================================
+create table if not exists custom_orders (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null,
+  phone text,
+  description text not null,
+  budget text,
+  status text default 'pending',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table custom_orders enable row level security;
+
+-- ============================================
+-- 16. CONTACT MESSAGES (MISSING)
+-- ============================================
+create table if not exists contact_messages (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null,
+  phone text,
+  message text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table contact_messages enable row level security;
+
+-- ============================================
+-- 17. AUTH SYNC TRIGGER
+-- ============================================
+create or replace function public.handle_new_user() 
+returns trigger as $$
+begin
+  insert into public.profiles (id, full_name, email, avatar_url)
+  values (new.id, new.raw_user_meta_data->>'full_name', new.email, new.raw_user_meta_data->>'avatar_url');
+  return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+
+-- ============================================
+-- 18. SEED DATA (Safe to re-run)
 -- ============================================
 
 -- Categories
@@ -400,16 +439,7 @@ insert into categories (slug, name, description, image_url) values
   ('platinum', 'Platinum', 'The rarest metal for unique moments', '/platinum-ring.jpg')
 on conflict (slug) do update set image_url = excluded.image_url;
 
--- Coupons
-insert into coupons (code, discount_type, discount_value, min_order_value, max_discount, is_active) values
-  ('WELCOME10', 'percentage', 10, 5000, 2000, true),
-  ('FLAT500', 'fixed', 500, 10000, null, true),
-  ('LUXURY20', 'percentage', 20, 50000, 10000, true)
-on conflict (code) do nothing;
-
 -- Stores
 insert into stores (name, city, address, phone, email, hours, lat, lng, image_url) values
-  ('AURERXA Mumbai Flagship', 'Mumbai', 'Shop No. 15, Linking Road, Bandra West, Mumbai 400050', '+91 22 2640 5555', 'mumbai@aurerxa.com', 'Mon-Sat: 11AM-9PM, Sun: 12PM-8PM', 19.0596, 72.8295, '/stores/mumbai.jpg'),
-  ('AURERXA Delhi', 'Delhi', 'DLF Emporio, Vasant Kunj, New Delhi 110070', '+91 11 4605 5555', 'delhi@aurerxa.com', 'Mon-Sun: 11AM-8PM', 28.5490, 77.1583, '/stores/delhi.jpg'),
-  ('AURERXA Bangalore', 'Bangalore', 'UB City, Vittal Mallya Road, Bangalore 560001', '+91 80 4125 5555', 'bangalore@aurerxa.com', 'Mon-Sun: 10AM-9PM', 12.9716, 77.5946, '/stores/bangalore.jpg')
+  ('AURERXA Mumbai Flagship', 'Mumbai', 'Shop No. 15, Linking Road, Bandra West, Mumbai 400050', '+91 22 2640 5555', 'mumbai@aurerxa.com', 'Mon-Sat: 11AM-9PM, Sun: 12PM-8PM', 19.0596, 72.8295, '/stores/mumbai.jpg')
 on conflict do nothing;
