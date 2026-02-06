@@ -29,10 +29,10 @@ export function Heritage() {
             {/* Background Image with Cinematic Parallax */}
             <motion.div style={{ y: yBg, scale: scaleBg, opacity: opacityBg }} className="absolute inset-0 z-0">
                 <Image
-                    src="/heritage-rings.jpg"
+                    src="/photo_6066572646712807057_y.jpg"
                     alt="Heritage Background"
                     fill
-                    className="object-cover grayscale contrast-125 brightness-50"
+                    className="object-cover grayscale contrast-[1.1] brightness-[0.4]"
                     priority
                 />
             </motion.div>
@@ -59,18 +59,19 @@ export function Heritage() {
 
                     {/* Main Title - SINCE 1989 - BOLD */}
                     <h2 className="text-6xl md:text-[12rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 italic drop-shadow-2xl">
-                        1989
+                        LEGACY
                     </h2>
 
                     {/* Description */}
                     <div className="max-w-3xl mx-auto space-y-12 border-l-4 border-amber-500 pl-8 md:pl-12 text-left bg-gradient-to-r from-black/50 to-transparent p-8 backdrop-blur-sm">
                         <p className="text-lg md:text-2xl font-medium text-white/90 leading-relaxed tracking-wide">
-                            "We don't just craft jewelry. We forge <span className="text-amber-500">identity</span>."
+                            "We don't just craft jewelry. We forge <span className="text-amber-500">respect</span>."
                         </p>
                         <p className="text-sm md:text-base font-light text-white/50 leading-loose tracking-widest italic">
-                            For over three decades, we've built trust <strong>Shop-to-Shop</strong>.
-                            From raw <span className="text-white/80">scrap</span> to the final <span className="text-amber-500">finished masterpiece</span>,
-                            we control every spark of the process. Genuine gold, genuine legacy.
+                            Born from a child's resilience. Starting at just 9 years old, my father mastered
+                            the craft through 50 years of honest labor. We honor those hands today,
+                            ensuring fairness for the makers and integrity for the wearers.
+                            Every spark is rooted in respect.
                         </p>
                     </div>
                 </motion.div>
