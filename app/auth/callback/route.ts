@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url)
     const code = searchParams.get('code')
     // if "next" is in search params, use it as the redirection URL
-    const next = searchParams.get('next') ?? '/verify-email'
+    const next = searchParams.get('next') ?? '/'
 
     if (code) {
         const cookieStore = await cookies()
@@ -15,33 +15,34 @@ export async function GET(request: Request) {
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             {
                 cookies: {
-                    get(name: string) {
-                        return cookieStore.get(name)?.value
+                    getAll() {
+                        return cookieStore.getAll()
                     },
-                    set(name: string, value: string, options: CookieOptions) {
-                        cookieStore.set({ name, value, ...options })
-                    },
-                    remove(name: string, options: CookieOptions) {
-                        cookieStore.delete({ name, ...options })
+                    setAll(cookiesToSet) {
+                        try {
+                            cookiesToSet.forEach(({ name, value, options }) =>
+                                cookieStore.set(name, value, options)
+                            )
+                        } catch {
+                            // The `setAll` method was called from a Server Component.
+                            // This can be ignored if you have middleware refreshing
+                            // user sessions.
+                        }
                     },
                 },
             }
         )
         const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+
         if (!error && data.session) {
-            const provider = data.session.user.app_metadata.provider
-
-            // If it's a social login (Google), we want to redirect directly to the home page 
-            // unless a specific 'next' destination was provided.
-            // This ensures Google login bypasses the /verify-email landing page.
-            if (provider === 'google' && (!searchParams.get('next') || searchParams.get('next') === '/verify-email')) {
-                return NextResponse.redirect(`${origin}/`)
-            }
-
-            return NextResponse.redirect(`${origin}${next}`)
+            // Social logins (Google) should persist and return to the intended page
+            // We use a relative redirect for 'next' to help maintain PWA context
+            const redirectUrl = next.startsWith('/') ? next : '/'
+            return NextResponse.redirect(`${origin}${redirectUrl}`)
         }
     }
 
     // return the user to an error page with instructions
+    console.error('Auth callback error: No code or session exchange failed')
     return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }
