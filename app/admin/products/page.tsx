@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { getAdminProducts, updateProductDetails } from '@/app/actions'
+import { getAdminProducts, updateProductDetails, addNewProduct } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, Plus, Trash2, Save, Image as ImageIcon, ExternalLink } from 'lucide-react'
@@ -72,22 +72,39 @@ export default function AdminProductsPage() {
         if (!editingProduct) return
         setSaving(true)
         // Clean up empty URLs
-        const cleanedImages = editingProduct.images.filter((url: string) => url.trim() !== '')
+        const cleanedImages = Array.isArray(editingProduct.images)
+            ? editingProduct.images.filter((url: string) => url.trim() !== '')
+            : []
 
-        const result = await updateProductDetails(editingProduct.id, {
-            image_url: editingProduct.image_url,
-            images: cleanedImages,
-            dimensions_width: editingProduct.dimensions_width,
-            dimensions_height: editingProduct.dimensions_height,
-            dimensions_length: editingProduct.dimensions_length
-        })
+        let result;
+        if (editingProduct.id) {
+            // Update existing
+            result = await updateProductDetails(editingProduct.id, {
+                image_url: editingProduct.image_url,
+                images: cleanedImages,
+                dimensions_width: editingProduct.dimensions_width,
+                dimensions_height: editingProduct.dimensions_height,
+                dimensions_length: editingProduct.dimensions_length
+            })
+        } else {
+            // New product
+            result = await addNewProduct({
+                name: editingProduct.name,
+                price: editingProduct.price,
+                image_url: editingProduct.image_url,
+                images: cleanedImages,
+                category_id: editingProduct.category_id,
+                description: editingProduct.description || 'New artisanal release.',
+                slug: editingProduct.name.toLowerCase().replace(/ /g, '-')
+            })
+        }
 
         if (result.success) {
-            setMessage({ type: 'success', text: 'Product images updated successfully' })
+            setMessage({ type: 'success', text: editingProduct.id ? 'Product updated successfully' : 'New masterpiece added & notification sent!' })
             await loadProducts()
             setEditingProduct(null)
         } else {
-            setMessage({ type: 'error', text: result.error || 'Failed to update' })
+            setMessage({ type: 'error', text: result.error || 'Failed to save' })
         }
         setSaving(false)
         setTimeout(() => setMessage(null), 3000)
@@ -101,8 +118,14 @@ export default function AdminProductsPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
                     <div>
                         <h1 className="text-4xl font-serif font-bold text-gradient-gold mb-2 italic">Product Management</h1>
-                        <p className="text-white/40 font-premium-sans text-[10px] tracking-[0.3em] uppercase">Configure Multi-Image Galleries</p>
+                        <p className="text-white/40 font-premium-sans text-[10px] tracking-[0.3em] uppercase">Configure Multi-Image Galleries & New Releases</p>
                     </div>
+                    <Button
+                        onClick={() => setEditingProduct({ name: '', price: 0, image_url: '', images: [], category_id: products[0]?.category_id })}
+                        className="bg-amber-500 text-black hover:bg-amber-400 font-bold text-[10px] uppercase tracking-widest px-8 h-12 rounded-none"
+                    >
+                        <Plus className="w-4 h-4 mr-2" /> New Masterpiece
+                    </Button>
                 </div>
 
                 {message && (
@@ -172,6 +195,31 @@ export default function AdminProductsPage() {
                                 </div>
 
                                 <div className="space-y-6">
+                                    {/* Name & Price (Only for new products or as display) */}
+                                    {!editingProduct.id && (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-3 font-premium-sans">
+                                                <label className="text-[9px] text-amber-500/60 tracking-[0.2em] uppercase">Masterpiece Name</label>
+                                                <Input
+                                                    value={editingProduct.name}
+                                                    onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                                                    className="bg-black border-white/10 rounded-none h-12 text-xs focus:border-amber-500 transition-all font-sans"
+                                                    placeholder="e.g., Solitaire Bengal"
+                                                />
+                                            </div>
+                                            <div className="space-y-3 font-premium-sans">
+                                                <label className="text-[9px] text-amber-500/60 tracking-[0.2em] uppercase">Price (₹)</label>
+                                                <Input
+                                                    type="number"
+                                                    value={editingProduct.price}
+                                                    onChange={(e) => setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) })}
+                                                    className="bg-black border-white/10 rounded-none h-12 text-xs focus:border-amber-500 transition-all font-sans"
+                                                    placeholder="99999"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Main Image */}
                                     <div className="space-y-3 font-premium-sans">
                                         <label className="text-[9px] text-amber-500/60 tracking-[0.2em] uppercase">Main Image URL</label>

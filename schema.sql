@@ -443,3 +443,25 @@ on conflict (slug) do update set image_url = excluded.image_url;
 insert into stores (name, city, address, phone, email, hours, lat, lng, image_url) values
   ('AURERXA Mumbai Flagship', 'Mumbai', 'Shop No. 15, Linking Road, Bandra West, Mumbai 400050', '+91 22 2640 5555', 'mumbai@aurerxa.com', 'Mon-Sat: 11AM-9PM, Sun: 12PM-8PM', 19.0596, 72.8295, '/stores/mumbai.jpg')
 on conflict do nothing;
+
+-- ============================================
+-- 19. PUSH SUBSCRIPTIONS TABLE
+-- ============================================
+create table if not exists push_subscriptions (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade,
+  endpoint text not null unique,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table push_subscriptions enable row level security;
+
+drop policy if exists "Users can manage own subscriptions" on push_subscriptions;
+create policy "Users can manage own subscriptions" on push_subscriptions 
+  for all using (auth.uid() = user_id or user_id is null);
+
+drop policy if exists "Allow public insertion for anonymous push" on push_subscriptions;
+create policy "Allow public insertion for anonymous push" on push_subscriptions 
+  for insert with check (true);

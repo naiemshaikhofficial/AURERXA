@@ -6,6 +6,7 @@ import { SmoothScroll } from '@/components/smooth-scroll'
 import './globals.css'
 import { BottomNav } from '@/components/bottom-nav'
 import { MobileInstallPrompt } from '@/components/mobile-install-prompt'
+import { NotificationManager } from '@/components/notification-manager'
 
 const _geist = Geist({ subsets: ['latin'] })
 
@@ -43,6 +44,7 @@ export default function RootLayout({
             {children}
             <BottomNav />
             <MobileInstallPrompt />
+            <NotificationManager />
           </SmoothScroll>
         </CartProvider>
       </body>

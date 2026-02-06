@@ -3,6 +3,7 @@
 import { supabase } from '@/lib/supabase'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { notifyNewProduct } from './push-actions'
 
 // Helper to get authenticated supabase client
 async function getAuthClient() {
