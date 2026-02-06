@@ -104,16 +104,17 @@ export default function AboutPage() {
                             </p>
                         </motion.div>
 
-                        <div className="relative aspect-[2/3] overflow-hidden group border border-white/5 bg-neutral-900 shadow-2xl">
-                            <ParallaxScroll offset={20} scaleOffset={0.1} className="h-full w-full">
+                        <div className="relative aspect-[3/4] md:aspect-[4/5] overflow-hidden group border border-amber-500/10 bg-neutral-900 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                            <ParallaxScroll offset={15} scaleOffset={0.05} className="h-full w-full">
                                 <Image
                                     src="/451c3977-ad4e-4b7d-a918-730286647544.jpg"
                                     alt="Artisan Craftsmanship"
                                     fill
-                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-60 group-hover:opacity-100 object-top"
+                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-80 group-hover:opacity-100 object-top scale-105"
                                 />
                             </ParallaxScroll>
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+                            <div className="absolute inset-0 border border-white/5 pointer-events-none" />
                         </div>
                     </div>
                 </section>
@@ -141,15 +142,16 @@ export default function AboutPage() {
                 {/* Section 3: The Birth of AURERXA */}
                 <section className="py-20 md:py-40 px-6 relative">
                     <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
-                        <div className="order-2 md:order-1 relative aspect-[2/3] md:aspect-[3/4] overflow-hidden group border border-white/5 bg-neutral-900">
-                            <ParallaxScroll offset={30} direction="down" scaleOffset={0.05} className="h-full w-full">
+                        <div className="order-2 md:order-1 relative aspect-[3/4] md:aspect-square overflow-hidden group border border-amber-500/10 bg-neutral-900 shadow-2xl">
+                            <ParallaxScroll offset={20} direction="down" scaleOffset={0.03} className="h-full w-full">
                                 <Image
                                     src="/832831ea-66ff-4efd-8186-4b4f69e1094d.jpg"
                                     alt="Forging integrity"
                                     fill
-                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 brightness-75 opacity-70 group-hover:opacity-100 object-top"
+                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 brightness-75 opacity-90 group-hover:opacity-100 object-top scale-105"
                                 />
                             </ParallaxScroll>
+                            <div className="absolute inset-0 border border-white/5 pointer-events-none" />
                             <div className="absolute bottom-4 left-4 md:bottom-10 md:left-10 p-4 md:p-6 bg-black/40 backdrop-blur-xl border-l-2 border-amber-500">
                                 <p className="text-white font-serif text-xl md:text-2xl italic tracking-tight">Handcrafted Honor.</p>
                                 <p className="text-amber-500/60 text-[10px] md:text-xs uppercase tracking-[0.3em] font-bold mt-2">The Mission</p>
@@ -213,22 +215,35 @@ export default function AboutPage() {
                             </p>
                         </motion.div>
 
-                        <div className="hidden lg:flex flex-col gap-6 justify-center">
-                            <div className="relative h-[450px] aspect-[2/3] overflow-hidden border border-white/5 group">
-                                <Image
-                                    src="/photo_6066572646712807069_y.jpg"
-                                    alt="Master Craftsman"
-                                    fill
-                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-60 group-hover:opacity-100 object-center"
-                                />
+                        <div className="hidden lg:flex flex-col gap-12 justify-center py-10">
+                            <div className="relative w-[450px] aspect-[2/3] overflow-hidden border border-amber-500/10 group shadow-2xl mx-auto ring-1 ring-white/5">
+                                <ParallaxScroll offset={20} className="h-full w-full">
+                                    <Image
+                                        src="/photo_6066572646712807069_y.jpg"
+                                        alt="Senior Artist Bapan Hembromb"
+                                        fill
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100 object-center scale-105"
+                                    />
+                                </ParallaxScroll>
+                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 border border-white/5 pointer-events-none" />
+                                <div className="absolute bottom-6 left-6 right-6">
+                                    <p className="text-amber-500 text-[10px] md:text-xs tracking-[0.4em] font-bold uppercase mb-1">Senior Artist</p>
+                                    <h3 className="text-2xl md:text-4xl font-serif text-white font-black italic tracking-tighter">Bapan Hembromb</h3>
+                                    <p className="text-white/40 text-[10px] md:text-xs uppercase tracking-[0.2em] mt-3 font-light">From poor family — Rooted in Craft</p>
+                                </div>
                             </div>
-                            <div className="relative h-96 aspect-[4/3] overflow-hidden border border-white/5 group">
-                                <Image
-                                    src="/35b9384a-ab6d-4958-a3aa-d7d5668b6137.jpg"
-                                    alt="Artisan at Work"
-                                    fill
-                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-60 group-hover:opacity-100 object-top"
-                                />
+                            <div className="relative w-[380px] aspect-[2/3] overflow-hidden border border-amber-500/10 ml-auto group shadow-2xl ring-1 ring-white/5">
+                                <ParallaxScroll offset={-15} className="h-full w-full">
+                                    <Image
+                                        src="/35b9384a-ab6d-4958-a3aa-d7d5668b6137.jpg"
+                                        alt="Artisan at Work"
+                                        fill
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100 object-center scale-105"
+                                    />
+                                </ParallaxScroll>
+                                <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 border border-white/5 pointer-events-none" />
                             </div>
                         </div>
                     </div>
@@ -238,19 +253,20 @@ export default function AboutPage() {
                 <section className="py-24 md:py-48 bg-black relative overflow-hidden">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-                            <div className="relative aspect-[2/3] md:aspect-[3/4] overflow-hidden border border-white/10 shadow-2xl group">
-                                <ParallaxScroll offset={25} scaleOffset={0.05} className="h-full w-full">
+                            <div className="relative aspect-[3/4] md:aspect-[4/5] overflow-hidden border border-amber-500/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] group">
+                                <ParallaxScroll offset={20} scaleOffset={0.05} className="h-full w-full">
                                     <Image
                                         src="/ceo.jpg"
                                         alt="Nijam Shaikh - Founder & CEO"
                                         fill
-                                        className="object-cover object-top filter contrast-[1.1] grayscale group-hover:grayscale-0 transition-all duration-1000"
+                                        className="object-cover object-top filter contrast-[1.1] grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105"
                                     />
                                 </ParallaxScroll>
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
+                                <div className="absolute inset-0 border border-white/5 pointer-events-none" />
                                 <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12">
                                     <p className="text-amber-500 text-sm md:text-base tracking-[0.4em] font-bold uppercase mb-2">The Visionary</p>
-                                    <h3 className="text-3xl md:text-5xl font-serif text-white font-bold italic">Nijam Shaikh</h3>
+                                    <h3 className="text-3xl md:text-5xl font-serif text-white font-black italic tracking-tighter">Nijam Shaikh</h3>
                                 </div>
                             </div>
 

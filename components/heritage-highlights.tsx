@@ -11,37 +11,53 @@ export function HeritageHighlights() {
             <div className="max-w-7xl mx-auto px-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-center">
                     <div className="order-2 lg:order-1 relative">
-                        <div className="grid grid-cols-2 gap-4 md:gap-8">
-                            <div className="space-y-4 md:space-y-8">
-                                <div className="relative aspect-[2/3] overflow-hidden border border-white/5 group">
-                                    <Image
-                                        src="/ec354a72-24f4-415b-af0c-f96b278e43ae.jpg"
-                                        alt="Artisan Hands"
-                                        fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center"
-                                    />
+                        <div className="grid grid-cols-2 gap-8 md:gap-12">
+                            <div className="space-y-8 md:space-y-12">
+                                <div className="relative aspect-[2/3] overflow-hidden border border-amber-500/10 group shadow-2xl">
+                                    <ParallaxScroll offset={15} className="h-full w-full">
+                                        <Image
+                                            src="/ec354a72-24f4-415b-af0c-f96b278e43ae.jpg"
+                                            alt="Artisan Hands"
+                                            fill
+                                            className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center scale-105"
+                                        />
+                                    </ParallaxScroll>
+                                    <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                                    <div className="absolute inset-0 border border-white/5 pointer-events-none" />
                                 </div>
-                                <div className="relative aspect-square overflow-hidden border border-white/5 group">
-                                    <Image
-                                        src="/photo_6066572646712807069_y.jpg"
-                                        alt="Focused Craft"
-                                        fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center"
-                                    />
+                                <div className="relative aspect-[2/3] overflow-hidden border border-amber-500/10 group shadow-2xl">
+                                    <ParallaxScroll offset={-10} className="h-full w-full">
+                                        <Image
+                                            src="/photo_6066572646712807069_y.jpg"
+                                            alt="Senior Artist Bapan Hembromb"
+                                            fill
+                                            className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center scale-105"
+                                        />
+                                    </ParallaxScroll>
+                                    <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                                    <div className="absolute inset-0 border border-white/5 pointer-events-none" />
+                                    <div className="absolute bottom-4 left-4 right-4">
+                                        <p className="text-amber-500/80 text-[8px] uppercase tracking-[0.3em] font-bold">Senior Artist</p>
+                                        <p className="text-white font-serif text-sm italic">Bapan Hembromb</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="pt-12 space-y-4 md:space-y-8">
-                                <div className="relative aspect-[2/3] overflow-hidden border border-white/5 group">
-                                    <Image
-                                        src="/832831ea-66ff-4efd-8186-4b4f69e1094d.jpg"
-                                        alt="Forging Gold"
-                                        fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center"
-                                    />
+                            <div className="pt-16 space-y-8 md:space-y-12">
+                                <div className="relative aspect-[2/3] overflow-hidden border border-amber-500/10 group shadow-2xl">
+                                    <ParallaxScroll offset={20} className="h-full w-full">
+                                        <Image
+                                            src="/832831ea-66ff-4efd-8186-4b4f69e1094d.jpg"
+                                            alt="Forging Gold"
+                                            fill
+                                            className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center scale-105"
+                                        />
+                                    </ParallaxScroll>
+                                    <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                                    <div className="absolute inset-0 border border-white/5 pointer-events-none" />
                                 </div>
-                                <div className="relative aspect-square overflow-hidden border border-white/5 group font-serif p-6 bg-neutral-900/50 flex flex-col justify-center text-center">
-                                    <span className="text-amber-500 text-3xl md:text-5xl font-bold italic">1000+</span>
-                                    <span className="text-white/40 text-[10px] md:text-xs uppercase tracking-[0.2em] mt-2">Master Artisans</span>
+                                <div className="relative aspect-[2/3] overflow-hidden border border-amber-500/20 group font-serif p-8 bg-neutral-900/80 flex flex-col justify-center text-center shadow-[inset_0_0_50px_rgba(0,0,0,0.5)] border-dashed">
+                                    <span className="text-amber-500 text-4xl md:text-6xl font-bold italic drop-shadow-[0_2px_10px_rgba(245,158,11,0.3)]">1000+</span>
+                                    <span className="text-white/40 text-[10px] md:text-xs uppercase tracking-[0.3em] mt-3 font-bold">Master Artisans</span>
                                 </div>
                             </div>
                         </div>
