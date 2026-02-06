@@ -178,14 +178,14 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
                                     <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-amber-500 to-amber-600" />
 
                                     <div className="flex items-start gap-4 pl-3">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center border border-amber-500/30 flex-shrink-0">
-                                            <Clock className="w-5 h-5 text-amber-400" />
+                                        <div className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center border border-white/10 flex-shrink-0">
+                                            <Clock className="w-5 h-5 text-amber-500" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-white text-sm font-medium tracking-wide">
-                                                Get it by <span className="text-amber-400">{deliveryInfo.estimatedDelivery?.from}</span> - <span className="text-amber-400">{deliveryInfo.estimatedDelivery?.to}</span>
+                                            <p className="text-white text-sm font-light tracking-wide">
+                                                Get it by <span className="text-amber-500 font-bold">{deliveryInfo.estimatedDelivery?.from}</span> - <span className="text-amber-500 font-bold">{deliveryInfo.estimatedDelivery?.to}</span>
                                             </p>
-                                            <p className="text-white/40 text-xs mt-1 font-light">
+                                            <p className="text-white/40 text-[10px] mt-1 uppercase tracking-widest font-medium">
                                                 Estimated {deliveryInfo.deliveryDays?.min}-{deliveryInfo.deliveryDays?.max} business days
                                             </p>
                                         </div>
@@ -193,12 +193,12 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
                                 </div>
 
                                 {/* Feature Badges - Premium Grid */}
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-2 gap-3">
                                     {/* Express Badge */}
                                     {deliveryInfo.expressAvailable && (
-                                        <div className="group flex items-center gap-2 bg-gradient-to-r from-amber-500/15 to-amber-500/5 border border-amber-500/30 rounded-sm px-3 py-2.5 hover:border-amber-500/50 transition-colors">
-                                            <Zap className="w-4 h-4 text-amber-400 group-hover:animate-pulse" />
-                                            <span className="text-[11px] text-amber-300 font-medium uppercase tracking-wider">
+                                        <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500">
+                                            <Zap className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+                                            <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
                                                 Express
                                             </span>
                                         </div>
@@ -206,34 +206,34 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
 
                                     {/* Free Shipping Badge */}
                                     {freeShipping && (
-                                        <div className="group flex items-center gap-2 bg-gradient-to-r from-violet-500/15 to-violet-500/5 border border-violet-500/30 rounded-sm px-3 py-2.5 hover:border-violet-500/50 transition-colors">
-                                            <Truck className="w-4 h-4 text-violet-400" />
-                                            <span className="text-[11px] text-violet-300 font-medium uppercase tracking-wider">
+                                        <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500">
+                                            <Truck className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+                                            <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
                                                 Free Ship
                                             </span>
                                         </div>
                                     )}
 
                                     {/* Insured Shipping */}
-                                    <div className="group flex items-center gap-2 bg-gradient-to-r from-blue-500/15 to-blue-500/5 border border-blue-500/30 rounded-sm px-3 py-2.5 hover:border-blue-500/50 transition-colors">
-                                        <Package className="w-4 h-4 text-blue-400" />
-                                        <span className="text-[11px] text-blue-300 font-medium uppercase tracking-wider">
+                                    <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500">
+                                        <Package className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+                                        <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
                                             Insured
                                         </span>
                                     </div>
 
                                     {/* Authenticity Certified */}
-                                    <div className="group flex items-center gap-2 bg-gradient-to-r from-emerald-500/15 to-emerald-500/5 border border-emerald-500/30 rounded-sm px-3 py-2.5 hover:border-emerald-500/50 transition-colors">
-                                        <Shield className="w-4 h-4 text-emerald-400" />
-                                        <span className="text-[11px] text-emerald-300 font-medium uppercase tracking-wider">
+                                    <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500">
+                                        <Shield className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
+                                        <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
                                             Certified
                                         </span>
                                     </div>
 
                                     {/* Easy Returns */}
-                                    <div className="group flex items-center gap-2 bg-gradient-to-r from-rose-500/15 to-rose-500/5 border border-rose-500/30 rounded-sm px-3 py-2.5 hover:border-rose-500/50 transition-colors col-span-2">
-                                        <RefreshCw className="w-4 h-4 text-rose-400" />
-                                        <span className="text-[11px] text-rose-300 font-medium uppercase tracking-wider">
+                                    <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500 col-span-2">
+                                        <RefreshCw className="w-3.5 h-3.5 text-amber-500 group-hover:rotate-180 transition-transform duration-700" />
+                                        <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
                                             7-Day Easy Returns
                                         </span>
                                     </div>
