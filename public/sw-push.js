@@ -5,6 +5,7 @@ self.addEventListener('push', function (event) {
             body: data.body,
             icon: data.icon || '/logo.png',
             badge: data.badge || '/Favicon.ico',
+            image: data.image, // Support rich image notifications
             data: {
                 url: data.url || '/'
             },

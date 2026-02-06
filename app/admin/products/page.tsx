@@ -120,12 +120,40 @@ export default function AdminProductsPage() {
                         <h1 className="text-4xl font-serif font-bold text-gradient-gold mb-2 italic">Product Management</h1>
                         <p className="text-white/40 font-premium-sans text-[10px] tracking-[0.3em] uppercase">Configure Multi-Image Galleries & New Releases</p>
                     </div>
-                    <Button
-                        onClick={() => setEditingProduct({ name: '', price: 0, image_url: '', images: [], category_id: products[0]?.category_id })}
-                        className="bg-amber-500 text-black hover:bg-amber-400 font-bold text-[10px] uppercase tracking-widest px-8 h-12 rounded-none"
-                    >
-                        <Plus className="w-4 h-4 mr-2" /> New Masterpiece
-                    </Button>
+                    <div className="flex gap-4">
+                        <Button
+                            variant="outline"
+                            onClick={async () => {
+                                const { broadcastNotification } = await import('@/app/actions')
+                                const res = await broadcastNotification('AURERXA Luxury Alert', 'Discover our newest arrivals in the Royal Collection.', '/collections')
+                                if (res.success) alert('Broadcast sent to ' + (res as any).count + ' devices!')
+                            }}
+                            className="border-white/10 text-white/40 hover:text-white font-bold text-[10px] uppercase tracking-widest px-6 h-12 rounded-none"
+                        >
+                            Test Broadcast
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={async () => {
+                                const { notifyAbandonedCart } = await import('@/app/push-actions')
+                                const client = (await import('@/lib/supabase')).supabase
+                                const { data: { user } } = await client.auth.getUser()
+                                if (!user) return alert('Login first to test this!')
+
+                                const res = await notifyAbandonedCart(user.id, 'Solitaire Bengal', 'solitaire-bengal', '/heritage-rings.jpg')
+                                if (res.success) alert('Abandoned Cart Notification sent to you!')
+                            }}
+                            className="border-white/10 text-white/40 hover:text-white font-bold text-[10px] uppercase tracking-widest px-6 h-12 rounded-none"
+                        >
+                            Test Abandoned Cart
+                        </Button>
+                        <Button
+                            onClick={() => setEditingProduct({ name: '', price: 0, image_url: '', images: [], category_id: products[0]?.category_id })}
+                            className="bg-amber-500 text-black hover:bg-amber-400 font-bold text-[10px] uppercase tracking-widest px-8 h-12 rounded-none"
+                        >
+                            <Plus className="w-4 h-4 mr-2" /> New Masterpiece
+                        </Button>
+                    </div>
                 </div>
 
                 {message && (

@@ -26,6 +26,29 @@ async function getAuthClient() {
   )
 }
 
+export async function addNewProduct(productData: any) {
+  const client = await getAuthClient()
+
+  const { data, error } = await client
+    .from('products')
+    .insert({
+      ...productData,
+      created_at: new Date().toISOString()
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Add product error:', error)
+    return { success: false, error: error.message }
+  }
+
+  // Trigger push notification
+  await notifyNewProduct(data.name, data.slug, data.image_url || '/logo.png')
+
+  return { success: true, data }
+}
+
 // ============================================
 // CATEGORIES
 // ============================================
@@ -1288,6 +1311,45 @@ export async function getOrderTracking(trackingNumber: string) {
   } catch (error) {
     console.error('Tracking API error:', error)
     return { success: false, error: 'Unable to fetch tracking updates' }
+  }
+}
+
+export async function updateOrderStatus(orderId: string, status: string) {
+  const client = await getAuthClient()
+
+  // Get order details first
+  const { data: order, error: fetchError } = await client
+    .from('orders')
+    .select('user_id, order_number')
+    .eq('id', orderId)
+    .single()
+
+  if (fetchError || !order) return { success: false, error: 'Order not found' }
+
+  const { error } = await client
+    .from('orders')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', orderId)
+
+  if (error) return { success: false, error: error.message }
+
+  // Trigger push notification to the customer
+  try {
+    const { notifyOrderStatusChange } = await import('./push-actions')
+    await notifyOrderStatusChange(order.user_id, order.order_number, status)
+  } catch (e) {
+    console.error('Push notification failed for order update:', e)
+  }
+
+  return { success: true }
+}
+
+export async function broadcastNotification(title: string, body: string, url: string) {
+  try {
+    const { broadcastOffer } = await import('./push-actions')
+    return await broadcastOffer(title, body, url)
+  } catch (e: any) {
+    return { success: false, error: e.message }
   }
 }
 

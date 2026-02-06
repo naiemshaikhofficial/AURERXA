@@ -69,7 +69,8 @@ export async function sendNotification(title: string, body: string, url: string 
         body,
         url,
         icon: '/logo.png',
-        badge: '/Favicon.ico'
+        badge: '/Favicon.ico',
+        image: url.includes('/products/') ? '/logo.png' : undefined, // Placeholder for rich image if needed
     })
 
     const results = await Promise.allSettled(
@@ -85,7 +86,7 @@ export async function sendNotification(title: string, body: string, url: string 
         })
     )
 
-    // Optionally cleanup failed subscriptions (expired tokens)
+    // Cleanup failed subscriptions (expired tokens)
     const failedIndices = results
         .map((res, i) => (res.status === 'rejected' ? i : -1))
         .filter((i) => i !== -1)
@@ -101,10 +102,87 @@ export async function sendNotification(title: string, body: string, url: string 
     return { success: true, count: results.length - failedIndices.length }
 }
 
-export async function notifyNewProduct(name: string, slug: string) {
+export async function notifyNewProduct(name: string, slug: string, imageUrl?: string) {
     return sendNotification(
         'New Masterpiece Added',
         `The ${name} has just arrived in our collection. Explore it now.`,
         `/products/${slug}`
     )
+}
+
+export async function notifyOrderStatusChange(userId: string, orderNumber: string, status: string) {
+    const supabase = await getSupabase()
+    const { data: subscriptions } = await supabase
+        .from('push_subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+
+    if (!subscriptions || subscriptions.length === 0) return { success: false, error: 'No subscriptions found' }
+
+    const statusMessages: Record<string, string> = {
+        'shipped': `Great news! Your order ${orderNumber} has been shipped.`,
+        'delivered': `Success! Your order ${orderNumber} has been delivered.`,
+        'cancelled': `Your order ${orderNumber} has been cancelled.`,
+    }
+
+    const body = statusMessages[status.toLowerCase()] || `The status of your order ${orderNumber} has been updated to ${status}.`
+
+    const payload = JSON.stringify({
+        title: 'Order Update',
+        body,
+        url: `/account/orders`,
+        icon: '/logo.png',
+    })
+
+    const results = await Promise.allSettled(
+        subscriptions.map((sub) => {
+            const pushConfig = {
+                endpoint: sub.endpoint,
+                keys: {
+                    p256dh: sub.p256dh,
+                    auth: sub.auth
+                }
+            }
+            return webpush.sendNotification(pushConfig, payload)
+        })
+    )
+
+    return { success: true }
+}
+
+export async function broadcastOffer(title: string, body: string, url: string, imageUrl?: string) {
+    return sendNotification(title, body, url)
+}
+
+export async function notifyAbandonedCart(userId: string, productName: string, productSlug: string, productImage: string) {
+    const supabase = await getSupabase()
+    const { data: subscriptions } = await supabase
+        .from('push_subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+
+    if (!subscriptions || subscriptions.length === 0) return { success: false }
+
+    const payload = JSON.stringify({
+        title: 'Forgot something?',
+        body: `The ${productName} is still waiting in your cart. Complete your purchase now.`,
+        url: `/cart`,
+        icon: '/logo.png',
+        image: productImage || '/logo.png',
+    })
+
+    await Promise.allSettled(
+        subscriptions.map((sub) => {
+            const pushConfig = {
+                endpoint: sub.endpoint,
+                keys: {
+                    p256dh: sub.p256dh,
+                    auth: sub.auth
+                }
+            }
+            return webpush.sendNotification(pushConfig, payload)
+        })
+    )
+
+    return { success: true }
 }
