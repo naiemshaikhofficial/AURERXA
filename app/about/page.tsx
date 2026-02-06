@@ -201,25 +201,35 @@ export default function AboutPage() {
                             initial={{ opacity: 0, y: 50 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            className="bg-black/95 md:bg-black/80 backdrop-blur-3xl border border-white/10 p-8 md:p-12 lg:p-20 space-y-8 md:space-y-10 shadow-[0_0_100px_rgba(0,0,0,0.8)]"
+                            className="bg-black/95 md:bg-black/80 backdrop-blur-3xl border border-white/10 p-8 md:p-12 lg:p-20 space-y-10 shadow-[0_0_100px_rgba(0,0,0,0.8)]"
                         >
                             <h2 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold italic tracking-tighter">
                                 They are <br />
                                 <span className="text-amber-500 underline decoration-amber-500/20 underline-offset-8">Family.</span>
                             </h2>
-                            <p className="text-lg md:text-xl lg:text-2xl text-white/80 font-light leading-relaxed italic">
-                                Over the decades, we have worked with <span className="text-white font-medium">thousands of craftsmen</span>, together delivering <span className="text-white font-medium">millions of pieces of jewelry</span> to the world.
-                            </p>
-                            <p className="text-base md:text-lg text-white/40 font-light italic tracking-widest leading-relaxed">
-                                Most importantly, we do not see them as workers or employees. They are family. Because without them, there is no AURERXA.
-                            </p>
+                            <div className="space-y-6">
+                                <p className="text-lg md:text-xl lg:text-2xl text-white/90 font-light leading-relaxed italic">
+                                    Over the decades, we have worked with <span className="text-white font-medium">thousands of craftsmen</span>, together delivering <span className="text-white font-medium">millions of pieces of jewelry</span> to the world.
+                                </p>
+                                <p className="text-base md:text-lg text-white/80 font-medium italic tracking-tight leading-relaxed text-amber-500/90">
+                                    "Most importantly, we do not see them as workers or employees. They are family. Because without them, there is no AURERXA."
+                                </p>
+                            </div>
+                            <div className="pt-6 border-t border-white/5 space-y-6">
+                                <p className="text-base md:text-lg text-white/50 font-light leading-relaxed">
+                                    Every artisan in our workshop, from <span className="text-white">Bapan Hembromb</span> to the youngest apprentice, carries a story of resilience. Many came from homes where survival was a daily battle, finding their dignity in the absolute precision of their tools.
+                                </p>
+                                <p className="text-base md:text-lg text-white/50 font-light leading-relaxed">
+                                    Their hands, calloused and wise, are the architects of our luxury. We don't just give them a workshop; we give them a legacy. We promised that their names would be remembered as long as the diamonds they set. When you wear AURERXA, you wear their heartbeat.
+                                </p>
+                            </div>
                         </motion.div>
 
                         <div className="hidden lg:flex flex-col gap-12 justify-center py-10">
                             <div className="relative w-[450px] aspect-[2/3] overflow-hidden border border-amber-500/10 group shadow-2xl mx-auto ring-1 ring-white/5">
                                 <ParallaxScroll offset={20} className="h-full w-full">
                                     <Image
-                                        src="/photo_6066572646712807069_y.jpg"
+                                        src="/451c3977-ad4e-4b7d-a918-730286647544.jpg"
                                         alt="Senior Artist Bapan Hembromb"
                                         fill
                                         className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100 object-center scale-105"
@@ -236,8 +246,8 @@ export default function AboutPage() {
                             <div className="relative w-[380px] aspect-[2/3] overflow-hidden border border-amber-500/10 ml-auto group shadow-2xl ring-1 ring-white/5">
                                 <ParallaxScroll offset={-15} className="h-full w-full">
                                     <Image
-                                        src="/35b9384a-ab6d-4958-a3aa-d7d5668b6137.jpg"
-                                        alt="Artisan at Work"
+                                        src="/photo_6066572646712807069_y.jpg"
+                                        alt="Master Artisan"
                                         fill
                                         className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100 object-center scale-105"
                                     />
