@@ -290,6 +290,33 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                         </div>
 
                         {/* Delivery Check */}
+                        {/* Product Specifications Section */}
+                        {(product.dimensions_width || product.dimensions_height || product.dimensions_length) && (
+                            <div className="space-y-6 pt-10 border-t border-white/5">
+                                <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Specifications</h3>
+                                <div className="grid grid-cols-3 gap-4">
+                                    {product.dimensions_width && (
+                                        <div className="bg-white/5 backdrop-blur-md border border-white/5 p-4 text-center">
+                                            <p className="text-[8px] text-amber-500/60 uppercase tracking-widest mb-1">Width</p>
+                                            <p className="text-sm font-serif italic">{product.dimensions_width}{product.dimensions_unit || 'mm'}</p>
+                                        </div>
+                                    )}
+                                    {product.dimensions_height && (
+                                        <div className="bg-white/5 backdrop-blur-md border border-white/5 p-4 text-center">
+                                            <p className="text-[8px] text-amber-500/60 uppercase tracking-widest mb-1">Height</p>
+                                            <p className="text-sm font-serif italic">{product.dimensions_height}{product.dimensions_unit || 'mm'}</p>
+                                        </div>
+                                    )}
+                                    {product.dimensions_length && (
+                                        <div className="bg-white/5 backdrop-blur-md border border-white/5 p-4 text-center">
+                                            <p className="text-[8px] text-amber-500/60 uppercase tracking-widest mb-1">Length</p>
+                                            <p className="text-sm font-serif italic">{product.dimensions_length}{product.dimensions_unit || 'mm'}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         <DeliveryChecker productPrice={product.price} />
 
 

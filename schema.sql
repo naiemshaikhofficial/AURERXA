@@ -104,7 +104,10 @@ alter table products add column if not exists weight_grams decimal(10, 2);
 -- This drops any existing 'images' column and recreates it as the correct jsonb type
 alter table products drop column if exists images;
 alter table products add column images jsonb default '[]'::jsonb;
-alter table products add column if not exists slug text unique;
+alter table products add column if not exists dimensions_width text;
+alter table products add column if not exists dimensions_height text;
+alter table products add column if not exists dimensions_length text;
+alter table products add column if not exists dimensions_unit text default 'mm';
 
 -- Function: Slugify
 create or replace function public.slugify(v text)

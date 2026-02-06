@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { getAdminProducts, updateProductImages } from '@/app/actions'
+import { getAdminProducts, updateProductDetails } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Loader2, Plus, Trash2, Save, Image as ImageIcon, ExternalLink } from 'lucide-react'
@@ -74,11 +74,13 @@ export default function AdminProductsPage() {
         // Clean up empty URLs
         const cleanedImages = editingProduct.images.filter((url: string) => url.trim() !== '')
 
-        const result = await updateProductImages(
-            editingProduct.id,
-            editingProduct.image_url,
-            cleanedImages
-        )
+        const result = await updateProductDetails(editingProduct.id, {
+            image_url: editingProduct.image_url,
+            images: cleanedImages,
+            dimensions_width: editingProduct.dimensions_width,
+            dimensions_height: editingProduct.dimensions_height,
+            dimensions_length: editingProduct.dimensions_length
+        })
 
         if (result.success) {
             setMessage({ type: 'success', text: 'Product images updated successfully' })
@@ -184,6 +186,37 @@ export default function AdminProductsPage() {
                                         </div>
                                     </div>
 
+                                    {/* Dimensions */}
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <div className="space-y-3 font-premium-sans">
+                                            <label className="text-[8px] text-amber-500/60 tracking-[0.2em] uppercase text-center block">Width (mm)</label>
+                                            <Input
+                                                value={editingProduct.dimensions_width || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_width: e.target.value })}
+                                                className="bg-black border-white/10 rounded-none h-10 text-xs focus:border-amber-500 transition-all font-sans text-center"
+                                                placeholder="12"
+                                            />
+                                        </div>
+                                        <div className="space-y-3 font-premium-sans">
+                                            <label className="text-[8px] text-amber-500/60 tracking-[0.2em] uppercase text-center block">Height (mm)</label>
+                                            <Input
+                                                value={editingProduct.dimensions_height || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_height: e.target.value })}
+                                                className="bg-black border-white/10 rounded-none h-10 text-xs focus:border-amber-500 transition-all font-sans text-center"
+                                                placeholder="20"
+                                            />
+                                        </div>
+                                        <div className="space-y-3 font-premium-sans">
+                                            <label className="text-[8px] text-amber-500/60 tracking-[0.2em] uppercase text-center block">Length (mm)</label>
+                                            <Input
+                                                value={editingProduct.dimensions_length || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_length: e.target.value })}
+                                                className="bg-black border-white/10 rounded-none h-10 text-xs focus:border-amber-500 transition-all font-sans text-center"
+                                                placeholder="15"
+                                            />
+                                        </div>
+                                    </div>
+
                                     {/* Additional Images */}
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-center">
@@ -196,7 +229,7 @@ export default function AdminProductsPage() {
                                             </button>
                                         </div>
 
-                                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                        <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                                             {editingProduct.images.map((url: string, index: number) => (
                                                 <div key={index} className="flex gap-2 group/field">
                                                     <Input
