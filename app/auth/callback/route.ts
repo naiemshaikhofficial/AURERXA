@@ -35,10 +35,15 @@ export async function GET(request: Request) {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
         if (!error && data.session) {
+            // Explicitly set session for immediate availability if needed
+            await supabase.auth.setSession(data.session)
+
             // Social logins (Google) should persist and return to the intended page
             // We use a relative redirect for 'next' to help maintain PWA context
             const redirectUrl = next.startsWith('/') ? next : '/'
-            return NextResponse.redirect(`${origin}${redirectUrl}`)
+
+            // Use a relative URL for the redirect to be safer across different environments
+            return NextResponse.redirect(new URL(redirectUrl, request.url))
         }
     }
 

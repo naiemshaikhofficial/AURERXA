@@ -53,12 +53,16 @@ export default function LoginPage() {
         const searchParams = new URLSearchParams(window.location.search)
         const redirect = searchParams.get('redirect') || '/'
         try {
+            const redirectUrl = new URL('/auth/callback', window.location.origin)
+            redirectUrl.searchParams.set('next', redirect)
+
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/auth/callback?next=${redirect}`,
+                    redirectTo: redirectUrl.toString(),
                     queryParams: {
                         prompt: 'select_account',
+                        access_type: 'offline',
                     },
                 },
             })
