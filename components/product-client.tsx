@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { addToWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
-import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2 } from 'lucide-react'
+import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
 
 
@@ -102,7 +102,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                         onMouseMove={handleMouseMove}
                         onMouseEnter={() => setZoomed(true)}
                         onMouseLeave={() => setZoomed(false)}
-                        className="relative w-full h-[50vh] lg:h-auto lg:flex-1 bg-neutral-900 border border-white/5 overflow-hidden group cursor-crosshair"
+                        className="relative w-full h-[50vh] lg:h-auto lg:flex-1 bg-neutral-900 border border-white/5 overflow-hidden group/gallery cursor-crosshair"
                     >
                         <Image
                             src={allImages[selectedImage]}
@@ -117,8 +117,34 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             sizes="(max-width: 768px) 100vw, 50vw"
                         />
 
+                        {/* Navigation Arrows Overlay */}
+                        {allImages.length > 1 && (
+                            <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover/gallery:opacity-100 transition-opacity pointer-events-none">
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
+                                    }}
+                                    className="w-12 h-24 bg-black/40 backdrop-blur-sm border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-black transition-all pointer-events-auto group/nav"
+                                >
+                                    <ArrowLeft className="w-5 h-5 group-hover/nav:-translate-x-1 transition-transform" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setSelectedImage((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
+                                    }}
+                                    className="w-12 h-24 bg-black/40 backdrop-blur-sm border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-black transition-all pointer-events-auto group/nav"
+                                >
+                                    <ArrowRight className="w-5 h-5 group-hover/nav:translate-x-1 transition-transform" />
+                                </button>
+                            </div>
+                        )}
+
                         {/* Zoom Hint */}
-                        <div className="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur px-3 py-1 flex items-center gap-2 border border-white/10">
+                        <div className="absolute bottom-6 right-6 opacity-0 group-hover/gallery:opacity-100 transition-opacity bg-black/60 backdrop-blur px-3 py-1 flex items-center gap-2 border border-white/10">
                             <ZoomIn className="w-3 h-3 text-amber-500" />
                             <span className="text-[9px] text-white uppercase tracking-widest">Zoom Enabled</span>
                         </div>
@@ -126,17 +152,17 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
                     {/* Thumbnails */}
                     {allImages.length > 1 && (
-                        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-1000">
                             {allImages.map((img: string, i: number) => (
                                 <button
                                     key={i}
                                     onClick={() => setSelectedImage(i)}
-                                    className={`relative w-20 h-20 flex-shrink-0 border transition-all ${selectedImage === i
-                                        ? 'border-amber-500 grayscale-0'
-                                        : 'border-white/10 grayscale hover:border-white/30'
+                                    className={`relative w-20 h-20 flex-shrink-0 border transition-all duration-500 overflow-hidden ${selectedImage === i
+                                        ? 'border-amber-500 grayscale-0 ring-1 ring-amber-500 ring-offset-4 ring-offset-black'
+                                        : 'border-white/5 grayscale hover:grayscale-0 hover:border-white/30'
                                         }`}
                                 >
-                                    <Image src={img} alt="Thumbnail" fill className="object-cover p-1" sizes="80px" />
+                                    <Image src={img} alt="Thumbnail" fill className={`object-cover p-2 transition-transform duration-700 ${selectedImage === i ? 'scale-110' : 'scale-100'}`} sizes="80px" />
                                 </button>
                             ))}
                         </div>

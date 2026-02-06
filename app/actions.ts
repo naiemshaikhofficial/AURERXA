@@ -103,6 +103,43 @@ export async function getProducts(categorySlug?: string, sortBy?: string) {
   return data
 }
 
+// Product Actions
+export async function getProductBySlug(slug: string) {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, categories(slug, name)')
+    .eq('slug', slug)
+    .single()
+
+  if (error) return null
+  return data
+}
+
+export async function getAdminProducts() {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, categories(name)')
+    .order('created_at', { ascending: false })
+
+  if (error) return []
+  return data
+}
+
+export async function updateProductImages(productId: string, imageUrl: string, additionalImages: string[]) {
+  const client = await getAuthClient()
+
+  const { error } = await client
+    .from('products')
+    .update({
+      image_url: imageUrl,
+      images: additionalImages
+    })
+    .eq('id', productId)
+
+  if (error) return { success: false, error: 'Failed to update images' }
+  return { success: true }
+}
+
 export async function getProductById(id: string) {
   const { data, error } = await supabase
     .from('products')
@@ -791,22 +828,7 @@ export async function getBlogPosts(category?: string) {
   }
 }
 
-// Product Actions
-export async function getProductBySlug(slug: string) {
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*, categories(*)')
-      .eq('slug', slug)
-      .single()
-
-    if (error) throw error
-    return data
-  } catch (err) {
-    console.error('Product fetch by slug error:', err)
-    return null
-  }
-}
+// Product detail fetch (Moving to consolidated section)
 
 export async function getBlogPost(slug: string) {
   try {
