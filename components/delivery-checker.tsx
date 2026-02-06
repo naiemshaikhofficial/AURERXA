@@ -139,71 +139,95 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
             {/* Delivery Info */}
             {deliveryInfo && deliveryInfo.success && (
                 <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {/* Delivery Available Badge */}
-                    <div className="flex items-center gap-2 text-emerald-400">
-                        <Check className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                            Delivery available to {deliveryInfo.pincode}
-                        </span>
-                    </div>
-
-                    {/* Estimated Delivery */}
-                    <div className="flex items-start gap-3 bg-neutral-950/50 border border-neutral-800 p-3">
-                        <Clock className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                        <div>
-                            <p className="text-white text-sm font-medium">
-                                Get it by {deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}
-                            </p>
-                            <p className="text-white/50 text-xs mt-0.5">
-                                {deliveryInfo.deliveryDays?.min}-{deliveryInfo.deliveryDays?.max} business days
-                            </p>
+                    {/* Check if delivery is available or not */}
+                    {deliveryInfo.available === false ? (
+                        // Not Serviceable
+                        <div className="flex items-center gap-2 text-red-400">
+                            <AlertCircle className="w-4 h-4" />
+                            <span className="text-sm font-medium">
+                                {deliveryInfo.error || 'Sorry, we do not deliver to this pincode currently.'}
+                            </span>
                         </div>
-                    </div>
-
-                    {/* Feature Badges */}
-                    <div className="flex flex-wrap gap-2">
-                        {/* Express Badge */}
-                        {deliveryInfo.expressAvailable && (
-                            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5">
-                                <Zap className="w-3.5 h-3.5 text-amber-500" />
-                                <span className="text-xs text-amber-400 font-medium uppercase tracking-wider">
-                                    Express Available
+                    ) : (
+                        <>
+                            {/* Delivery Available Badge */}
+                            <div className="flex items-center gap-2 text-emerald-400">
+                                <Check className="w-4 h-4" />
+                                <span className="text-sm font-medium">
+                                    Delivery available to {deliveryInfo.pincode}
                                 </span>
                             </div>
-                        )}
 
-                        {/* COD Badge */}
-                        {deliveryInfo.codAvailable && (
-                            <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5">
-                                <CreditCard className="w-3.5 h-3.5 text-emerald-500" />
-                                <span className="text-xs text-emerald-400 font-medium uppercase tracking-wider">
-                                    COD Available
-                                </span>
+                            {/* Estimated Delivery */}
+                            <div className="flex items-start gap-3 bg-neutral-950/50 border border-neutral-800 p-3">
+                                <Clock className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                                <div>
+                                    <p className="text-white text-sm font-medium">
+                                        Get it by {deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}
+                                    </p>
+                                    <p className="text-white/50 text-xs mt-0.5">
+                                        {deliveryInfo.deliveryDays?.min}-{deliveryInfo.deliveryDays?.max} business days
+                                    </p>
+                                </div>
                             </div>
-                        )}
 
-                        {/* Free Shipping Badge */}
-                        {freeShipping && (
-                            <div className="flex items-center gap-1.5 bg-violet-500/10 border border-violet-500/20 px-3 py-1.5">
-                                <Truck className="w-3.5 h-3.5 text-violet-500" />
-                                <span className="text-xs text-violet-400 font-medium uppercase tracking-wider">
-                                    Free Shipping
-                                </span>
+                            {/* Feature Badges */}
+                            <div className="flex flex-wrap gap-2">
+                                {/* Express Badge */}
+                                {deliveryInfo.expressAvailable && (
+                                    <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5">
+                                        <Zap className="w-3.5 h-3.5 text-amber-500" />
+                                        <span className="text-xs text-amber-400 font-medium uppercase tracking-wider">
+                                            Express Available
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* COD Badge */}
+                                {deliveryInfo.codAvailable && (
+                                    <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5">
+                                        <CreditCard className="w-3.5 h-3.5 text-emerald-500" />
+                                        <span className="text-xs text-emerald-400 font-medium uppercase tracking-wider">
+                                            COD Available
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* COD Not Available Warning */}
+                                {deliveryInfo.codAvailable === false && (
+                                    <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/20 px-3 py-1.5">
+                                        <AlertCircle className="w-3.5 h-3.5 text-orange-500" />
+                                        <span className="text-xs text-orange-400 font-medium uppercase tracking-wider">
+                                            Prepaid Only
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Free Shipping Badge */}
+                                {freeShipping && (
+                                    <div className="flex items-center gap-1.5 bg-violet-500/10 border border-violet-500/20 px-3 py-1.5">
+                                        <Truck className="w-3.5 h-3.5 text-violet-500" />
+                                        <span className="text-xs text-violet-400 font-medium uppercase tracking-wider">
+                                            Free Shipping
+                                        </span>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
 
-                    {/* Zone Info */}
-                    {deliveryInfo.zone && (
-                        <p className="text-[10px] uppercase tracking-widest text-white/40">
-                            {deliveryInfo.message}
-                            {deliveryInfo.zone === 'metro' && ' • Metro City'}
-                            {deliveryInfo.zone === 'tier2' && ' • Tier-2 City'}
-                            {deliveryInfo.zone === 'other' && ' • Remote Area'}
-                        </p>
+                            {/* Zone Info */}
+                            {deliveryInfo.zone && (
+                                <p className="text-[10px] uppercase tracking-widest text-white/40">
+                                    {deliveryInfo.message}
+                                    {deliveryInfo.zone === 'metro' && ' • Metro City'}
+                                    {deliveryInfo.zone === 'tier2' && ' • Tier-2 City'}
+                                    {deliveryInfo.zone === 'other' && ' • Remote Area'}
+                                </p>
+                            )}
+                        </>
                     )}
                 </div>
             )}
+
 
             {/* Hint when empty */}
             {!deliveryInfo && !error && !loading && (

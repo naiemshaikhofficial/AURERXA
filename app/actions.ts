@@ -975,10 +975,10 @@ export async function getRepairs() {
 }
 
 // ============================================
-// DELIVERY AVAILABILITY
+// DELIVERY AVAILABILITY (Delhivery API Integration)
 // ============================================
 
-// Metro city pincode prefixes (first 2 digits)
+// Metro city pincode prefixes (first 2 digits) - for delivery time estimation
 const METRO_PINCODES = [
   '11', // Delhi
   '40', // Mumbai
@@ -991,19 +991,36 @@ const METRO_PINCODES = [
 
 // Tier-2 city pincode prefixes
 const TIER2_PINCODES = [
-  '30', '31', '32', '33', '34', // Rajasthan (Jaipur, Jodhpur, etc.)
-  '22', '23', '24', '25', '26', // UP (Lucknow, etc.)
-  '38', '39', // Gujarat (Ahmedabad, Surat)
-  '42', '43', '44', // Maharashtra (Nagpur, etc.)
-  '45', '46', // MP (Indore, Bhopal)
-  '52', '53', // Andhra Pradesh (Visakhapatnam)
-  '62', '63', '64', // Tamil Nadu (Coimbatore, Madurai)
-  '80', // Karnataka (Mysore, Hubli)
-  '14', '15', '16', // Punjab/Haryana (Chandigarh, Ludhiana)
+  '30', '31', '32', '33', '34', // Rajasthan
+  '22', '23', '24', '25', '26', // UP
+  '38', '39', // Gujarat
+  '42', '43', '44', // Maharashtra
+  '45', '46', // MP
+  '52', '53', // Andhra Pradesh
+  '62', '63', '64', // Tamil Nadu
+  '80', // Karnataka
+  '14', '15', '16', // Punjab/Haryana
 ]
 
-// List of pincodes where COD is NOT available (remote areas)
-const NO_COD_PREFIXES = ['79', '84', '85', '86', '87', '88', '89', '19']
+// Delhivery API response type
+interface DelhiveryPincodeResponse {
+  delivery_codes: Array<{
+    postal_code: {
+      pin: string
+      pre_paid: string // 'Y' or 'N'
+      cash: string // 'Y' or 'N'
+      pickup: string
+      repl: string
+      cod: string // 'Y' or 'N'
+      is_oda: string // 'Y' or 'N' (Out of Delivery Area)
+      sort_code: string
+      max_weight: string
+      max_amount: string
+      district: string
+      state_code: string
+    }
+  }>
+}
 
 export async function checkDeliveryAvailability(pincode: string) {
   try {
@@ -1026,12 +1043,72 @@ export async function checkDeliveryAvailability(pincode: string) {
       }
     }
 
-    // Determine delivery zone
+    // Try Delhivery API first
+    let delhiveryData: DelhiveryPincodeResponse | null = null
+    let codAvailable = true
+    let prepaidAvailable = true
+    let isODA = false // Out of Delivery Area
+
+    const delhiveryToken = process.env.DELHIVERY_API_TOKEN
+    const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
+
+    if (delhiveryToken) {
+      try {
+        const response = await fetch(
+          `${delhiveryUrl}/c/api/pin-codes/json/?filter_codes=${pincode}`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Token ${delhiveryToken}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+
+        if (response.ok) {
+          delhiveryData = await response.json()
+
+          if (delhiveryData?.delivery_codes && delhiveryData.delivery_codes.length > 0) {
+            const pincodeInfo = delhiveryData.delivery_codes[0].postal_code
+            codAvailable = pincodeInfo.cod === 'Y' || pincodeInfo.cash === 'Y'
+            prepaidAvailable = pincodeInfo.pre_paid === 'Y'
+            isODA = pincodeInfo.is_oda === 'Y'
+
+            // If pincode not serviceable at all
+            if (!prepaidAvailable && !codAvailable) {
+              return {
+                success: true,
+                available: false,
+                pincode,
+                error: 'Sorry, we do not deliver to this pincode currently.'
+              }
+            }
+          } else {
+            // Pincode not found in Delhivery system
+            return {
+              success: true,
+              available: false,
+              pincode,
+              error: 'Sorry, we do not deliver to this pincode currently.'
+            }
+          }
+        }
+      } catch (apiError) {
+        console.warn('Delhivery API error, using fallback:', apiError)
+        // Continue with fallback logic
+      }
+    }
+
+    // Determine delivery zone and time
     let deliveryDays: { min: number; max: number }
     let zone: 'metro' | 'tier2' | 'other'
     let expressAvailable = false
 
-    if (METRO_PINCODES.includes(prefix)) {
+    if (isODA) {
+      // Out of Delivery Area - longer delivery time
+      deliveryDays = { min: 10, max: 15 }
+      zone = 'other'
+    } else if (METRO_PINCODES.includes(prefix)) {
       deliveryDays = { min: 3, max: 5 }
       zone = 'metro'
       expressAvailable = true
@@ -1048,20 +1125,20 @@ export async function checkDeliveryAvailability(pincode: string) {
     const minDate = new Date(today)
     const maxDate = new Date(today)
 
-    // Add business days (skip weekends)
+    // Add business days (skip Sundays)
     let minDaysAdded = 0
     let maxDaysAdded = 0
 
     while (minDaysAdded < deliveryDays.min) {
       minDate.setDate(minDate.getDate() + 1)
-      if (minDate.getDay() !== 0) { // Skip Sunday
+      if (minDate.getDay() !== 0) {
         minDaysAdded++
       }
     }
 
     while (maxDaysAdded < deliveryDays.max) {
       maxDate.setDate(maxDate.getDate() + 1)
-      if (maxDate.getDay() !== 0) { // Skip Sunday
+      if (maxDate.getDay() !== 0) {
         maxDaysAdded++
       }
     }
@@ -1072,9 +1149,6 @@ export async function checkDeliveryAvailability(pincode: string) {
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
       return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`
     }
-
-    // Check COD availability
-    const codAvailable = !NO_COD_PREFIXES.includes(prefix)
 
     return {
       success: true,
@@ -1090,11 +1164,15 @@ export async function checkDeliveryAvailability(pincode: string) {
       },
       expressAvailable,
       codAvailable,
-      message: zone === 'metro'
-        ? 'Express Delivery Available'
-        : zone === 'tier2'
-          ? 'Standard Delivery'
-          : 'Extended Delivery Area'
+      prepaidAvailable,
+      isODA,
+      message: isODA
+        ? 'Extended Delivery Area (Remote)'
+        : zone === 'metro'
+          ? 'Express Delivery Available'
+          : zone === 'tier2'
+            ? 'Standard Delivery'
+            : 'Extended Delivery Area'
     }
   } catch (err) {
     console.error('Delivery check error:', err)
