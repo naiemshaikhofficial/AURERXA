@@ -211,7 +211,10 @@ export async function getRelatedProducts(categoryId: string, excludeId: string) 
 export async function getCart() {
   const client = await getAuthClient()
   const { data: { user } } = await client.auth.getUser()
-  if (!user) return []
+  if (!user) {
+    console.log('getCart: No user found')
+    return []
+  }
 
   const { data, error } = await client
     .from('cart')
@@ -222,7 +225,9 @@ export async function getCart() {
     console.error('Error fetching cart:', error)
     return []
   }
-  return data
+
+  console.log(`getCart: Found ${data?.length || 0} items for user ${user.id}`)
+  return data || []
 }
 
 export async function addToCart(productId: string, size?: string, quantity: number = 1) {
@@ -576,10 +581,20 @@ export async function createOrder(
     return { success: false, error: 'Please login' }
   }
 
-  // Get cart items
-  const cart = await getCart()
+  // Get cart items with a short retry to handle race conditions
+  let cart = await getCart()
+
   if (!cart || cart.length === 0) {
-    return { success: false, error: 'Cart is empty' }
+    console.log('createOrder: Cart empty, retrying in 500ms...')
+    await new Promise(resolve => setTimeout(resolve, 500))
+    cart = await getCart()
+  }
+
+  console.log(`createOrder debug: Final cart length is ${cart?.length || 0}`)
+
+  if (!cart || cart.length === 0) {
+    console.error('createOrder failed: Cart is definitively empty for user', user.id)
+    return { success: false, error: 'Your cart is empty. Please add items before checkout.' }
   }
 
   // Get address
@@ -591,15 +606,24 @@ export async function createOrder(
     .single()
 
   if (!address) {
-    return { success: false, error: 'Invalid address' }
+    return { success: false, error: 'Delivery address not found' }
   }
 
   // Calculate totals
-  const subtotal = cart.reduce((sum, item) => sum + (item.products.price * item.quantity), 0)
+  const subtotal = cart.reduce((sum, item) => {
+    const price = item.products?.price || 0
+    return sum + (price * item.quantity)
+  }, 0)
 
   // Calculate dynamic shipping
   const isCod = paymentMethod === 'cod'
   const shippingResult = await calculateShippingRate(address.pincode, cart, isCod)
+
+  if (!shippingResult.success) {
+    const res = shippingResult as any
+    console.error('Shipping calculation failed:', res.error)
+    return { success: false, error: `Shipping Error: ${res.error}` }
+  }
   const shipping = subtotal >= 50000 ? 0 : (shippingResult.rate || 90)
 
   const giftWrapCost = options?.giftWrap ? 199 : 0
@@ -654,8 +678,10 @@ export async function createOrder(
     console.error('Create order items error:', itemsError)
   }
 
-  // Clear cart
-  await clearCart()
+  // Clear cart only for COD
+  if (paymentMethod === 'cod') {
+    await clearCart()
+  }
 
   return { success: true, orderId: order.id, orderNumber }
 }
@@ -1580,8 +1606,10 @@ export async function initiateCashfreePayment(orderId: string) {
 
     return {
       success: true,
+      gateway: 'cashfree',
       paymentSessionId: cashfreeOrder.payment_session_id,
-      cfOrderId: cashfreeOrder.cf_order_id
+      cfOrderId: cashfreeOrder.cf_order_id,
+      mode: process.env.CASHFREE_MODE || 'sandbox'
     }
   } catch (error: any) {
     console.error('Payment initiation error:', error)
@@ -1665,17 +1693,25 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
 export async function verifyPayment(orderId: string, params?: any) {
   const config = await getPaymentGatewayConfig()
   if (config.gateway === 'razorpay') {
-    return verifyRazorpayPayment(orderId, params)
+    const result = await verifyRazorpayPayment(orderId, params)
+    if (result.success) await clearCart()
+    return result
   }
-  return verifyCashfreePayment(orderId)
+  const result = await verifyCashfreePayment(orderId)
+  if (result.success) await clearCart()
+  return result
 }
 
 export async function initiateRazorpayPayment(orderId: string) {
   const client = await getAuthClient()
+  const { data: { user } } = await client.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
   const { data: order, error: orderError } = await client
     .from('orders')
-    .select('*, profiles(email, phone_number, full_name)')
+    .select('*')
     .eq('id', orderId)
+    .eq('user_id', user.id)
     .single()
 
   if (orderError || !order) {
@@ -1698,9 +1734,9 @@ export async function initiateRazorpayPayment(orderId: string) {
       razorpayOrderId: rpOrder.id,
       productName: 'AURERXA Masterpiece',
       customer: {
-        name: order.profiles?.full_name,
-        email: order.profiles?.email,
-        contact: order.profiles?.phone_number
+        name: order.shipping_address?.full_name || 'Customer',
+        email: order.user_email || order.shipping_address?.email || '',
+        contact: order.shipping_address?.phone || ''
       }
     }
   } catch (err: any) {

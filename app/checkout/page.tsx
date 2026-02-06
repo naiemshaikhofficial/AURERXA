@@ -212,6 +212,15 @@ export default function CheckoutPage() {
                     if (paymentResult.success) {
                         if (paymentResult.gateway === 'razorpay') {
                             const rp = paymentResult as any;
+
+                            // Check if Razorpay is loaded
+                            // @ts-ignore
+                            if (!window.Razorpay) {
+                                setError('Payment system still loading. Please wait a moment...')
+                                setPlacing(false)
+                                return
+                            }
+
                             // @ts-ignore
                             const options = {
                                 key: rp.keyId,
@@ -249,6 +258,15 @@ export default function CheckoutPage() {
                             rzp.open();
                         } else if (paymentResult.gateway === 'cashfree') {
                             const cf = paymentResult as any;
+
+                            // Check if Cashfree is loaded
+                            // @ts-ignore
+                            if (!window.Cashfree) {
+                                setError('Payment system still loading. Please wait a moment...')
+                                setPlacing(false)
+                                return
+                            }
+
                             // Cashfree Flow
                             // @ts-ignore
                             const cashfree = window.Cashfree({
@@ -779,11 +797,11 @@ export default function CheckoutPage() {
 
             <Script
                 src="https://checkout.razorpay.com/v1/checkout.js"
-                strategy="lazyOnload"
+                strategy="afterInteractive"
             />
             <Script
                 src="https://sdk.cashfree.com/js/v3/cashfree.js"
-                strategy="lazyOnload"
+                strategy="afterInteractive"
             />
             <Footer />
         </div>
