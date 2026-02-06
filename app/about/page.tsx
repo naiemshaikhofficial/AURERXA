@@ -238,14 +238,18 @@ export default function AboutPage() {
                             <div className="relative w-[380px] aspect-[2/3] overflow-hidden border border-amber-500/10 ml-auto group shadow-2xl ring-1 ring-white/5">
                                 <ParallaxScroll offset={-15} className="h-full w-full">
                                     <Image
-                                        src="/photo_6066572646712807069_y.jpg"
-                                        alt="Master Artisan"
+                                        src="/35b9384a-ab6d-4958-a3aa-d7d5668b6137.jpg"
+                                        alt="Akash Shah - Master Craftsman"
                                         fill
                                         className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100 object-center scale-105"
                                     />
                                 </ParallaxScroll>
-                                <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                                <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                                 <div className="absolute inset-0 border border-white/5 pointer-events-none" />
+                                <div className="absolute bottom-6 left-6 right-6">
+                                    <p className="text-amber-500 text-[8px] md:text-[10px] tracking-[0.3em] font-bold uppercase mb-1">Master Craftsman</p>
+                                    <h3 className="text-xl md:text-2xl font-serif text-white font-bold italic tracking-tighter">Akash Shah</h3>
+                                </div>
                             </div>
                         </div>
                     </div>

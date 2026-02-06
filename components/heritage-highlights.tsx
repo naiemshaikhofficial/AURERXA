@@ -16,7 +16,7 @@ export function HeritageHighlights() {
                                 <div className="relative aspect-[2/3] overflow-hidden border border-amber-500/10 group shadow-2xl">
                                     <ParallaxScroll offset={15} className="h-full w-full">
                                         <Image
-                                            src="/photo_6066572646712807064_y.jpg"
+                                            src="/451c3977-ad4e-4b7d-a918-730286647544.jpg"
                                             alt="Senior Artist Bapan Hembromb"
                                             fill
                                             className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center scale-105"
@@ -32,14 +32,18 @@ export function HeritageHighlights() {
                                 <div className="relative aspect-[2/3] overflow-hidden border border-amber-500/10 group shadow-2xl">
                                     <ParallaxScroll offset={-10} className="h-full w-full">
                                         <Image
-                                            src="/photo_6066572646712807069_y.jpg"
-                                            alt="Master Artisan"
+                                            src="/35b9384a-ab6d-4958-a3aa-d7d5668b6137.jpg"
+                                            alt="Master Craftsman Akash Shah"
                                             fill
                                             className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center scale-105"
                                         />
                                     </ParallaxScroll>
                                     <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
                                     <div className="absolute inset-0 border border-white/5 pointer-events-none" />
+                                    <div className="absolute bottom-4 left-4 right-4 text-left">
+                                        <p className="text-amber-500/80 text-[8px] uppercase tracking-[0.3em] font-bold">Master Craftsman</p>
+                                        <p className="text-white font-serif text-sm italic">Akash Shah</p>
+                                    </div>
                                 </div>
                             </div>
                             <div className="pt-16 space-y-8 md:space-y-12">
