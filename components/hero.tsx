@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useRef } from 'react'
+import Image from 'next/image'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 
 export function Hero() {
@@ -29,14 +30,15 @@ export function Hero() {
         <div className="absolute inset-0 bg-black/40 z-10" /> {/* Dimmer */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60 z-10" /> {/* Vignette */}
 
-        {/* High-Res Luxury Background (Placeholder for Black Edition Jewelry) */}
+        {/* High-Res Luxury Background (Optimized with Next.js Image) */}
         <div className="relative w-full h-full">
-          <img
+          <Image
             src="/pexels-the-glorious-studio-3584518-29245554.jpg"
             alt="Black Edition Background"
-            className="w-full h-full object-cover object-center scale-105"
-            loading="eager" // Force eager loading
-            decoding="async"
+            fill
+            priority
+            quality={90}
+            className="object-cover object-center scale-105"
           />
         </div>
       </motion.div>
@@ -75,7 +77,7 @@ export function Hero() {
             <img
               src="/logo.png"
               alt="Aurerxa Logo"
-              className="w-24 md:w-32 h-auto relative z-10 drop-shadow-2xl brightness-0 invert-[.7] sepia-[1] saturate-[5] hue-rotate-[5deg]"
+              className="w-24 md:w-32 h-auto relative z-10 drop-shadow-2xl"
             />
           </div>
 

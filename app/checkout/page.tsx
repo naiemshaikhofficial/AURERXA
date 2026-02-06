@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getAddresses, addAddress, createOrder, validateCoupon } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
-import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle } from 'lucide-react'
+import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle, Clock } from 'lucide-react'
 import { DeliveryEstimate } from '@/components/delivery-checker'
 
 
@@ -50,6 +50,9 @@ export default function CheckoutPage() {
     const [giftWrap, setGiftWrap] = useState(false)
     const [giftMessage, setGiftMessage] = useState('')
     const GIFT_WRAP_PRICE = 199
+
+    // Delivery time slot state
+    const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('anytime')
 
     const [newAddress, setNewAddress] = useState({
         label: 'Home',
@@ -137,7 +140,13 @@ export default function CheckoutPage() {
         setPlacing(true)
         setError(null)
 
-        const result = await createOrder(selectedAddress, paymentMethod)
+        const result = await createOrder(selectedAddress, paymentMethod, {
+            giftWrap,
+            giftMessage: giftWrap ? giftMessage : undefined,
+            deliveryTimeSlot,
+            couponCode: couponApplied?.code,
+            couponDiscount: couponApplied?.discount
+        })
 
         if (result.success) {
             router.push(`/account/orders/${result.orderId}?success=true`)
@@ -368,6 +377,44 @@ export default function CheckoutPage() {
                                         <p className="text-xs text-white/40 text-right mt-1">{giftMessage.length}/200</p>
                                     </div>
                                 )}
+                            </div>
+
+                            {/* Delivery Time Slot */}
+                            <div className="bg-neutral-900 border border-neutral-800 p-6">
+                                <h2 className="font-serif text-lg font-medium mb-4 flex items-center gap-2">
+                                    <Clock className="w-5 h-5 text-amber-500" />
+                                    Preferred Delivery Time
+                                </h2>
+                                <p className="text-white/50 text-xs mb-4">Select a preferred time slot for your delivery. We will try our best to accommodate your request.</p>
+
+                                <div className="space-y-3">
+                                    {[
+                                        { id: 'anytime', label: 'Anytime', time: '9:00 AM - 9:00 PM' },
+                                        { id: 'morning', label: 'Morning Slot', time: '9:00 AM - 12:00 PM' },
+                                        { id: 'afternoon', label: 'Afternoon Slot', time: '12:00 PM - 5:00 PM' },
+                                        { id: 'evening', label: 'Evening Slot', time: '5:00 PM - 9:00 PM' }
+                                    ].map((slot) => (
+                                        <label
+                                            key={slot.id}
+                                            className={`flex items-center gap-3 p-4 border cursor-pointer transition-all ${deliveryTimeSlot === slot.id
+                                                    ? 'border-amber-500 bg-amber-500/5'
+                                                    : 'border-neutral-700 hover:border-neutral-600'
+                                                }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="timeSlot"
+                                                checked={deliveryTimeSlot === slot.id}
+                                                onChange={() => setDeliveryTimeSlot(slot.id)}
+                                                className="accent-amber-500"
+                                            />
+                                            <div className="flex-1 flex justify-between items-center">
+                                                <span className="font-medium text-sm">{slot.label}</span>
+                                                <span className="text-xs text-white/50">{slot.time}</span>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
                             </div>
 
                             {/* Payment Method */}

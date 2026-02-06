@@ -24,7 +24,7 @@ interface CartContextType {
     addItem: (productId: string, size?: string, quantity?: number, productData?: any) => Promise<void>
     updateQuantity: (cartId: string, quantity: number) => Promise<void>
     removeItem: (cartId: string) => Promise<void>
-    refreshCart: () => Promise<void>
+    refreshCart: (silent?: boolean) => Promise<void>
     cartCount: number
 }
 
@@ -52,7 +52,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }, [])
 
     useEffect(() => {
-        refreshCart()
+        refreshCart(false) // Initial load should show loader
     }, [user])
 
     const syncCart = async () => {
@@ -98,8 +98,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setLoading(false)
     }
 
-    const refreshCart = async () => {
-        setLoading(true)
+    const refreshCart = async (silent: boolean = true) => {
+        if (!silent) setLoading(true)
         try {
             if (user) {
                 // Sync guest items if any exist before loading from DB
@@ -148,26 +148,52 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     const updateQuantity = async (cartId: string, quantity: number) => {
+        const newQuantity = Math.max(1, quantity)
+
+        // Optimistic update
+        const previousItems = [...items]
+        setItems(items.map(item =>
+            item.id === cartId ? { ...item, quantity: newQuantity } : item
+        ))
+
         if (user && !cartId.startsWith('guest_')) {
-            await updateCartItemAction(cartId, quantity)
-            await refreshCart()
+            try {
+                const result = await updateCartItemAction(cartId, newQuantity)
+                if (!result.success) {
+                    setItems(previousItems) // Rollback
+                } else {
+                    await refreshCart(true) // Silent refresh
+                }
+            } catch (error) {
+                setItems(previousItems) // Rollback
+            }
         } else {
-            const currentCart = items.map(item =>
-                item.id === cartId ? { ...item, quantity: Math.max(1, quantity) } : item
-            )
-            setItems(currentCart)
-            localStorage.setItem('aurerxa_cart', JSON.stringify(currentCart))
+            localStorage.setItem('aurerxa_cart', JSON.stringify(
+                items.map(item => item.id === cartId ? { ...item, quantity: newQuantity } : item)
+            ))
         }
     }
 
     const removeItem = async (cartId: string) => {
+        // Optimistic update
+        const previousItems = [...items]
+        setItems(items.filter(item => item.id !== cartId))
+
         if (user && !cartId.startsWith('guest_')) {
-            await removeFromCartAction(cartId)
-            await refreshCart()
+            try {
+                const result = await removeFromCartAction(cartId)
+                if (!result.success) {
+                    setItems(previousItems) // Rollback
+                } else {
+                    await refreshCart(true) // Silent refresh
+                }
+            } catch (error) {
+                setItems(previousItems) // Rollback
+            }
         } else {
-            const currentCart = items.filter(item => item.id !== cartId)
-            setItems(currentCart)
-            localStorage.setItem('aurerxa_cart', JSON.stringify(currentCart))
+            localStorage.setItem('aurerxa_cart', JSON.stringify(
+                items.filter(item => item.id !== cartId)
+            ))
         }
     }
 

@@ -11,18 +11,13 @@ import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight } from 'lucide-re
 
 export default function CartPage() {
     const { items: cart, loading, updateQuantity, removeItem } = useCart()
-    const [updating, setUpdating] = useState<string | null>(null)
 
     const handleUpdateQuantity = async (cartId: string, newQuantity: number) => {
-        setUpdating(cartId)
         await updateQuantity(cartId, newQuantity)
-        setUpdating(null)
     }
 
     const handleRemove = async (cartId: string) => {
-        setUpdating(cartId)
         await removeItem(cartId)
-        setUpdating(null)
     }
 
     const subtotal = cart.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0)
@@ -63,59 +58,62 @@ export default function CartPage() {
                                 {cart.map((item) => (
                                     <div
                                         key={item.id}
-                                        className="bg-neutral-900 border border-neutral-800 p-4 flex gap-4"
+                                        className="bg-neutral-900 border border-neutral-800/50 p-6 flex gap-6 hover:border-amber-500/30 transition-all duration-500 group"
                                     >
-                                        <Link href={`/products/${item.products?.slug || item.product_id}`} className="relative w-24 h-24 flex-shrink-0">
+                                        <Link href={`/products/${item.products?.slug || item.product_id}`} className="relative w-28 h-28 flex-shrink-0 overflow-hidden bg-neutral-950">
                                             <Image
                                                 src={item.products?.image_url || '/placeholder.jpg'}
                                                 alt={item.products?.name || 'Product'}
                                                 fill
-                                                className="object-cover"
+                                                className="object-cover transition-transform duration-700 group-hover:scale-110"
                                             />
                                         </Link>
 
-                                        <div className="flex-1 min-w-0">
-                                            <Link href={`/products/${item.products?.slug || item.product_id}`}>
-                                                <h3 className="font-serif font-medium mb-1 truncate hover:text-amber-400 transition-colors">
-                                                    {item.products?.name}
-                                                </h3>
-                                            </Link>
-                                            {item.size && (
-                                                <p className="text-sm text-white/50 mb-2">Size: {item.size}</p>
-                                            )}
-                                            <p className="text-amber-400 font-medium">
-                                                ₹{(item.products?.price || 0).toLocaleString('en-IN')}
-                                            </p>
-                                        </div>
+                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                            <div>
+                                                <div className="flex justify-between items-start gap-4">
+                                                    <Link href={`/products/${item.products?.slug || item.product_id}`}>
+                                                        <h3 className="font-serif text-lg font-medium tracking-wide hover:text-amber-500 transition-colors">
+                                                            {item.products?.name}
+                                                        </h3>
+                                                    </Link>
+                                                    <p className="text-amber-500 font-medium">
+                                                        ₹{(item.products?.price || 0).toLocaleString('en-IN')}
+                                                    </p>
+                                                </div>
+                                                {item.size && (
+                                                    <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Size: {item.size}</p>
+                                                )}
+                                            </div>
 
-                                        <div className="flex flex-col items-end gap-2">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center justify-between mt-4">
+                                                <div className="flex items-center bg-neutral-950 border border-neutral-800 p-1">
+                                                    <button
+                                                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                                                        className="w-8 h-8 flex items-center justify-center hover:text-amber-500 transition-colors disabled:opacity-30"
+                                                        disabled={item.quantity <= 1}
+                                                    >
+                                                        <Minus className="w-3 h-3" />
+                                                    </button>
+                                                    <span className="w-8 text-center text-sm font-medium">
+                                                        {item.quantity}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                                                        className="w-8 h-8 flex items-center justify-center hover:text-amber-500 transition-colors"
+                                                    >
+                                                        <Plus className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+
                                                 <button
-                                                    onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                                    disabled={updating === item.id}
-                                                    className="w-8 h-8 border border-neutral-700 flex items-center justify-center hover:border-amber-500 transition-colors disabled:opacity-50"
+                                                    onClick={() => handleRemove(item.id)}
+                                                    className="text-[10px] uppercase tracking-widest text-white/30 hover:text-amber-600 transition-colors flex items-center gap-2 group/remove"
                                                 >
-                                                    <Minus className="w-3 h-3" />
-                                                </button>
-                                                <span className="w-8 text-center text-sm">
-                                                    {updating === item.id ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : item.quantity}
-                                                </span>
-                                                <button
-                                                    onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                                    disabled={updating === item.id}
-                                                    className="w-8 h-8 border border-neutral-700 flex items-center justify-center hover:border-amber-500 transition-colors disabled:opacity-50"
-                                                >
-                                                    <Plus className="w-3 h-3" />
+                                                    <span className="w-4 h-[1px] bg-white/10 group-hover/remove:bg-amber-600 transition-colors" />
+                                                    Remove
                                                 </button>
                                             </div>
-                                            <button
-                                                onClick={() => handleRemove(item.id)}
-                                                disabled={updating === item.id}
-                                                className="text-red-400 hover:text-red-300 text-sm flex items-center gap-1"
-                                            >
-                                                <Trash2 className="w-3 h-3" />
-                                                Remove
-                                            </button>
                                         </div>
                                     </div>
                                 ))}

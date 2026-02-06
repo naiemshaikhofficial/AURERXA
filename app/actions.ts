@@ -480,7 +480,17 @@ export async function getOrderById(orderId: string) {
   return data
 }
 
-export async function createOrder(addressId: string, paymentMethod: string = 'cod') {
+export async function createOrder(
+  addressId: string,
+  paymentMethod: string = 'online',
+  options?: {
+    giftWrap?: boolean
+    giftMessage?: string
+    deliveryTimeSlot?: string
+    couponCode?: string
+    couponDiscount?: number
+  }
+) {
   const client = await getAuthClient()
   const { data: { user } } = await client.auth.getUser()
 
@@ -509,7 +519,9 @@ export async function createOrder(addressId: string, paymentMethod: string = 'co
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => sum + (item.products.price * item.quantity), 0)
   const shipping = subtotal >= 50000 ? 0 : 500 // Free shipping above ₹50,000
-  const total = subtotal + shipping
+  const giftWrapCost = options?.giftWrap ? 199 : 0
+  const couponDiscount = options?.couponDiscount || 0
+  const total = subtotal + shipping + giftWrapCost - couponDiscount
 
   // Generate order number
   const orderNumber = `AUR${Date.now().toString(36).toUpperCase()}`
@@ -525,7 +537,12 @@ export async function createOrder(addressId: string, paymentMethod: string = 'co
       total,
       shipping_address: address,
       payment_method: paymentMethod,
-      status: 'pending'
+      status: 'pending',
+      gift_wrap: options?.giftWrap || false,
+      gift_message: options?.giftMessage || null,
+      delivery_time_slot: options?.deliveryTimeSlot || null,
+      coupon_code: options?.couponCode || null,
+      coupon_discount: couponDiscount
     })
     .select()
     .single()
@@ -559,6 +576,7 @@ export async function createOrder(addressId: string, paymentMethod: string = 'co
 
   return { success: true, orderId: order.id, orderNumber }
 }
+
 
 // ============================================
 // PROFILE
@@ -1182,3 +1200,56 @@ export async function checkDeliveryAvailability(pincode: string) {
     }
   }
 }
+
+export async function getOrderTracking(trackingNumber: string) {
+  try {
+    const delhiveryToken = process.env.DELHIVERY_API_TOKEN
+    const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
+
+    if (!delhiveryToken) {
+      return { success: false, error: 'Tracking service unavailable' }
+    }
+
+    // Call Delhivery Tracking API
+    const response = await fetch(
+      `${delhiveryUrl}/api/v1/packages/json/?waybill=${trackingNumber}&token=${delhiveryToken}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        next: { revalidate: 60 } // Cache for 1 minute
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch tracking info')
+    }
+
+    const data = await response.json()
+
+    if (data && data.ShipmentData && data.ShipmentData.length > 0) {
+      const shipment = data.ShipmentData[0].Shipment
+      return {
+        success: true,
+        status: shipment.Status.Status,
+        location: shipment.Status.StatusLocation,
+        timestamp: shipment.Status.StatusDateTime,
+        scans: shipment.Scans.map((scan: any) => ({
+          status: scan.ScanDetail.Scan,
+          location: scan.ScanDetail.ScannedLocation,
+          timestamp: scan.ScanDetail.ScanDateTime,
+          instructions: scan.ScanDetail.Instructions
+        })),
+        estimatedDelivery: shipment.ExpectedDeliveryDate
+      }
+    }
+
+    return { success: false, error: 'Tracking information not found' }
+
+  } catch (error) {
+    console.error('Tracking API error:', error)
+    return { success: false, error: 'Unable to fetch tracking updates' }
+  }
+}
+

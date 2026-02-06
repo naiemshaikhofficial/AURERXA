@@ -122,7 +122,7 @@ export function Navbar() {
                 src="/logo.png"
                 alt="AURERXA Logo"
                 // Mobile: Smaller, nicely positioned. Desktop: Larger.
-                className="h-12 md:h-24 w-auto object-contain brightness-0 invert-[.7] sepia-[1] saturate-[5] hue-rotate-[5deg] drop-shadow-lg"
+                className="h-12 md:h-24 w-auto object-contain drop-shadow-lg"
               />
             </Link>
 

@@ -209,6 +209,9 @@ alter table orders add column if not exists coupon_code text;
 alter table orders add column if not exists coupon_discount decimal(10, 2) default 0;
 alter table orders add column if not exists gift_wrap boolean default false;
 alter table orders add column if not exists gift_message text;
+alter table orders add column if not exists delivery_time_slot text;
+alter table orders add column if not exists tracking_number text;
+
 
 alter table orders enable row level security;
 

@@ -16,7 +16,7 @@ export function Footer() {
               <img
                 src="/logo.png"
                 alt="AURERXA"
-                className="h-12 w-auto object-contain brightness-110 group-hover:scale-105 transition-transform duration-700"
+                className="h-12 w-auto object-contain group-hover:scale-105 transition-transform duration-700"
               />
             </Link>
             <p className="text-xs text-white/30 font-light leading-loose tracking-widest italic">

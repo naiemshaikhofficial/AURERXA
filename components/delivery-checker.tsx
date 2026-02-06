@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { checkDeliveryAvailability } from '@/app/actions'
-import { MapPin, Truck, Clock, CreditCard, Zap, Check, Loader2, AlertCircle, X } from 'lucide-react'
+import { MapPin, Truck, Clock, Zap, Loader2, AlertCircle, X, Sparkles, Package, Shield, RefreshCw } from 'lucide-react'
 
 interface DeliveryInfo {
     success: boolean
@@ -38,7 +38,6 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
         const savedPincode = localStorage.getItem('aurerxa_pincode')
         if (savedPincode && savedPincode.length === 6) {
             setPincode(savedPincode)
-            // Auto-check on load
             handleCheck(savedPincode)
         }
     }, [])
@@ -76,170 +75,211 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
     const freeShipping = productPrice >= 50000
 
     return (
-        <div className={`${compact ? '' : 'border border-neutral-800 bg-neutral-900/50 p-5'}`}>
-            {/* Header */}
-            <div className="flex items-center gap-2 mb-4">
-                <MapPin className="w-4 h-4 text-amber-500" />
-                <span className="text-xs uppercase tracking-[0.2em] text-white/60">
-                    Check Delivery Availability
-                </span>
-            </div>
+        <div className={`relative overflow-hidden ${compact ? '' : 'rounded-sm'}`}>
+            {/* Premium Background with Gradient */}
+            <div className={`relative ${compact ? '' : 'bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-800 border border-neutral-700/50 p-6'}`}>
 
-            {/* Input Row */}
-            <div className="flex gap-2">
-                <div className="relative flex-1">
-                    <input
-                        type="text"
-                        value={pincode}
-                        onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 6)
-                            setPincode(value)
-                            if (value.length === 6 && deliveryInfo) {
-                                setDeliveryInfo(null)
-                            }
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && pincode.length === 6) {
-                                handleCheck()
-                            }
-                        }}
-                        placeholder="Enter 6-digit pincode"
-                        className="w-full bg-neutral-950 border border-neutral-700 text-white h-11 px-4 text-sm 
-                                   placeholder:text-white/30 focus:outline-none focus:border-amber-500/50
-                                   transition-colors"
-                        maxLength={6}
-                    />
-                    {pincode && (
-                        <button
-                            onClick={handleClear}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    )}
-                </div>
-                <button
-                    onClick={() => handleCheck()}
-                    disabled={loading || pincode.length !== 6}
-                    className="px-5 h-11 bg-amber-500 text-neutral-950 text-xs font-bold uppercase tracking-wider
-                               hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Check'}
-                </button>
-            </div>
+                {/* Subtle Gold Accent Line */}
+                {!compact && (
+                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+                )}
 
-            {/* Error State */}
-            {error && (
-                <div className="mt-3 flex items-center gap-2 text-red-400 text-sm animate-in fade-in slide-in-from-top-2">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    <span>{error}</span>
-                </div>
-            )}
-
-            {/* Delivery Info */}
-            {deliveryInfo && deliveryInfo.success && (
-                <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                    {/* Check if delivery is available or not */}
-                    {deliveryInfo.available === false ? (
-                        // Not Serviceable
-                        <div className="flex items-center gap-2 text-red-400">
-                            <AlertCircle className="w-4 h-4" />
-                            <span className="text-sm font-medium">
-                                {deliveryInfo.error || 'Sorry, we do not deliver to this pincode currently.'}
-                            </span>
+                {/* Header with Icon */}
+                <div className="flex items-center gap-3 mb-5">
+                    <div className="relative">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center border border-amber-500/30">
+                            <MapPin className="w-4 h-4 text-amber-400" />
                         </div>
-                    ) : (
-                        <>
-                            {/* Delivery Available Badge */}
-                            <div className="flex items-center gap-2 text-emerald-400">
-                                <Check className="w-4 h-4" />
-                                <span className="text-sm font-medium">
-                                    Delivery available to {deliveryInfo.pincode}
+                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                    </div>
+                    <div>
+                        <h4 className="text-xs font-medium uppercase tracking-[0.2em] text-white/80">
+                            Delivery Availability
+                        </h4>
+                        <p className="text-[10px] text-white/40 mt-0.5">Check delivery to your location</p>
+                    </div>
+                </div>
+
+                {/* Premium Input Row */}
+                <div className="flex gap-3">
+                    <div className="relative flex-1 group">
+                        {/* Input Glow Effect */}
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-amber-500/20 rounded-sm opacity-0 group-focus-within:opacity-100 blur transition-opacity duration-300" />
+                        <input
+                            type="text"
+                            value={pincode}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 6)
+                                setPincode(value)
+                                if (value.length === 6 && deliveryInfo) {
+                                    setDeliveryInfo(null)
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && pincode.length === 6) {
+                                    handleCheck()
+                                }
+                            }}
+                            placeholder="Enter 6-digit pincode"
+                            className="relative w-full bg-neutral-950/80 border border-neutral-600/50 text-white h-12 px-4 text-sm font-light
+                                       placeholder:text-white/25 focus:outline-none focus:border-amber-500/60 focus:bg-neutral-950
+                                       transition-all duration-300 rounded-sm tracking-wide"
+                            maxLength={6}
+                        />
+                        {pincode && (
+                            <button
+                                onClick={handleClear}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-amber-400 transition-colors duration-200"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                    <button
+                        onClick={() => handleCheck()}
+                        disabled={loading || pincode.length !== 6}
+                        className="group relative px-6 h-12 bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 text-xs font-bold uppercase tracking-wider
+                                   hover:from-amber-400 hover:to-amber-500 disabled:opacity-40 disabled:cursor-not-allowed 
+                                   transition-all duration-300 rounded-sm overflow-hidden"
+                    >
+                        {/* Button Shine Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                        <span className="relative">
+                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Check'}
+                        </span>
+                    </button>
+                </div>
+
+                {/* Error State */}
+                {error && (
+                    <div className="mt-4 flex items-center gap-2 text-red-400 text-sm animate-in fade-in slide-in-from-top-2 duration-300
+                                    bg-red-500/10 border border-red-500/20 rounded-sm px-4 py-3">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        <span className="font-light">{error}</span>
+                    </div>
+                )}
+
+                {/* Delivery Info */}
+                {deliveryInfo && deliveryInfo.success && (
+                    <div className="mt-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        {/* Not Serviceable State */}
+                        {deliveryInfo.available === false ? (
+                            <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-sm px-4 py-3">
+                                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                                <span className="text-sm text-red-300 font-light">
+                                    {deliveryInfo.error || 'Sorry, we do not deliver to this pincode currently.'}
                                 </span>
                             </div>
+                        ) : (
+                            <>
+                                {/* Estimated Delivery - Premium Card */}
+                                <div className="relative bg-gradient-to-br from-neutral-800/80 to-neutral-800/40 border border-neutral-700/50 rounded-sm p-4 overflow-hidden">
+                                    {/* Card Accent */}
+                                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-amber-500 to-amber-600" />
 
-                            {/* Estimated Delivery */}
-                            <div className="flex items-start gap-3 bg-neutral-950/50 border border-neutral-800 p-3">
-                                <Clock className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="text-white text-sm font-medium">
-                                        Get it by {deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}
-                                    </p>
-                                    <p className="text-white/50 text-xs mt-0.5">
-                                        {deliveryInfo.deliveryDays?.min}-{deliveryInfo.deliveryDays?.max} business days
-                                    </p>
+                                    <div className="flex items-start gap-4 pl-3">
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center border border-amber-500/30 flex-shrink-0">
+                                            <Clock className="w-5 h-5 text-amber-400" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-white text-sm font-medium tracking-wide">
+                                                Get it by <span className="text-amber-400">{deliveryInfo.estimatedDelivery?.from}</span> - <span className="text-amber-400">{deliveryInfo.estimatedDelivery?.to}</span>
+                                            </p>
+                                            <p className="text-white/40 text-xs mt-1 font-light">
+                                                Estimated {deliveryInfo.deliveryDays?.min}-{deliveryInfo.deliveryDays?.max} business days
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Feature Badges */}
-                            <div className="flex flex-wrap gap-2">
-                                {/* Express Badge */}
-                                {deliveryInfo.expressAvailable && (
-                                    <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5">
-                                        <Zap className="w-3.5 h-3.5 text-amber-500" />
-                                        <span className="text-xs text-amber-400 font-medium uppercase tracking-wider">
-                                            Express Available
+                                {/* Feature Badges - Premium Grid */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    {/* Express Badge */}
+                                    {deliveryInfo.expressAvailable && (
+                                        <div className="group flex items-center gap-2 bg-gradient-to-r from-amber-500/15 to-amber-500/5 border border-amber-500/30 rounded-sm px-3 py-2.5 hover:border-amber-500/50 transition-colors">
+                                            <Zap className="w-4 h-4 text-amber-400 group-hover:animate-pulse" />
+                                            <span className="text-[11px] text-amber-300 font-medium uppercase tracking-wider">
+                                                Express
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Free Shipping Badge */}
+                                    {freeShipping && (
+                                        <div className="group flex items-center gap-2 bg-gradient-to-r from-violet-500/15 to-violet-500/5 border border-violet-500/30 rounded-sm px-3 py-2.5 hover:border-violet-500/50 transition-colors">
+                                            <Truck className="w-4 h-4 text-violet-400" />
+                                            <span className="text-[11px] text-violet-300 font-medium uppercase tracking-wider">
+                                                Free Ship
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Insured Shipping */}
+                                    <div className="group flex items-center gap-2 bg-gradient-to-r from-blue-500/15 to-blue-500/5 border border-blue-500/30 rounded-sm px-3 py-2.5 hover:border-blue-500/50 transition-colors">
+                                        <Package className="w-4 h-4 text-blue-400" />
+                                        <span className="text-[11px] text-blue-300 font-medium uppercase tracking-wider">
+                                            Insured
+                                        </span>
+                                    </div>
+
+                                    {/* Authenticity Certified */}
+                                    <div className="group flex items-center gap-2 bg-gradient-to-r from-emerald-500/15 to-emerald-500/5 border border-emerald-500/30 rounded-sm px-3 py-2.5 hover:border-emerald-500/50 transition-colors">
+                                        <Shield className="w-4 h-4 text-emerald-400" />
+                                        <span className="text-[11px] text-emerald-300 font-medium uppercase tracking-wider">
+                                            Certified
+                                        </span>
+                                    </div>
+
+                                    {/* Easy Returns */}
+                                    <div className="group flex items-center gap-2 bg-gradient-to-r from-rose-500/15 to-rose-500/5 border border-rose-500/30 rounded-sm px-3 py-2.5 hover:border-rose-500/50 transition-colors col-span-2">
+                                        <RefreshCw className="w-4 h-4 text-rose-400" />
+                                        <span className="text-[11px] text-rose-300 font-medium uppercase tracking-wider">
+                                            7-Day Easy Returns
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Zone Info - Premium Footer */}
+                                {deliveryInfo.zone && (
+                                    <div className="flex items-center justify-between pt-3 border-t border-neutral-700/50">
+                                        <div className="flex items-center gap-2">
+                                            <Sparkles className="w-3 h-3 text-amber-500/60" />
+                                            <span className="text-[10px] uppercase tracking-[0.15em] text-white/30 font-medium">
+                                                {deliveryInfo.message}
+                                            </span>
+                                        </div>
+                                        <span className="text-[10px] uppercase tracking-wider text-amber-500/60 font-medium bg-amber-500/10 px-2 py-0.5 rounded-sm">
+                                            {deliveryInfo.zone === 'metro' && 'Metro City'}
+                                            {deliveryInfo.zone === 'tier2' && 'Tier-2 City'}
+                                            {deliveryInfo.zone === 'other' && 'Remote Area'}
                                         </span>
                                     </div>
                                 )}
+                            </>
+                        )}
+                    </div>
+                )}
 
-                                {/* COD Badge */}
-                                {deliveryInfo.codAvailable && (
-                                    <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5">
-                                        <CreditCard className="w-3.5 h-3.5 text-emerald-500" />
-                                        <span className="text-xs text-emerald-400 font-medium uppercase tracking-wider">
-                                            COD Available
-                                        </span>
-                                    </div>
-                                )}
+                {/* Hint when empty - Premium */}
+                {!deliveryInfo && !error && !loading && (
+                    <div className="mt-4 flex items-center gap-2 text-white/25">
+                        <Sparkles className="w-3 h-3 text-amber-500/40" />
+                        <p className="text-[11px] font-light tracking-wide">
+                            Enter your pincode to see delivery options
+                        </p>
+                    </div>
+                )}
 
-                                {/* COD Not Available Warning */}
-                                {deliveryInfo.codAvailable === false && (
-                                    <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/20 px-3 py-1.5">
-                                        <AlertCircle className="w-3.5 h-3.5 text-orange-500" />
-                                        <span className="text-xs text-orange-400 font-medium uppercase tracking-wider">
-                                            Prepaid Only
-                                        </span>
-                                    </div>
-                                )}
-
-                                {/* Free Shipping Badge */}
-                                {freeShipping && (
-                                    <div className="flex items-center gap-1.5 bg-violet-500/10 border border-violet-500/20 px-3 py-1.5">
-                                        <Truck className="w-3.5 h-3.5 text-violet-500" />
-                                        <span className="text-xs text-violet-400 font-medium uppercase tracking-wider">
-                                            Free Shipping
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Zone Info */}
-                            {deliveryInfo.zone && (
-                                <p className="text-[10px] uppercase tracking-widest text-white/40">
-                                    {deliveryInfo.message}
-                                    {deliveryInfo.zone === 'metro' && ' • Metro City'}
-                                    {deliveryInfo.zone === 'tier2' && ' • Tier-2 City'}
-                                    {deliveryInfo.zone === 'other' && ' • Remote Area'}
-                                </p>
-                            )}
-                        </>
-                    )}
-                </div>
-            )}
-
-
-            {/* Hint when empty */}
-            {!deliveryInfo && !error && !loading && (
-                <p className="mt-3 text-[11px] text-white/30">
-                    Enter your pincode to see delivery options and estimated delivery date
-                </p>
-            )}
+                {/* Bottom Accent */}
+                {!compact && (
+                    <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
+                )}
+            </div>
         </div>
     )
 }
 
-// Compact version for checkout page - just shows delivery estimate
+// Compact version for checkout page - Premium Design
 export function DeliveryEstimate({ pincode }: { pincode?: string }) {
     const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null)
 
@@ -249,14 +289,18 @@ export function DeliveryEstimate({ pincode }: { pincode?: string }) {
         }
     }, [pincode])
 
-    if (!deliveryInfo || !deliveryInfo.success) return null
+    if (!deliveryInfo || !deliveryInfo.success || !deliveryInfo.available) return null
 
     return (
-        <div className="flex items-center gap-2 text-sm text-white/70 py-2 border-t border-neutral-800">
-            <Truck className="w-4 h-4 text-amber-500" />
-            <span>
-                Estimated delivery: {deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}
-            </span>
+        <div className="flex items-center gap-3 py-3 border-t border-neutral-700/50">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center border border-amber-500/30">
+                <Truck className="w-3.5 h-3.5 text-amber-400" />
+            </div>
+            <div className="flex-1">
+                <p className="text-sm text-white/70 font-light">
+                    Delivery by <span className="text-amber-400 font-medium">{deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}</span>
+                </p>
+            </div>
         </div>
     )
 }

@@ -84,19 +84,19 @@ body {
   }
 
   .alert-luxury-success {
-    @apply p-6 bg-black/60 backdrop-blur-md border border-emerald-500/20 text-amber-500/90 font-premium-sans text-[10px] tracking-[0.2em] uppercase;
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.05);
+    @apply p-8 bg-black/80 backdrop-blur-2xl border border-emerald-500/20 text-emerald-50/90 font-premium-sans text-[10px] tracking-[0.3em] uppercase;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.05);
   }
 
   .alert-luxury-error {
-    @apply p-6 bg-black/60 backdrop-blur-md border border-red-500/20 text-amber-500/90 font-premium-sans text-[10px] tracking-[0.2em] uppercase;
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.05);
+    @apply p-8 bg-black/80 backdrop-blur-2xl border border-red-500/20 text-red-50/90 font-premium-sans text-[10px] tracking-[0.3em] uppercase;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(239, 68, 68, 0.05);
   }
 
   .notification-luxury {
-    @apply fixed bottom-8 right-8 z-[100] p-6 backdrop-blur-2xl border border-amber-500/30 text-white font-premium-sans text-[9px] tracking-[0.3em] uppercase;
-    background-color: rgba(0, 0, 0, 0.99);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    @apply fixed bottom-8 right-8 z-[100] p-8 backdrop-blur-3xl border border-amber-500/30 text-white font-premium-sans text-[9px] tracking-[0.4em] uppercase;
+    background: linear-gradient(to bottom right, rgba(10, 10, 10, 0.98), rgba(0, 0, 0, 1));
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(184, 134, 11, 0.05);
   }
 }
 

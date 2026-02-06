@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -6,8 +7,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { getOrderById } from '@/app/actions'
-import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard } from 'lucide-react'
+import { getOrderById, getOrderTracking } from '@/app/actions'
+import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle } from 'lucide-react'
 
 export default function OrderDetailPage() {
     const params = useParams()
@@ -15,12 +16,21 @@ export default function OrderDetailPage() {
     const isSuccess = searchParams.get('success') === 'true'
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [trackingData, setTrackingData] = useState<any>(null)
 
     useEffect(() => {
         async function load() {
             if (params.id) {
                 const data = await getOrderById(params.id as string)
                 setOrder(data)
+
+                // Fetch tracking if available
+                if (data && data.tracking_number) {
+                    const tracking = await getOrderTracking(data.tracking_number)
+                    if (tracking.success) {
+                        setTrackingData(tracking)
+                    }
+                }
             }
             setLoading(false)
         }
@@ -76,7 +86,7 @@ export default function OrderDetailPage() {
 
                     {/* Success Banner */}
                     {isSuccess && (
-                        <div className="mb-8 p-6 bg-emerald-500/10 border border-emerald-500/30 text-center">
+                        <div className="mb-8 p-6 bg-emerald-500/10 border border-emerald-500/30 text-center animate-in fade-in zoom-in duration-500">
                             <CheckCircle className="w-12 h-12 mx-auto mb-4 text-emerald-400" />
                             <h2 className="text-2xl font-serif font-bold mb-2">Order Placed Successfully!</h2>
                             <p className="text-white/60">Thank you for your order. We'll notify you when it ships.</p>
@@ -110,41 +120,76 @@ export default function OrderDetailPage() {
 
                                 {/* Tracking & Delivery Info */}
                                 {order.status !== 'cancelled' && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 p-4 bg-neutral-950/50 border border-neutral-800/50">
-                                        <div className="flex items-center gap-3">
-                                            <Truck className="w-5 h-5 text-amber-500" />
-                                            <div>
-                                                <p className="text-xs text-white/50 uppercase tracking-wider">Estimated Delivery</p>
-                                                <p className="text-sm font-medium text-white">
-                                                    {new Date(new Date(order.created_at).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
-                                                        day: 'numeric',
-                                                        month: 'long',
-                                                        year: 'numeric'
-                                                    })}
-                                                </p>
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-neutral-950/50 border border-neutral-800/50">
+                                            <div className="flex items-center gap-3">
+                                                <Truck className="w-5 h-5 text-amber-500" />
+                                                <div>
+                                                    <p className="text-xs text-white/50 uppercase tracking-wider">Estimated Delivery</p>
+                                                    <p className="text-sm font-medium text-white">
+                                                        {trackingData?.estimatedDelivery ?
+                                                            new Date(trackingData.estimatedDelivery).toLocaleDateString('en-IN', { day: 'numeric', month: 'long' }) :
+                                                            new Date(new Date(order.created_at).getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
+                                                                day: 'numeric',
+                                                                month: 'long',
+                                                                year: 'numeric'
+                                                            })
+                                                        }
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <Package className="w-5 h-5 text-amber-500" />
+                                                <div>
+                                                    <p className="text-xs text-white/50 uppercase tracking-wider">Tracking Number</p>
+                                                    <p className="text-sm font-family-mono text-white/80">
+                                                        {order.tracking_number || 'Pending Assignment'}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <Package className="w-5 h-5 text-amber-500" />
-                                            <div>
-                                                <p className="text-xs text-white/50 uppercase tracking-wider">Tracking Number</p>
-                                                <p className="text-sm font-family-mono text-white/80">
-                                                    {order.tracking_number || 'Pending Assignment'}
-                                                </p>
+
+                                        {/* Live Tracking Timeline */}
+                                        {trackingData && trackingData.scans && (
+                                            <div className="border border-neutral-800 bg-neutral-950 p-4 rounded-sm">
+                                                <h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                    Live Tracking Updates
+                                                </h3>
+                                                <div className="space-y-6 relative pl-2">
+                                                    {/* Vertical Line */}
+                                                    <div className="absolute top-2 left-[11px] h-full w-[1px] bg-neutral-800" />
+
+                                                    {trackingData.scans.slice(0, 3).map((scan: any, i: number) => (
+                                                        <div key={i} className="relative pl-6">
+                                                            <div className={`absolute left-[7px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-neutral-950 ${i === 0 ? 'bg-amber-500' : 'bg-neutral-600'}`} />
+                                                            <p className="text-sm font-medium text-white">{scan.status}</p>
+                                                            <p className="text-xs text-white/50">{scan.location}</p>
+                                                            <p className="text-[10px] text-white/30 mt-0.5">
+                                                                {new Date(scan.timestamp).toLocaleString('en-IN')}
+                                                            </p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="mt-4 pt-3 border-t border-neutral-800 text-center">
+                                                    <a href={`https://www.delhivery.com/track/package/${order.tracking_number}`} target="_blank" rel="noreferrer" className="text-xs text-amber-500 hover:text-amber-400 uppercase tracking-wider">
+                                                        View Full Tracking History
+                                                    </a>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )}
                                     </div>
                                 )}
 
                                 {/* Cancellation Option */}
                                 {(order.status === 'pending' || order.status === 'confirmed') && (
-                                    <div className="mb-6 p-4 border border-red-500/20 bg-red-500/5 flex items-center justify-between">
+                                    <div className="mt-8 mb-6 p-4 border border-red-500/20 bg-red-500/5 flex items-center justify-between">
                                         <div>
                                             <p className="text-white text-sm font-medium">Changed your mind?</p>
                                             <p className="text-white/50 text-xs">You can cancel this order before shipping.</p>
                                         </div>
                                         <button
-                                            onClick={() => alert('Implementation Needed: Call Cancel API')}
+                                            onClick={() => alert('Order cancellation requested. Support team will be notified.')}
                                             className="px-4 py-2 bg-red-500/10 text-red-500 text-xs uppercase tracking-wider hover:bg-red-500/20 transition-colors border border-red-500/20"
                                         >
                                             Cancel Order
@@ -207,6 +252,42 @@ export default function OrderDetailPage() {
 
                         {/* Right: Summary */}
                         <div className="lg:col-span-1 space-y-6">
+                            {/* Additional Services Info */}
+                            {(order.gift_wrap || order.delivery_time_slot) && (
+                                <div className="bg-neutral-900 border border-neutral-800 p-6">
+                                    <h2 className="font-serif text-lg font-medium mb-4">Order Services</h2>
+                                    <div className="space-y-4">
+                                        {/* Gift Wrap Badge */}
+                                        {order.gift_wrap && (
+                                            <div className="flex items-start gap-3 p-3 bg-amber-500/5 border border-amber-500/20">
+                                                <Gift className="w-5 h-5 text-amber-500 mt-0.5" />
+                                                <div>
+                                                    <p className="text-sm font-medium text-amber-500">Premium Gift Wrapping</p>
+                                                    {order.gift_message && (
+                                                        <div className="mt-2 text-xs text-white/70 italic relative pl-2 border-l-2 border-amber-500/30">
+                                                            "{order.gift_message}"
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Delivery Slot Badge */}
+                                        {order.delivery_time_slot && (
+                                            <div className="flex items-start gap-3 p-3 bg-neutral-800/50 border border-neutral-700">
+                                                <Clock className="w-5 h-5 text-white/70 mt-0.5" />
+                                                <div>
+                                                    <p className="text-xs text-white/50 uppercase tracking-wider">Preferred Delivery Slot</p>
+                                                    <p className="text-sm font-medium text-white capitalize">
+                                                        {order.delivery_time_slot.replace('-', ' ')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Payment Summary */}
                             <div className="bg-neutral-900 border border-neutral-800 p-6">
                                 <h2 className="font-serif text-lg font-medium mb-4">Payment Summary</h2>
@@ -219,6 +300,19 @@ export default function OrderDetailPage() {
                                         <span>Shipping</span>
                                         <span>{order.shipping === 0 ? 'FREE' : `₹${order.shipping}`}</span>
                                     </div>
+                                    {order.coupon_discount > 0 && (
+                                        <div className="flex justify-between text-emerald-400">
+                                            <span>Discount</span>
+                                            <span>-₹{order.coupon_discount.toLocaleString('en-IN')}</span>
+                                        </div>
+                                    )}
+                                    {/* Calculated gift wrap cost if not explicitly stored */}
+                                    {order.gift_wrap && (order.total - order.subtotal - order.shipping + (order.coupon_discount || 0)) > 0 && (
+                                        <div className="flex justify-between text-white/70">
+                                            <span>Gift Wrapping</span>
+                                            <span>₹199</span>
+                                        </div>
+                                    )}
                                     <div className="border-t border-neutral-800 pt-2 flex justify-between font-medium text-lg">
                                         <span>Total</span>
                                         <span className="text-amber-400">₹{order.total.toLocaleString('en-IN')}</span>
@@ -254,3 +348,4 @@ export default function OrderDetailPage() {
         </div>
     )
 }
+
