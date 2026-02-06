@@ -100,7 +100,10 @@ alter table products add column if not exists purity text;
 alter table products add column if not exists gender text default 'Unisex';
 alter table products add column if not exists weight_grams decimal(10, 2);
 
-alter table products add column if not exists images text[] default '{}';
+-- CRITICAL: Force images column to jsonb for multi-image support
+-- This drops any existing 'images' column and recreates it as the correct jsonb type
+alter table products drop column if exists images;
+alter table products add column images jsonb default '[]'::jsonb;
 alter table products add column if not exists slug text unique;
 
 -- Function: Slugify
@@ -134,6 +137,9 @@ alter table products enable row level security;
 
 drop policy if exists "Allow public read products" on products;
 create policy "Allow public read products" on products for select using (true);
+
+drop policy if exists "Allow update products for authenticated users" on products;
+create policy "Allow update products for authenticated users" on products for update using (auth.uid() is not null);
 
 -- ============================================
 -- 5. WISHLIST TABLE

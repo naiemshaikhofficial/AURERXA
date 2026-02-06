@@ -85,8 +85,19 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
         setZoomPosition({ x, y })
     }
 
-    // Get all images
-    const allImages = product ? [product.image_url, ...(product.images || [])] : []
+    // Get all images (defensive check for both text[] and jsonb)
+    const getImagesArray = () => {
+        if (!product) return []
+        const imgs = product.images
+        if (Array.isArray(imgs)) return imgs
+        if (typeof imgs === 'string' && imgs.startsWith('{')) {
+            // Fix for Postgres array literal string if it exists
+            return imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+        }
+        return []
+    }
+
+    const allImages = product ? [product.image_url, ...getImagesArray()] : []
 
     if (!product) return null // Should be handled by server page redirect or 404
 

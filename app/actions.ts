@@ -126,18 +126,43 @@ export async function getAdminProducts() {
 }
 
 export async function updateProductImages(productId: string, imageUrl: string, additionalImages: string[]) {
-  const client = await getAuthClient()
+  try {
+    const client = await getAuthClient()
 
-  const { error } = await client
-    .from('products')
-    .update({
-      image_url: imageUrl,
-      images: additionalImages
-    })
-    .eq('id', productId)
+    // Ensure we are sending a real, clean array of strings
+    const cleanedImages = Array.isArray(additionalImages)
+      ? additionalImages
+        .map(img => String(img).trim())
+        .filter(img => img !== '')
+      : []
 
-  if (error) return { success: false, error: 'Failed to update images' }
-  return { success: true }
+    console.log('DEBUG: Updating product images', { productId, imageUrl, cleanedImages })
+
+    const { data, error } = await client
+      .from('products')
+      .update({
+        image_url: imageUrl,
+        images: cleanedImages // Supabase-js correctly serializes JS arrays to jsonb
+      })
+      .eq('id', productId)
+      .select()
+
+    if (error) {
+      console.error('❌ Update Product Images Error:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      })
+      return { success: false, error: `${error.message}. ${error.hint || ''}` }
+    }
+
+    console.log('✅ Update Product Images Success:', data)
+    return { success: true }
+  } catch (err: any) {
+    console.error('❌ Update Product Images Crash:', err)
+    return { success: false, error: err.message || 'Internal server error' }
+  }
 }
 
 export async function getProductById(id: string) {

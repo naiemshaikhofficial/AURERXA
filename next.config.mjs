@@ -37,6 +37,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'encrypted-tbn3.gstatic.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'm.media-amazon.com',
       }
     ],
   },

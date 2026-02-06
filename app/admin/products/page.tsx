@@ -29,9 +29,16 @@ export default function AdminProductsPage() {
     }
 
     const startEditing = (product: any) => {
+        let rawImages = product.images;
+
+        // Defensive check: If Supabase returns a Postgres array literal string "{url1,url2}"
+        if (typeof rawImages === 'string' && rawImages.startsWith('{') && rawImages.endsWith('}')) {
+            rawImages = rawImages.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean);
+        }
+
         setEditingProduct({
             ...product,
-            images: product.images || []
+            images: Array.isArray(rawImages) ? rawImages : []
         })
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
