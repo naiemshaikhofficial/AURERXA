@@ -219,10 +219,10 @@ export default function AboutPage() {
                                     src="/photo_6066572646712807069_y.jpg"
                                     alt="Master Craftsman"
                                     fill
-                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-60 group-hover:opacity-100 object-top"
+                                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-60 group-hover:opacity-100 object-center"
                                 />
                             </div>
-                            <div className="relative h-80 aspect-[3/4] overflow-hidden border border-white/5 ml-12 group">
+                            <div className="relative h-96 aspect-[4/3] overflow-hidden border border-white/5 group">
                                 <Image
                                     src="/35b9384a-ab6d-4958-a3aa-d7d5668b6137.jpg"
                                     alt="Artisan at Work"

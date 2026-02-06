@@ -18,7 +18,7 @@ export function HeritageHighlights() {
                                         src="/ec354a72-24f4-415b-af0c-f96b278e43ae.jpg"
                                         alt="Artisan Hands"
                                         fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-top"
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center"
                                     />
                                 </div>
                                 <div className="relative aspect-square overflow-hidden border border-white/5 group">
@@ -26,7 +26,7 @@ export function HeritageHighlights() {
                                         src="/photo_6066572646712807069_y.jpg"
                                         alt="Focused Craft"
                                         fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-top"
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center"
                                     />
                                 </div>
                             </div>
@@ -36,7 +36,7 @@ export function HeritageHighlights() {
                                         src="/832831ea-66ff-4efd-8186-4b4f69e1094d.jpg"
                                         alt="Forging Gold"
                                         fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-top"
+                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center"
                                     />
                                 </div>
                                 <div className="relative aspect-square overflow-hidden border border-white/5 group font-serif p-6 bg-neutral-900/50 flex flex-col justify-center text-center">
