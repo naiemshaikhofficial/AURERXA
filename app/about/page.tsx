@@ -206,11 +206,10 @@ export default function AboutPage() {
                                 <span className="text-amber-500 underline decoration-amber-500/20 underline-offset-8">Family.</span>
                             </h2>
                             <p className="text-lg md:text-xl lg:text-2xl text-white/80 font-light leading-relaxed italic">
-                                Most importantly, we do not see our craftsmen as workers or employees.
-                                <span className="text-white font-medium"> They are family.</span>
+                                Over the decades, we have worked with <span className="text-white font-medium">thousands of craftsmen</span>, together delivering <span className="text-white font-medium">millions of pieces of jewelry</span> to the world.
                             </p>
                             <p className="text-base md:text-lg text-white/40 font-light italic tracking-widest leading-relaxed">
-                                Because without them, there is no AURERXA.
+                                Most importantly, we do not see them as workers or employees. They are family. Because without them, there is no AURERXA.
                             </p>
                         </motion.div>
 
@@ -223,6 +222,61 @@ export default function AboutPage() {
                             </div>
                         </div>
                     </div>
+                </section>
+
+                {/* Section 5: The Visionary - CEO Section */}
+                <section className="py-24 md:py-48 bg-black relative overflow-hidden">
+                    <div className="max-w-7xl mx-auto px-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+                            <div className="relative aspect-[3/4] md:aspect-[4/5] overflow-hidden border border-white/10 shadow-2xl">
+                                <ParallaxScroll offset={40} scaleOffset={0.05} className="h-full w-full">
+                                    <Image
+                                        src="/ceo.jpg"
+                                        alt="Nijam Shaikh - Founder & CEO"
+                                        fill
+                                        className="object-cover object-top filter contrast-[1.1] grayscale hover:grayscale-0 transition-all duration-1000"
+                                    />
+                                </ParallaxScroll>
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                                <div className="absolute bottom-6 left-6 md:bottom-12 md:left-12">
+                                    <p className="text-amber-500 text-sm md:text-base tracking-[0.4em] font-bold uppercase mb-2">The Visionary</p>
+                                    <h3 className="text-3xl md:text-5xl font-serif text-white font-bold italic">Nijam Shaikh</h3>
+                                </div>
+                            </div>
+
+                            <motion.div
+                                initial={{ opacity: 0, x: 30 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 1.5 }}
+                                className="space-y-8 md:space-y-12"
+                            >
+                                <div className="space-y-4 md:space-y-6">
+                                    <span className="text-amber-500/60 uppercase tracking-[0.5em] text-xs font-bold">Foundation & Leadership</span>
+                                    <h2 className="text-4xl md:text-7xl font-serif font-black italic tracking-tighter text-white leading-[0.9]">
+                                        Founder <br />
+                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">& CEO.</span>
+                                    </h2>
+                                </div>
+                                <div className="w-20 h-[2px] bg-amber-500" />
+                                <div className="space-y-6 md:space-y-8 text-lg md:text-xl text-white/70 font-light leading-relaxed italic">
+                                    <p>
+                                        "My journey began not in a corporate office, but on the humble streets where every rupee was earned with sweat.
+                                        Starting at just nine years old, I learned that the true value of gold lies not in its weight,
+                                        but in the hands that shape it."
+                                    </p>
+                                    <p className="text-base md:text-lg text-white/50 border-l border-amber-500/30 pl-6">
+                                        Today, Nijam Shaikh leads a family of thousands, having overseen the creation of millions of handcrafted masterpieces.
+                                        He leads AURERXA with the same resilience that defined his early years.
+                                        His mission remains unchanged: to bring respect back to craftsmanship and to ensure
+                                        that every piece carries the weight of integrity.
+                                    </p>
+                                </div>
+                            </motion.div>
+                        </div>
+                    </div>
+                    {/* Background Decorative Element */}
+                    <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-amber-500/[0.02] to-transparent pointer-events-none" />
                 </section>
 
                 {/* Conclusion: Handcrafted Respect */}
