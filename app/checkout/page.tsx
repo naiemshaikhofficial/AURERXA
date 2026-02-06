@@ -10,7 +10,7 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getAddresses, addAddress, createOrder, validateCoupon } from '@/app/actions'
+import { getAddresses, addAddress, createOrder, validateCoupon, initiatePayment, verifyPayment } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle, Clock, Pencil } from 'lucide-react'
 import { DeliveryEstimate } from '@/components/delivery-checker'
@@ -207,22 +207,59 @@ export default function CheckoutPage() {
         if (result.success) {
             if (paymentMethod === 'online') {
                 try {
-                    const { initiateCashfreePayment } = await import('@/app/actions')
-                    const paymentResult = await initiateCashfreePayment(result.orderId)
+                    const paymentResult = await initiatePayment(result.orderId)
 
-                    if (paymentResult.success && paymentResult.paymentSessionId) {
-                        // Initialize Cashfree
-                        // @ts-ignore
-                        const cashfree = window.Cashfree({
-                            mode: "sandbox" // Default to sandbox, should be dynamic if possible
-                        });
+                    if (paymentResult.success) {
+                        if (paymentResult.gateway === 'razorpay') {
+                            const rp = paymentResult as any;
+                            // @ts-ignore
+                            const options = {
+                                key: rp.keyId,
+                                amount: rp.amount,
+                                currency: rp.currency,
+                                name: "AURERXA",
+                                description: rp.productName,
+                                order_id: rp.razorpayOrderId,
+                                handler: async function (response: any) {
+                                    setPlacing(true)
+                                    const verifyResult = await verifyPayment(result.orderId, response)
+                                    if (verifyResult.success) {
+                                        router.push(`/account/orders/${result.orderId}?success=true`)
+                                    } else {
+                                        setError(verifyResult.error || 'Verification failed')
+                                        setPlacing(false)
+                                    }
+                                },
+                                prefill: {
+                                    name: rp.customer.name,
+                                    email: rp.customer.email,
+                                    contact: rp.customer.contact
+                                },
+                                theme: {
+                                    color: "#F59E0B" // Amber-500
+                                },
+                                modal: {
+                                    ondismiss: function () {
+                                        setPlacing(false)
+                                    }
+                                }
+                            };
+                            // @ts-ignore
+                            const rzp = new window.Razorpay(options);
+                            rzp.open();
+                        } else if (paymentResult.gateway === 'cashfree') {
+                            const cf = paymentResult as any;
+                            // Cashfree Flow
+                            // @ts-ignore
+                            const cashfree = window.Cashfree({
+                                mode: cf.mode || "sandbox"
+                            });
 
-                        const checkoutOptions = {
-                            paymentSessionId: paymentResult.paymentSessionId,
-                            redirectTarget: "_self", // Using self to avoid popup issues, or _modal for popup
-                        };
-
-                        cashfree.checkout(checkoutOptions);
+                            cashfree.checkout({
+                                paymentSessionId: cf.paymentSessionId,
+                                redirectTarget: "_self",
+                            });
+                        }
                     } else {
                         setError(paymentResult.error || 'Failed to initiate payment')
                         setPlacing(false)
@@ -741,8 +778,12 @@ export default function CheckoutPage() {
             </main>
 
             <Script
+                src="https://checkout.razorpay.com/v1/checkout.js"
+                strategy="lazyOnload"
+            />
+            <Script
                 src="https://sdk.cashfree.com/js/v3/cashfree.js"
-                strategy="beforeInteractive"
+                strategy="lazyOnload"
             />
             <Footer />
         </div>

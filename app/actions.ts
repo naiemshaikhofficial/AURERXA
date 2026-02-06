@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { notifyNewProduct } from './push-actions'
 import { createCashfreeOrder, getCashfreePayments } from '@/lib/cashfree'
+import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib } from '@/lib/razorpay'
 
 // Helper to get authenticated supabase client
 async function getAuthClient() {
@@ -1636,3 +1637,105 @@ export async function verifyCashfreePayment(orderId: string) {
   }
 }
 
+
+// Payment Gateway Configuration
+export type PaymentResult =
+  | { success: true; gateway: 'razorpay'; keyId: string; amount: number; currency: string; razorpayOrderId: string; productName: string; customer: { name: string; email: string; contact: string }; mode?: string; paymentSessionId?: never }
+  | { success: true; gateway: 'cashfree'; paymentSessionId: string; cfOrderId: string; mode: string; keyId?: never; amount?: never }
+  | { success: false; error: string; gateway?: never; keyId?: never };
+
+export async function getPaymentGatewayConfig() {
+  return {
+    gateway: (process.env.PAYMENT_GATEWAY as 'cashfree' | 'razorpay') || 'cashfree',
+    mode: process.env.CASHFREE_MODE || 'sandbox',
+    razorpayKeyId: process.env.RAZORPAY_KEY_ID
+  }
+}
+
+export async function initiatePayment(orderId: string): Promise<PaymentResult> {
+  const config = await getPaymentGatewayConfig()
+  if (config.gateway === 'razorpay') {
+    const result = await initiateRazorpayPayment(orderId)
+    return result as PaymentResult
+  }
+  const result = await initiateCashfreePayment(orderId)
+  return result as PaymentResult
+}
+
+export async function verifyPayment(orderId: string, params?: any) {
+  const config = await getPaymentGatewayConfig()
+  if (config.gateway === 'razorpay') {
+    return verifyRazorpayPayment(orderId, params)
+  }
+  return verifyCashfreePayment(orderId)
+}
+
+export async function initiateRazorpayPayment(orderId: string) {
+  const client = await getAuthClient()
+  const { data: order, error: orderError } = await client
+    .from('orders')
+    .select('*, profiles(email, phone_number, full_name)')
+    .eq('id', orderId)
+    .single()
+
+  if (orderError || !order) {
+    return { success: false, error: 'Order not found' }
+  }
+
+  try {
+    const rpOrder = await createRazorpayOrder(
+      order.total,
+      'INR',
+      order.order_number
+    )
+
+    return {
+      success: true,
+      gateway: 'razorpay',
+      keyId: process.env.RAZORPAY_KEY_ID,
+      amount: rpOrder.amount,
+      currency: rpOrder.currency,
+      razorpayOrderId: rpOrder.id,
+      productName: 'AURERXA Masterpiece',
+      customer: {
+        name: order.profiles?.full_name,
+        email: order.profiles?.email,
+        contact: order.profiles?.phone_number
+      }
+    }
+  } catch (err: any) {
+    console.error('Razorpay Error:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+export async function verifyRazorpayPayment(orderId: string, params: { razorpay_payment_id: string, razorpay_order_id: string, razorpay_signature: string }) {
+  const client = await getAuthClient()
+
+  try {
+    const isValid = await verifyRazorpayPaymentLib(
+      params.razorpay_payment_id,
+      params.razorpay_order_id,
+      params.razorpay_signature
+    )
+
+    if (isValid) {
+      const { error: updateError } = await client
+        .from('orders')
+        .update({
+          status: 'paid',
+          payment_id: params.razorpay_payment_id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId)
+
+      if (updateError) throw updateError
+      return { success: true }
+    } else {
+      return { success: false, error: 'Payment verification failed' }
+    }
+  } catch (err: any) {
+    console.error('Verification Error:', err)
+    return { success: false, error: err.message }
+  }
+}

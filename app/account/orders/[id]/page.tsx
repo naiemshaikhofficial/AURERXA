@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { getOrderById, getOrderTracking, verifyCashfreePayment } from '@/app/actions'
+import { getOrderById, getOrderTracking, verifyPayment } from '@/app/actions'
 import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw } from 'lucide-react'
 
 export default function OrderDetailPage() {
@@ -30,7 +30,7 @@ export default function OrderDetailPage() {
                     const paymentStatus = searchParams.get('payment')
                     if (paymentStatus === 'success' && data.status === 'pending' && data.payment_method === 'online') {
                         setVerifying(true)
-                        const verifyResult = await verifyCashfreePayment(params.id as string)
+                        const verifyResult = await verifyPayment(params.id as string)
                         if (verifyResult.success) {
                             // Refresh order data
                             const updatedData = await getOrderById(params.id as string)
