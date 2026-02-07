@@ -177,14 +177,14 @@ export function CinematicFilter({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50"
+                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]"
                         />
                         <motion.div
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
                             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="fixed bottom-0 left-0 right-0 h-[85vh] md:h-[60vh] bg-neutral-950 border-t border-white/10 z-50 rounded-t-[2rem] overflow-hidden flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.8)]"
+                            className="fixed bottom-0 left-0 right-0 h-[85vh] md:h-[70vh] bg-neutral-950 border-t border-white/10 z-[100] rounded-t-[2rem] overflow-hidden flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.8)]"
                             // Prevent scroll event from bubbling to body even if body scroll isn't locked properly
                             onWheel={(e) => e.stopPropagation()}
                         >
@@ -239,7 +239,7 @@ export function CinematicFilter({
                                 </div>
 
                                 {/* Tab Content - Added pb-safe to prevent cutoff */}
-                                <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-32 bg-black/20 no-scrollbar overscroll-contain">
+                                <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-40 bg-black/20 no-scrollbar overscroll-contain touch-pan-y">
                                     <AnimatePresence mode="wait">
                                         <motion.div
                                             key={activeTab}
@@ -352,7 +352,7 @@ export function CinematicFilter({
                             </div>
 
                             {/* Drawer Footer */}
-                            <div className="p-6 border-t border-white/10 bg-neutral-900">
+                            <div className="p-6 pb-12 md:pb-6 border-t border-white/10 bg-neutral-900">
                                 <button
                                     onClick={() => setIsOpen(false)}
                                     className="w-full py-4 bg-amber-500 text-black font-premium-sans font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-amber-400 transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)]"

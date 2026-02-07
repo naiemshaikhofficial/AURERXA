@@ -45,7 +45,7 @@ export function BottomNav() {
         {
             href: user ? '/account' : '/login',
             label: 'Account',
-            iconId: '82712',
+            iconId: '3225',
         },
         {
             href: '/custom-jewelry',
