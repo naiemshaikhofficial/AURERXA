@@ -130,7 +130,11 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
                     onClick={() => { setScale(1); setPosition({ x: 0, y: 0 }) }}
                     className="p-2 bg-black/60 text-white rounded-full hover:bg-amber-500 hover:text-black transition-colors"
                 >
-                    <RotateCcw className="w-4 h-4" />
+                    <img
+                        src="https://img.icons8.com/?size=100&id=82738&format=png&color=FFFFFF"
+                        alt="Reset"
+                        className="w-4 h-4"
+                    />
                 </button>
             </div>
 
@@ -246,7 +250,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
         const shareData = {
             title: product.name,
             text: `Check out this exquisite piece at AURERXA: ${product.name}`,
-            url: window.location.href,
+            url: typeof window !== 'undefined' ? window.location.href : '',
         }
 
         try {
@@ -283,21 +287,36 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                     onClick={() => setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1))}
                                     className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform -translate-x-2 group-hover:translate-x-0 duration-300"
                                 >
-                                    <ArrowLeft className="w-4 h-4" />
+                                    <img
+                                        src="https://img.icons8.com/?size=100&id=82733&format=png&color=FFFFFF"
+                                        alt="Previous"
+                                        className="w-5 h-5"
+                                    />
                                 </button>
                                 <button
                                     onClick={() => setSelectedImage((prev) => (prev === allImages.length - 1 ? 0 : prev + 1))}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 duration-300"
                                 >
-                                    <ArrowRight className="w-4 h-4" />
+                                    <img
+                                        src="https://img.icons8.com/?size=100&id=82731&format=png&color=FFFFFF"
+                                        alt="Next"
+                                        className="w-5 h-5"
+                                    />
                                 </button>
                             </>
                         )}
 
                         {/* Share Button */}
                         <div className="absolute top-4 right-4 z-20">
-                            <button className="w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all">
-                                <Share2 className="w-4 h-4" />
+                            <button
+                                onClick={handleShare}
+                                className="w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all"
+                            >
+                                <img
+                                    src="https://img.icons8.com/?size=100&id=82741&format=png&color=FFFFFF"
+                                    alt="Share"
+                                    className="w-5 h-5"
+                                />
                             </button>
                         </div>
 
@@ -376,9 +395,18 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                         <div className="prose prose-invert prose-sm max-w-none text-white/60 font-light leading-relaxed">
                             <p>{product.description}</p>
                             <ul className="list-none pl-0 space-y-2 mt-4 text-[11px] uppercase tracking-wider text-white/40">
-                                <li className="flex items-center gap-3"><Shield className="w-3 h-3 text-amber-500" /> Authenticity Certified</li>
-                                <li className="flex items-center gap-3"><Truck className="w-3 h-3 text-amber-500" /> Premium Insured Shipping</li>
-                                <li className="flex items-center gap-3"><RefreshCw className="w-3 h-3 text-amber-500" /> Lifetime Maintenance</li>
+                                <li className="flex items-center gap-3">
+                                    <img src="https://img.icons8.com/?size=100&id=82718&format=png&color=F59E0B" alt="Security" className="w-5 h-5" />
+                                    Authenticity Certified
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <img src="https://img.icons8.com/?size=100&id=82730&format=png&color=F59E0B" alt="Shipping" className="w-5 h-5" />
+                                    Premium Insured Shipping
+                                </li>
+                                <li className="flex items-center gap-3">
+                                    <img src="https://img.icons8.com/?size=100&id=82738&format=png&color=F59E0B" alt="Maintenance" className="w-5 h-5" />
+                                    Lifetime Maintenance
+                                </li>
                             </ul>
                         </div>
 
@@ -455,7 +483,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                             />
                                             <div className="mt-2 space-y-1">
                                                 <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider flex items-center gap-1">
-                                                    <Shield className="w-3 h-3" /> Custom size will not be returnable
+                                                    <img src="https://img.icons8.com/?size=100&id=82718&format=png&color=EF4444" alt="Warning" className="w-3 h-3" />
+                                                    Custom size will not be returnable
                                                 </p>
                                                 <p className="text-[9px] text-amber-500/60 uppercase tracking-wider">* We will contact you to confirm details</p>
                                             </div>
@@ -478,10 +507,14 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                     onClick={handleAddToWishlist}
                                     className={`w-14 h-14 flex items-center justify-center border transition-all ${inWishlist
                                         ? 'bg-red-500/10 border-red-500 text-red-500'
-                                        : 'border-white/20 text-white hover:border-amber-500 hover:text-amber-500'
+                                        : 'border-white/20 text-white hover:border-amber-500 hover:text-amber-500 group'
                                         }`}
                                 >
-                                    <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
+                                    <img
+                                        src={`https://img.icons8.com/?size=100&id=85138&format=png&color=${inWishlist ? 'EF4444' : '999999'}`}
+                                        alt="Wishlist"
+                                        className={`w-5 h-5 transition-transform duration-300 ${!inWishlist && 'group-hover:scale-110 group-hover:brightness-150'}`}
+                                    />
                                 </button>
                             </div>
 

@@ -27,7 +27,11 @@ export default function CartPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+                <img
+                    src="https://img.icons8.com/?size=100&id=82738&format=png&color=F59E0B"
+                    alt="Loading"
+                    className="w-8 h-8 animate-spin"
+                />
             </div>
         )
     }
@@ -95,27 +99,39 @@ export default function CartPage() {
                                                 <div className="flex items-center bg-neutral-950 border border-neutral-800 p-1">
                                                     <button
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                                        className="w-8 h-8 flex items-center justify-center hover:text-amber-500 transition-colors disabled:opacity-30"
+                                                        className="w-10 h-10 flex items-center justify-center hover:bg-neutral-900 transition-colors disabled:opacity-30 group"
                                                         disabled={item.quantity <= 1}
                                                     >
-                                                        <Minus className="w-3 h-3" />
+                                                        <img
+                                                            src="https://img.icons8.com/?size=100&id=82743&format=png&color=999999"
+                                                            alt="Minus"
+                                                            className="w-5 h-5 group-hover:scale-110"
+                                                        />
                                                     </button>
                                                     <span className="w-8 text-center text-sm font-medium">
                                                         {item.quantity}
                                                     </span>
                                                     <button
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                                        className="w-8 h-8 flex items-center justify-center hover:text-amber-500 transition-colors"
+                                                        className="w-10 h-10 flex items-center justify-center hover:bg-neutral-900 transition-colors group"
                                                     >
-                                                        <Plus className="w-3 h-3" />
+                                                        <img
+                                                            src="https://img.icons8.com/?size=100&id=82744&format=png&color=F59E0B"
+                                                            alt="Plus"
+                                                            className="w-5 h-5 group-hover:scale-110"
+                                                        />
                                                     </button>
                                                 </div>
 
                                                 <button
                                                     onClick={() => handleRemove(item.id)}
-                                                    className="text-[10px] uppercase tracking-widest text-white/30 hover:text-amber-600 transition-colors flex items-center gap-2 group/remove"
+                                                    className="text-[10px] uppercase tracking-widest text-white/30 hover:text-red-500 transition-all flex items-center gap-2 group/remove"
                                                 >
-                                                    <span className="w-4 h-[1px] bg-white/10 group-hover/remove:bg-amber-600 transition-colors" />
+                                                    <img
+                                                        src="https://img.icons8.com/?size=100&id=82717&format=png&color=666666"
+                                                        alt="Remove"
+                                                        className="w-5 h-5 opacity-50 group-hover/remove:opacity-100 group-hover/remove:translate-y-[-1px] transition-all"
+                                                    />
                                                     Remove
                                                 </button>
                                             </div>
@@ -150,9 +166,13 @@ export default function CartPage() {
                                     </div>
 
                                     <Link href="/checkout">
-                                        <Button className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-12">
+                                        <Button className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-12 group">
                                             Checkout
-                                            <ArrowRight className="w-4 h-4 ml-2" />
+                                            <img
+                                                src="https://img.icons8.com/?size=100&id=82731&format=png&color=000000"
+                                                alt="Arrow"
+                                                className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1"
+                                            />
                                         </Button>
                                     </Link>
 

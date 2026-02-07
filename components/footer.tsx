@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { Mail, Phone, MapPin, Instagram, Facebook, Twitter } from 'lucide-react'
 
 export function Footer() {
   return (
@@ -60,7 +59,11 @@ export function Footer() {
             <h4 className="text-[10px] font-premium-sans text-amber-500 uppercase">Visit Us</h4>
             <div className="space-y-6">
               <div className="flex items-start gap-4 group cursor-pointer">
-                <MapPin size={14} className="text-amber-500/40 mt-1" />
+                <img
+                  src="https://img.icons8.com/?size=100&id=7880&format=png&color=F59E0B"
+                  alt="Location"
+                  className="w-5 h-5 mt-1 opacity-40 group-hover:opacity-100 transition-opacity"
+                />
                 <a
                   href="https://www.google.com/maps/place/Nijam+Gold+works/data=!4m2!3m1!1s0x0:0xe8958ae639e82931?sa=X&ved=1t:2428&ictx=111"
                   target="_blank"
@@ -72,7 +75,11 @@ export function Footer() {
                 </a>
               </div>
               <div className="flex items-center gap-4 group">
-                <Phone size={14} className="text-amber-500/40" />
+                <img
+                  src="https://img.icons8.com/?size=100&id=82705&format=png&color=F59E0B"
+                  alt="Phone"
+                  className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity"
+                />
                 <a href="tel:+919391032677" className="text-xs text-white/40 group-hover:text-white transition-colors tracking-widest">+91 93910 32677</a>
               </div>
             </div>

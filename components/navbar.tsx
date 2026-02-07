@@ -132,7 +132,11 @@ export function Navbar() {
               <Sheet>
                 <SheetTrigger asChild>
                   <button className="text-white hover:text-amber-500 transition-colors p-2">
-                    <Menu className="w-6 h-6" />
+                    <img
+                      src="https://img.icons8.com/?size=100&id=82745&format=png&color=FFFFFF"
+                      alt="Menu"
+                      className="w-5 h-5"
+                    />
                   </button>
                 </SheetTrigger>
                 <SheetContent side="left" className="bg-black border-r border-white/10 text-white w-[300px] p-0">
@@ -202,13 +206,21 @@ export function Navbar() {
                 onClick={() => setSearchOpen(true)}
                 className="text-white/40 hover:text-amber-500 transition-colors flex items-center gap-2 group"
               >
-                <Search className="w-4 h-4" />
+                <img
+                  src="https://img.icons8.com/?size=100&id=VNGluvySmxmA&format=png&color=999999"
+                  alt="Search"
+                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+                />
                 <span className="text-[9px] font-premium-sans text-white/20 group-hover:text-amber-500/50 hidden lg:block">Search</span>
               </button>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative text-white/40 hover:text-amber-500 transition-colors">
-                <Heart className="w-4 h-4" />
+              <Link href="/wishlist" className="relative text-white/40 hover:text-amber-500 transition-colors group">
+                <img
+                  src="https://img.icons8.com/?size=100&id=HLkJG1mxr6Xj&format=png&color=999999"
+                  alt="Wishlist"
+                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+                />
               </Link>
 
               {/* Cart */}
@@ -243,19 +255,31 @@ export function Navbar() {
                     <DropdownMenuSeparator className="bg-neutral-800" />
                     <DropdownMenuItem asChild className="focus:bg-neutral-800 focus:text-white cursor-pointer group">
                       <Link href="/account">
-                        <User className="mr-2 h-4 w-4 text-white/50 group-hover:text-amber-400" />
+                        <img
+                          src="https://img.icons8.com/?size=100&id=82712&format=png&color=999999"
+                          alt="Profile"
+                          className="mr-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity"
+                        />
                         <span>Profile</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="focus:bg-neutral-800 focus:text-white cursor-pointer group">
                       <Link href="/account/orders">
-                        <Package className="mr-2 h-4 w-4 text-white/50 group-hover:text-amber-400" />
+                        <img
+                          src="https://img.icons8.com/?size=100&id=82704&format=png&color=999999"
+                          alt="Orders"
+                          className="mr-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity"
+                        />
                         <span>My Orders</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-neutral-800" />
                     <DropdownMenuItem className="focus:bg-neutral-800 focus:text-white cursor-pointer group" onClick={handleSignOut}>
-                      <LogOut className="mr-2 h-4 w-4 text-white/50 group-hover:text-red-400" />
+                      <img
+                        src="https://img.icons8.com/?size=100&id=8119&format=png&color=FF4444"
+                        alt="Logout"
+                        className="mr-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity"
+                      />
                       <span>Sign Out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>

@@ -58,13 +58,21 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                     onClick={onClose}
                     className="absolute -top-12 right-4 md:right-0 p-2 text-white/40 hover:text-amber-500 transition-colors"
                 >
-                    <X className="w-6 h-6" />
+                    <img
+                        src="https://img.icons8.com/?size=100&id=82732&format=png&color=999999"
+                        alt="Close"
+                        className="w-5 h-5"
+                    />
                 </button>
 
                 {/* Search Header */}
                 <div className="relative mb-12 animate-in slide-in-from-bottom-8 duration-500">
                     <div className="flex items-center gap-6 border-b border-neutral-800 pb-4 group focus-within:border-amber-500 transition-colors">
-                        <Search className="w-8 h-8 text-white/20 group-focus-within:text-amber-500 transition-colors" />
+                        <img
+                            src="https://img.icons8.com/?size=100&id=VNGluvySmxmA&format=png&color=333333"
+                            alt="Search"
+                            className="w-5 h-5 group-focus-within:brightness-200 transition-all opacity-40 group-focus-within:opacity-100"
+                        />
                         <input
                             ref={inputRef}
                             type="text"
@@ -73,7 +81,13 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                             placeholder="SEARCH OUR HERITAGE..."
                             className="w-full bg-transparent border-none text-2xl md:text-5xl font-serif text-white placeholder:text-white/10 focus:outline-none uppercase tracking-widest"
                         />
-                        {loading && <Loader2 className="w-6 h-6 text-amber-500 animate-spin" />}
+                        {loading && (
+                            <img
+                                src="https://img.icons8.com/?size=100&id=82738&format=png&color=F59E0B"
+                                alt="Loading"
+                                className="w-6 h-6 animate-spin"
+                            />
+                        )}
                     </div>
                 </div>
 
@@ -137,7 +151,11 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                                                 className="group flex items-center justify-between text-xl font-serif text-white/60 hover:text-white transition-all"
                                             >
                                                 <span className="group-hover:translate-x-4 transition-transform duration-300 italic">{cat} Collection</span>
-                                                <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all text-amber-500" />
+                                                <img
+                                                    src="https://img.icons8.com/?size=100&id=82731&format=png&color=F59E0B"
+                                                    alt="Arrow"
+                                                    className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all"
+                                                />
                                             </Link>
                                         ))}
                                     </div>

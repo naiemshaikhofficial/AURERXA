@@ -14,15 +14,15 @@ export type FilterState = {
 }
 
 export const PRODUCT_TYPES = [
-    { label: 'All Jewelry', value: 'all' },
-    { label: 'Rings', value: 'Ring' },
-    { label: 'Necklaces', value: 'Necklace' },
-    { label: 'Earrings', value: 'Earring' },
-    { label: 'Bracelets', value: 'Bracelet' },
-    { label: 'Bangles', value: 'Bangle' },
-    { label: 'Pendants', value: 'Pendant' },
-    { label: 'Chains', value: 'Chain' },
-    { label: 'Mangalsutras', value: 'Mangalsutra' },
+    { label: 'All Jewelry', value: 'all', iconId: '82711' },
+    { label: 'Rings', value: 'Ring', iconId: '5z5Rvj2F4jZB' },
+    { label: 'Necklaces', value: 'Necklace', iconId: '19731' },
+    { label: 'Earrings', value: 'Earring', iconId: '82723' },
+    { label: 'Bracelets', value: 'Bracelet', iconId: 'McP6FpfdzPWM' },
+    { label: 'Bangles', value: 'Bangle', iconId: '82724' },
+    { label: 'Pendants', value: 'Pendant', iconId: '82727' },
+    { label: 'Chains', value: 'Chain', iconId: 'FWr93WQ0Gm9Q' },
+    { label: 'Mangalsutras', value: 'Mangalsutra', iconId: 'OuxvP3GkXGOn' },
 ]
 
 export const GENDERS = [
@@ -152,7 +152,11 @@ export function CinematicFilter({
                             onClick={() => setIsOpen(true)}
                             className="group flex items-center gap-2 px-5 py-2.5 bg-neutral-900 border border-white/10 rounded-xl hover:border-amber-500/50 transition-all active:scale-95"
                         >
-                            <SlidersHorizontal className="w-3.5 h-3.5 text-amber-500" />
+                            <img
+                                src="https://img.icons8.com/?size=100&id=82746&format=png&color=F59E0B"
+                                alt="Filter"
+                                className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180"
+                            />
                             <span className="text-xs font-premium-sans text-white tracking-widest">Filters</span>
                             {activeFilterCount > 0 && (
                                 <span className="ml-1 w-5 h-5 flex items-center justify-center bg-amber-500 text-black text-[9px] font-bold rounded-full">
@@ -200,7 +204,11 @@ export function CinematicFilter({
                                         onClick={() => setIsOpen(false)}
                                         className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors"
                                     >
-                                        <X className="w-5 h-5 text-white" />
+                                        <img
+                                            src="https://img.icons8.com/?size=100&id=82732&format=png&color=FFFFFF"
+                                            alt="Close"
+                                            className="w-5 h-5"
+                                        />
                                     </button>
                                 </div>
                             </div>
@@ -254,10 +262,11 @@ export function CinematicFilter({
                                                                     : "bg-white/5 border-white/5 hover:border-amber-500/50 hover:bg-white/10"
                                                             )}
                                                         >
-                                                            <Gem className={cn(
-                                                                "w-6 h-6",
-                                                                filters.type === type.value ? "text-black" : "text-amber-500 group-hover:scale-110 transition-transform"
-                                                            )} />
+                                                            <img
+                                                                src={`https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${filters.type === type.value ? '000000' : 'F59E0B'}`}
+                                                                alt={type.label}
+                                                                className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+                                                            />
                                                             <span className="text-[10px] uppercase tracking-widest">{type.label}</span>
                                                         </button>
                                                     ))}
@@ -278,7 +287,13 @@ export function CinematicFilter({
                                                             )}
                                                         >
                                                             <span className="text-sm uppercase tracking-wider">{gender.label}</span>
-                                                            {filters.gender === gender.value && <Check className="w-4 h-4" />}
+                                                            {filters.gender === gender.value && (
+                                                                <img
+                                                                    src="https://img.icons8.com/?size=100&id=82736&format=png&color=F59E0B"
+                                                                    alt="Selected"
+                                                                    className="w-4 h-4"
+                                                                />
+                                                            )}
                                                         </button>
                                                     ))}
                                                 </div>

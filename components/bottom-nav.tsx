@@ -3,40 +3,24 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, ShoppingBag, Heart, User, PenTool } from 'lucide-react'
+import { useCart } from '@/context/cart-context'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 
 export function BottomNav() {
     const pathname = usePathname()
-    const [cartCount, setCartCount] = useState(0)
+    const { cartCount } = useCart()
     const [user, setUser] = useState<any>(null)
 
     useEffect(() => {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             setUser(user)
-            if (user) {
-                const { count } = await supabase
-                    .from('cart')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('user_id', user.id)
-                setCartCount(count || 0)
-            }
         }
         getUser()
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null)
-            if (session?.user) {
-                const { count } = await supabase
-                    .from('cart')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('user_id', session.user.id)
-                setCartCount(count || 0)
-            } else {
-                setCartCount(0)
-            }
         })
 
         return () => subscription.unsubscribe()
@@ -46,36 +30,36 @@ export function BottomNav() {
         {
             href: '/',
             label: 'Home',
-            icon: Home,
+            iconId: '118937',
         },
         {
             href: '/collections',
             label: 'Shop',
-            icon: ShoppingBag,
+            iconId: '121367',
         },
         {
             href: '/wishlist',
             label: 'Wishlist',
-            icon: Heart,
+            iconId: 'HLkJG1mxr6Xj',
         },
         {
             href: user ? '/account' : '/login',
             label: 'Account',
-            icon: User,
+            iconId: '82712',
         },
         {
             href: '/custom-jewelry',
             label: 'Custom',
-            icon: PenTool,
+            iconId: '9729',
         },
     ]
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-950/90 backdrop-blur-lg border-t border-neutral-800 md:hidden safe-area-pb">
             <nav className="flex items-center justify-around h-14">
-                {links.map(({ href, label, icon: Icon }) => {
+                {links.map(({ href, label, iconId }) => {
                     const isActive = pathname === href || (href === '/collections' && pathname.startsWith('/collections')) || (href === '/account' && pathname.startsWith('/account'))
-                    const isCart = href === '/cart'
+                    const isShop = href === '/collections'
                     return (
                         <Link
                             key={label}
@@ -86,14 +70,18 @@ export function BottomNav() {
                             )}
                         >
                             <div className="relative">
-                                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                                {isCart && cartCount > 0 && (
-                                    <span className="absolute -top-1 -right-2 w-4 h-4 bg-amber-500 text-neutral-950 text-[10px] font-bold rounded-full flex items-center justify-center">
+                                <img
+                                    src={`https://img.icons8.com/?size=100&id=${iconId}&format=png&color=${isActive ? 'F59E0B' : '999999'}`}
+                                    alt={label}
+                                    className={cn("w-5 h-5 transition-transform duration-300", isActive && "scale-110")}
+                                />
+                                {isShop && cartCount > 0 && (
+                                    <span className="absolute -top-1 -right-2 w-3.5 h-3.5 bg-amber-500 text-neutral-950 text-[8px] font-bold rounded-full flex items-center justify-center">
                                         {cartCount > 9 ? '9+' : cartCount}
                                     </span>
                                 )}
                             </div>
-                            <span className="text-[10px] font-medium">
+                            <span className="text-[9px] font-medium tracking-tight">
                                 {label}
                             </span>
                         </Link>
