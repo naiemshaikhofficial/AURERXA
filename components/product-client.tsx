@@ -173,6 +173,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             }}
                             priority
                             sizes="(max-width: 768px) 100vw, 50vw"
+                            unoptimized
                         />
 
                         {/* Navigation Arrows Overlay */}
@@ -233,7 +234,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                         : 'border-white/5 grayscale hover:grayscale-0 hover:border-white/30'
                                         }`}
                                 >
-                                    <Image src={img} alt="Thumbnail" fill className={`object-cover p-2 transition-transform duration-700 ${selectedImage === i ? 'scale-110' : 'scale-100'}`} sizes="80px" />
+                                    <Image src={img} alt="Thumbnail" fill className={`object-cover p-2 transition-transform duration-700 ${selectedImage === i ? 'scale-110' : 'scale-100'}`} sizes="80px" unoptimized />
                                 </button>
                             ))}
                         </div>
@@ -400,6 +401,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-105 contrast-125"
                                             sizes="(max-width: 768px) 100vw, 33vw"
+                                            unoptimized
                                         />
                                         <div className="absolute inset-0 bg-black/60 group-hover:bg-transparent transition-colors duration-500" />
                                         <div className="absolute bottom-0 inset-x-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
