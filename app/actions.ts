@@ -1106,13 +1106,13 @@ export async function getRepairs() {
 
 // Metro city pincode prefixes (first 2 digits) - for delivery time estimation
 const METRO_PINCODES = [
+  '40', // Mumbai (Fastest from Sangamner)
+  '41', // Pune (Fastest from Sangamner)
   '11', // Delhi
-  '40', // Mumbai
   '56', // Bangalore
   '60', // Chennai
   '70', // Kolkata
   '50', // Hyderabad
-  '41', // Pune/Thane
 ]
 
 // Tier-2 city pincode prefixes
@@ -1234,8 +1234,15 @@ export async function checkDeliveryAvailability(pincode: string) {
       // Out of Delivery Area - longer delivery time
       deliveryDays = { min: 10, max: 15 }
       zone = 'other'
+    } else if (prefix === '42') {
+      // Very Local (Sangamner/Ahmednagar/Nashik)
+      deliveryDays = { min: 1, max: 2 }
+      zone = 'metro'
+      expressAvailable = true
     } else if (METRO_PINCODES.includes(prefix)) {
-      deliveryDays = { min: 3, max: 5 }
+      // Mumbai/Pune are very close to Sangamner
+      const isVeryClose = ['40', '41'].includes(prefix)
+      deliveryDays = isVeryClose ? { min: 2, max: 3 } : { min: 3, max: 5 }
       zone = 'metro'
       expressAvailable = true
     } else if (TIER2_PINCODES.some(p => prefix.startsWith(p.substring(0, 2)) || p === prefix)) {
@@ -1358,13 +1365,16 @@ function getZone(pincode: string): keyof typeof SHIPPING_RATES_CHART {
   const prefix = pincode.substring(0, 2)
   const fullPrefix = pincode.substring(0, 3)
 
-  if (prefix === '11') return 'A' // Intra-city (Delhi)
+  if (prefix === '42') return 'A' // Intra-city / Local (Sangamner Region)
 
-  // Zone B: NCR/North (Simplified)
-  if (['12', '13', '20', '21', '24', '25'].includes(prefix)) return 'B'
+  // Zone B: Maharashtra State
+  if (['40', '41', '43', '44'].includes(prefix)) return 'B'
 
-  // Zone C: Metros
-  if (['40', '56', '60', '70', '50', '41'].includes(prefix)) return 'C'
+  // Zone C: South & West Metros
+  if (['56', '60', '50', '38', '39'].includes(prefix)) return 'C'
+
+  // Zone D: North & East Metros (Delhi etc)
+  if (['11', '70', '20', '12'].includes(prefix)) return 'D'
 
   // Zone E: NE & Special
   if (['78', '79', '18', '19'].includes(prefix)) return 'E'
@@ -1372,7 +1382,7 @@ function getZone(pincode: string): keyof typeof SHIPPING_RATES_CHART {
   // Zone F: Very Remote
   if (fullPrefix === '744') return 'F' // Andaman
 
-  return 'D' // Rest of India
+  return 'D' // Default to National
 }
 
 function getCitySurcharge(pincode: string, weightKg: number): number {
@@ -1401,7 +1411,9 @@ function getCitySurcharge(pincode: string, weightKg: number): number {
 
 export async function calculateShippingRate(pincode: string, cartItems: any[], isCod: boolean = false) {
   try {
-    const originPincode = '110001'
+    const originPincode = '422605'
+    const delhiveryToken = process.env.DELHIVERY_API_TOKEN
+    const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
 
     // Calculate total weight and volumetric weight
     let totalWeightGrams = 0
@@ -1424,6 +1436,49 @@ export async function calculateShippingRate(pincode: string, cartItems: any[], i
 
     const finalWeightGrams = Math.max(totalWeightGrams, totalVolWeightGrams)
     const weightKg = finalWeightGrams / 1000
+
+    // 1. Try Delhivery Price API First
+    if (delhiveryToken) {
+      try {
+        // Price calculation using Delhivery's KRS (Kilometer-Rate-Slab) logic
+        const response = await fetch(
+          `${delhiveryUrl}/api/krs/price.json?origin=${originPincode}&destination=${pincode}&weight=${finalWeightGrams}&ss=R`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Token ${delhiveryToken}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+
+        if (response.ok) {
+          const data = await response.json()
+          if (data && data.total_amount) {
+            let rate = parseFloat(data.total_amount)
+
+            // Add COD Fee if applicable
+            if (isCod) {
+              const codFee = Math.max(40, cartTotal * 0.02)
+              rate += codFee
+            }
+
+            // Apply GST (18%) if not already included in total_amount
+            const finalRate = Math.round(rate * 1.18)
+
+            return {
+              success: true,
+              rate: Math.max(90, finalRate), // Min ₹90 as per user policy
+              isLive: true
+            }
+          }
+        }
+      } catch (apiError) {
+        console.warn('Delhivery Rate API call failed, falling back to internal logic:', apiError)
+      }
+    }
+
+    // 2. Fallback to Internal Logic (Sangamner Centric)
     const zone = getZone(pincode)
     const rates = SHIPPING_RATES_CHART[zone]
 
@@ -1436,7 +1491,7 @@ export async function calculateShippingRate(pincode: string, cartItems: any[], i
         const extraUnits500g = Math.ceil((weightKg - 0.5) / 0.5)
         baseRate += (extraUnits500g * rates.addl500g)
       }
-    } else if (weightKg <= 4.5) { // Assuming discounted slab up to 4kg+ extra buffer
+    } else if (weightKg <= 4.5) {
       baseRate = rates.base2kg
       if (weightKg > 2) {
         const extraKg = Math.ceil(weightKg - 2)
@@ -1457,30 +1512,24 @@ export async function calculateShippingRate(pincode: string, cartItems: any[], i
     }
 
     const surcharge = getCitySurcharge(pincode, weightKg)
-
     let totalShipping = baseRate + surcharge
 
-    // COD Charges: 40 or 2% whichever is higher
     if (isCod) {
       const codFee = Math.max(40, cartTotal * 0.02)
       totalShipping += codFee
     }
 
-    // GST (Diesel price hike is usually ~10-20% but we'll stick to a standard multiplier if needed, 
-    // or just assume the user wants the raw chart total + 18% GST)
     const totalWithGST = totalShipping * 1.18
 
-    // Return the final rate (Round to match the user's preference for ₹90 or similar)
-    // If the calculated rate is very low (intra-city single ring), it might be ₹30-50, 
-    // we'll return at least 90 as per user's "warna normal shipping 90" request if it falls below.
     return {
       success: true,
-      rate: Math.max(90, Math.round(totalWithGST))
+      rate: Math.max(90, Math.round(totalWithGST)),
+      isLive: false // Indicates manual calculation
     }
 
   } catch (error) {
     console.warn('Shipping calculation failed, using fallback:', error)
-    return { success: true, rate: 90 }
+    return { success: true, rate: 90, isLive: false }
   }
 }
 
