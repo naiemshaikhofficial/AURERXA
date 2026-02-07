@@ -76,7 +76,7 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-4 group">
                 <img
-                  src="https://img.icons8.com/?size=100&id=82705&format=png&color=F59E0B"
+                  src="https://img.icons8.com/?size=100&id=9729&format=png&color=F59E0B"
                   alt="Phone"
                   className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-opacity"
                 />

@@ -17,12 +17,12 @@ export const PRODUCT_TYPES = [
     { label: 'All Jewelry', value: 'all', iconId: '82711' },
     { label: 'Rings', value: 'Ring', iconId: '5z5Rvj2F4jZB' },
     { label: 'Necklaces', value: 'Necklace', iconId: '19731' },
-    { label: 'Earrings', value: 'Earring', iconId: '82723' },
+    { label: 'Earrings', value: 'Earring', iconId: 'ksXSIChGyK69' },
     { label: 'Bracelets', value: 'Bracelet', iconId: 'McP6FpfdzPWM' },
-    { label: 'Bangles', value: 'Bangle', iconId: '82724' },
-    { label: 'Pendants', value: 'Pendant', iconId: '82727' },
+    { label: 'Bangles', value: 'Bangle', iconId: '8YdZOEMppFxv' },
+    { label: 'Pendants', value: 'Pendant', iconId: '110325' },
     { label: 'Chains', value: 'Chain', iconId: 'FWr93WQ0Gm9Q' },
-    { label: 'Mangalsutras', value: 'Mangalsutra', iconId: 'OuxvP3GkXGOn' },
+    { label: 'Mangalsutras', value: 'Mangalsutra', iconId: '/947771-200.png' },
 ]
 
 export const GENDERS = [
@@ -263,9 +263,17 @@ export function CinematicFilter({
                                                             )}
                                                         >
                                                             <img
-                                                                src={`https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${filters.type === type.value ? '000000' : 'F59E0B'}`}
+                                                                src={type.iconId.startsWith('/')
+                                                                    ? type.iconId
+                                                                    : `https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${filters.type === type.value ? '000000' : 'F59E0B'}`
+                                                                }
                                                                 alt={type.label}
-                                                                className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+                                                                className={cn(
+                                                                    "w-5 h-5 transition-all duration-300 group-hover:scale-110",
+                                                                    type.iconId.startsWith('/') && (filters.type === type.value
+                                                                        ? "brightness-0"
+                                                                        : "[filter:brightness(0)_saturate(100%)_invert(73%)_sepia(50%)_saturate(1478%)_hue-rotate(350deg)_brightness(105%)_contrast(92%)]")
+                                                                )}
                                                             />
                                                             <span className="text-[10px] uppercase tracking-widest">{type.label}</span>
                                                         </button>

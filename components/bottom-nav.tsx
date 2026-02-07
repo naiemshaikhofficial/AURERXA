@@ -50,7 +50,7 @@ export function BottomNav() {
         {
             href: '/custom-jewelry',
             label: 'Custom',
-            iconId: '9729',
+            iconId: '7687',
         },
     ]
 
