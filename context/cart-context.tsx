@@ -15,6 +15,9 @@ interface CartItem {
         price: number
         image_url: string
         slug: string
+        weight_grams?: number
+        purity?: string
+        gender?: string
     }
 }
 

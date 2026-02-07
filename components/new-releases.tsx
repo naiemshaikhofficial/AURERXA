@@ -52,6 +52,7 @@ export function NewReleases({ products }: { products: any[] }) {
                                     alt={product.name}
                                     fill
                                     className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                    unoptimized
                                 />
 
                                 {/* Overlay Gradient */}

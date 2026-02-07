@@ -5,15 +5,14 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { getFilteredProducts, getCategories } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
-import { useState, Suspense, useEffect, useRef } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Loader2, Grid3X3, LayoutList } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ParallaxScroll } from '@/components/parallax-scroll'
 import { motion } from 'framer-motion'
 import { HeritageHighlights } from '@/components/heritage-highlights'
-import { PremiumFilters, priceRanges, type FilterState, type Category } from '@/components/premium-filters'
+import { CinematicFilter, FilterState, PRICE_RANGES } from '@/components/cinematic-filter'
 
 interface Product {
   id: string
@@ -26,8 +25,6 @@ interface Product {
   categories?: { name: string; slug: string }
   slug: string
 }
-
-const defaultPriceRanges = priceRanges
 
 function CollectionProductCard({ product, viewMode, index }: { product: Product, viewMode: 'grid' | 'list', index: number }) {
   const { addItem } = useCart()
@@ -66,13 +63,10 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
           alt={product.name}
           fill
           className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:contrast-125"
+          unoptimized
         />
 
-        {/* Hover Flash Overlay - REMOVED for cleaner look */}
-
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity pointer-events-none" />
-
-        {/* Quick Actions Buttons - Removed from Image Overlay */}
       </div>
 
       {/* Product Info */}
@@ -93,8 +87,8 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
           </span>
         </div>
 
-        {/* Hover Reveal Buttons (Slide Down) */}
-        <div className="grid grid-cols-2 gap-2 overflow-hidden max-h-0 opacity-0 group-hover:max-h-20 group-hover:opacity-100 transition-all duration-500 ease-out pt-2">
+        {/* Hover Reveal Buttons (Slide Down) - Mobile: Always Visible Stacked, Desktop: Hover Reveal Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 overflow-hidden max-h-24 opacity-100 md:max-h-0 md:opacity-0 md:group-hover:max-h-24 md:group-hover:opacity-100 transition-all duration-500 ease-out pt-2">
           <Button
             onClick={handleAddToCart}
             disabled={isAdding}
@@ -118,19 +112,20 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
   )
 }
 
-
 function CollectionsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<any[]>([])
 
-  // Filter State using FilterState type
+  // Filter State
   const [filters, setFilters] = useState<FilterState>({
     category: 'all',
+    type: 'all',
     gender: 'all',
-    priceRange: priceRanges[0],
-    sortBy: 'newest',
+    priceRange: PRICE_RANGES[0],
+    sortBy: 'newest'
   })
+
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
@@ -142,13 +137,8 @@ function CollectionsContent() {
       setCategories([{ name: 'All Collections', slug: 'all' }, ...cats])
 
       const materialParam = searchParams.get('material')
-      const genderParam = searchParams.get('gender')
-      if (materialParam || genderParam) {
-        setFilters(prev => ({
-          ...prev,
-          category: materialParam || 'all',
-          gender: genderParam || 'all',
-        }))
+      if (materialParam) {
+        setFilters(prev => ({ ...prev, category: materialParam }))
       }
     }
     init()
@@ -159,13 +149,14 @@ function CollectionsContent() {
     async function fetchProducts() {
       setLoading(true)
       // Simulate "Heavy" Luxurious Loading delay
-      await new Promise(r => setTimeout(r, 400))
+      await new Promise(r => setTimeout(r, 600))
 
       try {
         const data = await getFilteredProducts({
           sortBy: filters.sortBy,
           category: filters.category === 'all' ? undefined : filters.category,
           gender: filters.gender === 'all' ? undefined : filters.gender,
+          type: filters.type === 'all' ? undefined : filters.type,
           minPrice: filters.priceRange.min,
           maxPrice: filters.priceRange.max || undefined
         })
@@ -179,15 +170,9 @@ function CollectionsContent() {
     fetchProducts()
   }, [filters])
 
-  const handleFiltersChange = (newFilters: FilterState) => {
-    setFilters(newFilters)
-  }
-
   return (
     <div className="min-h-screen bg-black text-white relative">
       <Navbar />
-
-      {/* Global Scanline Overlay - REMOVED */}
 
       {/* Hero Header - Black Edition */}
       <div className="relative pt-40 pb-20 px-6 overflow-hidden">
@@ -213,35 +198,15 @@ function CollectionsContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 pb-32 relative z-10">
-        {/* Premium Filters */}
-        <PremiumFilters
+        {/* Cinematic Filter Integration */}
+        <CinematicFilter
           categories={categories}
           initialFilters={filters}
-          onFiltersChange={handleFiltersChange}
+          onFiltersChange={setFilters}
           productCount={products.length}
         />
 
-        {/* View Toggle - Hidden on mobile (grid only) */}
-        <div className="hidden lg:flex justify-end mb-8 -mt-4">
-          <div className="flex items-center gap-2 bg-neutral-900/50 backdrop-blur-xl border border-white/10 p-1 rounded-lg">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2.5 transition-all rounded ${viewMode === 'grid'
-                ? 'bg-amber-500 text-black'
-                : 'text-white/40 hover:text-white hover:bg-white/5'}`}
-            >
-              <Grid3X3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2.5 transition-all rounded ${viewMode === 'list'
-                ? 'bg-amber-500 text-black'
-                : 'text-white/40 hover:text-white hover:bg-white/5'}`}
-            >
-              <LayoutList className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+
 
         {/* Product Grid - "Jyada Animative" */}
         {loading ? (
@@ -255,7 +220,15 @@ function CollectionsContent() {
             <h3 className="text-xl font-serif text-white/40">No Treasures Found</h3>
             <p className="text-sm text-white/30">Refine your search to uncover hidden gems.</p>
             <button
-              onClick={() => { setSelectedCategory('all'); setSelectedPriceRange(priceRanges[0]) }}
+              onClick={() => {
+                setFilters({
+                  category: 'all',
+                  type: 'all',
+                  gender: 'all',
+                  priceRange: PRICE_RANGES[0],
+                  sortBy: 'newest'
+                })
+              }}
               className="text-amber-500 underline underline-offset-4 hover:text-amber-400"
             >
               Reset Filters

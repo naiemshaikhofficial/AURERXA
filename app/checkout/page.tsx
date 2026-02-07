@@ -683,9 +683,29 @@ export default function CheckoutPage() {
                                                 />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm truncate">{item.products?.name}</p>
-                                                <p className="text-xs text-white/50">Qty: {item.quantity}</p>
-                                                <p className="text-sm text-amber-400">₹{((item.products?.price || 0) * item.quantity).toLocaleString('en-IN')}</p>
+                                                <p className="text-sm truncate font-medium">{item.products?.name}</p>
+                                                <div className="flex flex-wrap items-center gap-x-2 text-[10px] text-white/50 uppercase tracking-wider mt-0.5">
+                                                    <span>Qty: {item.quantity}</span>
+                                                    {item.size && (
+                                                        <>
+                                                            <span className="opacity-30">•</span>
+                                                            <span className="text-amber-500/70">Size: {item.size}</span>
+                                                        </>
+                                                    )}
+                                                    {item.products?.weight_grams && (
+                                                        <>
+                                                            <span className="opacity-30">•</span>
+                                                            <span>{item.products.weight_grams}g</span>
+                                                        </>
+                                                    )}
+                                                    {item.products?.purity && (
+                                                        <>
+                                                            <span className="opacity-30">•</span>
+                                                            <span>{item.products.purity}</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                                <p className="text-sm text-amber-400 mt-1">₹{((item.products?.price || 0) * item.quantity).toLocaleString('en-IN')}</p>
                                             </div>
                                         </div>
                                     ))}

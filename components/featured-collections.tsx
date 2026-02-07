@@ -72,6 +72,7 @@ function CollectionCard({ category }: { category: any }) {
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
               className="object-cover transition-all duration-300 grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 group-hover:scale-110 will-change-transform"
               loading="eager"
+              unoptimized
             />
           </motion.div>
 

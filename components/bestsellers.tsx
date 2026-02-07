@@ -104,6 +104,7 @@ function ProductCard({ product }: {
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 className="object-cover transition-grayscale duration-700 grayscale-[0.2] group-hover:grayscale-0"
+                unoptimized
               />
             </motion.div>
           </div>

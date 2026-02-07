@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -10,9 +10,9 @@ import { Button } from '@/components/ui/button'
 import { addToWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
-import { Heart, Shield, Truck, RefreshCw, Loader2, ArrowLeft, ArrowRight, Share2 } from 'lucide-react'
+import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
-import { PremiumImageGallery } from '@/components/premium-image-gallery'
+import { motion, AnimatePresence } from 'framer-motion'
 
 
 interface ProductClientProps {
@@ -21,12 +21,134 @@ interface ProductClientProps {
     isWishlisted: boolean
 }
 
+function ZoomableImage({ src, alt }: { src: string, alt: string }) {
+    const [scale, setScale] = useState(1)
+    const [position, setPosition] = useState({ x: 0, y: 0 })
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    // Reset zoom on image change
+    useEffect(() => {
+        setScale(1)
+        setPosition({ x: 0, y: 0 })
+    }, [src])
+
+    // Native Wheel Listener for non-passive behavior (prevents page scroll)
+    useEffect(() => {
+        const container = containerRef.current
+        if (!container) return
+
+        const onWheel = (e: WheelEvent) => {
+            e.preventDefault()
+            e.stopPropagation()
+
+            const delta = -e.deltaY * 0.005
+
+            setScale(prevScale => {
+                const newScale = Math.min(Math.max(1, prevScale + delta), 4)
+                if (newScale === 1) setPosition({ x: 0, y: 0 })
+                return newScale
+            })
+        }
+
+        container.addEventListener('wheel', onWheel, { passive: false })
+        return () => container.removeEventListener('wheel', onWheel)
+    }, [])
+
+    const toggleZoom = () => {
+        if (scale > 1) {
+            setScale(1)
+            setPosition({ x: 0, y: 0 })
+        } else {
+            setScale(2.5)
+        }
+    }
+
+    // Pinch Zoom Logic (Basic)
+    const touchStartDist = useRef<number>(0)
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        if (e.touches.length === 2) {
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            )
+            touchStartDist.current = dist
+        }
+    }
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        if (e.touches.length === 2) {
+            const dist = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            )
+            const delta = dist - touchStartDist.current
+            // Sensitivity factor
+            const newScale = Math.min(Math.max(1, scale + delta * 0.01), 4)
+            setScale(newScale)
+            touchStartDist.current = dist
+        }
+    }
+
+    return (
+        <div
+            ref={containerRef}
+            className="relative w-full h-full overflow-hidden cursor-zoom-in active:cursor-grabbing"
+            style={{ touchAction: scale > 1 ? 'none' : 'pan-y' }}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onDoubleClick={toggleZoom}
+        >
+            <motion.div
+                className="w-full h-full"
+                animate={{ scale, x: position.x, y: position.y }}
+                drag={scale > 1}
+                dragConstraints={containerRef}
+                dragElastic={0.1}
+                dragMomentum={false}
+                onDragEnd={(e, info) => {
+                    // Update position state if needed or let framer handle it
+                    setPosition({ x: info.point.x, y: info.point.y }) // Roughly
+                }}
+                transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+            >
+                <Image
+                    src={src}
+                    alt={alt}
+                    fill
+                    className="object-contain p-8 lg:p-16 pointer-events-none select-none"
+                    priority
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    draggable={false}
+                    unoptimized
+                />
+            </motion.div>
+
+            {/* Floating Controls */}
+            <div className={`absolute bottom-6 right-6 flex gap-2 transition-opacity duration-300 ${scale > 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                <button
+                    onClick={() => { setScale(1); setPosition({ x: 0, y: 0 }) }}
+                    className="p-2 bg-black/60 text-white rounded-full hover:bg-amber-500 hover:text-black transition-colors"
+                >
+                    <RotateCcw className="w-4 h-4" />
+                </button>
+            </div>
+
+            {/* Hint only when not zoomed */}
+            <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/40 backdrop-blur-md rounded-full text-[10px] text-white/80 uppercase tracking-widest pointer-events-none transition-opacity duration-300 ${scale === 1 ? 'opacity-100' : 'opacity-0'}`}>
+                Pinch / Scroll to Zoom
+            </div>
+        </div>
+    )
+}
+
 export function ProductClient({ product, related, isWishlisted }: ProductClientProps) {
     const router = useRouter()
     const { addItem } = useCart()
 
     // State
     const [selectedSize, setSelectedSize] = useState<string>(product.sizes?.[0] || '')
+    const [customSizeInput, setCustomSizeInput] = useState('') // New Feature: Custom Size State
     const [quantity, setQuantity] = useState(1)
     const [addingToCart, setAddingToCart] = useState(false)
     const [inWishlist, setInWishlist] = useState(isWishlisted)
@@ -63,8 +185,21 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
     const handleAddToCart = async () => {
         if (!product) return
+
+        // Validate Custom Size
+        let finalSize = selectedSize
+        if (selectedSize === 'Custom') {
+            if (!customSizeInput.trim()) {
+                setMessage('Please enter custom size')
+                setTimeout(() => setMessage(null), 3000)
+                // Shake effect or highlight input could be added here
+                return
+            }
+            finalSize = `Custom: ${customSizeInput}`
+        }
+
         setAddingToCart(true)
-        await addItem(product.id, selectedSize, quantity, product)
+        await addItem(product.id, finalSize || 'One Size', quantity, product)
         setMessage('Added to your cart')
         setAddingToCart(false)
         setTimeout(() => setMessage(null), 3000)
@@ -72,10 +207,22 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
     const handleBuyNow = async () => {
         if (!product) return
+
+        // Validate Custom Size
+        let finalSize = selectedSize
+        if (selectedSize === 'Custom') {
+            if (!customSizeInput.trim()) {
+                setMessage('Please enter custom size')
+                setTimeout(() => setMessage(null), 3000)
+                return
+            }
+            finalSize = `Custom: ${customSizeInput}`
+        }
+
         setAddingToCart(true)
 
         // Add to cart (handles guest/user automatically via CartContext)
-        await addItem(product.id, selectedSize || 'One Size', 1, product)
+        await addItem(product.id, finalSize || 'One Size', 1, product)
 
         setAddingToCart(false)
 
@@ -121,28 +268,68 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             <Navbar />
 
             <div className="pt-20 lg:pt-24 min-h-screen flex flex-col lg:flex-row relative z-10">
-                {/* LEFT: Premium Product Gallery with Advanced Zoom */}
-                <div className="relative">
-                    <PremiumImageGallery
-                        images={allImages}
-                        productName={product.name}
-                        selectedImage={selectedImage}
-                        onImageChange={setSelectedImage}
-                    />
+                {/* LEFT: Image Gallery */}
+                <div className="w-full lg:w-[55%] lg:h-[calc(100vh-6rem)] lg:sticky lg:top-24 p-6 flex flex-col gap-6">
+                    {/* Main Image */}
+                    <div className="relative w-full aspect-[4/5] lg:aspect-auto flex-1 bg-neutral-900 border border-white/5 overflow-hidden group">
+                        <div className="absolute inset-0 z-10">
+                            <ZoomableImage src={allImages[selectedImage]} alt={product.name} />
+                        </div>
 
-                    {/* Share Button - Floating */}
-                    <div className="absolute top-10 right-10 z-30 group/share lg:hidden">
-                        <button
-                            onClick={handleShare}
-                            className="w-12 h-12 bg-black/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all duration-500 rounded-full shadow-2xl"
-                        >
-                            <Share2 className="w-4 h-4" />
-                        </button>
+                        {/* Navigation Arrows */}
+                        {allImages.length > 1 && (
+                            <>
+                                <button
+                                    onClick={() => setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1))}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform -translate-x-2 group-hover:translate-x-0 duration-300"
+                                >
+                                    <ArrowLeft className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={() => setSelectedImage((prev) => (prev === allImages.length - 1 ? 0 : prev + 1))}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 duration-300"
+                                >
+                                    <ArrowRight className="w-4 h-4" />
+                                </button>
+                            </>
+                        )}
+
+                        {/* Share Button */}
+                        <div className="absolute top-4 right-4 z-20">
+                            <button className="w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all">
+                                <Share2 className="w-4 h-4" />
+                            </button>
+                        </div>
+
+
                     </div>
+
+                    {/* Thumbnails */}
+                    {allImages.length > 1 && (
+                        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                            {allImages.map((img: string, i: number) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setSelectedImage(i)}
+                                    className={`relative w-24 h-24 flex-shrink-0 border transition-all duration-300 ${selectedImage === i ? 'border-amber-500 opacity-100' : 'border-white/10 opacity-50 hover:opacity-100'
+                                        }`}
+                                >
+                                    <Image
+                                        src={img}
+                                        alt={`${product.name} view ${i + 1}`}
+                                        fill
+                                        className="object-cover"
+                                        sizes="96px"
+                                        unoptimized
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                {/* RIGHT: Product Details Scroll */}
-                <div className="w-full lg:w-[45%] p-6 lg:p-12 lg:pr-24 flex flex-col justify-center">
+                {/* RIGHT: Product Details Scroll - Added safe bottom padding */}
+                <div className="w-full lg:w-[45%] p-6 lg:p-12 lg:pr-24 flex flex-col justify-center pb-32">
                     <div className="space-y-8 animate-in fade-in slide-in-from-right-10 duration-700">
                         {/* Header */}
                         <div className="space-y-4">
@@ -237,7 +424,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                             <button
                                                 key={size}
                                                 onClick={() => setSelectedSize(size)}
-                                                className={`w-12 h-12 flex items-center justify-center text-xs font-bold border transition-all ${selectedSize === size
+                                                className={`min-w-[3rem] px-3 h-12 flex items-center justify-center text-xs font-bold border transition-all ${selectedSize === size
                                                     ? 'bg-amber-500 text-black border-amber-500'
                                                     : 'border-white/20 text-white hover:border-white'
                                                     }`}
@@ -245,7 +432,35 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                                 {size}
                                             </button>
                                         ))}
+                                        {/* Custom Size Option */}
+                                        <button
+                                            onClick={() => setSelectedSize('Custom')}
+                                            className={`px-4 h-12 flex items-center justify-center text-xs font-bold border transition-all ${selectedSize === 'Custom'
+                                                ? 'bg-amber-500 text-black border-amber-500'
+                                                : 'border-white/20 text-white hover:border-white'
+                                                }`}
+                                        >
+                                            Custom Size
+                                        </button>
                                     </div>
+
+                                    {/* Custom Size Input */}
+                                    {selectedSize === 'Custom' && (
+                                        <div className="animate-in fade-in slide-in-from-top-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Enter your size (e.g., US 7.5, 18mm)"
+                                                className="w-full h-12 bg-transparent border border-amber-500/50 text-white px-4 text-xs tracking-wider focus:outline-none focus:border-amber-500 placeholder:text-white/20"
+                                                onChange={(e) => setCustomSizeInput(e.target.value)}
+                                            />
+                                            <div className="mt-2 space-y-1">
+                                                <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                                                    <Shield className="w-3 h-3" /> Custom size will not be returnable
+                                                </p>
+                                                <p className="text-[9px] text-amber-500/60 uppercase tracking-wider">* We will contact you to confirm details</p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

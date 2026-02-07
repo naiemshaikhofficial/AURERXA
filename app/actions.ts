@@ -950,6 +950,7 @@ export async function getFilteredProducts(options: {
   sortBy?: string
   search?: string
   gender?: string
+  type?: string
 }) {
   try {
     let query = supabase
@@ -969,8 +970,15 @@ export async function getFilteredProducts(options: {
     }
 
     // Gender filter
-    if (options.gender) {
+    if (options.gender && options.gender !== 'all') {
       query = query.eq('gender', options.gender)
+    }
+
+    // Type filter (Simulated via Name pattern since no type column exists)
+    if (options.type && options.type !== 'all') {
+      // Remove 's' from end if present (e.g., Rings -> Ring) for better matching
+      const singularType = options.type.endsWith('s') ? options.type.slice(0, -1) : options.type
+      query = query.ilike('name', `%${singularType}%`)
     }
 
     // Price filters
