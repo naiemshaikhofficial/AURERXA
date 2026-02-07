@@ -218,7 +218,7 @@ export async function getCart() {
 
   const { data, error } = await client
     .from('cart')
-    .select('*, products(*)')
+    .select('*, products(*, categories(*))')
     .eq('user_id', user.id)
 
   if (error) {
@@ -802,7 +802,7 @@ export async function searchProducts(query: string) {
 
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, image_url, categories:category_id(name)')
+      .select('*, categories(*)')
       .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
       .limit(10)
 
