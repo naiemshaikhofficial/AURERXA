@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Loader2, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 
-export default function SignupPage() {
+function SignupForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const redirect = searchParams.get('redirect') || '/'
@@ -311,5 +311,17 @@ export default function SignupPage() {
                 )}
             </div>
         </div>
+    )
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            </div>
+        }>
+            <SignupForm />
+        </Suspense>
     )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, ArrowRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const [loading, setLoading] = useState(false)
@@ -38,7 +38,7 @@ export default function LoginPage() {
             if (error) throw error
 
             // Successful login - handle redirect
-            const searchParams = new URLSearchParams(window.location.search)
+            // Prefer searchParams from hook, fallback to window only if needed (though hook is cleaner)
             const redirect = searchParams.get('redirect') || '/'
             router.push(redirect)
             router.refresh()
@@ -52,7 +52,6 @@ export default function LoginPage() {
     const handleGoogleLogin = async () => {
         setLoading(true)
         setError(null)
-        const searchParams = new URLSearchParams(window.location.search)
         const redirect = searchParams.get('redirect') || '/'
         try {
             const redirectUrl = new URL('/auth/callback', window.location.origin)
@@ -208,5 +207,17 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            </div>
+        }>
+            <LoginForm />
+        </Suspense>
     )
 }
