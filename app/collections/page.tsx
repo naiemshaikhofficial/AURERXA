@@ -57,7 +57,7 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
       transition={{ duration: 0.5, delay: index * 0.05 }}
       className={`group relative bg-neutral-900 border border-white/5 hover:border-amber-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] overflow-hidden flex flex-col ${viewMode === 'list' ? 'md:flex-row md:items-center' : ''}`}
     >
-      <div className={`relative overflow-hidden ${viewMode === 'grid' ? 'aspect-[3/4] w-full' : 'aspect-video md:aspect-[21/9] md:w-1/2'} group/img`}>
+      <div className={`relative overflow-hidden ${viewMode === 'grid' ? 'aspect-square w-full' : 'aspect-video md:aspect-[21/9] md:w-1/2'} group/img`}>
         <Link href={`/products/${product.slug}`} className="absolute inset-0 z-10 block" />
 
         {/* Image */}
@@ -73,8 +73,8 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
       </div>
 
       {/* Product Info */}
-      <div className={`p-6 space-y-4 relative z-10 bg-black flex-1 flex flex-col ${viewMode === 'list' ? 'md:p-8' : ''}`}>
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+      <div className={`p-4 space-y-2 relative z-10 bg-black flex-1 flex flex-col ${viewMode === 'list' ? 'md:p-8' : ''}`}>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <p className="text-[10px] text-amber-500 font-premium-sans tracking-widest uppercase truncate">
@@ -92,36 +92,36 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
               )}
             </div>
             <Link href={`/products/${product.slug}`}>
-              <h3 className="text-xl font-serif text-white font-medium group-hover:text-amber-500 transition-colors leading-tight">
+              <h3 className="text-lg font-serif text-white font-medium group-hover:text-amber-500 transition-colors leading-tight">
                 {product.name}
               </h3>
             </Link>
             {product.description && (
-              <p className="mt-2 text-xs text-white/40 font-light line-clamp-3 leading-relaxed">
+              <p className="mt-1 text-[11px] text-white/30 font-light line-clamp-2 leading-tight">
                 {product.description}
               </p>
             )}
           </div>
-          <span className="text-xl font-light text-white/90 whitespace-nowrap self-start">
+          <span className="text-lg font-light text-white/90 whitespace-nowrap self-start">
             ₹{product.price.toLocaleString()}
           </span>
         </div>
 
-        {/* Hover Reveal Buttons (Slide Down) - Mobile: Always Visible Stacked, Desktop: Hover Reveal Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 overflow-hidden max-h-24 opacity-100 md:max-h-0 md:opacity-0 md:group-hover:max-h-24 md:group-hover:opacity-100 transition-all duration-500 ease-out pt-2">
+        {/* Buttons - Side by Side on Mobile, Grid on Desktop */}
+        <div className="grid grid-cols-2 gap-2 overflow-hidden max-h-24 opacity-100 md:max-h-0 md:opacity-0 md:group-hover:max-h-24 md:group-hover:opacity-100 transition-all duration-500 ease-out pt-1">
           <Button
             onClick={handleAddToCart}
             disabled={isAdding}
-            className="w-full bg-neutral-800 border border-white/10 text-white hover:bg-white hover:text-black transition-all duration-300 h-9 text-[9px] uppercase font-bold tracking-widest rounded-none"
+            className="w-full bg-neutral-800 border border-white/10 text-white hover:bg-white hover:text-black transition-all duration-300 h-8 text-[8px] uppercase font-bold tracking-widest rounded-none"
           >
-            {isAdding ? 'Adding...' : 'Add to Cart'}
+            {isAdding ? '...' : 'Add'}
           </Button>
           <Button
             onClick={handleBuyNow}
             disabled={isBuying}
-            className="w-full bg-amber-500 text-black hover:bg-amber-400 transition-all duration-300 h-9 text-[9px] uppercase font-bold tracking-widest rounded-none shadow-lg"
+            className="w-full bg-amber-500 text-black hover:bg-amber-400 transition-all duration-300 h-8 text-[8px] uppercase font-bold tracking-widest rounded-none shadow-lg"
           >
-            {isBuying ? 'Loading...' : 'Buy Now'}
+            {isBuying ? '...' : 'Buy'}
           </Button>
         </div>
 

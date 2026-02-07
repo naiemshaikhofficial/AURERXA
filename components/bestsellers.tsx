@@ -17,8 +17,10 @@ interface Product {
   price: number
   image_url: string
   slug: string
-  category?: { name: string }
-  categories?: { name: string } // Handling potential join structure
+  categories?: { name: string }
+  purity?: string
+  weight_grams?: number
+  gender?: string
   stock?: number
 }
 
@@ -91,11 +93,11 @@ function ProductCard({ product }: {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-      className="group flex flex-col items-center text-center"
+      className="group relative bg-neutral-900 border border-white/5 hover:border-amber-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] overflow-hidden flex flex-col"
     >
-      {/* Image Container with Luxury Glow */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-900 mb-8 group/img">
-        <Link href={`/products/${product.slug}`} className="absolute inset-0 z-10 w-full h-full">
+      {/* Image Container */}
+      <div className="relative aspect-square w-full overflow-hidden bg-neutral-900 group/img">
+        <Link href={`/products/${product.slug}`} className="absolute inset-0 z-10 block">
           <div className="absolute inset-0 z-0 h-[110%] -top-[5%] w-full">
             <motion.div style={{ y: yImage }} className="relative h-full w-full">
               <Image
@@ -109,49 +111,63 @@ function ProductCard({ product }: {
             </motion.div>
           </div>
         </Link>
-
-        {/* Subtle Overlay */}
         <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors duration-700 pointer-events-none" />
-
-        {/* Hover Action Buttons */}
-        <div className="absolute inset-x-0 bottom-0 p-6 translate-y-full group-hover:translate-y-0 transition-all duration-500 ease-out z-20 flex flex-col gap-2">
-          <Button
-            onClick={handleBuyNow}
-            disabled={isBuying}
-            className="w-full bg-amber-500 text-neutral-950 hover:bg-amber-400 transition-all duration-500 rounded-none h-11 text-[9px] font-premium-sans tracking-[0.2em] font-bold shadow-2xl"
-          >
-            {isBuying ? 'Processing...' : 'Buy Now'}
-          </Button>
-          <Button
-            onClick={handleProductAdd}
-            disabled={isAdding}
-            className="w-full bg-white/10 backdrop-blur-md text-white border border-white/10 hover:bg-white hover:text-black transition-all duration-500 rounded-none h-11 text-[9px] font-premium-sans tracking-[0.2em] shadow-lg"
-          >
-            {isAdding ? 'Adding...' : 'Add to Cart'}
-          </Button>
-        </div>
-
       </div>
 
       {/* Product Info */}
-      <div className="space-y-4 px-4 w-full h-full flex flex-col">
-        {product.categories?.name || 'Exclusive'}
+      <div className="p-4 space-y-2 relative z-10 bg-black flex-1 flex flex-col text-left">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <p className="text-[10px] text-amber-500 font-premium-sans tracking-widest uppercase truncate">
+                {product.categories?.name || 'EXCLUSIVE'}
+              </p>
+              {product.purity && (
+                <span className="px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/20 text-[8px] uppercase tracking-wider text-amber-500 font-bold">
+                  {product.purity}
+                </span>
+              )}
+              {product.weight_grams && (
+                <span className="px-1.5 py-0.5 border border-white/10 text-[8px] uppercase tracking-wider text-white/40">
+                  {product.weight_grams}g
+                </span>
+              )}
+            </div>
+            <Link href={`/products/${product.slug}`}>
+              <h3 className="text-lg font-serif text-white font-medium group-hover:text-amber-500 transition-colors leading-tight">
+                {product.name}
+              </h3>
+            </Link>
+            {product.description && (
+              <p className="mt-1 text-[11px] text-white/30 font-light line-clamp-2 leading-tight">
+                {product.description}
+              </p>
+            )}
+          </div>
+          <span className="text-lg font-light text-white/90 whitespace-nowrap self-start">
+            ₹{product.price.toLocaleString()}
+          </span>
+        </div>
 
-        <Link href={`/products/${product.id}`}>
-          <h3 className="text-xl font-serif font-medium text-white tracking-wide group-hover:text-amber-500 transition-colors duration-500">
-            {product.name}
-          </h3>
-        </Link>
+        {/* Buttons - Side by Side on Mobile, Grid on Desktop */}
+        <div className="grid grid-cols-2 gap-2 overflow-hidden max-h-24 opacity-100 md:max-h-0 md:opacity-0 md:group-hover:max-h-24 md:group-hover:opacity-100 transition-all duration-500 ease-out pt-1">
+          <Button
+            onClick={handleProductAdd}
+            disabled={isAdding}
+            className="w-full bg-neutral-800 border border-white/10 text-white hover:bg-white hover:text-black transition-all duration-300 h-8 text-[8px] uppercase font-bold tracking-widest rounded-none"
+          >
+            {isAdding ? '...' : 'Add'}
+          </Button>
+          <Button
+            onClick={handleBuyNow}
+            disabled={isBuying}
+            className="w-full bg-amber-500 text-black hover:bg-amber-400 transition-all duration-300 h-8 text-[8px] uppercase font-bold tracking-widest rounded-none shadow-lg"
+          >
+            {isBuying ? '...' : 'Buy'}
+          </Button>
+        </div>
 
-        <div className="w-8 h-[1px] bg-white/10 mx-auto" />
-
-        <p className="text-[9px] font-premium-sans text-amber-500/60">
-          {product.categories?.name || 'Exclusive'}
-        </p>
-
-        <p className="text-[10px] font-premium-sans text-white/20 tracking-widest pb-4">
-          ₹{typeof product.price === 'number' ? product.price.toLocaleString() : product.price}
-        </p>
+        <div className="w-full h-[1px] bg-white/10 group-hover:bg-amber-500/50 transition-colors mt-auto" />
       </div>
     </motion.div>
   )

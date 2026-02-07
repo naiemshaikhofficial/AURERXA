@@ -5,6 +5,109 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Search, X, Loader2, ArrowRight } from 'lucide-react'
 import { searchProducts } from '@/app/actions'
+import { Button } from '@/components/ui/button'
+import { useCart } from '@/context/cart-context'
+import { useRouter } from 'next/navigation'
+
+function SearchResultCard({ product, idx, onClose }: { product: any; idx: number; onClose: () => void }) {
+    const { addItem } = useCart()
+    const router = useRouter()
+    const [isAdding, setIsAdding] = useState(false)
+    const [isBuying, setIsBuying] = useState(false)
+
+    const handleAddToCart = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsAdding(true)
+        await addItem(product.id, 'Standard', 1, product)
+        setIsAdding(false)
+    }
+
+    const handleBuyNow = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsBuying(true)
+        await addItem(product.id, 'Standard', 1, product)
+        onClose()
+        router.push('/checkout')
+    }
+
+    return (
+        <div
+            className="group relative animate-in fade-in slide-in-from-bottom-6 duration-700 bg-neutral-900 border border-white/5 hover:border-amber-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(245,158,11,0.1)] overflow-hidden flex flex-col"
+            style={{ animationDelay: `${idx * 50}ms` }}
+        >
+            <Link
+                href={`/products/${product.slug}`}
+                onClick={onClose}
+                className="relative aspect-square overflow-hidden bg-neutral-900 block group/img"
+            >
+                <Image
+                    src={product.image_url}
+                    alt={product.name}
+                    fill
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                    unoptimized
+                />
+                <div className="absolute inset-0 bg-neutral-950/20 group-hover:bg-transparent transition-colors duration-500" />
+            </Link>
+
+            <div className="p-3 space-y-1.5 bg-black flex-1 flex flex-col items-start text-left">
+                <div className="flex flex-col gap-1 w-full">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                        <p className="text-[8px] text-amber-500 font-premium-sans tracking-widest uppercase truncate">
+                            {product.categories?.name || 'Exclusive'}
+                        </p>
+                        {product.purity && (
+                            <span className="px-1 py-0.5 bg-amber-500/10 border border-amber-500/20 text-[6px] uppercase tracking-wider text-amber-500 font-bold">
+                                {product.purity}
+                            </span>
+                        )}
+                        {product.weight_grams && (
+                            <span className="px-1 py-0.5 border border-white/10 text-[6px] uppercase tracking-wider text-white/40">
+                                {product.weight_grams}g
+                            </span>
+                        )}
+                    </div>
+                    <Link href={`/products/${product.slug}`} onClick={onClose} className="w-full">
+                        <h3 className="text-sm font-serif text-white font-medium group-hover:text-amber-400 transition-colors leading-tight truncate">
+                            {product.name}
+                        </h3>
+                    </Link>
+                    {product.description && (
+                        <p className="text-[10px] text-white/30 font-light line-clamp-1 leading-tight">
+                            {product.description}
+                        </p>
+                    )}
+                </div>
+
+                <div className="flex justify-between items-center w-full">
+                    <span className="text-sm font-light text-white/90">
+                        ₹{product.price.toLocaleString()}
+                    </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 w-full opacity-100 transition-all duration-500 pt-1">
+                    <Button
+                        onClick={handleAddToCart}
+                        disabled={isAdding}
+                        className="bg-neutral-800 border border-white/10 text-white hover:bg-white hover:text-black transition-all duration-300 h-6 text-[6px] uppercase font-bold tracking-widest rounded-none px-1"
+                    >
+                        {isAdding ? '...' : 'Add'}
+                    </Button>
+                    <Button
+                        onClick={handleBuyNow}
+                        disabled={isBuying}
+                        className="bg-amber-500 text-black hover:bg-amber-400 transition-all duration-300 h-6 text-[6px] uppercase font-bold tracking-widest rounded-none px-1"
+                    >
+                        {isBuying ? '...' : 'Buy'}
+                    </Button>
+                </div>
+                <div className="w-full h-[1px] bg-white/10 group-hover:bg-amber-500/50 transition-colors mt-auto" />
+            </div>
+        </div>
+    )
+}
 
 export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
     const [query, setQuery] = useState('')
@@ -96,37 +199,9 @@ export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                     {query.trim().length >= 2 ? (
                         <div className="animate-in fade-in slide-in-from-top-4 duration-500">
                             {results.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {results.map((product, idx) => (
-                                        <Link
-                                            key={product.id}
-                                            href={`/products/${product.slug}`}
-                                            onClick={onClose}
-                                            className="group flex gap-4 p-4 bg-neutral-900/50 border border-neutral-800 hover:border-amber-500/30 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
-                                            style={{ animationDelay: `${idx * 50}ms` }}
-                                        >
-                                            <div className="relative w-24 h-24 flex-shrink-0 bg-neutral-800 overflow-hidden">
-                                                <Image
-                                                    src={product.image_url}
-                                                    alt={product.name}
-                                                    fill
-                                                    className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                                />
-                                            </div>
-                                            <div className="flex flex-col justify-between py-1">
-                                                <div>
-                                                    <p className="text-[10px] text-amber-500 uppercase tracking-widest mb-1">
-                                                        {product.categories?.name || 'Exclusive'}
-                                                    </p>
-                                                    <h3 className="text-white font-serif text-base line-clamp-1 group-hover:text-amber-400 transition-colors italic">
-                                                        {product.name}
-                                                    </h3>
-                                                </div>
-                                                <p className="text-amber-400 font-bold text-sm tracking-widest">
-                                                    ₹{product.price.toLocaleString('en-IN')}
-                                                </p>
-                                            </div>
-                                        </Link>
+                                        <SearchResultCard key={product.id} product={product} idx={idx} onClose={onClose} />
                                     ))}
                                 </div>
                             ) : !loading && (

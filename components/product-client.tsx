@@ -177,13 +177,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     // Add to recently viewed on mount
     useEffect(() => {
         if (product) {
-            addToRecentlyViewed({
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                image_url: product.image_url,
-                slug: product.slug
-            })
+            addToRecentlyViewed(product)
         }
     }, [product.id]) // Only depend on ID
 
