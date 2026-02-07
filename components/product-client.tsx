@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -10,8 +10,9 @@ import { Button } from '@/components/ui/button'
 import { addToWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
-import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Copy } from 'lucide-react'
+import { Heart, Shield, Truck, RefreshCw, Loader2, ArrowLeft, ArrowRight, Share2 } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
+import { PremiumImageGallery } from '@/components/premium-image-gallery'
 
 
 interface ProductClientProps {
@@ -31,10 +32,6 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const [inWishlist, setInWishlist] = useState(isWishlisted)
     const [message, setMessage] = useState<string | null>(null)
     const [selectedImage, setSelectedImage] = useState(0)
-    const [zoomed, setZoomed] = useState(false)
-    const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 })
-    const imageRef = useRef<HTMLDivElement>(null)
-    const rafRef = useRef<number | null>(null)
 
     // Memoize image array to prevent re-calculations on every render
     const allImages = React.useMemo(() => {
@@ -117,35 +114,6 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
         }
     }
 
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!imageRef.current || !zoomed) return
-
-        if (rafRef.current) cancelAnimationFrame(rafRef.current)
-
-        const clientX = e.clientX
-        const clientY = e.clientY
-
-        rafRef.current = requestAnimationFrame(() => {
-            if (!imageRef.current) return
-            const rect = imageRef.current.getBoundingClientRect()
-            const x = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100))
-            const y = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100))
-
-            // Only update if change is significant to avoid noise/loops
-            setZoomPosition(prev => {
-                if (Math.abs(prev.x - x) < 0.1 && Math.abs(prev.y - y) < 0.1) return prev
-                return { x, y }
-            })
-        })
-    }
-
-    // Cleanup RAF
-    useEffect(() => {
-        return () => {
-            if (rafRef.current) cancelAnimationFrame(rafRef.current)
-        }
-    }, [])
-
     if (!product) return null // Should be handled by server page redirect or 404
 
     return (
@@ -153,92 +121,24 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             <Navbar />
 
             <div className="pt-20 lg:pt-24 min-h-screen flex flex-col lg:flex-row relative z-10">
-                {/* LEFT: Cinematic Sticky Gallery */}
-                <div className="w-full lg:w-[55%] lg:h-[calc(100vh-6rem)] lg:sticky lg:top-24 p-6 flex flex-col gap-6">
-                    <div
-                        ref={imageRef}
-                        onMouseMove={handleMouseMove}
-                        onMouseEnter={() => setZoomed(true)}
-                        onMouseLeave={() => setZoomed(false)}
-                        className="relative w-full h-[50vh] lg:h-auto lg:flex-1 bg-neutral-900 border border-white/5 overflow-hidden group/gallery cursor-crosshair"
-                    >
-                        <Image
-                            src={allImages[selectedImage]}
-                            alt={product.name}
-                            fill
-                            className={`object-contain p-8 lg:p-16 ${zoomed ? '' : 'transition-transform duration-500'}`}
-                            style={{
-                                transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                                transform: zoomed ? 'scale(2.5)' : 'scale(1)'
-                            }}
-                            priority
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                            unoptimized
-                        />
+                {/* LEFT: Premium Product Gallery with Advanced Zoom */}
+                <div className="relative">
+                    <PremiumImageGallery
+                        images={allImages}
+                        productName={product.name}
+                        selectedImage={selectedImage}
+                        onImageChange={setSelectedImage}
+                    />
 
-                        {/* Navigation Arrows Overlay */}
-                        {allImages.length > 1 && (
-                            <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover/gallery:opacity-100 transition-opacity pointer-events-none">
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1));
-                                    }}
-                                    className="w-12 h-24 bg-black/40 backdrop-blur-sm border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-black transition-all pointer-events-auto group/nav"
-                                >
-                                    <ArrowLeft className="w-5 h-5 group-hover/nav:-translate-x-1 transition-transform" />
-                                </button>
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        setSelectedImage((prev) => (prev === allImages.length - 1 ? 0 : prev + 1));
-                                    }}
-                                    className="w-12 h-24 bg-black/40 backdrop-blur-sm border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-black transition-all pointer-events-auto group/nav"
-                                >
-                                    <ArrowRight className="w-5 h-5 group-hover/nav:translate-x-1 transition-transform" />
-                                </button>
-                            </div>
-                        )}
-
-                        {/* Share Button Overlay */}
-                        <div className="absolute top-6 right-6 z-20 group/share">
-                            <button
-                                onClick={handleShare}
-                                className="w-12 h-12 bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all duration-500 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
-                            >
-                                <Share2 className="w-4 h-4" />
-                            </button>
-                            <span className="absolute right-14 top-1/2 -translate-y-1/2 bg-black/80 backdrop-blur border border-white/5 text-[9px] uppercase tracking-widest px-3 py-1 text-white opacity-0 group-hover/share:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                Share Masterpiece
-                            </span>
-                        </div>
-
-                        {/* Zoom Hint */}
-                        <div className="absolute bottom-6 right-6 opacity-0 group-hover/gallery:opacity-100 transition-opacity bg-black/60 backdrop-blur px-3 py-1 flex items-center gap-2 border border-white/10">
-                            <ZoomIn className="w-3 h-3 text-amber-500" />
-                            <span className="text-[9px] text-white uppercase tracking-widest">Zoom Enabled</span>
-                        </div>
+                    {/* Share Button - Floating */}
+                    <div className="absolute top-10 right-10 z-30 group/share lg:hidden">
+                        <button
+                            onClick={handleShare}
+                            className="w-12 h-12 bg-black/60 backdrop-blur-xl border border-white/10 flex items-center justify-center hover:bg-amber-500 hover:text-black hover:border-amber-500 transition-all duration-500 rounded-full shadow-2xl"
+                        >
+                            <Share2 className="w-4 h-4" />
+                        </button>
                     </div>
-
-                    {/* Thumbnails */}
-                    {allImages.length > 1 && (
-                        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                            {allImages.map((img: string, i: number) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setSelectedImage(i)}
-                                    className={`relative w-20 h-20 flex-shrink-0 border transition-all duration-500 overflow-hidden ${selectedImage === i
-                                        ? 'border-amber-500 grayscale-0 ring-1 ring-amber-500 ring-offset-4 ring-offset-black'
-                                        : 'border-white/5 grayscale hover:grayscale-0 hover:border-white/30'
-                                        }`}
-                                >
-                                    <Image src={img} alt="Thumbnail" fill className={`object-cover p-2 transition-transform duration-700 ${selectedImage === i ? 'scale-110' : 'scale-100'}`} sizes="80px" unoptimized />
-                                </button>
-                            ))}
-                        </div>
-                    )}
                 </div>
 
                 {/* RIGHT: Product Details Scroll */}

@@ -7,12 +7,13 @@ import { getFilteredProducts, getCategories } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { useState, Suspense, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Loader2, SlidersHorizontal, X, ChevronDown, Eye, Check } from 'lucide-react'
+import { Loader2, Grid3X3, LayoutList } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ParallaxScroll } from '@/components/parallax-scroll'
 import { motion } from 'framer-motion'
 import { HeritageHighlights } from '@/components/heritage-highlights'
+import { PremiumFilters, priceRanges, type FilterState, type Category } from '@/components/premium-filters'
 
 interface Product {
   id: string
@@ -26,19 +27,7 @@ interface Product {
   slug: string
 }
 
-const priceRanges = [
-  { label: 'All Prices', min: 0, max: 0 },
-  { label: 'Under ₹10,000', min: 0, max: 10000 },
-  { label: '₹10,000 - ₹50,000', min: 10000, max: 50000 },
-  { label: '₹50,000 - ₹1,00,000', min: 50000, max: 100000 },
-  { label: 'Above ₹1,00,000', min: 100000, max: 0 },
-]
-
-const sortOptions = [
-  { label: 'Newest First', value: 'newest' },
-  { label: 'Price: Low to High', value: 'price_asc' },
-  { label: 'Price: High to Low', value: 'price_desc' },
-]
+const defaultPriceRanges = priceRanges
 
 function CollectionProductCard({ product, viewMode, index }: { product: Product, viewMode: 'grid' | 'list', index: number }) {
   const { addItem } = useCart()
@@ -129,81 +118,19 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
   )
 }
 
-function FilterDropdown({
-  label,
-  value,
-  options,
-  onChange,
-  placeholder
-}: {
-  label: string,
-  value: any,
-  options: { label: string, value: any }[],
-  onChange: (val: any) => void,
-  placeholder?: string
-}) {
-  const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  const selectedOption = options.find(opt => opt.value === value) || options[0]
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between gap-4 px-5 py-2.5 bg-neutral-900/50 border transition-all duration-300 min-w-[180px] group ${isOpen ? 'border-amber-500 bg-neutral-900' : 'border-neutral-800 hover:border-neutral-700'
-          }`}
-      >
-        <div className="flex flex-col items-start">
-          <span className="text-[10px] text-white/40 uppercase tracking-widest leading-none mb-1">{label}</span>
-          <span className="text-sm font-medium text-white group-hover:text-amber-400 transition-colors">
-            {selectedOption.label}
-          </span>
-        </div>
-        <ChevronDown className={`w-4 h-4 text-white/30 transition-transform duration-300 ${isOpen ? 'rotate-180 text-amber-500' : ''}`} />
-      </button>
-
-      {isOpen && (
-        <div className="absolute top-[calc(100%+8px)] left-0 z-50 w-full min-w-[220px] bg-neutral-900 border border-neutral-800 shadow-2xl py-2 animate-in fade-in slide-in-from-top-2 duration-300">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => {
-                onChange(opt.value)
-                setIsOpen(false)
-              }}
-              className={`w-full flex items-center justify-between px-5 py-3 text-sm transition-all hover:bg-neutral-800 ${value === opt.value ? 'text-amber-500 bg-neutral-800/50' : 'text-white/70 hover:text-white'
-                }`}
-            >
-              <span>{opt.label}</span>
-              {value === opt.value && <Check className="w-4 h-4" />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
 
 function CollectionsContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const [categories, setCategories] = useState<any[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
-  // States
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedSort, setSelectedSort] = useState('newest')
-  const [selectedPriceRange, setSelectedPriceRange] = useState(priceRanges[0])
+  // Filter State using FilterState type
+  const [filters, setFilters] = useState<FilterState>({
+    category: 'all',
+    gender: 'all',
+    priceRange: priceRanges[0],
+    sortBy: 'newest',
+  })
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<Product[]>([])
@@ -215,7 +142,14 @@ function CollectionsContent() {
       setCategories([{ name: 'All Collections', slug: 'all' }, ...cats])
 
       const materialParam = searchParams.get('material')
-      if (materialParam) setSelectedCategory(materialParam)
+      const genderParam = searchParams.get('gender')
+      if (materialParam || genderParam) {
+        setFilters(prev => ({
+          ...prev,
+          category: materialParam || 'all',
+          gender: genderParam || 'all',
+        }))
+      }
     }
     init()
   }, [searchParams])
@@ -225,14 +159,15 @@ function CollectionsContent() {
     async function fetchProducts() {
       setLoading(true)
       // Simulate "Heavy" Luxurious Loading delay
-      await new Promise(r => setTimeout(r, 600))
+      await new Promise(r => setTimeout(r, 400))
 
       try {
         const data = await getFilteredProducts({
-          sortBy: selectedSort,
-          category: selectedCategory === 'all' ? undefined : selectedCategory,
-          minPrice: selectedPriceRange.min,
-          maxPrice: selectedPriceRange.max || undefined
+          sortBy: filters.sortBy,
+          category: filters.category === 'all' ? undefined : filters.category,
+          gender: filters.gender === 'all' ? undefined : filters.gender,
+          minPrice: filters.priceRange.min,
+          maxPrice: filters.priceRange.max || undefined
         })
         setProducts(data as Product[])
       } catch (error) {
@@ -242,7 +177,11 @@ function CollectionsContent() {
       }
     }
     fetchProducts()
-  }, [selectedCategory, selectedSort, selectedPriceRange])
+  }, [filters])
+
+  const handleFiltersChange = (newFilters: FilterState) => {
+    setFilters(newFilters)
+  }
 
   return (
     <div className="min-h-screen bg-black text-white relative">
@@ -274,58 +213,33 @@ function CollectionsContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 pb-32 relative z-10">
-        {/* Cinematic Toolbar */}
-        <div className="sticky top-24 z-40 mb-16 p-1 backdrop-blur-xl bg-neutral-900/80 border border-white/10 rounded-sm shadow-2xl">
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-6 p-4">
-            {/* Scrollable Category Filter */}
-            <div className="w-full lg:w-auto overflow-x-auto pb-2 lg:pb-0 no-scrollbar flex items-center gap-2">
-              {categories.map((cat) => (
-                <button
-                  key={cat.slug}
-                  onClick={() => setSelectedCategory(cat.slug)}
-                  className={`px-6 py-3 text-xs uppercase tracking-widest font-bold transition-all duration-300 border ${selectedCategory === cat.slug
-                    ? 'bg-amber-500 text-black border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]'
-                    : 'bg-transparent text-white/50 border-white/5 hover:border-white/20 hover:text-white'
-                    }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-            </div>
+        {/* Premium Filters */}
+        <PremiumFilters
+          categories={categories}
+          initialFilters={filters}
+          onFiltersChange={handleFiltersChange}
+          productCount={products.length}
+        />
 
-            <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto justify-end">
-              <FilterDropdown
-                label="Sort By"
-                value={selectedSort}
-                options={sortOptions}
-                onChange={setSelectedSort}
-              />
-              <div className="w-[1px] h-8 bg-white/10 hidden md:block" />
-
-              {/* View Toggle */}
-              <div className="flex items-center gap-1 border border-white/10 p-1 bg-neutral-900">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2 transition-all ${viewMode === 'grid' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
-                >
-                  <div className="grid grid-cols-2 gap-0.5 w-4 h-4">
-                    <div className="bg-current" />
-                    <div className="bg-current" />
-                    <div className="bg-current" />
-                    <div className="bg-current" />
-                  </div>
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2 transition-all ${viewMode === 'list' ? 'bg-white text-black' : 'text-white/40 hover:text-white'}`}
-                >
-                  <div className="flex flex-col gap-0.5 w-4 h-[14px]">
-                    <div className="h-full w-full bg-current" />
-                    <div className="h-full w-full bg-current" />
-                  </div>
-                </button>
-              </div>
-            </div>
+        {/* View Toggle - Hidden on mobile (grid only) */}
+        <div className="hidden lg:flex justify-end mb-8 -mt-4">
+          <div className="flex items-center gap-2 bg-neutral-900/50 backdrop-blur-xl border border-white/10 p-1 rounded-lg">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2.5 transition-all rounded ${viewMode === 'grid'
+                ? 'bg-amber-500 text-black'
+                : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+            >
+              <Grid3X3 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2.5 transition-all rounded ${viewMode === 'list'
+                ? 'bg-amber-500 text-black'
+                : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+            >
+              <LayoutList className="w-4 h-4" />
+            </button>
           </div>
         </div>
 

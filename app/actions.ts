@@ -949,6 +949,7 @@ export async function getFilteredProducts(options: {
   maxPrice?: number
   sortBy?: string
   search?: string
+  gender?: string
 }) {
   try {
     let query = supabase
@@ -965,6 +966,11 @@ export async function getFilteredProducts(options: {
       if (cat) {
         query = query.eq('category_id', cat.id)
       }
+    }
+
+    // Gender filter
+    if (options.gender) {
+      query = query.eq('gender', options.gender)
     }
 
     // Price filters
