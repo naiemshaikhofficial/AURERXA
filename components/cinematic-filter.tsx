@@ -155,7 +155,7 @@ export function CinematicFilter({
                             <img
                                 src="https://img.icons8.com/?size=100&id=82746&format=png&color=F59E0B"
                                 alt="Filter"
-                                className="w-3.5 h-3.5 transition-transform duration-300 group-hover:rotate-180"
+                                className="w-5 h-5 transition-transform duration-300 group-hover:rotate-180"
                             />
                             <span className="text-xs font-premium-sans text-white tracking-widest">Filters</span>
                             {activeFilterCount > 0 && (
@@ -205,7 +205,7 @@ export function CinematicFilter({
                                         className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors"
                                     >
                                         <img
-                                            src="https://img.icons8.com/?size=100&id=82732&format=png&color=FFFFFF"
+                                            src="https://img.icons8.com/?size=100&id=aJXCfqpXgZUC&format=png&color=FFFFFF"
                                             alt="Close"
                                             className="w-5 h-5"
                                         />

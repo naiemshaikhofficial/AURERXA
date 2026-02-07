@@ -24,6 +24,9 @@ interface Product {
   sizes?: string[]
   categories?: { name: string; slug: string }
   slug: string
+  purity?: string
+  weight_grams?: number
+  gender?: string
 }
 
 function CollectionProductCard({ product, viewMode, index }: { product: Product, viewMode: 'grid' | 'list', index: number }) {
@@ -71,18 +74,35 @@ function CollectionProductCard({ product, viewMode, index }: { product: Product,
 
       {/* Product Info */}
       <div className={`p-6 space-y-4 relative z-10 bg-black flex-1 flex flex-col ${viewMode === 'list' ? 'md:p-8' : ''}`}>
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-[10px] text-amber-500 font-premium-sans tracking-widest mb-1 uppercase">
-              {product.categories?.name || 'EXCLUSIVE'}
-            </p>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <p className="text-[10px] text-amber-500 font-premium-sans tracking-widest uppercase truncate">
+                {product.categories?.name || 'EXCLUSIVE'}
+              </p>
+              {product.purity && (
+                <span className="px-1.5 py-0.5 bg-amber-500/10 border border-amber-500/20 text-[8px] uppercase tracking-wider text-amber-500 font-bold">
+                  {product.purity}
+                </span>
+              )}
+              {product.weight_grams && (
+                <span className="px-1.5 py-0.5 border border-white/10 text-[8px] uppercase tracking-wider text-white/40">
+                  {product.weight_grams}g
+                </span>
+              )}
+            </div>
             <Link href={`/products/${product.slug}`}>
-              <h3 className="text-xl font-serif text-white font-medium group-hover:text-amber-500 transition-colors">
+              <h3 className="text-xl font-serif text-white font-medium group-hover:text-amber-500 transition-colors leading-tight">
                 {product.name}
               </h3>
             </Link>
+            {product.description && (
+              <p className="mt-2 text-xs text-white/40 font-light line-clamp-3 leading-relaxed">
+                {product.description}
+              </p>
+            )}
           </div>
-          <span className="text-lg font-light text-white/90">
+          <span className="text-xl font-light text-white/90 whitespace-nowrap self-start">
             ₹{product.price.toLocaleString()}
           </span>
         </div>

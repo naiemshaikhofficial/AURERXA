@@ -133,7 +133,7 @@ export function Navbar() {
                 <SheetTrigger asChild>
                   <button className="text-white hover:text-amber-500 transition-colors p-2">
                     <img
-                      src="https://img.icons8.com/?size=100&id=82745&format=png&color=FFFFFF"
+                      src="https://img.icons8.com/?size=100&id=82744&format=png&color=FFFFFF"
                       alt="Menu"
                       className="w-5 h-5"
                     />
