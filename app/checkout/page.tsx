@@ -680,6 +680,7 @@ export default function CheckoutPage() {
                                                     alt={item.products?.name || 'Product'}
                                                     fill
                                                     className="object-cover"
+                                                    unoptimized
                                                 />
                                             </div>
                                             <div className="flex-1 min-w-0">

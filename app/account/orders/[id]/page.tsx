@@ -260,6 +260,7 @@ export default function OrderDetailPage() {
                                                         alt={item.product_name}
                                                         fill
                                                         className="object-cover"
+                                                        unoptimized
                                                     />
                                                 )}
                                             </div>

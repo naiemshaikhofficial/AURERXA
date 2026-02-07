@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { LogOut, User, ShoppingBag, Heart, Package, Search } from 'lucide-react'
+import { useCart } from '@/context/cart-context'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,9 +27,9 @@ import { SearchModal } from './search-modal'
 
 export function Navbar() {
   const router = useRouter()
+  const { cartCount } = useCart()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
-  const [cartCount, setCartCount] = useState(0)
   const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => {
@@ -42,13 +43,7 @@ export function Navbar() {
           .select('*')
           .eq('id', user.id)
           .single()
-        setProfile(data)
-
-        const { count } = await supabase
-          .from('cart')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-        setCartCount(count || 0)
+        if (data) setProfile(data)
       }
     }
     getUser()
@@ -65,15 +60,8 @@ export function Navbar() {
         else {
           setProfile({ full_name: session.user.user_metadata.full_name || session.user.email })
         }
-
-        const { count } = await supabase
-          .from('cart')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', session.user.id)
-        setCartCount(count || 0)
       } else {
         setProfile(null)
-        setCartCount(0)
       }
     })
 
@@ -128,8 +116,12 @@ export function Navbar() {
 
             {/* Mobile Cart & Search Actions (Visible only on mobile) */}
             <div className="flex gap-4 items-center md:hidden relative z-50 pt-1">
-              <Link href="/cart" className="relative text-amber-500 hover:text-white transition-colors p-2 bg-black/50 rounded-full backdrop-blur-sm border border-white/10">
-                <ShoppingBag className="w-5 h-5" />
+              <Link href="/cart" className="relative text-amber-500 hover:text-white transition-colors p-2 bg-black/50 rounded-full backdrop-blur-sm border border-white/10 group">
+                <img
+                  src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=F59E0B"
+                  alt="Cart"
+                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+                />
                 {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-black">
                     {cartCount > 9 ? '9+' : cartCount}
@@ -220,8 +212,12 @@ export function Navbar() {
               </Link>
 
               {/* Cart */}
-              <Link href="/cart" className="relative text-white/40 hover:text-amber-500 transition-colors">
-                <ShoppingBag className="w-4 h-4" />
+              <Link href="/cart" className="relative text-white/40 hover:text-amber-500 transition-colors group">
+                <img
+                  src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=F59E0B"
+                  alt="Cart"
+                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+                />
                 {cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-white text-[8px] font-premium-sans flex items-center justify-center">
                     {cartCount > 9 ? '9+' : cartCount}

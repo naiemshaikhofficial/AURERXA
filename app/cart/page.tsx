@@ -43,7 +43,11 @@ export default function CartPage() {
 
                     {cart.length === 0 ? (
                         <div className="text-center py-16">
-                            <ShoppingBag className="w-16 h-16 mx-auto mb-6 text-white/20" />
+                            <img
+                                src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=F59E0B"
+                                alt="Empty Cart"
+                                className="w-16 h-16 mx-auto mb-6 opacity-40"
+                            />
                             <p className="text-xl text-white/50 mb-8">Your cart is empty</p>
                             <Link href="/collections">
                                 <Button className="bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest">
@@ -66,6 +70,7 @@ export default function CartPage() {
                                                 alt={item.products?.name || 'Product'}
                                                 fill
                                                 className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                unoptimized
                                             />
                                         </Link>
 
