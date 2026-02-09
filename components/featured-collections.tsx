@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
 import { getCategories } from '@/app/actions'
+import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 
 function CollectionCard({ category }: { category: any }) {
   const cardRef = useRef<HTMLAnchorElement>(null)
@@ -53,6 +54,7 @@ function CollectionCard({ category }: { category: any }) {
 
   return (
     <motion.div
+      variants={fadeInUp}
       style={{ rotateX, rotateY }}
     >
       <Link
@@ -70,7 +72,7 @@ function CollectionCard({ category }: { category: any }) {
               alt={category.name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover transition-all duration-300 grayscale contrast-125 group-hover:grayscale-0 group-hover:contrast-100 group-hover:scale-110 will-change-transform"
+              className="object-cover transition-all duration-300 group-hover:scale-110 will-change-transform"
               loading="eager"
               unoptimized
             />
@@ -118,28 +120,37 @@ export function FeaturedCollections() {
 
   return (
     <section className="py-12 md:py-32 px-4 md:px-6 lg:px-12 bg-background relative overflow-hidden">
-
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Section Header */}
-        <div className="text-center mb-12 md:mb-24">
-          <p className="text-primary/80 text-[10px] uppercase mb-4 md:mb-6 font-premium-sans">
-            Crafted Excellence
-          </p>
-          <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-6 md:mb-8 text-foreground tracking-widest italic">
-            Discovery by <span className="text-primary">Material</span>
-          </h2>
-          <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-6 md:mb-8" />
-          <p className="text-sm md:text-base text-muted-foreground/50 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
-            Each piece is a testament to our legacy of precision, crafted from the world's most precious elements.
-          </p>
-        </div>
+        <motion.div
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {/* Section Header */}
+          <motion.div variants={fadeInUp} className="text-center mb-12 md:mb-24">
+            <p className="text-primary/80 text-[10px] uppercase mb-4 md:mb-6 font-premium-sans">
+              Crafted Excellence
+            </p>
+            <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-6 md:mb-8 text-foreground tracking-widest italic">
+              Discovery by <span className="text-primary">Material</span>
+            </h2>
+            <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-6 md:mb-8" />
+            <p className="text-sm md:text-base text-muted-foreground/50 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+              Each piece is a testament to our legacy of precision, crafted from the world's most precious elements.
+            </p>
+          </motion.div>
 
-        {/* Collections Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          {categories.map((category) => (
-            <CollectionCard key={category.id} category={category} />
-          ))}
-        </div>
+          {/* Collections Grid */}
+          <motion.div
+            variants={staggerContainer}
+            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+          >
+            {categories.map((category) => (
+              <CollectionCard key={category.id} category={category} />
+            ))}
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )

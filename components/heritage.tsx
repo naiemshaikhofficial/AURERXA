@@ -3,6 +3,7 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
+import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export function Heritage() {
     const ref = useRef(null)
@@ -17,14 +18,6 @@ export function Heritage() {
 
     return (
         <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center bg-background py-12 md:py-0">
-            {/* Cinematic Shutter Reveal */}
-            <motion.div
-                initial={{ clipPath: 'inset(100% 0 0 0)' }}
-                whileInView={{ clipPath: 'inset(0% 0 0 0)' }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 bg-background z-20 pointer-events-none"
-            />
 
             {/* Background Image with Cinematic Parallax */}
             <motion.div style={{ y: yBg, scale: scaleBg, opacity: opacityBg }} className="absolute inset-0 z-0">
@@ -32,7 +25,7 @@ export function Heritage() {
                     src="/photo_6066572646712807057_y.jpg"
                     alt="Heritage Background"
                     fill
-                    className="object-cover grayscale contrast-[1.1] brightness-[0.4]"
+                    className="object-cover brightness-[0.4]"
                     priority
                 />
             </motion.div>
@@ -43,27 +36,39 @@ export function Heritage() {
 
             {/* Content */}
             <div className="relative z-10 text-center text-white px-6 max-w-7xl mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    viewport={{ once: true }}
-                    className="space-y-8 md:space-y-16"
-                >
+                <div className="space-y-8 md:space-y-16">
                     {/* Subtitle */}
-                    <div className="space-y-4 md:space-y-6 flex flex-col items-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, ease: PREMIUM_EASE }}
+                        className="space-y-4 md:space-y-6 flex flex-col items-center"
+                    >
                         <span className="px-4 py-2 border border-white/10 bg-white/5 backdrop-blur-md text-[10px] md:text-xs font-premium-sans text-white/80 uppercase tracking-[0.3em]">
                             The Legacy
                         </span>
-                    </div>
+                    </motion.div>
 
                     {/* Main Title - SINCE 1989 - BOLD */}
-                    <h2 className="text-6xl md:text-[12rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 italic drop-shadow-2xl">
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, delay: 0.2, ease: PREMIUM_EASE }}
+                        className="text-6xl md:text-[12rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 italic drop-shadow-2xl"
+                    >
                         LEGACY
-                    </h2>
+                    </motion.h2>
 
                     {/* Description */}
-                    <div className="max-w-3xl mx-auto space-y-12 border-l-4 border-primary pl-8 md:pl-12 text-left bg-gradient-to-r from-black/50 to-transparent p-8 backdrop-blur-sm">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 1, delay: 0.4, ease: PREMIUM_EASE }}
+                        className="max-w-3xl mx-auto space-y-12 border-l-4 border-primary pl-8 md:pl-12 text-left bg-gradient-to-r from-black/50 to-transparent p-8 backdrop-blur-sm"
+                    >
                         <p className="text-lg md:text-2xl font-medium text-white/90 leading-relaxed tracking-wide">
                             "We don't just craft jewelry. We forge <span className="text-primary">respect</span>."
                         </p>
@@ -73,8 +78,8 @@ export function Heritage() {
                             ensuring fairness for the makers and integrity for the wearers.
                             Every spark is rooted in respect.
                         </p>
-                    </div>
-                </motion.div>
+                    </motion.div>
+                </div>
             </div>
 
         </section>

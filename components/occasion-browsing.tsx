@@ -58,7 +58,7 @@ export function OccasionBrowsing() {
                                 src={occ.image}
                                 alt={occ.name}
                                 fill
-                                className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-100 group-hover:scale-110"
+                                className="object-cover transition-all duration-1000 scale-100 group-hover:scale-110"
                                 unoptimized
                             />
                             <div className="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-500" />

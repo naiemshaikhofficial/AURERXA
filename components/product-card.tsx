@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export interface Product {
     id: string
@@ -57,12 +58,13 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
     return (
         <motion.div
             layout={viewMode !== 'list'}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: index * 0.05, ease: [0.21, 0.45, 0.27, 0.9] }} // Luxury ease
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={fadeInUp}
+            transition={{ duration: 0.8, delay: index * 0.05, ease: PREMIUM_EASE }}
             className={cn(
-                "group relative bg-card border border-border transition-all duration-700 overflow-hidden flex flex-col",
+                "group relative bg-card border border-border overflow-hidden flex flex-col hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-700",
                 viewMode === 'list' ? 'md:flex-row md:items-center' : '',
                 className
             )}

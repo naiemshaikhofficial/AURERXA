@@ -87,7 +87,7 @@ export function CategoryBrowsing() {
                                         src={cat.image}
                                         alt={cat.name}
                                         fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 scale-105 group-hover:scale-110"
+                                        className="object-cover transition-all duration-1000 scale-105 group-hover:scale-110"
                                         unoptimized
                                     />
 

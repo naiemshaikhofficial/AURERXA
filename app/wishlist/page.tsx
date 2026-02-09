@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { getWishlist, removeFromWishlist } from '@/app/actions'
@@ -50,10 +49,8 @@ export default function WishlistPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
-
-            <main className="pt-16 md:pt-24 pb-24 min-h-[70vh]">
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
+            <main className="pb-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2 text-center">My Wishlist</h1>
                     <p className="text-muted-foreground text-center mb-12">{wishlist.length} items saved</p>

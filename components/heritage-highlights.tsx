@@ -19,7 +19,7 @@ export function HeritageHighlights() {
                                             src="/451c3977-ad4e-4b7d-a918-730286647544.jpg"
                                             alt="Senior Artist Bapan Hembromb"
                                             fill
-                                            className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center scale-105"
+                                            className="object-cover transition-all duration-1000 object-center scale-105"
                                         />
                                     </ParallaxScroll>
                                     <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
@@ -35,7 +35,7 @@ export function HeritageHighlights() {
                                             src="/35b9384a-ab6d-4958-a3aa-d7d5668b6137.jpg"
                                             alt="Master Craftsman Akash Shah"
                                             fill
-                                            className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center scale-105"
+                                            className="object-cover transition-all duration-1000 object-center scale-105"
                                         />
                                     </ParallaxScroll>
                                     <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
@@ -53,7 +53,7 @@ export function HeritageHighlights() {
                                             src="/832831ea-66ff-4efd-8186-4b4f69e1094d.jpg"
                                             alt="Forging Gold"
                                             fill
-                                            className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 object-center scale-105"
+                                            className="object-cover transition-all duration-1000 object-center scale-105"
                                         />
                                     </ParallaxScroll>
                                     <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />

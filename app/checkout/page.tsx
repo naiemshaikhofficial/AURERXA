@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import Script from 'next/script'
 import { useRouter } from 'next/navigation'
-import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -313,8 +312,7 @@ export default function CheckoutPage() {
     if (cart.length === 0 && !cartLoading && !loading) {
         return (
             <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
-                <Navbar />
-                <main className="pt-24 pb-24 min-h-[70vh] flex flex-col items-center justify-center">
+                <main className="pb-24 min-h-[70vh] flex flex-col items-center justify-center">
                     <div className="w-20 h-20 mb-8 rounded-full bg-card flex items-center justify-center border border-border">
                         <ShoppingBag className="w-8 h-8 text-muted-foreground" />
                     </div>
@@ -335,9 +333,7 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
-            <Navbar />
-
-            <main className="pt-24 pb-24">
+            <main className="pb-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-center mb-12">
                         <h1 className="text-3xl md:text-5xl font-serif text-foreground tracking-tight">

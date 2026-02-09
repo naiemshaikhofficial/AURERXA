@@ -35,6 +35,8 @@ export const viewport: Viewport = {
 
 import { CartProvider } from '@/context/cart-context'
 import { ThemeProvider } from "@/components/theme-provider"
+import { Navbar } from '@/components/navbar'
+import { CategoryNav } from '@/components/category-nav'
 
 export default function RootLayout({
   children,
@@ -42,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="font-sans antialiased bg-background text-foreground">
         <ThemeProvider
           attribute="class"
@@ -52,7 +54,13 @@ export default function RootLayout({
         >
           <CartProvider>
             <SmoothScroll>
-              {children}
+              <Navbar />
+              <div className="pt-20 md:pt-24">
+                <CategoryNav />
+                <main>
+                  {children}
+                </main>
+              </div>
               <BottomNav />
               <MobileInstallPrompt />
               <NotificationManager />

@@ -25,6 +25,8 @@ import {
 import { Menu } from "lucide-react"
 import { SearchModal } from './search-modal'
 import { ModeToggle } from './mode-toggle'
+import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
+import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export function Navbar() {
   const router = useRouter()
@@ -101,9 +103,49 @@ export function Navbar() {
     return 'AU'
   }
 
+  const { scrollY } = useScroll()
+  const [hidden, setHidden] = useState(false)
+  const navHeight = useTransform(scrollY, [0, 100], ['6rem', '5rem'])
+  const navBg = useTransform(scrollY, [0, 100], ['rgba(var(--background), 0)', 'rgba(var(--background), 0.85)'])
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious() ?? 0
+    if (latest > previous && latest > 150) {
+      setHidden(true)
+    } else {
+      setHidden(false)
+    }
+  })
+
+  // Reveal navbar when scrolling stops
+  useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout)
+      scrollTimeout = setTimeout(() => {
+        setHidden(false)
+      }, 100)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      clearTimeout(scrollTimeout)
+    }
+  }, [])
+
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 md:bg-background/80 md:backdrop-blur-md md:border-b md:border-border h-auto md:h-24 flex items-center transition-all duration-500 p-4 md:p-0">
+      <motion.nav
+        initial={{ y: 0 }}
+        animate={{ y: hidden ? '-100%' : '0%' }}
+        transition={{ duration: 0.3, ease: PREMIUM_EASE }}
+        style={{
+          height: navHeight,
+          backgroundColor: navBg,
+        }}
+        className="fixed top-0 left-0 right-0 z-50 md:backdrop-blur-md flex items-center p-4 md:p-0"
+      >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
             <Link href="/" className="flex-shrink-0 group relative z-50">
@@ -144,20 +186,36 @@ export function Navbar() {
                     <ModeToggle />
                   </SheetHeader>
                   <div className="flex flex-col py-6 relative">
-                    {['Home', 'Shop Collections', 'Custom Jewelry', 'Our Story', 'Blog', 'Contact Us'].map((item, idx) => {
-                      const href = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`
-                      return (
-                        <Link key={idx} href={href} className="px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all border-b border-border/10">
-                          {item}
+                    <motion.div
+                      variants={staggerContainer}
+                      initial="initial"
+                      animate="animate"
+                      className="flex flex-col"
+                    >
+                      {['Home', 'Shop Collections', 'Custom Jewelry', 'Our Story', 'Blog', 'Contact Us'].map((item, idx) => {
+                        const href = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`
+                        return (
+                          <motion.div key={idx} variants={fadeInUp}>
+                            <Link href={href} className="flex px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all border-b border-border/10">
+                              {item}
+                            </Link>
+                          </motion.div>
+                        )
+                      })}
+                      <motion.div variants={fadeInUp}>
+                        <Link href="/faq" className="px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all">
+                          FAQs
                         </Link>
-                      )
-                    })}
-                    <Link href="/faq" className="px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all">
-                      FAQs
-                    </Link>
+                      </motion.div>
+                    </motion.div>
 
                     {/* User Profile Section in Mobile Menu */}
-                    <div className="mt-8 px-6 pt-8 border-t border-border space-y-4">
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5, duration: 0.8 }}
+                      className="mt-8 px-6 pt-8 border-t border-border space-y-4"
+                    >
                       {user ? (
                         <>
                           <div className="flex items-center gap-4 mb-6 p-4 rounded-sm bg-muted/10 border border-border">
@@ -193,10 +251,7 @@ export function Navbar() {
                           </Button>
                         </Link>
                       )}
-                    </div>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-border bg-card/30">
-                    <p className="text-[9px] text-muted-foreground text-center uppercase tracking-widest">© 2026 AURERXA.</p>
+                    </motion.div>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -286,7 +341,7 @@ export function Navbar() {
             </div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>

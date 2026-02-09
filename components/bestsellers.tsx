@@ -8,6 +8,7 @@ import { getBestsellers } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 
 import { ProductCard, Product } from '@/components/product-card'
 
@@ -30,29 +31,40 @@ export function Bestsellers() {
   return (
     <section className="py-12 md:py-32 px-4 md:px-6 lg:px-12 bg-background relative">
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* Section Header */}
-        <div className="text-center mb-12 md:mb-24">
-          <p className="text-primary/80 text-[10px] uppercase mb-4 md:mb-6 font-premium-sans">
-            Timeless Selection
-          </p>
-          <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-6 md:mb-8 text-foreground tracking-widest italic">
-            Curated <span className="text-primary">Bestsellers</span>
-          </h2>
-          <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-6 md:mb-8" />
-          <p className="text-sm md:text-base text-muted-foreground/60 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
-            Our most esteemed pieces, celebrated for their exceptional design and unparalleled quality.
-          </p>
-        </div>
+        <motion.div
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {/* Section Header */}
+          <motion.div variants={fadeInUp} className="text-center mb-12 md:mb-24">
+            <p className="text-primary/80 text-[10px] uppercase mb-4 md:mb-6 font-premium-sans">
+              Timeless Selection
+            </p>
+            <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-6 md:mb-8 text-foreground tracking-widest italic">
+              Curated <span className="text-primary">Bestsellers</span>
+            </h2>
+            <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-6 md:mb-8" />
+            <p className="text-sm md:text-base text-muted-foreground/60 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+              Our most esteemed pieces, celebrated for their exceptional design and unparalleled quality.
+            </p>
+          </motion.div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-10">
-          {bestsellers.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-            />
-          ))}
-        </div>
+          {/* Products Grid */}
+          <motion.div
+            variants={staggerContainer}
+            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-10"
+          >
+            {bestsellers.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                index={index}
+              />
+            ))}
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )

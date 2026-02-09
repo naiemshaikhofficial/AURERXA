@@ -3,6 +3,7 @@
 import React, { useRef } from 'react'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export function Hero() {
   const ref = useRef(null)
@@ -27,7 +28,7 @@ export function Hero() {
         style={{ y: yBg }}
         className="absolute inset-0 z-0"
       >
-        <div className="absolute inset-0 bg-background/60 z-10" /> {/* Matte Dimmer */}
+        <div className="absolute inset-0 bg-background/70 z-10" /> {/* Matte Dimmer */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40 z-10" />
 
         {/* High-Res Luxury Background */}
@@ -38,7 +39,7 @@ export function Hero() {
             fill
             priority
             quality={90}
-            className="object-cover object-center scale-105 opacity-80 dark:opacity-80 opacity-20" // Light mode needs less opacity for dark text readability
+            className="object-cover object-center scale-105 dark:opacity-70 opacity-30"
           />
         </div>
       </motion.div>
@@ -52,40 +53,57 @@ export function Hero() {
       {/* 3. Main Content - Refined Typography */}
       <div className="relative z-10 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center">
         <motion.div
-          style={{ y: yText, opacity: opacityFade }}
-          initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          style={{ y: yText }}
           className="space-y-10"
         >
           {/* Logo Brand Mark - No Glow */}
-          <div className="mb-6 relative inline-block">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, ease: PREMIUM_EASE }}
+            className="mb-6 relative inline-block"
+          >
             <img
               src="/logo.png"
               alt="Aurerxa Logo"
               className="w-20 md:w-28 h-auto relative z-10 opacity-90 drop-shadow-xl dark:invert-0 invert"
             />
-          </div>
+          </motion.div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             {/* Elegant Headline */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-medium tracking-tight text-foreground/90 leading-[1.1]">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.2, ease: PREMIUM_EASE }}
+              className="text-5xl md:text-7xl lg:text-8xl font-serif font-medium tracking-tight text-foreground/90 leading-[1.1]"
+            >
               PURE<br />
               <span className="text-muted-foreground font-light italic">PRESTIGE</span>
-            </h1>
+            </motion.h1>
           </div>
 
-          <p className="max-w-lg mx-auto text-muted-foreground font-light text-sm md:text-base tracking-widest leading-loose uppercase">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.4, ease: PREMIUM_EASE }}
+            className="max-w-lg mx-auto text-muted-foreground font-light text-sm md:text-base tracking-widest leading-loose uppercase"
+          >
             Forged in shadow. Defined by brilliance.<br />
             The quiet authority of true luxury.
-          </p>
+          </motion.p>
 
-          <div className="pt-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1, delay: 0.6, ease: PREMIUM_EASE }}
+            className="pt-10"
+          >
             <button className="group relative px-10 py-4 border border-border text-foreground font-premium-sans text-[10px] uppercase tracking-[0.3em] hover:border-primary/50 hover:text-primary transition-all duration-700">
               <span className="relative z-10">Discover Collection</span>
               <div className="absolute inset-0 bg-foreground/[0.02] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-center duration-700 -z-0" />
             </button>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
 
