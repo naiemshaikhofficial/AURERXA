@@ -138,7 +138,7 @@ export function Navbar() {
     <>
       <motion.nav
         initial={{ y: 0 }}
-        animate={{ y: hidden ? '-100%' : '0%' }}
+        animate={{ y: '0%' }}
         transition={{ duration: 0.3, ease: PREMIUM_EASE }}
         style={{
           height: navHeight,

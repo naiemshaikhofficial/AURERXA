@@ -57,14 +57,13 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
 
     return (
         <motion.div
-            layout={viewMode !== 'list'}
             initial="initial"
             whileInView="animate"
             viewport={{ once: true, margin: "-50px" }}
             variants={fadeInUp}
             transition={{ duration: 0.8, delay: index * 0.05, ease: PREMIUM_EASE }}
             className={cn(
-                "group relative bg-card border border-border overflow-hidden flex flex-col hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-700",
+                "group relative bg-card border border-border overflow-hidden flex flex-col hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-700 will-change-transform",
                 viewMode === 'list' ? 'md:flex-row md:items-center' : '',
                 className
             )}

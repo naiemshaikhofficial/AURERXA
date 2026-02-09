@@ -13,7 +13,7 @@ export function Hero() {
   })
 
   // Deep Parallax with Spring Physics for "Heavy" Premium Feel
-  const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 }
+  const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
   const yBg = useSpring(useTransform(scrollYProgress, [0, 1], [0, 200]), springConfig)
   const yText = useSpring(useTransform(scrollYProgress, [0, 1], [0, 100]), springConfig)
   const opacityFade = useTransform(scrollYProgress, [0, 0.5], [1, 0])
@@ -26,7 +26,7 @@ export function Hero() {
       {/* 1. Cinematic Background Layer */}
       <motion.div
         style={{ y: yBg }}
-        className="absolute inset-0 z-0"
+        className="absolute inset-0 z-0 will-change-transform"
       >
         <div className="absolute inset-0 bg-background/70 z-10" /> {/* Matte Dimmer */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40 z-10" />

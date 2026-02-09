@@ -12,7 +12,7 @@ export function Heritage() {
         offset: ['start end', 'end start'],
     })
 
-    const springConfig = { stiffness: 100, damping: 30, restDelta: 0.001 }
+    const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
     const yBg = useSpring(useTransform(scrollYProgress, [0, 1], ['-20%', '20%']), springConfig)
     const scaleBg = useSpring(useTransform(scrollYProgress, [0, 1], [1.1, 1.3]), springConfig)
     const opacityBg = useSpring(useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 0.6, 0.4]), springConfig)
@@ -21,7 +21,7 @@ export function Heritage() {
         <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center bg-background py-12 md:py-0">
 
             {/* Background Image with Cinematic Parallax */}
-            <motion.div style={{ y: yBg, scale: scaleBg, opacity: opacityBg }} className="absolute inset-0 z-0">
+            <motion.div style={{ y: yBg, scale: scaleBg, opacity: opacityBg }} className="absolute inset-0 z-0 will-change-transform">
                 <Image
                     src="/photo_6066572646712807057_y.jpg"
                     alt="Heritage Background"

@@ -25,23 +25,34 @@ export function CategoryNav() {
     const [lastScrollY, setLastScrollY] = useState(0)
 
     useEffect(() => {
+        let scrollTimeout: NodeJS.Timeout
+
         const handleScroll = () => {
             const currentScrollY = window.scrollY
 
-            // Show if at top, hide if scrolling down, show if scrolling up
+            // Hide on scroll down, show on scroll up
             if (currentScrollY < 50) {
                 setIsVisible(true)
-            } else if (currentScrollY > lastScrollY && currentScrollY > 150) {
-                setIsVisible(false) // Hide on scroll down
+            } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                setIsVisible(false)
             } else if (currentScrollY < lastScrollY) {
-                setIsVisible(true) // Show on scroll up
+                setIsVisible(true)
             }
 
             setLastScrollY(currentScrollY)
+
+            // Reveal instantly when scrolling stops
+            clearTimeout(scrollTimeout)
+            scrollTimeout = setTimeout(() => {
+                setIsVisible(true)
+            }, 50) // Very small delay for "instant" feel
         }
 
         window.addEventListener('scroll', handleScroll, { passive: true })
-        return () => window.removeEventListener('scroll', handleScroll)
+        return () => {
+            window.removeEventListener('scroll', handleScroll)
+            clearTimeout(scrollTimeout)
+        }
     }, [lastScrollY])
 
     return (

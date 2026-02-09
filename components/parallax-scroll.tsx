@@ -42,7 +42,7 @@ export function ParallaxScroll({
     const opacityValue = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [1 - opacityOffset, 1, 1, 1 - opacityOffset])
 
     // Apply spring for smoothness
-    const springConfig = { stiffness, damping, restDelta: 0.001 }
+    const springConfig = { stiffness: 45, damping: 35, mass: 1, restDelta: 0.001 }
     const y = useSpring(yValue, springConfig)
     const scale = useSpring(scaleValue, springConfig)
     const opacity = useSpring(opacityValue, springConfig)
@@ -51,7 +51,7 @@ export function ParallaxScroll({
         <motion.div
             ref={ref}
             style={{ y, scale, opacity }}
-            className={className}
+            className={`${className} will-change-transform`}
         >
             {children}
         </motion.div>
