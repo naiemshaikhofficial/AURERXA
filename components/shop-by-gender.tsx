@@ -72,7 +72,7 @@ export function ShopByGender() {
                                         alt={gender.name}
                                         fill
                                         className="object-cover transition-all duration-1000 scale-105 group-hover:scale-110"
-                                        unoptimized
+                                        sizes="(max-width: 768px) 100vw, 33vw"
                                     />
 
                                     {/* Luxury Overlays */}

@@ -1,20 +1,23 @@
+import dynamic from 'next/dynamic'
 import { Navbar } from '@/components/navbar'
 import { Hero } from '@/components/hero'
-import { FeaturedCollections } from '@/components/featured-collections'
-import { Bestsellers } from '@/components/bestsellers'
-import { CustomOrderForm } from '@/components/custom-order-form'
-import { Newsletter } from '@/components/newsletter'
-import { Footer } from '@/components/footer'
 import { Heritage } from '@/components/heritage'
-import { NewReleases } from '@/components/new-releases'
-import { HeritageHighlights } from '@/components/heritage-highlights'
+import { TrustBar } from '@/components/trust-bar'
 import { CategoryBrowsing } from '@/components/category-browsing'
 import { ShopByGender } from '@/components/shop-by-gender'
-import { TrustBar } from '@/components/trust-bar'
-import { GoldRateCard } from '@/components/gold-rate-card'
 import { OccasionBrowsing } from '@/components/occasion-browsing'
 import { ConciergeServices, FloatingConcierge } from '@/components/concierge'
 import { getNewReleases } from './actions'
+
+// Lazy load below-the-fold components
+const FeaturedCollections = dynamic(() => import('@/components/featured-collections').then(mod => mod.FeaturedCollections))
+const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod => mod.Bestsellers))
+const CustomOrderForm = dynamic(() => import('@/components/custom-order-form').then(mod => mod.CustomOrderForm))
+const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => mod.Newsletter))
+const Footer = dynamic(() => import('@/components/footer').then(mod => mod.Footer))
+const HeritageHighlights = dynamic(() => import('@/components/heritage-highlights').then(mod => mod.HeritageHighlights))
+const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
+const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
 
 export default async function HomePage() {
   const newReleases = await getNewReleases()

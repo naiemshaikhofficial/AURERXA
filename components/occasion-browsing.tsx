@@ -59,7 +59,7 @@ export function OccasionBrowsing() {
                                 alt={occ.name}
                                 fill
                                 className="object-cover transition-all duration-1000 scale-100 group-hover:scale-110"
-                                unoptimized
+                                sizes="(max-width: 768px) 100vw, 33vw"
                             />
                             <div className="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-500" />
 

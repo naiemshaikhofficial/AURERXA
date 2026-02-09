@@ -79,7 +79,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                     alt={product.name}
                     fill
                     className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                    unoptimized
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                 />
                 {/* Matte overlay instead of gradient */}
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-700 pointer-events-none" />

@@ -20,6 +20,7 @@ export function HeritageHighlights() {
                                             alt="Senior Artist Bapan Hembromb"
                                             fill
                                             className="object-cover transition-all duration-1000 object-center scale-105"
+                                            sizes="(max-width: 768px) 50vw, 400px"
                                         />
                                     </ParallaxScroll>
                                     <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
@@ -36,6 +37,7 @@ export function HeritageHighlights() {
                                             alt="Master Craftsman Akash Shah"
                                             fill
                                             className="object-cover transition-all duration-1000 object-center scale-105"
+                                            sizes="(max-width: 768px) 50vw, 400px"
                                         />
                                     </ParallaxScroll>
                                     <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
@@ -54,6 +56,7 @@ export function HeritageHighlights() {
                                             alt="Forging Gold"
                                             fill
                                             className="object-cover transition-all duration-1000 object-center scale-105"
+                                            sizes="(max-width: 768px) 50vw, 400px"
                                         />
                                     </ParallaxScroll>
                                     <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
