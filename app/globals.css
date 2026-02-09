@@ -112,32 +112,46 @@ body {
 
 @layer base {
   :root {
-    /* MATTE LUXURY PALETTE (Light Mode - mapped to dark for consistency in this app if implied, but defining properly) */
-    --background: 0 0% 98%;
+    /* SILK LUXURY PALETTE (Light Mode) */
+    --background: 40 20% 98%;
+    /* #FCFBF9 - Warm Silk Cream */
     --foreground: 0 0% 10%;
-    --card: 0 0% 100%;
+    /* #1A1A1A - Soft Black */
+
+    --card: 40 20% 98%;
     --card-foreground: 0 0% 10%;
-    --popover: 0 0% 100%;
+
+    --popover: 40 20% 98%;
     --popover-foreground: 0 0% 10%;
-    --primary: 43 40% 45%;
-    /* Matte Gold */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
+
+    --primary: 43 45% 40%;
+    /* #94712B - Rich Dark Gold (Contrast for light bg) */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 40 10% 94%;
+    /* #F2F0EB - Light Warm Grey */
     --secondary-foreground: 0 0% 10%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 43 40% 45%;
-    --accent-foreground: 0 0% 100%;
+
+    --muted: 40 10% 94%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 43 30% 90%;
+    /* #F5EFE0 - Pale Gold Background */
+    --accent-foreground: 43 45% 30%;
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 43 40% 45%;
+
+    --border: 43 20% 85%;
+    /* #E0DAD0 - Warm Border */
+    --input: 43 20% 85%;
+    --ring: 43 45% 40%;
+
     --radius: 0rem;
   }
 
   .dark {
-    /* MATTE BLACK LUXURY THEME */
+    /* MATTE BLACK LUXURY THEME (Dark Mode - Original) */
     --background: 0 0% 4%;
     /* #0a0a0a - Deep Matte Black */
     --foreground: 0 0% 95%;

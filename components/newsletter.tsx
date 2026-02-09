@@ -43,7 +43,7 @@ export function Newsletter() {
   }
 
   return (
-    <section ref={sectionRef} className="py-24 md:py-32 px-6 lg:px-12 bg-[#004028] relative overflow-hidden">
+    <section ref={sectionRef} className="py-24 md:py-32 px-6 lg:px-12 bg-card relative overflow-hidden border-y border-border">
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -54,17 +54,17 @@ export function Newsletter() {
       >
         <div className="space-y-12">
           <div className="space-y-4">
-            <p className="text-amber-500/80 text-[10px] font-premium-sans">
+            <p className="text-primary/80 text-[10px] font-premium-sans">
               Private Membership
             </p>
-            <div className="w-12 h-[1px] bg-amber-500/30 mx-auto" />
+            <div className="w-12 h-[1px] bg-primary/30 mx-auto" />
           </div>
 
-          <h2 className="text-4xl md:text-6xl font-serif font-light text-white tracking-widest italic">
-            Exclusive <span className="text-amber-500">Access</span>
+          <h2 className="text-4xl md:text-6xl font-serif font-light text-foreground tracking-widest italic">
+            Exclusive <span className="text-primary">Access</span>
           </h2>
 
-          <p className="text-sm text-white/40 font-light leading-relaxed tracking-widest italic">
+          <p className="text-sm text-muted-foreground font-light leading-relaxed tracking-widest italic">
             Join our inner circle for privileged access to collections and the latest stories of excellence.
           </p>
 
@@ -76,12 +76,12 @@ export function Newsletter() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                className="bg-black/40 border-white/5 text-white placeholder:text-white/20 h-16 rounded-none text-center font-premium-sans tracking-widest focus:border-amber-500/30 transition-all duration-500"
+                className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/50 h-16 rounded-none text-center font-premium-sans tracking-widest focus:border-primary/30 transition-all duration-500"
               />
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-white text-black hover:bg-amber-500 hover:text-white transition-all duration-700 rounded-none h-16 text-[10px] font-premium-sans tracking-[0.4em] uppercase shadow-2xl"
+                className="w-full bg-foreground text-background hover:bg-primary hover:text-primary-foreground transition-all duration-700 rounded-none h-16 text-[10px] font-premium-sans tracking-[0.4em] uppercase shadow-2xl"
               >
                 {isLoading ? 'Processing...' : 'Request Access'}
               </Button>
@@ -99,7 +99,7 @@ export function Newsletter() {
             {status === 'error' && (
               <div className="alert-luxury-error animate-in fade-in slide-in-from-bottom-2 duration-700">
                 <div className="flex items-center justify-center gap-3">
-                  <AlertCircle size={14} className="text-red-500" />
+                  <AlertCircle size={14} className="text-destructive" />
                   <p>{message}</p>
                 </div>
               </div>

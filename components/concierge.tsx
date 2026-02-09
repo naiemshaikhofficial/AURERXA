@@ -33,15 +33,15 @@ const services = [
 
 export function ConciergeServices() {
     return (
-        <section className="py-24 md:py-48 bg-black relative overflow-hidden">
+        <section className="py-24 md:py-48 bg-background relative overflow-hidden border-y border-border">
             {/* Decorative Background */}
-            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-amber-500/5 to-transparent pointer-events-none" />
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/5 to-transparent pointer-events-none" />
 
             <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="mb-16 md:mb-32 space-y-4">
-                    <span className="text-amber-500 text-xs tracking-[0.5em] font-bold uppercase block">Bespoke Concierge</span>
-                    <h2 className="text-4xl md:text-8xl font-serif font-black italic text-white tracking-tighter leading-none mb-4">
-                        Curated <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600">Experiences.</span>
+                    <span className="text-primary text-xs tracking-[0.5em] font-bold uppercase block">Bespoke Concierge</span>
+                    <h2 className="text-4xl md:text-8xl font-serif font-black italic text-foreground tracking-tighter leading-none mb-4">
+                        Curated <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/60 to-primary">Experiences.</span>
                     </h2>
                 </div>
 
@@ -53,21 +53,21 @@ export function ConciergeServices() {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: idx * 0.1 }}
-                            className="group p-8 border border-white/5 bg-neutral-900/30 hover:bg-neutral-900 transition-all duration-700 relative overflow-hidden"
+                            className="group p-8 border border-border bg-card/30 hover:bg-card transition-all duration-700 relative overflow-hidden"
                         >
-                            <div className="absolute top-0 left-0 w-1 h-0 group-hover:h-full bg-amber-500 transition-all duration-700" />
+                            <div className="absolute top-0 left-0 w-1 h-0 group-hover:h-full bg-primary transition-all duration-700" />
 
-                            <service.icon className="w-10 h-10 text-amber-500/40 group-hover:text-amber-500 transition-colors duration-500 mb-8" strokeWidth={1} />
+                            <service.icon className="w-10 h-10 text-primary/40 group-hover:text-primary transition-colors duration-500 mb-8" strokeWidth={1} />
 
-                            <h3 className="text-white font-serif text-2xl italic tracking-tight mb-4 group-hover:text-amber-500 transition-colors">
+                            <h3 className="text-foreground font-serif text-2xl italic tracking-tight mb-4 group-hover:text-primary transition-colors">
                                 {service.title}
                             </h3>
 
-                            <p className="text-white/40 text-xs font-light tracking-wide leading-relaxed mb-10">
+                            <p className="text-muted-foreground text-xs font-light tracking-wide leading-relaxed mb-10">
                                 {service.description}
                             </p>
 
-                            <button className="text-[10px] text-amber-500 uppercase tracking-[0.3em] font-bold border-b border-amber-500/20 pb-2 group-hover:border-amber-500 transition-all">
+                            <button className="text-[10px] text-primary uppercase tracking-[0.3em] font-bold border-b border-primary/20 pb-2 group-hover:border-primary transition-all">
                                 {service.cta}
                             </button>
                         </motion.div>
@@ -87,8 +87,8 @@ export function FloatingConcierge() {
             className="fixed bottom-24 right-6 md:bottom-12 md:right-12 z-50"
         >
             <button className="relative group">
-                <div className="absolute inset-0 bg-amber-500 rounded-full blur-xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse" />
-                <div className="relative flex items-center gap-3 bg-amber-500 text-black px-6 py-4 rounded-full shadow-2xl transition-transform hover:scale-105 active:scale-95 overflow-hidden">
+                <div className="absolute inset-0 bg-primary rounded-full blur-xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse" />
+                <div className="relative flex items-center gap-3 bg-primary text-primary-foreground px-6 py-4 rounded-full shadow-2xl transition-transform hover:scale-105 active:scale-95 overflow-hidden">
                     <Calendar className="w-5 h-5" />
                     <span className="text-[10px] font-bold uppercase tracking-widest hidden md:block">Concierge Appointment</span>
 

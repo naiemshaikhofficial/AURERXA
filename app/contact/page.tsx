@@ -54,21 +54,21 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-neutral-950 to-neutral-900 z-0" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background to-background/90 z-0" />
         <ParallaxScroll offset={50} direction="up" className="max-w-7xl mx-auto text-center relative z-10">
-          <p className="text-amber-400 text-sm tracking-[0.3em] uppercase mb-4 font-light">
+          <p className="text-primary text-sm tracking-[0.3em] uppercase mb-4 font-light">
             Get in Touch
           </p>
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-white mb-6 tracking-tight">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-serif font-bold text-foreground mb-6 tracking-tight">
             Contact Us
           </h1>
-          <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-6" />
-          <p className="text-base text-white/50 max-w-xl mx-auto font-light">
+          <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-6" />
+          <p className="text-base text-muted-foreground max-w-xl mx-auto font-light">
             Get in touch with our team for any inquiries or assistance
           </p>
         </ParallaxScroll>
@@ -79,34 +79,34 @@ export default function ContactPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 mb-16">
             {/* Contact Info */}
             <div className="lg:col-span-1 space-y-8">
-              <div className="p-6 bg-neutral-900 border border-neutral-800">
-                <h3 className="text-lg font-serif font-medium mb-3 text-white flex items-center gap-3">
-                  <Mail className="text-amber-400" size={20} />
+              <div className="p-6 bg-card border border-border">
+                <h3 className="text-lg font-serif font-medium mb-3 text-foreground flex items-center gap-3">
+                  <Mail className="text-primary" size={20} />
                   Email
                 </h3>
-                <p className="text-white/60 font-light">hello@aurerxa.com</p>
-                <p className="text-sm text-white/40 mt-1 font-light">
+                <p className="text-muted-foreground font-light">hello@aurerxa.com</p>
+                <p className="text-sm text-muted-foreground/60 mt-1 font-light">
                   We respond to all inquiries within 24 hours
                 </p>
               </div>
 
-              <div className="p-6 bg-neutral-900 border border-neutral-800">
-                <h3 className="text-lg font-serif font-medium mb-3 text-white flex items-center gap-3">
-                  <Phone className="text-amber-400" size={20} />
+              <div className="p-6 bg-card border border-border">
+                <h3 className="text-lg font-serif font-medium mb-3 text-foreground flex items-center gap-3">
+                  <Phone className="text-primary" size={20} />
                   Phone
                 </h3>
-                <p className="text-white/60 font-light">+1 (555) 123-4567</p>
-                <p className="text-sm text-white/40 mt-1 font-light">
+                <p className="text-muted-foreground font-light">+1 (555) 123-4567</p>
+                <p className="text-sm text-muted-foreground/60 mt-1 font-light">
                   Monday - Saturday, 10 AM - 6 PM EST
                 </p>
               </div>
 
-              <div className="p-6 bg-neutral-900 border border-neutral-800">
-                <h3 className="text-lg font-serif font-medium mb-3 text-white flex items-center gap-3">
-                  <MapPin className="text-amber-400" size={20} />
+              <div className="p-6 bg-card border border-border">
+                <h3 className="text-lg font-serif font-medium mb-3 text-foreground flex items-center gap-3">
+                  <MapPin className="text-primary" size={20} />
                   Address
                 </h3>
-                <p className="text-white/60 font-light">
+                <p className="text-muted-foreground font-light">
                   AURERXA Flagship Boutique
                   <br />
                   Madison Avenue
@@ -115,11 +115,11 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              <div className="p-6 bg-neutral-900 border border-neutral-800">
-                <h4 className="text-xs font-medium uppercase tracking-[0.2em] text-amber-400 mb-4">
+              <div className="p-6 bg-card border border-border">
+                <h4 className="text-xs font-medium uppercase tracking-[0.2em] text-primary mb-4">
                   Business Hours
                 </h4>
-                <ul className="space-y-2 text-sm text-white/50 font-light">
+                <ul className="space-y-2 text-sm text-muted-foreground font-light">
                   <li>Monday - Friday: 10 AM - 8 PM</li>
                   <li>Saturday: 10 AM - 6 PM</li>
                   <li>Sunday: 12 PM - 5 PM</li>
@@ -128,13 +128,13 @@ export default function ContactPage() {
             </div>
 
             {/* Contact Form */}
-            <div className="lg:col-span-2 border border-neutral-800 p-8 bg-neutral-900">
-              <h2 className="text-2xl font-serif font-bold mb-8 text-white">Send us a Message</h2>
+            <div className="lg:col-span-2 border border-border p-8 bg-card">
+              <h2 className="text-2xl font-serif font-bold mb-8 text-foreground">Send us a Message</h2>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name" className="text-white/80 font-light text-sm">
+                    <Label htmlFor="name" className="text-foreground/80 font-light text-sm">
                       Full Name
                     </Label>
                     <Input
@@ -144,12 +144,12 @@ export default function ContactPage() {
                       onChange={handleChange}
                       placeholder="Your name"
                       required
-                      className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-14 focus:border-amber-500/50 rounded-none transition-colors"
+                      className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-14 focus:border-primary/50 rounded-none transition-colors"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-white/80 font-light text-sm">
+                    <Label htmlFor="email" className="text-foreground/80 font-light text-sm">
                       Email Address
                     </Label>
                     <Input
@@ -160,13 +160,13 @@ export default function ContactPage() {
                       onChange={handleChange}
                       placeholder="your@email.com"
                       required
-                      className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-14 focus:border-amber-500/50 rounded-none transition-colors"
+                      className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-14 focus:border-primary/50 rounded-none transition-colors"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="subject" className="text-white/80 font-light text-sm">
+                  <Label htmlFor="subject" className="text-foreground/80 font-light text-sm">
                     Subject
                   </Label>
                   <Input
@@ -175,12 +175,12 @@ export default function ContactPage() {
                     value={formData.subject}
                     onChange={handleChange}
                     placeholder="What is this about?"
-                    className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-14 focus:border-amber-500/50 rounded-none transition-colors"
+                    className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-14 focus:border-primary/50 rounded-none transition-colors"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="message" className="text-white/80 font-light text-sm">
+                  <Label htmlFor="message" className="text-foreground/80 font-light text-sm">
                     Message
                   </Label>
                   <Textarea
@@ -191,7 +191,7 @@ export default function ContactPage() {
                     placeholder="Tell us more about your inquiry..."
                     required
                     rows={6}
-                    className="bg-neutral-950/50 border-neutral-800 text-white placeholder:text-white/20 resize-none focus:border-amber-500/50 rounded-none transition-colors"
+                    className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 resize-none focus:border-primary/50 rounded-none transition-colors"
                   />
                 </div>
 
@@ -216,7 +216,7 @@ export default function ContactPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.2em] h-14 rounded-none transition-all duration-300 mt-4"
+                  className="w-full bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-[0.2em] h-14 rounded-none transition-all duration-300 mt-4"
                 >
                   {isLoading ? (
                     <>

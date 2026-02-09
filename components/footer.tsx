@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export function Footer() {
   return (
-    <footer className="hidden md:block py-24 px-6 lg:px-12 bg-neutral-950 text-white relative border-t border-white/5 overflow-hidden">
+    <footer className="hidden md:block py-24 px-6 lg:px-12 bg-background text-foreground relative border-t border-border overflow-hidden">
       {/* Black Edition Background Effect - Subtle Noise */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none mix-blend-overlay" />
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
@@ -15,10 +15,10 @@ export function Footer() {
               <img
                 src="/logo.png"
                 alt="AURERXA"
-                className="h-12 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700"
+                className="h-12 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700 invert dark:invert-0"
               />
             </Link>
-            <p className="text-xs text-white/30 font-light leading-loose tracking-widest uppercase">
+            <p className="text-xs text-muted-foreground font-light leading-loose tracking-widest uppercase">
               A 50-year legacy forged in respect.<br />Handcrafted masterpieces.
             </p>
           </div>
@@ -29,7 +29,7 @@ export function Footer() {
             <ul className="grid grid-cols-2 gap-x-8 gap-y-4">
               {['Earrings', 'Rings', 'Pendants', 'Bangles', 'Necklaces', 'Mangalsutra', 'Bracelets', 'Gold Coins'].map((item) => (
                 <li key={item}>
-                  <Link href={`/collections?type=${item}`} className="text-[11px] text-white/40 hover:text-primary transition-colors tracking-widest uppercase">
+                  <Link href={`/collections?type=${item}`} className="text-[11px] text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase">
                     {item}
                   </Link>
                 </li>
@@ -49,7 +49,7 @@ export function Footer() {
                 { name: 'Virtual Try-On', href: '/try-on' }
               ].map((service) => (
                 <li key={service.name}>
-                  <Link href={service.href} className="text-[11px] text-white/40 hover:text-white transition-colors tracking-widest uppercase">
+                  <Link href={service.href} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase">
                     {service.name}
                   </Link>
                 </li>
@@ -71,7 +71,7 @@ export function Footer() {
                   href="https://www.google.com/maps/place/Nijam+Gold+works/data=!4m2!3m1!1s0x0:0xe8958ae639e82931?sa=X&ved=1t:2428&ictx=111"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[11px] text-white/40 group-hover:text-white transition-colors leading-[1.8] tracking-widest"
+                  className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors leading-[1.8] tracking-widest"
                 >
                   Captain Lakshmi Chowk, Rangargalli<br />
                   Sangamner, Maharashtra 422605
@@ -83,7 +83,7 @@ export function Footer() {
                   alt="Phone"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <a href="tel:+919391032677" className="text-[11px] text-white/40 group-hover:text-white transition-colors tracking-widest">+91 93910 32677</a>
+                <a href="tel:+919391032677" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest">+91 93910 32677</a>
               </div>
               <div className="flex items-center gap-4 group">
                 <img
@@ -91,7 +91,7 @@ export function Footer() {
                   alt="Email"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <a href="mailto:care@aurerxa.com" className="text-[11px] text-white/40 group-hover:text-white transition-colors tracking-widest">care@aurerxa.com</a>
+                <a href="mailto:care@aurerxa.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest">care@aurerxa.com</a>
               </div>
             </div>
           </div>

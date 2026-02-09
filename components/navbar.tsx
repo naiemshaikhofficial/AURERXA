@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
 import { SearchModal } from './search-modal'
+import { ModeToggle } from './mode-toggle'
 
 export function Navbar() {
   const router = useRouter()
@@ -102,27 +103,27 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 md:bg-neutral-950/80 md:backdrop-blur-md md:border-b md:border-white/5 h-auto md:h-24 flex items-center transition-all duration-500 p-4 md:p-0">
+      <nav className="fixed top-0 left-0 right-0 z-50 md:bg-background/80 md:backdrop-blur-md md:border-b md:border-border h-auto md:h-24 flex items-center transition-all duration-500 p-4 md:p-0">
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
             <Link href="/" className="flex-shrink-0 group relative z-50">
               <img
                 src="/logo.png"
                 alt="AURERXA Logo"
-                className="h-10 md:h-20 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity"
+                className="h-10 md:h-20 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
               />
             </Link>
 
             {/* Mobile Cart & Search Actions (Visible only on mobile) */}
             <div className="flex gap-4 items-center md:hidden relative z-50 pt-1">
-              <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-neutral-900/50 rounded-full backdrop-blur-sm border border-white/5 group">
+              <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-background/50 rounded-full backdrop-blur-sm border border-border group">
                 <img
                   src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=BF9B65"
                   alt="Cart"
                   className="w-5 h-5 transition-transform duration-300 group-hover:scale-105"
                 />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-neutral-800 text-primary text-[9px] font-medium rounded-full flex items-center justify-center border border-black/50">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-card text-primary text-[9px] font-medium rounded-full flex items-center justify-center border border-border">
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
@@ -130,55 +131,58 @@ export function Navbar() {
 
               <Sheet>
                 <SheetTrigger asChild>
-                  <button className="text-white/80 hover:text-primary transition-colors p-2">
+                  <button className="text-foreground/80 hover:text-primary transition-colors p-2">
                     <Menu className="w-6 h-6 stroke-1" />
                   </button>
                 </SheetTrigger>
-                <SheetContent side="left" className="bg-neutral-950 border-r border-white/5 text-white w-[300px] p-0">
-                  <SheetHeader className="p-8 border-b border-white/5 text-left bg-neutral-900/30">
-                    <SheetTitle className="text-3xl font-serif text-white/90 font-light tracking-wide">AURERXA</SheetTitle>
-                    <p className="text-[10px] text-white/30 uppercase tracking-[0.3em]">Est. 1989</p>
+                <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[300px] p-0">
+                  <SheetHeader className="p-8 border-b border-border text-left bg-card/30 flex flex-row items-center justify-between">
+                    <div>
+                      <SheetTitle className="text-3xl font-serif text-foreground/90 font-light tracking-wide">AURERXA</SheetTitle>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">Est. 1989</p>
+                    </div>
+                    <ModeToggle />
                   </SheetHeader>
                   <div className="flex flex-col py-6 relative">
                     {['Home', 'Shop Collections', 'Custom Jewelry', 'Our Story', 'Blog', 'Contact Us'].map((item, idx) => {
                       const href = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`
                       return (
-                        <Link key={idx} href={href} className="px-8 py-5 text-sm uppercase tracking-widest font-light text-white/60 hover:bg-white/[0.02] hover:text-primary transition-all border-b border-white/[0.02]">
+                        <Link key={idx} href={href} className="px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all border-b border-border/10">
                           {item}
                         </Link>
                       )
                     })}
-                    <Link href="/faq" className="px-8 py-5 text-sm uppercase tracking-widest font-light text-white/60 hover:bg-white/[0.02] hover:text-primary transition-all">
+                    <Link href="/faq" className="px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all">
                       FAQs
                     </Link>
 
                     {/* User Profile Section in Mobile Menu */}
-                    <div className="mt-8 px-6 pt-8 border-t border-white/5 space-y-4">
+                    <div className="mt-8 px-6 pt-8 border-t border-border space-y-4">
                       {user ? (
                         <>
-                          <div className="flex items-center gap-4 mb-6 p-4 rounded-sm bg-white/[0.02] border border-white/5">
+                          <div className="flex items-center gap-4 mb-6 p-4 rounded-sm bg-muted/10 border border-border">
                             <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-serif text-lg">
                               {getInitials()}
                             </div>
                             <div className="flex flex-col gap-1">
-                              <span className="text-xs font-medium text-white/80 uppercase tracking-wider">{profile?.full_name || 'My Account'}</span>
-                              <span className="text-[10px] text-white/30 font-light">{user.email}</span>
+                              <span className="text-xs font-medium text-foreground/80 uppercase tracking-wider">{profile?.full_name || 'My Account'}</span>
+                              <span className="text-[10px] text-muted-foreground font-light">{user.email}</span>
                             </div>
                           </div>
                           <div className="grid grid-cols-2 gap-3">
                             <Link
                               href="/account"
-                              className="flex flex-col items-center justify-center p-4 rounded-sm bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group"
+                              className="flex flex-col items-center justify-center p-4 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
                             >
-                              <Settings className="w-5 h-5 mb-2 text-white/40 group-hover:text-primary/60 transition-colors stroke-1" />
-                              <span className="text-[9px] uppercase tracking-widest text-white/40 group-hover:text-primary/80">Account</span>
+                              <Settings className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-primary/60 transition-colors stroke-1" />
+                              <span className="text-[9px] uppercase tracking-widest text-muted-foreground group-hover:text-primary/80">Account</span>
                             </Link>
                             <button
                               onClick={handleSignOut}
-                              className="flex flex-col items-center justify-center p-4 rounded-sm bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group"
+                              className="flex flex-col items-center justify-center p-4 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
                             >
-                              <LogOut className="w-5 h-5 mb-2 text-white/40 group-hover:text-red-400/60 transition-colors stroke-1" />
-                              <span className="text-[9px] uppercase tracking-widest text-white/40 group-hover:text-red-400/80">Sign Out</span>
+                              <LogOut className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-destructive/60 transition-colors stroke-1" />
+                              <span className="text-[9px] uppercase tracking-widest text-muted-foreground group-hover:text-destructive/80">Sign Out</span>
                             </button>
                           </div>
                         </>
@@ -191,8 +195,8 @@ export function Navbar() {
                       )}
                     </div>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/5 bg-neutral-900/30">
-                    <p className="text-[9px] text-white/20 text-center uppercase tracking-widest">© 2026 AURERXA.</p>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-border bg-card/30">
+                    <p className="text-[9px] text-muted-foreground text-center uppercase tracking-widest">© 2026 AURERXA.</p>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -204,7 +208,7 @@ export function Navbar() {
                 <Link
                   key={item}
                   href={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`}
-                  className="text-[11px] font-premium-sans text-white/50 hover:text-primary transition-colors duration-500 tracking-[0.2em]"
+                  className="text-[11px] font-premium-sans text-muted-foreground hover:text-primary transition-colors duration-500 tracking-[0.2em]"
                 >
                   {item}
                 </Link>
@@ -213,65 +217,68 @@ export function Navbar() {
               {/* Search */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="text-white/40 hover:text-primary transition-colors flex items-center gap-3 group"
+                className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 group"
               >
                 <Search className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
-                <span className="text-[10px] font-premium-sans text-white/30 group-hover:text-primary/70 hidden lg:block tracking-widest">SEARCH</span>
+                <span className="text-[10px] font-premium-sans text-muted-foreground/80 group-hover:text-primary/70 hidden lg:block tracking-widest">SEARCH</span>
               </button>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative text-white/40 hover:text-primary transition-colors group">
+              <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group">
                 <Heart className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
               </Link>
 
               {/* Cart */}
-              <Link href="/cart" className="relative text-white/40 hover:text-primary transition-colors group">
+              <Link href="/cart" className="relative text-muted-foreground hover:text-primary transition-colors group">
                 <ShoppingBag className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-primary text-neutral-950 text-[9px] font-medium rounded-full flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-medium rounded-full flex items-center justify-center">
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
               </Link>
 
+              {/* Mode Toggle */}
+              <ModeToggle />
+
               {/* Auth Section */}
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger className="outline-none">
-                    <div className="w-9 h-9 rounded-sm bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer">
+                    <div className="w-9 h-9 rounded-sm bg-muted/20 hover:bg-muted/30 border border-border flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer">
                       {getInitials()}
                     </div>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-neutral-950 border-white/5 text-white min-w-[220px] p-2">
+                  <DropdownMenuContent align="end" className="bg-background border-border text-foreground min-w-[220px] p-2">
                     <DropdownMenuLabel className="px-3 py-2">
                       <div className="flex flex-col gap-1">
-                        <span className="font-premium-sans text-[10px] tracking-widest text-white/90">{profile?.full_name || 'User'}</span>
-                        <span className="text-[9px] text-white/30 font-light tracking-wide">{user.email}</span>
+                        <span className="font-premium-sans text-[10px] tracking-widest text-foreground/90">{profile?.full_name || 'User'}</span>
+                        <span className="text-[9px] text-muted-foreground font-light tracking-wide">{user.email}</span>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-white/5 my-2" />
-                    <DropdownMenuItem asChild className="focus:bg-white/5 focus:text-primary cursor-pointer group p-3 rounded-sm">
+                    <DropdownMenuSeparator className="bg-border my-2" />
+                    <DropdownMenuItem asChild className="focus:bg-muted focus:text-primary cursor-pointer group p-3 rounded-sm">
                       <Link href="/account" className="flex items-center">
                         <User className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />
-                        <span className="text-[10px] tracking-widest uppercase text-white/60 group-hover:text-primary">Profile</span>
+                        <span className="text-[10px] tracking-widest uppercase text-muted-foreground group-hover:text-primary">Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="focus:bg-white/5 focus:text-primary cursor-pointer group p-3 rounded-sm">
+                    <DropdownMenuItem asChild className="focus:bg-muted focus:text-primary cursor-pointer group p-3 rounded-sm">
                       <Link href="/account/orders" className="flex items-center">
                         <Package className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />
-                        <span className="text-[10px] tracking-widest uppercase text-white/60 group-hover:text-primary">Orders</span>
+                        <span className="text-[10px] tracking-widest uppercase text-muted-foreground group-hover:text-primary">Orders</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-white/5 my-2" />
-                    <DropdownMenuItem className="focus:bg-red-950/20 focus:text-red-400 cursor-pointer group p-3 rounded-sm" onClick={handleSignOut}>
+                    <DropdownMenuSeparator className="bg-border my-2" />
+                    <DropdownMenuItem className="focus:bg-destructive/10 focus:text-destructive cursor-pointer group p-3 rounded-sm" onClick={handleSignOut}>
                       <LogOut className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />
-                      <span className="text-[10px] tracking-widest uppercase text-white/60 group-hover:text-red-400">Sign Out</span>
+                      <span className="text-[10px] tracking-widest uppercase text-muted-foreground group-hover:text-destructive">Sign Out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
                 <Link href="/login">
-                  <span className="text-[10px] font-premium-sans text-white/40 hover:text-white transition-colors tracking-[0.2em] border-b border-transparent hover:border-primary pb-1">
+                  <span className="text-[10px] font-premium-sans text-muted-foreground hover:text-foreground transition-colors tracking-[0.2em] border-b border-transparent hover:border-primary pb-1">
                     SIGN IN
                   </span>
                 </Link>

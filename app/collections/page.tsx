@@ -70,14 +70,14 @@ function CollectionsContent() {
   }, [filters])
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white relative">
+    <div className="min-h-screen bg-background text-foreground relative">
       <Navbar />
 
       {/* Hero Header - Matte Luxury Edition */}
       <div className="relative pt-40 pb-20 px-6 overflow-hidden">
         {/* Removed Image Background for PURE MATTE feel or kept very subtle */}
-        <div className="absolute inset-0 bg-neutral-950 z-0" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] opacity-20 bg-repeat pointer-events-none mix-blend-overlay" />
+        <div className="absolute inset-0 bg-background z-0" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] dark:opacity-20 bg-repeat pointer-events-none mix-blend-overlay" />
 
         <div className="relative z-10 max-w-7xl mx-auto text-center space-y-10">
           <motion.div
@@ -86,14 +86,14 @@ function CollectionsContent() {
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="inline-flex items-center gap-6 mb-8 opacity-60">
-              <div className="h-[1px] w-16 bg-white/20" />
-              <span className="text-white font-premium-sans text-[10px] tracking-[0.4em] uppercase">The Archive</span>
-              <div className="h-[1px] w-16 bg-white/20" />
+              <div className="h-[1px] w-16 bg-foreground/20" />
+              <span className="text-foreground font-premium-sans text-[10px] tracking-[0.4em] uppercase">The Archive</span>
+              <div className="h-[1px] w-16 bg-foreground/20" />
             </div>
-            <h1 className="text-6xl md:text-8xl font-serif font-medium text-white/90 tracking-tight leading-none mb-4">
+            <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4">
               COLLECTIONS
             </h1>
-            <p className="max-w-xl mx-auto text-white/40 font-light text-sm tracking-widest uppercase leading-loose">
+            <p className="max-w-xl mx-auto text-muted-foreground font-light text-sm tracking-widest uppercase leading-loose">
               Curated masterpieces for the modern connoisseur.
             </p>
           </motion.div>
@@ -112,13 +112,13 @@ function CollectionsContent() {
         {/* Product Grid - "Jyada Animative" */}
         {loading ? (
           <div className="min-h-[50vh] flex flex-col items-center justify-center gap-6">
-            <Loader2 className="w-8 h-8 text-white/20 animate-spin" />
-            <span className="text-[10px] font-premium-sans text-white/30 tracking-[0.3em] animate-pulse">ACQUIRING DATA...</span>
+            <Loader2 className="w-8 h-8 text-muted-foreground/20 animate-spin" />
+            <span className="text-[10px] font-premium-sans text-muted-foreground/30 tracking-[0.3em] animate-pulse">ACQUIRING DATA...</span>
           </div>
         ) : products.length === 0 ? (
           <div className="min-h-[50vh] flex flex-col items-center justify-center text-center space-y-6 opacity-50">
-            <span className="text-6xl text-white/5 font-serif">Empty</span>
-            <p className="text-xs text-white/30 font-premium-sans tracking-widest uppercase">No artifacts found in this specific curation.</p>
+            <span className="text-6xl text-muted-foreground/5 font-serif">Empty</span>
+            <p className="text-xs text-muted-foreground/30 font-premium-sans tracking-widest uppercase">No artifacts found in this specific curation.</p>
             <button
               onClick={() => {
                 setFilters({
@@ -129,7 +129,7 @@ function CollectionsContent() {
                   sortBy: 'newest'
                 })
               }}
-              className="text-white/40 underline underline-offset-8 hover:text-white transition-colors text-xs uppercase tracking-widest"
+              className="text-muted-foreground/40 underline underline-offset-8 hover:text-foreground transition-colors text-xs uppercase tracking-widest"
             >
               Clear Filters
             </button>
@@ -137,7 +137,7 @@ function CollectionsContent() {
         ) : (
           <motion.div
             layout
-            className={`grid gap-4 md:gap-px bg-white/5 border border-white/5 p-px ${viewMode === 'grid'
+            className={`grid gap-4 md:gap-px bg-card/5 border border-border p-px ${viewMode === 'grid'
               ? 'grid-cols-2 lg:grid-cols-3'
               : 'grid-cols-1'
               }`}

@@ -39,30 +39,30 @@ export default function RepairsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
             <main className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-2xl mx-auto">
                     <div className="text-center mb-12">
-                        <Wrench className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+                        <Wrench className="w-12 h-12 text-primary mx-auto mb-4" />
                         <h1 className="text-3xl font-serif font-bold mb-4">Repair Services</h1>
-                        <p className="text-white/60">
+                        <p className="text-muted-foreground">
                             We ensure your legacy lasts forever. <br />
                             Request a professional repair or polish for your AURERXA jewelry.
                         </p>
                     </div>
 
-                    <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-lg shadow-2xl relative overflow-hidden">
+                    <div className="bg-card border border-border p-8 rounded-lg shadow-2xl relative overflow-hidden">
                         {success && (
-                            <div className="absolute inset-0 bg-neutral-900 z-10 flex flex-col items-center justify-center animate-in fade-in duration-300">
+                            <div className="absolute inset-0 bg-card z-10 flex flex-col items-center justify-center animate-in fade-in duration-300">
                                 <CheckCircle className="w-16 h-16 text-emerald-500 mb-4" />
                                 <h3 className="text-2xl font-serif font-bold text-emerald-500 mb-2">Request Submitted</h3>
-                                <p className="text-white/60 text-center max-w-xs mb-6">
+                                <p className="text-muted-foreground text-center max-w-xs mb-6">
                                     Our artisans will review your request and contact you shortly with shipping instructions.
                                 </p>
                                 <Button
                                     variant="outline"
-                                    className="border-neutral-700 hover:bg-neutral-800"
+                                    className="border-input hover:bg-muted"
                                     onClick={() => setSuccess(false)}
                                 >
                                     Submit Another
@@ -72,40 +72,40 @@ export default function RepairsPage() {
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div>
-                                <Label className="text-white/70">Product Name / Description</Label>
+                                <Label className="text-muted-foreground">Product Name / Description</Label>
                                 <Input
                                     value={formData.productName}
                                     onChange={e => setFormData({ ...formData, productName: e.target.value })}
                                     placeholder="e.g., Diamond Solitaire Ring"
                                     required
-                                    className="mt-2 bg-neutral-950 border-neutral-700 text-white"
+                                    className="mt-2 bg-background border-input text-foreground"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-white/70">Order Number (Optional)</Label>
+                                <Label className="text-muted-foreground">Order Number (Optional)</Label>
                                 <Input
                                     value={formData.orderNumber}
                                     onChange={e => setFormData({ ...formData, orderNumber: e.target.value })}
                                     placeholder="e.g., AUR12345"
-                                    className="mt-2 bg-neutral-950 border-neutral-700 text-white"
+                                    className="mt-2 bg-background border-input text-foreground"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-white/70">Issue Description</Label>
+                                <Label className="text-muted-foreground">Issue Description</Label>
                                 <textarea
                                     value={formData.issue}
                                     onChange={e => setFormData({ ...formData, issue: e.target.value })}
                                     placeholder="Describe the damage or service needed (e.g., loose stone, polishing required)..."
                                     required
                                     rows={5}
-                                    className="w-full mt-2 p-3 bg-neutral-950 border border-neutral-700 text-white text-sm focus:outline-none focus:border-amber-500 rounded-md"
+                                    className="w-full mt-2 p-3 bg-background border border-input text-foreground text-sm focus:outline-none focus:border-primary rounded-md"
                                 />
                             </div>
 
                             {error && (
-                                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-950/20 p-3 rounded">
+                                <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded">
                                     <AlertCircle className="w-4 h-4" />
                                     {error}
                                 </div>
@@ -114,7 +114,7 @@ export default function RepairsPage() {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold h-12"
+                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12"
                             >
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Request Service'}
                             </Button>

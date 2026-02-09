@@ -34,6 +34,7 @@ export const viewport: Viewport = {
 }
 
 import { CartProvider } from '@/context/cart-context'
+import { ThemeProvider } from "@/components/theme-provider"
 
 export default function RootLayout({
   children,
@@ -43,14 +44,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-sans antialiased bg-background text-foreground">
-        <CartProvider>
-          <SmoothScroll>
-            {children}
-            <BottomNav />
-            <MobileInstallPrompt />
-            <NotificationManager />
-          </SmoothScroll>
-        </CartProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <CartProvider>
+            <SmoothScroll>
+              {children}
+              <BottomNav />
+              <MobileInstallPrompt />
+              <NotificationManager />
+            </SmoothScroll>
+          </CartProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

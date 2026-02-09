@@ -31,38 +31,38 @@ export default function SizeGuidePage() {
     ]
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
             <main className="pt-24 pb-24">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h1 className="text-4xl font-serif font-bold mb-4 text-center">Size Guide</h1>
-                    <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-12" />
+                    <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-12" />
 
                     {/* Ring Size Section */}
                     <section className="mb-16">
                         <div className="flex items-center gap-3 mb-6">
-                            <Circle className="w-6 h-6 text-amber-500" />
+                            <Circle className="w-6 h-6 text-primary" />
                             <h2 className="text-2xl font-serif font-medium">Ring Sizes</h2>
                         </div>
 
-                        <div className="bg-neutral-900 border border-neutral-800 overflow-hidden mb-6">
+                        <div className="bg-card border border-border overflow-hidden mb-6">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="bg-neutral-800">
-                                        <th className="px-4 py-3 text-left font-medium text-amber-400">Indian Size</th>
-                                        <th className="px-4 py-3 text-left font-medium text-amber-400">US Size</th>
-                                        <th className="px-4 py-3 text-left font-medium text-amber-400">Diameter</th>
-                                        <th className="px-4 py-3 text-left font-medium text-amber-400">Circumference</th>
+                                    <tr className="bg-muted">
+                                        <th className="px-4 py-3 text-left font-medium text-primary">Indian Size</th>
+                                        <th className="px-4 py-3 text-left font-medium text-primary">US Size</th>
+                                        <th className="px-4 py-3 text-left font-medium text-primary">Diameter</th>
+                                        <th className="px-4 py-3 text-left font-medium text-primary">Circumference</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {ringSizes.map((size, i) => (
-                                        <tr key={i} className="border-t border-neutral-800 hover:bg-neutral-800/50">
-                                            <td className="px-4 py-3 text-white">{size.indian}</td>
-                                            <td className="px-4 py-3 text-white/70">{size.us}</td>
-                                            <td className="px-4 py-3 text-white/70">{size.diameter}</td>
-                                            <td className="px-4 py-3 text-white/70">{size.circumference}</td>
+                                        <tr key={i} className="border-t border-border hover:bg-muted/50">
+                                            <td className="px-4 py-3 text-foreground">{size.indian}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{size.us}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{size.diameter}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{size.circumference}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -70,26 +70,26 @@ export default function SizeGuidePage() {
                         </div>
 
                         {/* How to Measure */}
-                        <div className="bg-neutral-900 border border-neutral-800 p-6">
+                        <div className="bg-card border border-border p-6">
                             <h3 className="font-serif font-medium mb-4 flex items-center gap-2">
-                                <Ruler className="w-5 h-5 text-amber-500" />
+                                <Ruler className="w-5 h-5 text-primary" />
                                 How to Measure Your Ring Size
                             </h3>
-                            <ol className="text-white/60 space-y-3">
+                            <ol className="text-muted-foreground space-y-3">
                                 <li className="flex gap-3">
-                                    <span className="text-amber-500 font-medium">1.</span>
+                                    <span className="text-primary font-medium">1.</span>
                                     <span>Wrap a thin strip of paper or string around your finger</span>
                                 </li>
                                 <li className="flex gap-3">
-                                    <span className="text-amber-500 font-medium">2.</span>
+                                    <span className="text-primary font-medium">2.</span>
                                     <span>Mark where it overlaps with a pen</span>
                                 </li>
                                 <li className="flex gap-3">
-                                    <span className="text-amber-500 font-medium">3.</span>
+                                    <span className="text-primary font-medium">3.</span>
                                     <span>Measure the length in millimeters (this is your circumference)</span>
                                 </li>
                                 <li className="flex gap-3">
-                                    <span className="text-amber-500 font-medium">4.</span>
+                                    <span className="text-primary font-medium">4.</span>
                                     <span>Find your size in the chart above</span>
                                 </li>
                             </ol>
@@ -99,23 +99,23 @@ export default function SizeGuidePage() {
                     {/* Chain Length Section */}
                     <section className="mb-16">
                         <div className="flex items-center gap-3 mb-6">
-                            <Ruler className="w-6 h-6 text-amber-500" />
+                            <Ruler className="w-6 h-6 text-primary" />
                             <h2 className="text-2xl font-serif font-medium">Chain Lengths</h2>
                         </div>
 
-                        <div className="bg-neutral-900 border border-neutral-800 overflow-hidden">
+                        <div className="bg-card border border-border overflow-hidden">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="bg-neutral-800">
-                                        <th className="px-4 py-3 text-left font-medium text-amber-400">Length</th>
-                                        <th className="px-4 py-3 text-left font-medium text-amber-400">Where It Sits</th>
+                                    <tr className="bg-muted">
+                                        <th className="px-4 py-3 text-left font-medium text-primary">Length</th>
+                                        <th className="px-4 py-3 text-left font-medium text-primary">Where It Sits</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {chainLengths.map((chain, i) => (
-                                        <tr key={i} className="border-t border-neutral-800 hover:bg-neutral-800/50">
-                                            <td className="px-4 py-3 text-white font-medium">{chain.length}</td>
-                                            <td className="px-4 py-3 text-white/70">{chain.fits}</td>
+                                        <tr key={i} className="border-t border-border hover:bg-muted/50">
+                                            <td className="px-4 py-3 text-foreground font-medium">{chain.length}</td>
+                                            <td className="px-4 py-3 text-muted-foreground">{chain.fits}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -124,12 +124,12 @@ export default function SizeGuidePage() {
                     </section>
 
                     {/* Tips */}
-                    <section className="bg-amber-500/10 border border-amber-500/30 p-6">
+                    <section className="bg-primary/10 border border-primary/30 p-6">
                         <div className="flex items-start gap-3">
-                            <AlertCircle className="w-6 h-6 text-amber-500 flex-shrink-0 mt-1" />
+                            <AlertCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                             <div>
-                                <h3 className="font-serif font-medium mb-2 text-amber-400">Pro Tips</h3>
-                                <ul className="text-white/70 space-y-2 text-sm">
+                                <h3 className="font-serif font-medium mb-2 text-primary">Pro Tips</h3>
+                                <ul className="text-muted-foreground space-y-2 text-sm">
                                     <li>• Measure your finger at the end of the day when fingers are slightly larger</li>
                                     <li>• Avoid measuring when hands are cold (fingers shrink)</li>
                                     <li>• If between sizes, choose the larger size for comfort</li>
@@ -140,8 +140,8 @@ export default function SizeGuidePage() {
                         </div>
                     </section>
 
-                    <p className="text-center text-white/50 text-sm mt-8">
-                        Need help? Contact us at <a href="mailto:sizing@aurerxa.com" className="text-amber-500 hover:text-amber-400">sizing@aurerxa.com</a>
+                    <p className="text-center text-muted-foreground text-sm mt-8">
+                        Need help? Contact us at <a href="mailto:sizing@aurerxa.com" className="text-primary hover:text-primary/80">sizing@aurerxa.com</a>
                     </p>
                 </div>
             </main>

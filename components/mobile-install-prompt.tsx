@@ -67,29 +67,29 @@ export function MobileInstallPrompt() {
                 exit={{ y: 200, opacity: 0 }}
                 className="fixed bottom-20 left-4 right-4 z-[100] md:hidden"
             >
-                <div className="bg-black/90 backdrop-blur-2xl border border-amber-500/20 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] ring-1 ring-white/10">
+                <div className="bg-popover/90 backdrop-blur-2xl border border-border rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] ring-1 ring-border">
                     {!showDetails ? (
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 bg-neutral-900 rounded-2xl flex items-center justify-center border border-white/5 p-2">
-                                    <img src="/logo.png" alt="AURERXA" className="w-full h-full object-contain" />
+                                <div className="w-14 h-14 bg-card rounded-2xl flex items-center justify-center border border-border p-2">
+                                    <img src="/logo.png" alt="AURERXA" className="w-full h-full object-contain invert dark:invert-0" />
                                 </div>
                                 <div className="space-y-1">
-                                    <h4 className="text-white font-bold text-sm tracking-tight">AURERXA App</h4>
-                                    <p className="text-white/50 text-[10px] uppercase tracking-widest font-medium">Timeless Luxury</p>
+                                    <h4 className="text-foreground font-bold text-sm tracking-tight">AURERXA App</h4>
+                                    <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-medium">Timeless Luxury</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <Button
                                     onClick={handleInstallClick}
-                                    className="h-10 bg-amber-500 text-black hover:bg-amber-400 font-black text-xs uppercase px-6 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.3)] transition-all active:scale-95"
+                                    className="h-10 bg-primary text-primary-foreground hover:bg-primary/90 font-black text-xs uppercase px-6 rounded-xl shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all active:scale-95"
                                 >
                                     Install
                                 </Button>
                                 <button
                                     onClick={handleDismiss}
-                                    className="p-2 text-white/30 hover:text-white transition-colors"
+                                    className="p-2 text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
@@ -102,24 +102,24 @@ export function MobileInstallPrompt() {
                             className="space-y-6 pt-2"
                         >
                             <div className="flex justify-between items-start">
-                                <h4 className="text-white font-serif italic text-xl">How to Install</h4>
-                                <button onClick={() => setShowDetails(false)} className="text-white/40"><X size={18} /></button>
+                                <h4 className="text-foreground font-serif italic text-xl">How to Install</h4>
+                                <button onClick={() => setShowDetails(false)} className="text-muted-foreground"><X size={18} /></button>
                             </div>
 
                             <div className="space-y-4">
-                                <div className="flex items-center gap-4 text-white/80 text-sm">
-                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-amber-500 font-bold italic">1</div>
-                                    <p>Tap the <span className="text-white font-bold inline-flex items-center gap-1 mx-1 px-2 py-1 bg-white/5 rounded border border-white/10"><Share size={14} /> Share</span> button below</p>
+                                <div className="flex items-center gap-4 text-foreground/80 text-sm">
+                                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center border border-border text-primary font-bold italic">1</div>
+                                    <p>Tap the <span className="text-foreground font-bold inline-flex items-center gap-1 mx-1 px-2 py-1 bg-muted rounded border border-border"><Share size={14} /> Share</span> button below</p>
                                 </div>
-                                <div className="flex items-center gap-4 text-white/80 text-sm">
-                                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 text-amber-500 font-bold italic">2</div>
-                                    <p>Scroll down and select <span className="text-white font-bold underline decoration-amber-500/50 underline-offset-4 mx-1">"Add to Home Screen"</span></p>
+                                <div className="flex items-center gap-4 text-foreground/80 text-sm">
+                                    <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center border border-border text-primary font-bold italic">2</div>
+                                    <p>Scroll down and select <span className="text-foreground font-bold underline decoration-primary/50 underline-offset-4 mx-1">"Add to Home Screen"</span></p>
                                 </div>
                             </div>
 
-                            <div className="w-full h-px bg-white/5" />
+                            <div className="w-full h-px bg-border" />
 
-                            <p className="text-[10px] text-amber-500/60 uppercase tracking-[0.4em] text-center font-bold">Experience the Legacy Directly</p>
+                            <p className="text-[10px] text-primary/60 uppercase tracking-[0.4em] text-center font-bold">Experience the Legacy Directly</p>
                         </motion.div>
                     )}
                 </div>

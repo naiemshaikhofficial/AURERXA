@@ -75,16 +75,16 @@ function LoginForm() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 flex items-center justify-center px-4 relative overflow-hidden">
+        <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
 
-            <div className="w-full max-w-md bg-neutral-900/30 backdrop-blur-md border border-white/5 p-8 md:p-12 relative z-10 shadow-2xl">
+            <div className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl">
                 <div className="text-center mb-10">
                     <Link href="/">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/logo.png" alt="Aurerxa" className="h-24 mx-auto mb-6 opacity-90" />
+                        <img src="/logo.png" alt="Aurerxa" className="h-24 mx-auto mb-6 opacity-90 dark:invert-0 invert" />
                     </Link>
-                    <h2 className="text-3xl font-serif font-bold text-white mb-2">Welcome Back</h2>
-                    <p className="text-white/50 text-sm">Sign in to access your bespoke collection</p>
+                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Welcome Back</h2>
+                    <p className="text-muted-foreground text-sm">Sign in to access your bespoke collection</p>
                 </div>
 
                 {error && (
@@ -101,7 +101,7 @@ function LoginForm() {
                         onClick={handleGoogleLogin}
                         disabled={loading}
                         variant="outline"
-                        className="w-full bg-white/5 text-white hover:bg-white/10 h-12 font-medium flex items-center justify-center gap-3 border border-white/10 hover:border-white/20 transition-all duration-300 disabled:opacity-50 rounded-none uppercase tracking-widest text-xs"
+                        className="w-full bg-background/5 text-foreground hover:bg-background/10 h-12 font-medium flex items-center justify-center gap-3 border border-border hover:border-foreground/20 transition-all duration-300 disabled:opacity-50 rounded-none uppercase tracking-widest text-xs"
                     >
                         {loading ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -130,16 +130,16 @@ function LoginForm() {
 
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-white/5" />
+                            <span className="w-full border-t border-border" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-neutral-900 px-2 text-white/40 tracking-widest text-[10px]">Or continue with email</span>
+                            <span className="bg-card px-2 text-muted-foreground tracking-widest text-[10px]">Or continue with email</span>
                         </div>
                     </div>
 
                     <form onSubmit={handleEmailLogin} className="space-y-4">
                         <div className="space-y-2">
-                            <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="email">Email</Label>
+                            <Label className="text-foreground/80 text-xs uppercase tracking-wider" htmlFor="email">Email</Label>
                             <Input
                                 id="email"
                                 name="email"
@@ -148,13 +148,13 @@ function LoginForm() {
                                 required
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 rounded-none transition-colors"
+                                className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-12 focus:border-primary/50 rounded-none transition-colors"
                             />
                         </div>
                         <div className="space-y-2">
                             <div className="flex justify-between">
-                                <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="password">Password</Label>
-                                <Link href="/forgot-password" title="Reset Password" className="text-xs text-amber-500 hover:text-amber-400">Forgot password?</Link>
+                                <Label className="text-foreground/80 text-xs uppercase tracking-wider" htmlFor="password">Password</Label>
+                                <Link href="/forgot-password" title="Reset Password" className="text-xs text-primary hover:text-primary/80">Forgot password?</Link>
                             </div>
                             <div className="relative">
                                 <Input
@@ -164,12 +164,12 @@ function LoginForm() {
                                     required
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 pr-10 rounded-none transition-colors"
+                                    className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-12 focus:border-primary/50 pr-10 rounded-none transition-colors"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                 </button>
@@ -182,25 +182,25 @@ function LoginForm() {
                                 id="policies"
                                 defaultChecked
                                 required
-                                className="mt-1 accent-amber-500 w-3 h-3 bg-neutral-900 border-neutral-700 rounded-sm focus:ring-amber-500/20"
+                                className="mt-1 accent-primary w-3 h-3 bg-background border-input rounded-sm focus:ring-primary/20"
                             />
-                            <label htmlFor="policies" className="text-[10px] text-white/50 leading-relaxed">
-                                I agree to the <Link href="/terms" className="text-amber-500 hover:underline">Terms & Conditions</Link>, <Link href="/privacy" className="text-amber-500 hover:underline">Privacy Policy</Link>, and <Link href="/returns" className="text-amber-500 hover:underline">Refund Policy</Link>.
+                            <label htmlFor="policies" className="text-[10px] text-muted-foreground leading-relaxed">
+                                I agree to the <Link href="/terms" className="text-primary hover:underline">Terms & Conditions</Link>, <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>, and <Link href="/returns" className="text-primary hover:underline">Refund Policy</Link>.
                             </label>
                         </div>
 
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-[0.2em] h-12 transition-all duration-300 rounded-none"
+                            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-[0.2em] h-12 transition-all duration-300 rounded-none"
                         >
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
                         </Button>
                     </form>
 
-                    <div className="text-center text-sm text-white/50">
+                    <div className="text-center text-sm text-muted-foreground">
                         Don&apos;t have an account?{' '}
-                        <Link href={`/signup${searchParams.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`} className="text-amber-500 hover:text-amber-400 font-medium">
+                        <Link href={`/signup${searchParams.get('redirect') ? `?redirect=${encodeURIComponent(searchParams.get('redirect')!)}` : ''}`} className="text-primary hover:text-primary/80 font-medium">
                             Create Account
                         </Link>
                     </div>

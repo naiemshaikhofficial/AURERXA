@@ -16,14 +16,14 @@ export function Heritage() {
     const opacityBg = useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 0.6, 0.4])
 
     return (
-        <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center bg-black py-12 md:py-0">
+        <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center bg-background py-12 md:py-0">
             {/* Cinematic Shutter Reveal */}
             <motion.div
                 initial={{ clipPath: 'inset(100% 0 0 0)' }}
                 whileInView={{ clipPath: 'inset(0% 0 0 0)' }}
                 viewport={{ once: true, margin: '-100px' }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                className="absolute inset-0 bg-neutral-950 z-20 pointer-events-none"
+                className="absolute inset-0 bg-background z-20 pointer-events-none"
             />
 
             {/* Background Image with Cinematic Parallax */}
@@ -37,7 +37,7 @@ export function Heritage() {
                 />
             </motion.div>
 
-            {/* Precision "Black Edition" Vignette */}
+            {/* Precision Vignette - Always dark for text readability */}
             <div className="absolute inset-0 z-[1] bg-gradient-to-r from-black/90 via-transparent to-black/90" />
             <div className="absolute inset-0 z-[1] bg-black/20" />
 
@@ -63,9 +63,9 @@ export function Heritage() {
                     </h2>
 
                     {/* Description */}
-                    <div className="max-w-3xl mx-auto space-y-12 border-l-4 border-amber-500 pl-8 md:pl-12 text-left bg-gradient-to-r from-black/50 to-transparent p-8 backdrop-blur-sm">
+                    <div className="max-w-3xl mx-auto space-y-12 border-l-4 border-primary pl-8 md:pl-12 text-left bg-gradient-to-r from-black/50 to-transparent p-8 backdrop-blur-sm">
                         <p className="text-lg md:text-2xl font-medium text-white/90 leading-relaxed tracking-wide">
-                            "We don't just craft jewelry. We forge <span className="text-amber-500">respect</span>."
+                            "We don't just craft jewelry. We forge <span className="text-primary">respect</span>."
                         </p>
                         <p className="text-sm md:text-base font-light text-white/50 leading-loose tracking-widest italic">
                             Born from a child's resilience. Starting at just 9 years old, my father mastered

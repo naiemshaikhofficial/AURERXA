@@ -56,33 +56,33 @@ export function GoldRateCard() {
     }
 
     return (
-        <section className="py-24 bg-neutral-950 overflow-hidden relative">
+        <section className="py-24 bg-background overflow-hidden relative border-y border-border">
             <div className="max-w-4xl mx-auto px-6 relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
-                    className="bg-neutral-900/40 backdrop-blur-md border border-white/5 p-10 md:p-12 rounded-[2rem] overflow-hidden"
+                    className="bg-card/40 backdrop-blur-md border border-border p-10 md:p-12 rounded-[2rem] overflow-hidden"
                 >
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6 text-center md:text-left">
                         <div className="space-y-4 mx-auto md:mx-0">
-                            <span className="text-amber-200/60 text-[10px] tracking-[0.4em] font-medium uppercase flex items-center justify-center md:justify-start gap-3">
+                            <span className="text-primary/60 text-[10px] tracking-[0.4em] font-medium uppercase flex items-center justify-center md:justify-start gap-3">
                                 <TrendingUp className="w-3 h-3 opacity-60" /> Live Market Rate
                             </span>
-                            <h2 className="text-4xl md:text-5xl font-serif font-medium text-white/90 tracking-tight">
-                                Market Valuation<span className="text-amber-400/80">.</span>
+                            <h2 className="text-4xl md:text-5xl font-serif font-medium text-foreground/90 tracking-tight">
+                                Market Valuation<span className="text-primary/80">.</span>
                             </h2>
                         </div>
-                        <div className="hidden md:block h-12 w-[1px] bg-white/5 mx-8" />
+                        <div className="hidden md:block h-12 w-[1px] bg-border mx-8" />
                         <div className="flex flex-col items-center md:items-end gap-4 mx-auto md:mx-0">
-                            <p className="text-white/30 text-[11px] font-light tracking-widest uppercase leading-relaxed text-center md:text-right">
+                            <p className="text-muted-foreground text-[11px] font-light tracking-widest uppercase leading-relaxed text-center md:text-right">
                                 Rates updated via Global Bullion Market
                             </p>
                             <button
                                 onClick={fetchRates}
                                 disabled={loading}
-                                className="flex items-center gap-3 text-[10px] text-amber-200/40 hover:text-amber-200 uppercase tracking-[0.2em] transition-all duration-500 hover:tracking-[0.25em] disabled:opacity-30"
+                                className="flex items-center gap-3 text-[10px] text-primary/40 hover:text-primary uppercase tracking-[0.2em] transition-all duration-500 hover:tracking-[0.25em] disabled:opacity-30"
                             >
                                 {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
                                 Sync Live
@@ -91,14 +91,14 @@ export function GoldRateCard() {
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex justify-center md:justify-start gap-8 mb-12 border-b border-white/5 pb-1 w-full overflow-x-auto scrollbar-hide">
+                    <div className="flex justify-center md:justify-start gap-8 mb-12 border-b border-border pb-1 w-full overflow-x-auto scrollbar-hide">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 className={`relative pb-4 px-2 transition-all duration-700 group/tab flex flex-col items-center text-center min-w-[80px]`}
                             >
-                                <span className={`text-[11px] tracking-[0.2em] uppercase transition-colors duration-500 ${activeTab === tab.id ? 'text-amber-100 font-medium' : 'text-white/20 hover:text-white/40'
+                                <span className={`text-[11px] tracking-[0.2em] uppercase transition-colors duration-500 ${activeTab === tab.id ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
                                     }`}>
                                     {tab.label}
                                 </span>
@@ -108,7 +108,7 @@ export function GoldRateCard() {
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         transition={{ duration: 0.5 }}
-                                        className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-200/50 to-transparent"
+                                        className="absolute -bottom-[1px] left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent"
                                     />
                                 )}
                             </button>
@@ -119,7 +119,7 @@ export function GoldRateCard() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative min-h-[160px]">
                         {loading && (
                             <div className="absolute inset-0 z-20 flex items-center justify-center">
-                                <div className="w-8 h-8 border-[1px] border-white/10 border-t-amber-200/50 rounded-full animate-spin duration-[2s]" />
+                                <div className="w-8 h-8 border-[1px] border-border border-t-primary/50 rounded-full animate-spin duration-[2s]" />
                             </div>
                         )}
                         <AnimatePresence mode="wait">
@@ -134,16 +134,16 @@ export function GoldRateCard() {
                                 {getDisplayRates().map(([purity, rate], idx) => (
                                     <motion.div
                                         key={purity}
-                                        className="group p-8 flex flex-col items-center space-y-5 border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors duration-700 rounded-xl"
+                                        className="group p-8 flex flex-col items-center space-y-5 border border-border bg-card/20 hover:bg-card/40 transition-colors duration-700 rounded-xl"
                                     >
-                                        <span className="text-white/30 text-[10px] tracking-[0.3em] uppercase group-hover:text-amber-200/40 transition-colors duration-500">
+                                        <span className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase group-hover:text-primary transition-colors duration-500">
                                             {purity === 'Silver' || purity === 'Platinum' ? purity : `${purity} Gold`}
                                         </span>
                                         <div className="flex flex-col items-center gap-1">
-                                            <span className="text-3xl md:text-4xl font-serif text-white/90 tracking-tight font-light">
+                                            <span className="text-3xl md:text-4xl font-serif text-foreground/90 tracking-tight font-light">
                                                 ₹{rate.toLocaleString('en-IN')}
                                             </span>
-                                            <span className="text-[10px] text-white/20 font-light tracking-wider uppercase">Per Gram</span>
+                                            <span className="text-[10px] text-muted-foreground/50 font-light tracking-wider uppercase">Per Gram</span>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -153,11 +153,11 @@ export function GoldRateCard() {
 
                     {/* Disclosure */}
                     <div className="mt-16 flex items-center justify-center gap-3 opacity-30 mix-blend-plus-lighter">
-                        <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-white/20" />
-                        <span className="text-[9px] uppercase tracking-[0.3em] text-white font-light">
+                        <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-border" />
+                        <span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground font-light">
                             Indicative Market Rates
                         </span>
-                        <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-white/20" />
+                        <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-border" />
                     </div>
                 </motion.div>
             </div>

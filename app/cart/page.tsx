@@ -26,39 +26,35 @@ export default function CartPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-                <img
-                    src="https://img.icons8.com/?size=100&id=82738&format=png&color=F59E0B"
-                    alt="Loading"
-                    className="w-8 h-8 animate-spin"
-                />
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/30">
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
             <Navbar />
 
             <main className="pt-24 pb-24 min-h-[70vh]">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between mb-12">
-                        <h1 className="text-3xl md:text-5xl font-serif text-white tracking-tight">
-                            Your <span className="text-amber-200/60 italic">Selection</span>
+                        <h1 className="text-3xl md:text-5xl font-serif text-foreground tracking-tight">
+                            Your <span className="text-primary/60 italic">Selection</span>
                         </h1>
-                        <p className="text-amber-200/60 text-[10px] uppercase tracking-[0.3em] font-bold">
+                        <p className="text-primary/60 text-[10px] uppercase tracking-[0.3em] font-bold">
                             {cart.length} Artifacts
                         </p>
                     </div>
 
                     {cart.length === 0 ? (
-                        <div className="text-center py-24 border-t border-b border-white/5">
-                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/5 flex items-center justify-center">
-                                <ShoppingBag className="w-8 h-8 text-white/20" />
+                        <div className="text-center py-24 border-t border-b border-border">
+                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
+                                <ShoppingBag className="w-8 h-8 text-muted-foreground/20" />
                             </div>
-                            <h2 className="text-2xl font-serif text-white/60 mb-6 italic">Your collection is currently empty</h2>
+                            <h2 className="text-2xl font-serif text-muted-foreground mb-6 italic">Your collection is currently empty</h2>
                             <Link href="/collections">
-                                <Button className="bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.2em] px-8 py-6 rounded-none transition-all">
+                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-[0.2em] px-8 py-6 rounded-none transition-all">
                                     Explore Collections
                                 </Button>
                             </Link>
@@ -70,9 +66,9 @@ export default function CartPage() {
                                 {cart.map((item, index) => (
                                     <div
                                         key={item.id}
-                                        className={`group py-8 flex gap-6 md:gap-8 border-t border-white/5 ${index === cart.length - 1 ? 'border-b' : ''}`}
+                                        className={`group py-8 flex gap-6 md:gap-8 border-t border-border ${index === cart.length - 1 ? 'border-b' : ''}`}
                                     >
-                                        <Link href={`/products/${item.products?.slug || item.product_id}`} className="relative w-32 h-40 md:w-40 md:h-48 flex-shrink-0 bg-neutral-900 overflow-hidden">
+                                        <Link href={`/products/${item.products?.slug || item.product_id}`} className="relative w-32 h-40 md:w-40 md:h-48 flex-shrink-0 bg-muted overflow-hidden">
                                             <Image
                                                 src={item.products?.image_url || '/placeholder.jpg'}
                                                 alt={item.products?.name || 'Product'}
@@ -86,37 +82,37 @@ export default function CartPage() {
                                             <div>
                                                 <div className="flex justify-between items-start gap-4">
                                                     <Link href={`/products/${item.products?.slug || item.product_id}`}>
-                                                        <h3 className="font-serif text-2xl font-light tracking-wide text-white hover:text-amber-200/80 transition-colors">
+                                                        <h3 className="font-serif text-2xl font-light tracking-wide text-foreground hover:text-primary/80 transition-colors">
                                                             {item.products?.name}
                                                         </h3>
                                                     </Link>
-                                                    <p className="font-premium-sans text-lg text-white/90">
+                                                    <p className="font-premium-sans text-lg text-foreground/90">
                                                         ₹{(item.products?.price || 0).toLocaleString('en-IN')}
                                                     </p>
                                                 </div>
                                                 {item.size && (
-                                                    <p className="text-[10px] text-white/40 mt-2 uppercase tracking-[0.2em]">Size: <span className="text-white/60">{item.size}</span></p>
+                                                    <p className="text-[10px] text-muted-foreground mt-2 uppercase tracking-[0.2em]">Size: <span className="text-foreground/60">{item.size}</span></p>
                                                 )}
                                                 {item.products?.purity && (
-                                                    <p className="text-[10px] text-white/40 mt-1 uppercase tracking-[0.2em]">Purity: <span className="text-white/60">{item.products.purity}</span></p>
+                                                    <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-[0.2em]">Purity: <span className="text-foreground/60">{item.products.purity}</span></p>
                                                 )}
                                             </div>
 
                                             <div className="flex items-center justify-between mt-6">
-                                                <div className="flex items-center border border-white/10">
+                                                <div className="flex items-center border border-border">
                                                     <button
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                                        className="w-10 h-10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-20"
+                                                        className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-20"
                                                         disabled={item.quantity <= 1}
                                                     >
                                                         <Minus className="w-3 h-3" />
                                                     </button>
-                                                    <span className="w-10 text-center text-sm font-medium text-white/80">
+                                                    <span className="w-10 text-center text-sm font-medium text-foreground/80">
                                                         {item.quantity}
                                                     </span>
                                                     <button
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                                        className="w-10 h-10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-colors"
+                                                        className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                                                     >
                                                         <Plus className="w-3 h-3" />
                                                     </button>
@@ -124,7 +120,7 @@ export default function CartPage() {
 
                                                 <button
                                                     onClick={() => handleRemove(item.id)}
-                                                    className="text-[10px] uppercase tracking-[0.2em] text-white/30 hover:text-red-400 transition-colors flex items-center gap-2 group/remove"
+                                                    className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground/50 hover:text-destructive transition-colors flex items-center gap-2 group/remove"
                                                 >
                                                     <Trash2 className="w-3 h-3 opacity-50 group-hover/remove:opacity-100 transition-all" />
                                                     <span className="hidden sm:inline">Remove Artifact</span>
@@ -137,43 +133,43 @@ export default function CartPage() {
 
                             {/* Order Summary */}
                             <div className="lg:col-span-1">
-                                <div className="bg-neutral-900/30 border border-white/5 p-8 sticky top-24 backdrop-blur-sm">
-                                    <h2 className="font-serif text-2xl font-light mb-8 italic text-white/90">Order Summary</h2>
+                                <div className="bg-card/30 border border-border p-8 sticky top-24 backdrop-blur-sm">
+                                    <h2 className="font-serif text-2xl font-light mb-8 italic text-foreground/90">Order Summary</h2>
 
                                     <div className="space-y-4 mb-8">
-                                        <div className="flex justify-between text-sm text-white/60 font-light tracking-wide">
+                                        <div className="flex justify-between text-sm text-muted-foreground font-light tracking-wide">
                                             <span>Subtotal</span>
-                                            <span className="font-medium text-white">₹{subtotal.toLocaleString('en-IN')}</span>
+                                            <span className="font-medium text-foreground">₹{subtotal.toLocaleString('en-IN')}</span>
                                         </div>
-                                        <div className="flex justify-between text-sm text-white/60 font-light tracking-wide">
+                                        <div className="flex justify-between text-sm text-muted-foreground font-light tracking-wide">
                                             <span>Shipping</span>
-                                            <span className="font-medium text-white">{subtotal >= 50000 ? 'Complimentary' : '₹90'}</span>
+                                            <span className="font-medium text-foreground">{subtotal >= 50000 ? 'Complimentary' : '₹90'}</span>
                                         </div>
                                         {subtotal < 50000 && (
-                                            <div className="py-3 px-4 bg-amber-500/5 border border-amber-500/10 mt-2">
-                                                <p className="text-[10px] text-amber-200/80 uppercase tracking-wider text-center leading-relaxed">
-                                                    Add <span className="font-bold text-amber-400">₹{(50000 - subtotal).toLocaleString('en-IN')}</span> more for complimentary insured shipping
+                                            <div className="py-3 px-4 bg-primary/5 border border-primary/10 mt-2">
+                                                <p className="text-[10px] text-primary/80 uppercase tracking-wider text-center leading-relaxed">
+                                                    Add <span className="font-bold text-primary">₹{(50000 - subtotal).toLocaleString('en-IN')}</span> more for complimentary insured shipping
                                                 </p>
                                             </div>
                                         )}
-                                        <div className="border-t border-white/10 pt-4 mt-4 flex justify-between items-baseline">
-                                            <span className="text-sm uppercase tracking-widest text-white/80">Total</span>
-                                            <span className="font-serif text-2xl text-amber-200/80">₹{total.toLocaleString('en-IN')}</span>
+                                        <div className="border-t border-border pt-4 mt-4 flex justify-between items-baseline">
+                                            <span className="text-sm uppercase tracking-widest text-foreground/80">Total</span>
+                                            <span className="font-serif text-2xl text-primary/80">₹{total.toLocaleString('en-IN')}</span>
                                         </div>
-                                        <p className="text-[9px] text-white/30 uppercase tracking-widest text-right">Including all taxes</p>
+                                        <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest text-right">Including all taxes</p>
                                     </div>
 
                                     <Link href="/checkout" className="block">
-                                        <Button className="w-full bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.25em] py-7 text-xs rounded-none group transition-all">
+                                        <Button className="w-full bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-[0.25em] py-7 text-xs rounded-none group transition-all">
                                             Proceed to Checkout
                                             <ArrowRight className="w-4 h-4 ml-2 opacity-50 group-hover:translate-x-1 transition-transform" />
                                         </Button>
                                     </Link>
 
-                                    <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-center gap-4 opacity-30 grayscale hover:grayscale-0 hover:opacity-60 transition-all duration-500">
-                                        <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-6" />
-                                        <img src="https://img.icons8.com/?size=100&id=13608&format=png&color=FFFFFF" alt="Mastercard" className="h-6" />
-                                        <img src="https://img.icons8.com/?size=100&id=r1iO8o8370Pj&format=png&color=FFFFFF" alt="UPI" className="h-6" />
+                                    <div className="mt-8 pt-6 border-t border-border flex items-center justify-center gap-4 opacity-30 grayscale hover:grayscale-0 hover:opacity-60 transition-all duration-500">
+                                        <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-6 dark:invert-0 invert" />
+                                        <img src="https://img.icons8.com/?size=100&id=13608&format=png&color=FFFFFF" alt="Mastercard" className="h-6 dark:invert-0 invert" />
+                                        <img src="https://img.icons8.com/?size=100&id=r1iO8o8370Pj&format=png&color=FFFFFF" alt="UPI" className="h-6 dark:invert-0 invert" />
                                     </div>
                                 </div>
                             </div>

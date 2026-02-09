@@ -98,33 +98,33 @@ function SignupForm() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 flex items-center justify-center px-4 py-20 relative overflow-hidden">
+        <div className="min-h-screen bg-background flex items-center justify-center px-4 py-20 relative overflow-hidden">
 
-            <div className="w-full max-w-md bg-neutral-900/30 backdrop-blur-md border border-white/5 p-8 md:p-12 relative z-10 shadow-2xl">
+            <div className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl">
                 <div className="text-center mb-10">
                     <Link href="/">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/logo.png" alt="Aurerxa" className="h-24 mx-auto mb-6 opacity-90" />
+                        <img src="/logo.png" alt="Aurerxa" className="h-24 mx-auto mb-6 opacity-90 dark:invert-0 invert" />
                     </Link>
-                    <h2 className="text-3xl font-serif font-bold text-white mb-2">
+                    <h2 className="text-3xl font-serif font-bold text-foreground mb-2">
                         {isSubmitted ? 'Check Your Inbox' : 'Create Account'}
                     </h2>
-                    <p className="text-white/50 text-sm">
+                    <p className="text-muted-foreground text-sm">
                         {isSubmitted ? 'A verification link has been sent to your email.' : 'Join the circle of exclusivity'}
                     </p>
                 </div>
 
                 {isSubmitted ? (
                     <div className="space-y-8 animate-in fade-in zoom-in duration-500">
-                        <div className="w-20 h-20 mx-auto rounded-full border border-amber-500/30 flex items-center justify-center bg-amber-500/5">
-                            <svg className="w-10 h-10 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className="w-20 h-20 mx-auto rounded-full border border-primary/30 flex items-center justify-center bg-primary/5">
+                            <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                         </div>
 
                         <div className="text-center space-y-4">
-                            <p className="text-white/70 text-sm leading-relaxed">
-                                We have sent a luxurious invitation to verify your account at <span className="text-amber-500 font-medium">{formData.email}</span>.
+                            <p className="text-muted-foreground/70 text-sm leading-relaxed">
+                                We have sent a luxurious invitation to verify your account at <span className="text-primary font-medium">{formData.email}</span>.
                             </p>
                             <div className="alert-luxury-success mt-8">
                                 <p className="text-[10px]">Verification is required to access your bespoke portal.</p>
@@ -134,13 +134,13 @@ function SignupForm() {
                         <div className="pt-4 space-y-4">
                             <Button
                                 onClick={() => router.push('/login')}
-                                className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-12"
+                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest h-12"
                             >
                                 Back to Login
                             </Button>
                             <button
                                 onClick={() => setIsSubmitted(false)}
-                                className="w-full text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest"
+                                className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest"
                             >
                                 Re-enter Email
                             </button>
@@ -161,7 +161,7 @@ function SignupForm() {
                             <Button
                                 onClick={handleGoogleSignup}
                                 variant="outline"
-                                className="w-full bg-white/5 text-white hover:bg-white/10 h-12 font-medium flex items-center justify-center gap-3 border border-white/10 hover:border-white/20 transition-all duration-300 rounded-none uppercase tracking-widest text-xs"
+                                className="w-full bg-background/5 text-foreground hover:bg-background/10 h-12 font-medium flex items-center justify-center gap-3 border border-border hover:border-foreground/20 transition-all duration-300 rounded-none uppercase tracking-widest text-xs"
                             >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                                     <path
@@ -186,16 +186,16 @@ function SignupForm() {
 
                             <div className="relative">
                                 <div className="absolute inset-0 flex items-center">
-                                    <span className="w-full border-t border-white/5" />
+                                    <span className="w-full border-t border-border" />
                                 </div>
                                 <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-neutral-950 px-2 text-white/40 tracking-widest text-[10px]">Or register with email</span>
+                                    <span className="bg-card px-2 text-muted-foreground tracking-widest text-[10px]">Or register with email</span>
                                 </div>
                             </div>
 
                             <form onSubmit={handleSignup} className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="name">Full Name</Label>
+                                    <Label className="text-foreground/80 text-xs uppercase tracking-wider" htmlFor="name">Full Name</Label>
                                     <Input
                                         id="name"
                                         name="name"
@@ -203,13 +203,13 @@ function SignupForm() {
                                         required
                                         value={formData.name}
                                         onChange={handleChange}
-                                        className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 rounded-none transition-colors"
+                                        className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-12 focus:border-primary/50 rounded-none transition-colors"
                                     />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="email">Email</Label>
+                                        <Label className="text-foreground/80 text-xs uppercase tracking-wider" htmlFor="email">Email</Label>
                                         <Input
                                             id="email"
                                             name="email"
@@ -218,11 +218,11 @@ function SignupForm() {
                                             required
                                             value={formData.email}
                                             onChange={handleChange}
-                                            className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 rounded-none transition-colors"
+                                            className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-12 focus:border-primary/50 rounded-none transition-colors"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="phone">Phone</Label>
+                                        <Label className="text-foreground/80 text-xs uppercase tracking-wider" htmlFor="phone">Phone</Label>
                                         <Input
                                             id="phone"
                                             name="phone"
@@ -230,13 +230,13 @@ function SignupForm() {
                                             required
                                             value={formData.phone}
                                             onChange={handleChange}
-                                            className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 rounded-none transition-colors"
+                                            className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-12 focus:border-primary/50 rounded-none transition-colors"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="password">Password</Label>
+                                    <Label className="text-foreground/80 text-xs uppercase tracking-wider" htmlFor="password">Password</Label>
                                     <div className="relative">
                                         <Input
                                             id="password"
@@ -245,19 +245,19 @@ function SignupForm() {
                                             required
                                             value={formData.password}
                                             onChange={handleChange}
-                                            className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 pr-10 rounded-none transition-colors"
+                                            className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-12 focus:border-primary/50 pr-10 rounded-none transition-colors"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                         >
                                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-white/80 text-xs uppercase tracking-wider" htmlFor="confirmPassword">Confirm Password</Label>
+                                    <Label className="text-foreground/80 text-xs uppercase tracking-wider" htmlFor="confirmPassword">Confirm Password</Label>
                                     <div className="relative">
                                         <Input
                                             id="confirmPassword"
@@ -266,12 +266,12 @@ function SignupForm() {
                                             required
                                             value={formData.confirmPassword}
                                             onChange={handleChange}
-                                            className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 pr-10 rounded-none transition-colors"
+                                            className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-12 focus:border-primary/50 pr-10 rounded-none transition-colors"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                                         >
                                             {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
@@ -284,25 +284,25 @@ function SignupForm() {
                                         id="policies-signup"
                                         defaultChecked
                                         required
-                                        className="mt-1 accent-amber-500 w-3 h-3 bg-neutral-900 border-neutral-700 rounded-sm focus:ring-amber-500/20"
+                                        className="mt-1 accent-primary w-3 h-3 bg-background border-input rounded-sm focus:ring-primary/20"
                                     />
-                                    <label htmlFor="policies-signup" className="text-[10px] text-white/50 leading-relaxed">
-                                        By creating an account, I agree to the <Link href="/terms" className="text-amber-500 hover:underline">Terms & Conditions</Link>, <Link href="/privacy" className="text-amber-500 hover:underline">Privacy Policy</Link>, and <Link href="/returns" className="text-amber-500 hover:underline">Refund Policy</Link>.
+                                    <label htmlFor="policies-signup" className="text-[10px] text-muted-foreground leading-relaxed">
+                                        By creating an account, I agree to the <Link href="/terms" className="text-primary hover:underline">Terms & Conditions</Link>, <Link href="/privacy" className="text-primary hover:underline">Privacy Policy</Link>, and <Link href="/returns" className="text-primary hover:underline">Refund Policy</Link>.
                                     </label>
                                 </div>
 
                                 <Button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-[0.2em] h-12 transition-all duration-300 mt-2 rounded-none"
+                                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-[0.2em] h-12 transition-all duration-300 mt-2 rounded-none"
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Account'}
                                 </Button>
                             </form>
 
-                            <div className="text-center text-sm text-white/50">
+                            <div className="text-center text-sm text-muted-foreground">
                                 Already have an account?{' '}
-                                <Link href={`/login${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`} className="text-amber-500 hover:text-amber-400 font-medium">
+                                <Link href={`/login${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`} className="text-primary hover:text-primary/80 font-medium">
                                     Sign In
                                 </Link>
                             </div>

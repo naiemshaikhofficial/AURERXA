@@ -28,8 +28,8 @@ const genderCategories = [
 
 export function ShopByGender() {
     return (
-        <section className="py-24 md:py-48 bg-black overflow-hidden">
-            <div className="max-w-7xl mx-auto px-6">
+        <section className="py-24 md:py-48 bg-background overflow-hidden relative">
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 md:mb-32 gap-6">
                     <motion.div
                         initial={{ opacity: 0, x: -30 }}
@@ -37,9 +37,9 @@ export function ShopByGender() {
                         viewport={{ once: true }}
                         className="space-y-4"
                     >
-                        <span className="text-amber-500 text-xs tracking-[0.5em] font-bold uppercase block">Tailored Excellence</span>
-                        <h2 className="text-5xl md:text-8xl font-serif font-black italic text-white tracking-tighter leading-none">
-                            Shop by <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600">Gender.</span>
+                        <span className="text-primary text-xs tracking-[0.5em] font-bold uppercase block">Tailored Excellence</span>
+                        <h2 className="text-5xl md:text-8xl font-serif font-black italic text-foreground tracking-tighter leading-none">
+                            Shop by <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/60 to-primary">Gender.</span>
                         </h2>
                     </motion.div>
                     <motion.p
@@ -47,7 +47,7 @@ export function ShopByGender() {
                         whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="text-white/40 text-sm md:text-base font-light tracking-widest uppercase italic max-w-xs text-right"
+                        className="text-muted-foreground text-sm md:text-base font-light tracking-widest uppercase italic max-w-xs text-right"
                     >
                         Jewellery for every soul, crafted with absolute precision.
                     </motion.p>
@@ -66,7 +66,7 @@ export function ShopByGender() {
                                 href={`/collections?gender=${gender.slug}`}
                                 className="group block relative"
                             >
-                                <div className="relative aspect-[3/4] overflow-hidden border border-white/10 bg-neutral-900 group-hover:border-amber-500/30 transition-all duration-1000">
+                                <div className="relative aspect-[3/4] overflow-hidden border border-border bg-card group-hover:border-primary/30 transition-all duration-1000">
                                     <Image
                                         src={gender.image}
                                         alt={gender.name}
@@ -77,22 +77,22 @@ export function ShopByGender() {
 
                                     {/* Luxury Overlays */}
                                     <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 transition-opacity duration-700" />
-                                    <div className="absolute inset-0 border border-white/5 pointer-events-none" />
-                                    <div className="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                    <div className="absolute inset-0 border border-border pointer-events-none" />
+                                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
 
                                     {/* Content Over Image */}
                                     <div className="absolute inset-0 p-10 flex flex-col justify-end">
-                                        <span className="text-amber-500/80 text-[10px] uppercase tracking-[0.4em] font-bold mb-4 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
+                                        <span className="text-primary/80 text-[10px] uppercase tracking-[0.4em] font-bold mb-4 opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
                                             Explore Collection
                                         </span>
-                                        <h3 className="text-white font-serif text-4xl md:text-5xl italic tracking-tighter mb-4 group-hover:text-amber-500 transition-colors duration-500">
+                                        <h3 className="text-white font-serif text-4xl md:text-5xl italic tracking-tighter mb-4 group-hover:text-primary transition-colors duration-500">
                                             {gender.name}
                                         </h3>
                                         <p className="text-white/40 text-xs font-light tracking-wide leading-relaxed group-hover:text-white/70 transition-colors duration-500">
                                             {gender.description}
                                         </p>
 
-                                        <div className="w-0 group-hover:w-full h-[1px] bg-gradient-to-r from-amber-500/50 to-transparent transition-all duration-1000 mt-6" />
+                                        <div className="w-0 group-hover:w-full h-[1px] bg-gradient-to-r from-primary/50 to-transparent transition-all duration-1000 mt-6" />
                                     </div>
                                 </div>
                             </Link>

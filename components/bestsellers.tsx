@@ -28,18 +28,18 @@ export function Bestsellers() {
   if (bestsellers.length === 0) return null
 
   return (
-    <section className="py-12 md:py-32 px-4 md:px-6 lg:px-12 bg-neutral-950 relative">
+    <section className="py-12 md:py-32 px-4 md:px-6 lg:px-12 bg-background relative">
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-24">
-          <p className="text-amber-500/80 text-[10px] uppercase mb-4 md:mb-6 font-premium-sans">
+          <p className="text-primary/80 text-[10px] uppercase mb-4 md:mb-6 font-premium-sans">
             Timeless Selection
           </p>
-          <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-6 md:mb-8 text-white tracking-widest italic">
-            Curated <span className="text-amber-500">Bestsellers</span>
+          <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-6 md:mb-8 text-foreground tracking-widest italic">
+            Curated <span className="text-primary">Bestsellers</span>
           </h2>
-          <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-6 md:mb-8" />
-          <p className="text-sm md:text-base text-white/40 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+          <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-6 md:mb-8" />
+          <p className="text-sm md:text-base text-muted-foreground/60 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
             Our most esteemed pieces, celebrated for their exceptional design and unparalleled quality.
           </p>
         </div>

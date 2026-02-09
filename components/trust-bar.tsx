@@ -29,7 +29,7 @@ const trustItems = [
 
 export function TrustBar() {
     return (
-        <section className="py-20 bg-neutral-950 border-y border-white/5">
+        <section className="py-20 bg-background border-y border-border">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-8">
                     {trustItems.map((item, idx) => (
@@ -42,14 +42,14 @@ export function TrustBar() {
                             className="flex flex-col items-center text-center space-y-4 group"
                         >
                             <div className="relative">
-                                <div className="absolute inset-0 bg-amber-500/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                                <item.icon className="w-8 h-8 md:w-10 md:h-10 text-amber-500/70 group-hover:text-amber-500 transition-colors duration-500" strokeWidth={1} />
+                                <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                                <item.icon className="w-8 h-8 md:w-10 md:h-10 text-primary/70 group-hover:text-primary transition-colors duration-500" strokeWidth={1} />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="text-white font-serif text-lg md:text-xl italic tracking-tight uppercase group-hover:text-amber-200 transition-colors">
+                                <h4 className="text-foreground font-serif text-lg md:text-xl italic tracking-tight uppercase group-hover:text-primary/80 transition-colors">
                                     {item.title}
                                 </h4>
-                                <p className="text-white/30 text-[10px] md:text-xs uppercase tracking-widest font-bold">
+                                <p className="text-muted-foreground text-[10px] md:text-xs uppercase tracking-widest font-bold">
                                     {item.description}
                                 </p>
                             </div>

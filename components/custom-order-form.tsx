@@ -67,7 +67,7 @@ export function CustomOrderForm() {
   }
 
   return (
-    <section ref={sectionRef} id="custom" className="py-24 md:py-32 px-6 lg:px-12 bg-black relative overflow-hidden">
+    <section ref={sectionRef} id="custom" className="py-24 md:py-32 px-6 lg:px-12 bg-background relative overflow-hidden transition-colors duration-500">
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -77,23 +77,23 @@ export function CustomOrderForm() {
         className="max-w-3xl mx-auto relative z-10"
       >
         <div className="text-center mb-24">
-          <p className="text-amber-500/80 text-[10px] font-premium-sans mb-6">
+          <p className="text-primary/80 text-[10px] font-premium-sans mb-6">
             Bespoke Service
           </p>
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-white tracking-widest italic">
-            Custom <span className="text-amber-500">Jewelry</span>
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-foreground tracking-widest italic">
+            Custom <span className="text-primary">Jewelry</span>
           </h2>
-          <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mb-8" />
-          <p className="text-sm md:text-base text-white/40 max-w-xl mx-auto font-light leading-relaxed tracking-widest italic">
+          <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-8" />
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto font-light leading-relaxed tracking-widest italic">
             Bring your vision to life. Our master craftsmen will create a bespoke piece just for you.
           </p>
         </div>
 
-        <div className="bg-neutral-950 border border-white/5 p-8 md:p-16 relative overflow-hidden group hover:border-amber-500/20 transition-all duration-1000 shadow-[0_0_50px_rgba(0,0,0,1)]">
+        <div className="bg-card border border-border p-8 md:p-16 relative overflow-hidden group hover:border-primary/20 transition-all duration-1000 shadow-[0_0_50px_rgba(0,0,0,0.2)] dark:shadow-[0_0_50px_rgba(0,0,0,1)]">
           <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">
-                <Label htmlFor="name" className="text-white/40 text-[9px] font-premium-sans">
+                <Label htmlFor="name" className="text-muted-foreground text-[9px] font-premium-sans">
                   Full Name
                 </Label>
                 <Input
@@ -103,12 +103,12 @@ export function CustomOrderForm() {
                   onChange={handleChange}
                   placeholder="Your illustrious name"
                   required
-                  className="bg-black/40 border-white/5 text-white placeholder:text-white/10 h-14 focus:border-amber-500/30 focus:ring-0 rounded-none text-xs tracking-widest"
+                  className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest"
                 />
               </div>
 
               <div className="space-y-4">
-                <Label htmlFor="email" className="text-white/40 text-[9px] font-premium-sans">
+                <Label htmlFor="email" className="text-muted-foreground text-[9px] font-premium-sans">
                   Email
                 </Label>
                 <Input
@@ -119,14 +119,14 @@ export function CustomOrderForm() {
                   onChange={handleChange}
                   placeholder="your@excellence.com"
                   required
-                  className="bg-black/40 border-white/5 text-white placeholder:text-white/10 h-14 focus:border-amber-500/30 focus:ring-0 rounded-none text-xs tracking-widest"
+                  className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">
-                <Label htmlFor="phone" className="text-white/40 text-[9px] font-premium-sans">
+                <Label htmlFor="phone" className="text-muted-foreground text-[9px] font-premium-sans">
                   Phone Number
                 </Label>
                 <Input
@@ -135,31 +135,31 @@ export function CustomOrderForm() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="+91 (000) 000-0000"
-                  className="bg-black/40 border-white/5 text-white placeholder:text-white/10 h-14 focus:border-amber-500/30 focus:ring-0 rounded-none text-xs tracking-widest"
+                  className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest"
                 />
               </div>
 
               <div className="space-y-4">
-                <Label htmlFor="budget" className="text-white/40 text-[9px] font-premium-sans">
+                <Label htmlFor="budget" className="text-muted-foreground text-[9px] font-premium-sans">
                   Budget Range
                 </Label>
                 <Select value={formData.budget} onValueChange={handleBudgetChange}>
-                  <SelectTrigger className="bg-black/40 border-white/5 text-white/40 h-14 focus:border-amber-500/30 focus:ring-0 rounded-none text-xs tracking-widest">
+                  <SelectTrigger className="bg-background/40 border-border text-muted-foreground h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest">
                     <SelectValue placeholder="Select budget range" />
                   </SelectTrigger>
-                  <SelectContent className="bg-neutral-900 border-white/10 text-white rounded-none">
-                    <SelectItem value="under-50" className="focus:bg-amber-500/20 focus:text-white py-3">Under ₹50,000</SelectItem>
-                    <SelectItem value="50-100" className="focus:bg-amber-500/20 focus:text-white py-3">₹50,000 - ₹100,000</SelectItem>
-                    <SelectItem value="100-250" className="focus:bg-amber-500/20 focus:text-white py-3">₹100,000 - ₹250,000</SelectItem>
-                    <SelectItem value="250-500" className="focus:bg-amber-500/20 focus:text-white py-3">₹250,000 - ₹500,000</SelectItem>
-                    <SelectItem value="500-plus" className="focus:bg-amber-500/20 focus:text-white py-3">₹500,000+</SelectItem>
+                  <SelectContent className="bg-popover border-border text-popover-foreground rounded-none">
+                    <SelectItem value="under-50" className="focus:bg-accent focus:text-accent-foreground py-3">Under ₹50,000</SelectItem>
+                    <SelectItem value="50-100" className="focus:bg-accent focus:text-accent-foreground py-3">₹50,000 - ₹100,000</SelectItem>
+                    <SelectItem value="100-250" className="focus:bg-accent focus:text-accent-foreground py-3">₹100,000 - ₹250,000</SelectItem>
+                    <SelectItem value="250-500" className="focus:bg-accent focus:text-accent-foreground py-3">₹250,000 - ₹500,000</SelectItem>
+                    <SelectItem value="500-plus" className="focus:bg-accent focus:text-accent-foreground py-3">₹500,000+</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-4">
-              <Label htmlFor="description" className="text-white/40 text-[9px] font-premium-sans">
+              <Label htmlFor="description" className="text-muted-foreground text-[9px] font-premium-sans">
                 Describe Your Dream Piece
               </Label>
               <Textarea
@@ -170,7 +170,7 @@ export function CustomOrderForm() {
                 placeholder="Tell us about your design, materials, and inspiration..."
                 required
                 rows={6}
-                className="bg-black/40 border-white/5 text-white placeholder:text-white/10 resize-none focus:border-amber-500/30 focus:ring-0 rounded-none text-xs tracking-widest leading-loose"
+                className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 resize-none focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest leading-loose"
               />
             </div>
 
@@ -191,7 +191,7 @@ export function CustomOrderForm() {
                 animate={{ opacity: 1, y: 0 }}
                 className="alert-luxury-error text-center"
               >
-                <AlertCircle size={20} className="mx-auto mb-4 text-red-500" />
+                <AlertCircle size={20} className="mx-auto mb-4 text-destructive" />
                 <p>{message}</p>
               </motion.div>
             )}
@@ -199,7 +199,7 @@ export function CustomOrderForm() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-white text-black hover:bg-amber-500 hover:text-white font-bold uppercase tracking-[0.4em] h-16 text-[10px] transition-all duration-700 rounded-none shadow-2xl"
+              className="w-full bg-foreground text-background hover:bg-primary hover:text-primary-foreground font-bold uppercase tracking-[0.4em] h-16 text-[10px] transition-all duration-700 rounded-none shadow-2xl"
             >
               {isLoading ? (
                 <>

@@ -304,26 +304,26 @@ export default function CheckoutPage() {
 
     if (loading || cartLoading) {
         return (
-            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
         )
     }
 
     if (cart.length === 0 && !cartLoading && !loading) {
         return (
-            <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/30">
+            <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
                 <Navbar />
                 <main className="pt-24 pb-24 min-h-[70vh] flex flex-col items-center justify-center">
-                    <div className="w-20 h-20 mb-8 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
-                        <ShoppingBag className="w-8 h-8 text-white/20" />
+                    <div className="w-20 h-20 mb-8 rounded-full bg-card flex items-center justify-center border border-border">
+                        <ShoppingBag className="w-8 h-8 text-muted-foreground" />
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-serif text-white mb-4 italic">Your collection is empty</h1>
-                    <p className="text-white/40 mb-12 font-premium-sans text-sm tracking-wide max-w-md text-center">
+                    <h1 className="text-3xl md:text-4xl font-serif text-foreground mb-4 italic">Your collection is empty</h1>
+                    <p className="text-muted-foreground mb-12 font-premium-sans text-sm tracking-wide max-w-md text-center">
                         Explore our curated selection of heritage pieces and add them to your collection.
                     </p>
                     <Link href="/collections">
-                        <Button className="bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.2em] px-10 py-7 rounded-none transition-all">
+                        <Button className="bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-[0.2em] px-10 py-7 rounded-none transition-all">
                             Explore Collections
                         </Button>
                     </Link>
@@ -334,14 +334,14 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/30">
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
             <Navbar />
 
             <main className="pt-24 pb-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-center mb-12">
-                        <h1 className="text-3xl md:text-5xl font-serif text-white tracking-tight">
-                            Secure <span className="text-amber-200/60 italic">Checkout</span>
+                        <h1 className="text-3xl md:text-5xl font-serif text-foreground tracking-tight">
+                            Secure <span className="text-primary italic">Checkout</span>
                         </h1>
                     </div>
 
@@ -358,10 +358,10 @@ export default function CheckoutPage() {
                         {/* Left: Address & Payment */}
                         <div className="lg:col-span-2 space-y-8">
                             {/* Delivery Address */}
-                            <div className="bg-neutral-900/30 border border-white/5 p-8 backdrop-blur-sm">
+                            <div className="bg-card/30 border border-border p-8 backdrop-blur-sm">
                                 <div className="flex items-center justify-between mb-8">
-                                    <h2 className="font-serif text-2xl font-light flex items-center gap-3 text-white/90">
-                                        <MapPin className="w-5 h-5 text-amber-200/60" />
+                                    <h2 className="font-serif text-2xl font-light flex items-center gap-3 text-foreground/90">
+                                        <MapPin className="w-5 h-5 text-primary" />
                                         Delivery Details
                                     </h2>
                                     {!showAddressForm && addresses.length < 5 && (
@@ -380,7 +380,7 @@ export default function CheckoutPage() {
                                                 })
                                                 setShowAddressForm(true)
                                             }}
-                                            className="text-[10px] uppercase tracking-[0.2em] text-amber-200/60 hover:text-white flex items-center gap-2 transition-colors"
+                                            className="text-[10px] uppercase tracking-[0.2em] text-primary hover:text-foreground flex items-center gap-2 transition-colors"
                                         >
                                             <Plus className="w-3 h-3" />
                                             Add New
@@ -389,9 +389,9 @@ export default function CheckoutPage() {
                                 </div>
 
                                 {showAddressForm && (
-                                    <form onSubmit={handleSaveAddress} className="mb-8 p-6 border border-amber-500/20 bg-amber-500/5 space-y-6 rounded-sm">
+                                    <form onSubmit={handleSaveAddress} className="mb-8 p-6 border border-primary/20 bg-primary/5 space-y-6 rounded-sm">
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="text-xs font-bold text-amber-200/80 uppercase tracking-widest">
+                                            <h3 className="text-xs font-bold text-primary uppercase tracking-widest">
                                                 {editingAddressId ? 'Edit Address' : 'New Address'}
                                             </h3>
                                             <button
@@ -400,82 +400,82 @@ export default function CheckoutPage() {
                                                     setShowAddressForm(false)
                                                     setEditingAddressId(null)
                                                 }}
-                                                className="text-white/40 hover:text-white transition-colors"
+                                                className="text-muted-foreground hover:text-foreground transition-colors"
                                             >
                                                 <X size={16} />
                                             </button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">Label</Label>
+                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Label</Label>
                                                 <Input
                                                     value={newAddress.label}
                                                     onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
                                                     placeholder="Home, Office..."
-                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors placeholder:text-white/20"
+                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors placeholder:text-muted-foreground/50"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">Full Name</Label>
+                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Full Name</Label>
                                                 <Input
                                                     value={newAddress.full_name}
                                                     onChange={(e) => setNewAddress({ ...newAddress, full_name: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
+                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
                                                 />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">Phone</Label>
+                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Phone</Label>
                                                 <Input
                                                     value={newAddress.phone}
                                                     onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
+                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">Pincode</Label>
+                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Pincode</Label>
                                                 <Input
                                                     value={newAddress.pincode}
                                                     onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
+                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
                                                 />
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-white/40 text-[10px] uppercase tracking-widest">Street Address</Label>
+                                            <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Street Address</Label>
                                             <Input
                                                 value={newAddress.street_address}
                                                 onChange={(e) => setNewAddress({ ...newAddress, street_address: e.target.value })}
                                                 required
-                                                className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
+                                                className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
                                             />
                                         </div>
                                         <div className="grid grid-cols-2 gap-6">
                                             <div className="space-y-2">
-                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">City</Label>
+                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">City</Label>
                                                 <Input
                                                     value={newAddress.city}
                                                     onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
+                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">State</Label>
+                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">State</Label>
                                                 <Input
                                                     value={newAddress.state}
                                                     onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
+                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
                                                 />
                                             </div>
                                         </div>
                                         <div className="flex gap-4 pt-2">
-                                            <Button type="submit" className="bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.2em] px-8 rounded-none transition-all">
+                                            <Button type="submit" className="bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-[0.2em] px-8 rounded-none transition-all">
                                                 {editingAddressId ? 'Update' : 'Save'}
                                             </Button>
                                             <Button
@@ -485,7 +485,7 @@ export default function CheckoutPage() {
                                                     setShowAddressForm(false)
                                                     setEditingAddressId(null)
                                                 }}
-                                                className="text-white/40 hover:text-white hover:bg-white/5 uppercase tracking-[0.2em] rounded-none"
+                                                className="text-muted-foreground hover:text-foreground hover:bg-foreground/5 uppercase tracking-[0.2em] rounded-none"
                                             >
                                                 Cancel
                                             </Button>
@@ -494,15 +494,15 @@ export default function CheckoutPage() {
                                 )}
 
                                 {addresses.length === 0 && !showAddressForm ? (
-                                    <p className="text-white/50 text-center py-8">No addresses saved. Add one to continue.</p>
+                                    <p className="text-muted-foreground text-center py-8">No addresses saved. Add one to continue.</p>
                                 ) : (
                                     <div className="space-y-3">
                                         {addresses.map((addr) => (
                                             <div
                                                 key={addr.id}
                                                 className={`group block p-4 border transition-all rounded-xl relative ${selectedAddress === addr.id
-                                                    ? 'border-amber-500 bg-amber-500/5'
-                                                    : 'border-neutral-800 hover:border-neutral-700'
+                                                    ? 'border-primary bg-primary/5'
+                                                    : 'border-border hover:border-foreground/20'
                                                     }`}
                                             >
                                                 <div className="flex items-start gap-3">
@@ -511,19 +511,19 @@ export default function CheckoutPage() {
                                                         name="address"
                                                         checked={selectedAddress === addr.id}
                                                         onChange={() => setSelectedAddress(addr.id)}
-                                                        className="mt-1 accent-amber-500 cursor-pointer"
+                                                        className="mt-1 accent-primary cursor-pointer"
                                                     />
                                                     <div className="flex-1 cursor-pointer" onClick={() => setSelectedAddress(addr.id)}>
                                                         <div className="flex items-center gap-2 mb-1">
-                                                            <span className="font-medium">{addr.full_name}</span>
-                                                            <span className="text-[10px] bg-neutral-800 px-2 py-0.5 text-white/60 uppercase tracking-widest">{addr.label}</span>
+                                                            <span className="font-medium text-foreground">{addr.full_name}</span>
+                                                            <span className="text-[10px] bg-muted px-2 py-0.5 text-muted-foreground uppercase tracking-widest">{addr.label}</span>
                                                             {addr.is_default && (
-                                                                <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 uppercase tracking-widest">Default</span>
+                                                                <span className="text-[10px] bg-primary/20 text-primary px-2 py-0.5 uppercase tracking-widest">Default</span>
                                                             )}
                                                         </div>
-                                                        <p className="text-sm text-white/60">{addr.street_address}</p>
-                                                        <p className="text-sm text-white/60">{addr.city}, {addr.state} - {addr.pincode}</p>
-                                                        <p className="text-sm text-white/50 mt-1">Phone: {addr.phone}</p>
+                                                        <p className="text-sm text-muted-foreground">{addr.street_address}</p>
+                                                        <p className="text-sm text-muted-foreground">{addr.city}, {addr.state} - {addr.pincode}</p>
+                                                        <p className="text-sm text-muted-foreground/80 mt-1">Phone: {addr.phone}</p>
                                                     </div>
 
                                                     <button
@@ -532,7 +532,7 @@ export default function CheckoutPage() {
                                                             e.stopPropagation()
                                                             handleEditAddress(addr)
                                                         }}
-                                                        className="p-2 text-white/20 hover:text-amber-500 transition-colors"
+                                                        className="p-2 text-muted-foreground/50 hover:text-primary transition-colors"
                                                         title="Edit Address"
                                                     >
                                                         <Pencil size={14} />
@@ -545,50 +545,50 @@ export default function CheckoutPage() {
                             </div>
 
                             {/* Gift Wrapping */}
-                            <div className="bg-neutral-900/30 border border-white/5 p-8 backdrop-blur-sm">
-                                <h2 className="font-serif text-2xl font-light mb-6 flex items-center gap-3 text-white/90">
-                                    <Gift className="w-5 h-5 text-amber-200/60" />
+                            <div className="bg-card/30 border border-border p-8 backdrop-blur-sm">
+                                <h2 className="font-serif text-2xl font-light mb-6 flex items-center gap-3 text-foreground/90">
+                                    <Gift className="w-5 h-5 text-primary" />
                                     Gift Options
                                 </h2>
 
-                                <label className={`flex items-start gap-3 p-4 border cursor-pointer transition-all ${giftWrap ? 'border-amber-500 bg-amber-500/5' : 'border-neutral-700 hover:border-neutral-600'}`}>
+                                <label className={`flex items-start gap-3 p-4 border cursor-pointer transition-all ${giftWrap ? 'border-primary bg-primary/5' : 'border-border hover:border-foreground/20'}`}>
                                     <input
                                         type="checkbox"
                                         checked={giftWrap}
                                         onChange={(e) => setGiftWrap(e.target.checked)}
-                                        className="mt-1 accent-amber-500"
+                                        className="mt-1 accent-primary"
                                     />
                                     <div className="flex-1">
                                         <div className="flex items-center justify-between">
-                                            <span className="font-medium">Add Premium Gift Wrapping</span>
-                                            <span className="text-amber-400 text-sm font-medium">+₹{GIFT_WRAP_PRICE}</span>
+                                            <span className="font-medium text-foreground">Add Premium Gift Wrapping</span>
+                                            <span className="text-primary text-sm font-medium">+₹{GIFT_WRAP_PRICE}</span>
                                         </div>
-                                        <p className="text-xs text-white/50 mt-1">Elegant packaging with ribbon and personalized message card</p>
+                                        <p className="text-xs text-muted-foreground mt-1">Elegant packaging with ribbon and personalized message card</p>
                                     </div>
                                 </label>
 
                                 {giftWrap && (
                                     <div className="mt-4">
-                                        <Label className="text-white/70 text-xs">Gift Message (optional)</Label>
+                                        <Label className="text-foreground/70 text-xs">Gift Message (optional)</Label>
                                         <textarea
                                             value={giftMessage}
                                             onChange={(e) => setGiftMessage(e.target.value)}
                                             placeholder="Write a personal message..."
                                             maxLength={200}
-                                            className="w-full mt-1 p-3 bg-neutral-950 border border-neutral-700 text-white text-sm resize-none h-20 focus:outline-none focus:border-amber-500"
+                                            className="w-full mt-1 p-3 bg-background border border-border text-foreground text-sm resize-none h-20 focus:outline-none focus:border-primary"
                                         />
-                                        <p className="text-xs text-white/40 text-right mt-1">{giftMessage.length}/200</p>
+                                        <p className="text-xs text-muted-foreground/60 text-right mt-1">{giftMessage.length}/200</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Delivery Time Slot */}
-                            <div className="bg-neutral-900/30 border border-white/5 p-8 backdrop-blur-sm">
-                                <h2 className="font-serif text-2xl font-light mb-6 flex items-center gap-3 text-white/90">
-                                    <Clock className="w-5 h-5 text-amber-200/60" />
+                            <div className="bg-card/30 border border-border p-8 backdrop-blur-sm">
+                                <h2 className="font-serif text-2xl font-light mb-6 flex items-center gap-3 text-foreground/90">
+                                    <Clock className="w-5 h-5 text-primary" />
                                     Delivery Preference
                                 </h2>
-                                <p className="text-white/50 text-xs mb-4">Select a preferred time slot for your delivery. We will try our best to accommodate your request.</p>
+                                <p className="text-muted-foreground text-xs mb-4">Select a preferred time slot for your delivery. We will try our best to accommodate your request.</p>
 
                                 <div className="space-y-3">
                                     {[
@@ -600,8 +600,8 @@ export default function CheckoutPage() {
                                         <label
                                             key={slot.id}
                                             className={`flex items-center gap-3 p-4 border cursor-pointer transition-all ${deliveryTimeSlot === slot.id
-                                                ? 'border-amber-500 bg-amber-500/5'
-                                                : 'border-neutral-700 hover:border-neutral-600'
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-border hover:border-foreground/20'
                                                 }`}
                                         >
                                             <input
@@ -609,11 +609,11 @@ export default function CheckoutPage() {
                                                 name="timeSlot"
                                                 checked={deliveryTimeSlot === slot.id}
                                                 onChange={() => setDeliveryTimeSlot(slot.id)}
-                                                className="accent-amber-500"
+                                                className="accent-primary"
                                             />
                                             <div className="flex-1 flex justify-between items-center">
-                                                <span className="font-medium text-sm">{slot.label}</span>
-                                                <span className="text-xs text-white/50">{slot.time}</span>
+                                                <span className="font-medium text-sm text-foreground">{slot.label}</span>
+                                                <span className="text-xs text-muted-foreground">{slot.time}</span>
                                             </div>
                                         </label>
                                     ))}
@@ -621,15 +621,15 @@ export default function CheckoutPage() {
                             </div>
 
                             {/* Payment Method */}
-                            <div className="bg-neutral-900/30 border border-white/5 p-8 backdrop-blur-sm">
-                                <h2 className="font-serif text-2xl font-light mb-6 flex items-center gap-3 text-white/90">
-                                    <CreditCard className="w-5 h-5 text-amber-200/60" />
+                            <div className="bg-card/30 border border-border p-8 backdrop-blur-sm">
+                                <h2 className="font-serif text-2xl font-light mb-6 flex items-center gap-3 text-foreground/90">
+                                    <CreditCard className="w-5 h-5 text-primary" />
                                     Payment
                                 </h2>
 
                                 <div className="space-y-4">
                                     <label
-                                        className={`block p-4 border cursor-pointer transition-all border-amber-500 bg-amber-500/5`}
+                                        className={`block p-4 border cursor-pointer transition-all border-primary bg-primary/5`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <input
@@ -637,28 +637,28 @@ export default function CheckoutPage() {
                                                 name="payment"
                                                 checked={true}
                                                 readOnly
-                                                className="accent-amber-500"
+                                                className="accent-primary"
                                             />
-                                            <CreditCard className="w-5 h-5 text-amber-500" />
+                                            <CreditCard className="w-5 h-5 text-primary" />
                                             <div>
-                                                <span className="font-medium text-amber-500">Secure Online Payment</span>
-                                                <p className="text-xs text-white/50">UPI, Credit/Debit Card, Net Banking</p>
+                                                <span className="font-medium text-primary">Secure Online Payment</span>
+                                                <p className="text-xs text-muted-foreground">UPI, Credit/Debit Card, Net Banking</p>
                                             </div>
                                         </div>
                                     </label>
 
-                                    <div className="bg-neutral-950/50 p-4 border border-red-900/30 rounded">
+                                    <div className="bg-background/50 p-4 border border-destructive/10 rounded">
                                         <label className="flex items-start gap-3 cursor-pointer">
                                             <input
                                                 type="checkbox"
                                                 checked={termsAccepted}
                                                 onChange={(e) => setTermsAccepted(e.target.checked)}
-                                                className="mt-1 accent-amber-500 w-4 h-4"
+                                                className="mt-1 accent-primary w-4 h-4"
                                             />
                                             <div className="space-y-1">
-                                                <span className="text-sm font-medium text-white/90">I accept all Policy Agreements</span>
-                                                <p className="text-xs text-white/50 leading-relaxed">
-                                                    I have read and agree to the <Link href="/terms" target="_blank" className="text-amber-500 underline">Terms & Conditions</Link>, <Link href="/privacy" target="_blank" className="text-amber-500 underline">Privacy Policy</Link>, and <Link href="/returns" target="_blank" className="text-amber-500 underline">Refund/Cancellation Policy</Link>.
+                                                <span className="text-sm font-medium text-foreground/90">I accept all Policy Agreements</span>
+                                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                                    I have read and agree to the <Link href="/terms" target="_blank" className="text-primary underline">Terms & Conditions</Link>, <Link href="/privacy" target="_blank" className="text-primary underline">Privacy Policy</Link>, and <Link href="/returns" target="_blank" className="text-primary underline">Refund/Cancellation Policy</Link>.
                                                 </p>
                                             </div>
                                         </label>
@@ -669,21 +669,21 @@ export default function CheckoutPage() {
 
                         {/* Right: Order Summary */}
                         <div className="lg:col-span-1">
-                            <div className="bg-neutral-900/30 border border-white/5 p-8 sticky top-24 backdrop-blur-sm">
-                                <div className="font-serif text-2xl font-light mb-8 flex items-center justify-between italic text-white/90">
+                            <div className="bg-card/30 border border-border p-8 sticky top-24 backdrop-blur-sm">
+                                <div className="font-serif text-2xl font-light mb-8 flex items-center justify-between italic text-foreground/90">
                                     <span>Order Summary</span>
                                     <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-help" title="BIS Hallmarked & Certified">
                                         <div className="relative w-6 h-6">
-                                            <Image src="/pngegg.png" alt="Hallmark" fill className="object-contain" />
+                                            <Image src="/pngegg.png" alt="Hallmark" fill className="object-contain dark:invert invert-0" />
                                         </div>
-                                        <span className="text-[8px] font-premium-sans tracking-widest uppercase">Certified</span>
+                                        <span className="text-[8px] font-premium-sans tracking-widest uppercase text-foreground">Certified</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-4 mb-8 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                     {cart.map((item) => (
-                                        <div key={item.id} className="flex gap-4 p-2 hover:bg-white/5 transition-colors group rounded-sm">
-                                            <div className="relative w-16 h-16 flex-shrink-0 bg-neutral-900 border border-white/5 overflow-hidden">
+                                        <div key={item.id} className="flex gap-4 p-2 hover:bg-foreground/5 transition-colors group rounded-sm">
+                                            <div className="relative w-16 h-16 flex-shrink-0 bg-background border border-border overflow-hidden">
                                                 <Image
                                                     src={item.products?.image_url || '/placeholder.jpg'}
                                                     alt={item.products?.name || 'Product'}
@@ -693,25 +693,25 @@ export default function CheckoutPage() {
                                                 />
                                             </div>
                                             <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                <p className="text-sm font-serif text-white/90 truncate group-hover:text-amber-200/80 transition-colors">{item.products?.name}</p>
-                                                <div className="flex flex-wrap items-center gap-x-3 text-[10px] text-white/40 uppercase tracking-wider mt-1">
+                                                <p className="text-sm font-serif text-foreground/90 truncate group-hover:text-primary transition-colors">{item.products?.name}</p>
+                                                <div className="flex flex-wrap items-center gap-x-3 text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
                                                     <span>Qty: {item.quantity}</span>
                                                     {item.size && (
                                                         <>
                                                             <span className="opacity-20">|</span>
-                                                            <span className="text-white/60">{item.size}</span>
+                                                            <span className="text-muted-foreground/80">{item.size}</span>
                                                         </>
                                                     )}
                                                 </div>
-                                                <p className="text-xs font-premium-sans text-amber-200/60 mt-1">₹{((item.products?.price || 0) * item.quantity).toLocaleString('en-IN')}</p>
+                                                <p className="text-xs font-premium-sans text-primary mt-1">₹{((item.products?.price || 0) * item.quantity).toLocaleString('en-IN')}</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
 
                                 {/* Coupon Code */}
-                                <div className="border-t border-white/5 pt-6 mb-6">
-                                    <label className="text-[10px] text-white/40 uppercase tracking-[0.2em] flex items-center gap-2 mb-3">
+                                <div className="border-t border-border pt-6 mb-6">
+                                    <label className="text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em] flex items-center gap-2 mb-3">
                                         <Tag className="w-3 h-3" />
                                         Access Code
                                     </label>
@@ -720,13 +720,13 @@ export default function CheckoutPage() {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <Check size={12} className="text-emerald-500" />
-                                                    <span className="text-emerald-400 font-premium-sans text-xs tracking-widest">{couponApplied.code}</span>
+                                                    <span className="text-emerald-500 font-premium-sans text-xs tracking-widest">{couponApplied.code}</span>
                                                 </div>
-                                                <button onClick={removeCoupon} className="text-white/30 hover:text-white transition-colors">
+                                                <button onClick={removeCoupon} className="text-muted-foreground hover:text-foreground transition-colors">
                                                     <X className="w-3 h-3" />
                                                 </button>
                                             </div>
-                                            <p className="text-[9px] text-emerald-400/50 mt-1 tracking-wider uppercase">{couponApplied.message}</p>
+                                            <p className="text-[9px] text-emerald-500/70 mt-1 tracking-wider uppercase">{couponApplied.message}</p>
                                         </div>
                                     ) : (
                                         <div className="flex gap-2">
@@ -734,12 +734,12 @@ export default function CheckoutPage() {
                                                 value={couponCode}
                                                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                                                 placeholder="ENTER CODE"
-                                                className="bg-neutral-950 border-white/10 text-white h-10 uppercase text-xs tracking-widest rounded-none focus:border-amber-500/50 placeholder:text-white/20"
+                                                className="bg-background border-input text-foreground h-10 uppercase text-xs tracking-widest rounded-none focus:border-primary/50 placeholder:text-muted-foreground/40"
                                             />
                                             <Button
                                                 onClick={handleApplyCoupon}
                                                 disabled={couponLoading || !couponCode.trim()}
-                                                className="bg-white/5 hover:bg-white/10 text-white h-10 px-6 rounded-none uppercase text-[10px] tracking-widest border border-white/5"
+                                                className="bg-foreground/5 hover:bg-foreground/10 text-foreground h-10 px-6 rounded-none uppercase text-[10px] tracking-widest border border-border"
                                             >
                                                 {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Apply'}
                                             </Button>
@@ -753,14 +753,14 @@ export default function CheckoutPage() {
                                     )}
                                 </div>
 
-                                <div className="border-t border-white/5 pt-6 space-y-3">
-                                    <div className="flex justify-between text-white/40 text-xs uppercase tracking-widest">
+                                <div className="border-t border-border pt-6 space-y-3">
+                                    <div className="flex justify-between text-muted-foreground text-xs uppercase tracking-widest">
                                         <span>Subtotal</span>
-                                        <span className="text-white/80">₹{subtotal.toLocaleString('en-IN')}</span>
+                                        <span className="text-foreground/80">₹{subtotal.toLocaleString('en-IN')}</span>
                                     </div>
-                                    <div className="flex justify-between text-white/40 text-xs uppercase tracking-widest">
+                                    <div className="flex justify-between text-muted-foreground text-xs uppercase tracking-widest">
                                         <span>Shipping</span>
-                                        <span className="text-white/80">
+                                        <span className="text-foreground/80">
                                             {shippingLoading ? (
                                                 <Loader2 className="w-3 h-3 animate-spin" />
                                             ) : (
@@ -769,20 +769,20 @@ export default function CheckoutPage() {
                                         </span>
                                     </div>
                                     {giftWrap && (
-                                        <div className="flex justify-between text-white/40 text-xs uppercase tracking-widest">
+                                        <div className="flex justify-between text-muted-foreground text-xs uppercase tracking-widest">
                                             <span>Gift Wrapping</span>
-                                            <span className="text-amber-200/60 font-bold">₹{giftWrapCost}</span>
+                                            <span className="text-primary font-bold">₹{giftWrapCost}</span>
                                         </div>
                                     )}
                                     {discount > 0 && (
-                                        <div className="flex justify-between text-emerald-400/80 text-xs uppercase tracking-widest">
+                                        <div className="flex justify-between text-emerald-500/80 text-xs uppercase tracking-widest">
                                             <span>Privilege</span>
                                             <span>-₹{discount.toLocaleString('en-IN')}</span>
                                         </div>
                                     )}
-                                    <div className="border-t border-white/5 pt-4 flex justify-between items-baseline">
-                                        <span className="text-sm uppercase tracking-widest text-white/60">Total</span>
-                                        <span className="font-serif text-2xl text-amber-200/80">₹{total.toLocaleString('en-IN')}</span>
+                                    <div className="border-t border-border pt-4 flex justify-between items-baseline">
+                                        <span className="text-sm uppercase tracking-widest text-muted-foreground">Total</span>
+                                        <span className="font-serif text-2xl text-primary">₹{total.toLocaleString('en-IN')}</span>
                                     </div>
 
                                     {/* Estimated Delivery */}
@@ -795,7 +795,7 @@ export default function CheckoutPage() {
                                 <Button
                                     onClick={handlePlaceOrder}
                                     disabled={placing || !selectedAddress || !termsAccepted}
-                                    className="w-full mt-8 bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.25em] h-14 rounded-none disabled:opacity-50 disabled:cursor-not-allowed group transition-all"
+                                    className="w-full mt-8 bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-[0.25em] h-14 rounded-none disabled:opacity-50 disabled:cursor-not-allowed group transition-all"
                                 >
                                     {placing ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />

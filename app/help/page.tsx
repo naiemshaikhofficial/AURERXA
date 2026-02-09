@@ -43,30 +43,30 @@ export default function HelpPage() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
             <main className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-2xl mx-auto">
                     <div className="text-center mb-12">
-                        <LifeBuoy className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+                        <LifeBuoy className="w-12 h-12 text-primary mx-auto mb-4" />
                         <h1 className="text-3xl font-serif font-bold mb-4">Help Center</h1>
-                        <p className="text-white/60">
+                        <p className="text-muted-foreground">
                             Need assistance with your high-value purchase? <br />
                             Raise a ticket and our dedicated concierge will assist you.
                         </p>
                     </div>
 
-                    <div className="bg-neutral-900 border border-neutral-800 p-8 rounded-lg shadow-2xl relative overflow-hidden">
+                    <div className="bg-card border border-border p-8 rounded-lg shadow-2xl relative overflow-hidden">
                         {success && (
-                            <div className="absolute inset-0 bg-neutral-900 z-10 flex flex-col items-center justify-center animate-in fade-in duration-300">
+                            <div className="absolute inset-0 bg-card z-10 flex flex-col items-center justify-center animate-in fade-in duration-300">
                                 <CheckCircle className="w-16 h-16 text-emerald-500 mb-4" />
                                 <h3 className="text-2xl font-serif font-bold text-emerald-500 mb-2">Ticket Raised</h3>
-                                <p className="text-white/60 text-center max-w-xs">
+                                <p className="text-muted-foreground text-center max-w-xs">
                                     Your request has been logged. <br />Ticket ID: #{Math.floor(Math.random() * 10000)}
                                 </p>
                                 <Button
                                     variant="outline"
-                                    className="mt-8 border-neutral-700 hover:bg-neutral-800"
+                                    className="mt-8 border-border hover:bg-muted"
                                     onClick={() => setSuccess(false)}
                                 >
                                     Raise Another
@@ -76,18 +76,18 @@ export default function HelpPage() {
 
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div>
-                                <Label className="text-white/70">Subject</Label>
+                                <Label className="text-muted-foreground">Subject</Label>
                                 <Input
                                     value={formData.subject}
                                     onChange={e => setFormData({ ...formData, subject: e.target.value })}
                                     placeholder="e.g., Order Delivery Status, Product Query"
                                     required
-                                    className="mt-2 bg-neutral-950 border-neutral-700 text-white"
+                                    className="mt-2 bg-background border-input text-foreground font-sans placeholder:text-muted-foreground"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-white/70">Urgency</Label>
+                                <Label className="text-muted-foreground">Urgency</Label>
                                 <div className="grid grid-cols-3 gap-4 mt-2">
                                     {['low', 'normal', 'high'].map((level) => (
                                         <button
@@ -95,8 +95,8 @@ export default function HelpPage() {
                                             type="button"
                                             onClick={() => setFormData({ ...formData, urgency: level })}
                                             className={`p-3 text-sm capitalize border transition-all ${formData.urgency === level
-                                                    ? 'border-amber-500 bg-amber-500/10 text-amber-500 font-medium'
-                                                    : 'border-neutral-700 text-white/50 hover:border-neutral-600'
+                                                ? 'border-primary bg-primary/10 text-primary font-medium'
+                                                : 'border-border text-muted-foreground hover:border-primary/50'
                                                 }`}
                                         >
                                             {level}
@@ -106,19 +106,19 @@ export default function HelpPage() {
                             </div>
 
                             <div>
-                                <Label className="text-white/70">Message</Label>
+                                <Label className="text-muted-foreground">Message</Label>
                                 <textarea
                                     value={formData.message}
                                     onChange={e => setFormData({ ...formData, message: e.target.value })}
                                     placeholder="Describe your issue in detail..."
                                     required
                                     rows={5}
-                                    className="w-full mt-2 p-3 bg-neutral-950 border border-neutral-700 text-white text-sm focus:outline-none focus:border-amber-500 rounded-md"
+                                    className="w-full mt-2 p-3 bg-background border border-input text-foreground text-sm focus:outline-none focus:border-primary rounded-md placeholder:text-muted-foreground"
                                 />
                             </div>
 
                             {error && (
-                                <div className="flex items-center gap-2 text-red-400 text-sm bg-red-950/20 p-3 rounded">
+                                <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded">
                                     <AlertCircle className="w-4 h-4" />
                                     {error}
                                 </div>
@@ -127,7 +127,7 @@ export default function HelpPage() {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold h-12"
+                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12"
                             >
                                 {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Ticket'}
                             </Button>
@@ -135,8 +135,8 @@ export default function HelpPage() {
                     </div>
 
                     <div className="mt-8 text-center">
-                        <p className="text-white/40 text-sm">
-                            For immediate assistance, call us at <span className="text-white">+91 22 2640 5555</span> (10 AM - 7 PM)
+                        <p className="text-muted-foreground text-sm">
+                            For immediate assistance, call us at <span className="text-foreground">+91 22 2640 5555</span> (10 AM - 7 PM)
                         </p>
                     </div>
                 </div>

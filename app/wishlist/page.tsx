@@ -43,27 +43,27 @@ export default function WishlistPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-amber-500 animate-spin" />
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
             <main className="pt-16 md:pt-24 pb-24 min-h-[70vh]">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2 text-center">My Wishlist</h1>
-                    <p className="text-white/50 text-center mb-12">{wishlist.length} items saved</p>
+                    <p className="text-muted-foreground text-center mb-12">{wishlist.length} items saved</p>
 
                     {wishlist.length === 0 ? (
                         <div className="text-center py-16">
-                            <Heart className="w-16 h-16 mx-auto mb-6 text-white/20" />
-                            <p className="text-xl text-white/50 mb-8">Your wishlist is empty</p>
+                            <Heart className="w-16 h-16 mx-auto mb-6 text-muted-foreground/30" />
+                            <p className="text-xl text-muted-foreground mb-8">Your wishlist is empty</p>
                             <Link href="/collections">
-                                <Button className="bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest">
+                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest">
                                     Explore Collections
                                 </Button>
                             </Link>
@@ -73,7 +73,7 @@ export default function WishlistPage() {
                             {wishlist.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="bg-neutral-900 border border-neutral-800 hover:border-amber-500/30 transition-all group"
+                                    className="bg-card border border-border hover:border-primary/30 transition-all group"
                                 >
                                     <Link href={`/products/${item.product_id}`} className="block relative aspect-square overflow-hidden">
                                         <Image
@@ -86,11 +86,11 @@ export default function WishlistPage() {
 
                                     <div className="p-4">
                                         <Link href={`/products/${item.product_id}`}>
-                                            <h3 className="font-serif text-sm mb-1 truncate hover:text-amber-400 transition-colors">
+                                            <h3 className="font-serif text-sm mb-1 truncate hover:text-primary transition-colors">
                                                 {item.products?.name}
                                             </h3>
                                         </Link>
-                                        <p className="text-amber-400 font-medium mb-4">
+                                        <p className="text-primary font-medium mb-4">
                                             ₹{(item.products?.price || 0).toLocaleString('en-IN')}
                                         </p>
 
@@ -99,7 +99,7 @@ export default function WishlistPage() {
                                                 onClick={() => handleMoveToCart(item.product_id, item.products)}
                                                 disabled={actionId === item.product_id}
                                                 size="sm"
-                                                className="flex-1 bg-amber-500 hover:bg-amber-400 text-neutral-950 text-xs h-9"
+                                                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground text-xs h-9"
                                             >
                                                 {actionId === item.product_id ? (
                                                     <Loader2 className="w-3 h-3 animate-spin" />
@@ -115,7 +115,7 @@ export default function WishlistPage() {
                                                 disabled={actionId === item.product_id}
                                                 size="sm"
                                                 variant="outline"
-                                                className="border-neutral-700 hover:border-red-500 hover:text-red-400 h-9 w-9 p-0"
+                                                className="border-border hover:border-destructive hover:text-destructive h-9 w-9 p-0 bg-transparent"
                                             >
                                                 <Trash2 className="w-3 h-3" />
                                             </Button>

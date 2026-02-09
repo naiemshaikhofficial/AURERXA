@@ -92,33 +92,33 @@ export default function FAQPage() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
             <main className="pt-24 pb-24">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h1 className="text-4xl font-serif font-bold mb-4 text-center">Frequently Asked Questions</h1>
-                    <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-amber-400 to-transparent mb-12" />
+                    <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-12" />
 
                     <div className="space-y-12">
                         {faqs.map((category, catIndex) => (
                             <section key={catIndex}>
-                                <h2 className="text-lg font-serif font-medium text-amber-400 mb-4">{category.category}</h2>
+                                <h2 className="text-lg font-serif font-medium text-primary mb-4">{category.category}</h2>
                                 <div className="space-y-2">
                                     {category.questions.map((item, qIndex) => {
                                         const id = `${catIndex}-${qIndex}`
                                         const isOpen = openIndex === id
                                         return (
-                                            <div key={id} className="border border-neutral-800 bg-neutral-900">
+                                            <div key={id} className="border border-border bg-card">
                                                 <button
                                                     onClick={() => toggleQuestion(id)}
-                                                    className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-800/50 transition-colors"
+                                                    className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-muted/50 transition-colors"
                                                 >
                                                     <span className="font-medium pr-4">{item.q}</span>
-                                                    <ChevronDown className={`w-5 h-5 text-amber-500 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                                                    <ChevronDown className={`w-5 h-5 text-primary flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                                                 </button>
                                                 {isOpen && (
-                                                    <div className="px-6 pb-4 text-white/60 leading-relaxed border-t border-neutral-800 pt-4">
+                                                    <div className="px-6 pb-4 text-muted-foreground leading-relaxed border-t border-border pt-4">
                                                         {item.a}
                                                     </div>
                                                 )}
@@ -130,10 +130,10 @@ export default function FAQPage() {
                         ))}
                     </div>
 
-                    <div className="mt-16 text-center p-8 bg-neutral-900 border border-neutral-800">
+                    <div className="mt-16 text-center p-8 bg-card border border-border">
                         <h3 className="font-serif text-xl font-medium mb-3">Still have questions?</h3>
-                        <p className="text-white/60 mb-6">Our customer support team is here to help</p>
-                        <a href="mailto:support@aurerxa.com" className="inline-block px-8 py-3 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-medium uppercase tracking-widest text-sm transition-colors">
+                        <p className="text-muted-foreground mb-6">Our customer support team is here to help</p>
+                        <a href="mailto:support@aurerxa.com" className="inline-block px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium uppercase tracking-widest text-sm transition-colors">
                             Contact Us
                         </a>
                     </div>

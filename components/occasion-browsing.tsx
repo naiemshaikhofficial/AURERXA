@@ -28,7 +28,7 @@ const occasions = [
 
 export function OccasionBrowsing() {
     return (
-        <section className="py-24 md:py-48 bg-neutral-950 overflow-hidden border-y border-white/5">
+        <section className="py-24 md:py-48 bg-background overflow-hidden border-y border-border">
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16 md:mb-32 space-y-4">
                     <motion.div
@@ -37,9 +37,9 @@ export function OccasionBrowsing() {
                         viewport={{ once: true }}
                         className="space-y-4"
                     >
-                        <span className="text-amber-500 text-xs tracking-[0.5em] font-bold uppercase block">Life's Milestones</span>
-                        <h2 className="text-4xl md:text-8xl font-serif font-black italic text-white tracking-tighter leading-none mb-4">
-                            Celebrate <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-600">Every Occasion.</span>
+                        <span className="text-primary text-xs tracking-[0.5em] font-bold uppercase block">Life's Milestones</span>
+                        <h2 className="text-4xl md:text-8xl font-serif font-black italic text-foreground tracking-tighter leading-none mb-4">
+                            Celebrate <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/60 to-primary">Every Occasion.</span>
                         </h2>
                     </motion.div>
                 </div>
@@ -52,7 +52,7 @@ export function OccasionBrowsing() {
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
                             transition={{ delay: idx * 0.2, duration: 1 }}
-                            className="relative group aspect-[16/10] md:aspect-[4/5] overflow-hidden border border-white/10 bg-neutral-900 shadow-2xl"
+                            className="relative group aspect-[16/10] md:aspect-[4/5] overflow-hidden border border-border bg-card shadow-2xl"
                         >
                             <Image
                                 src={occ.image}
@@ -65,13 +65,13 @@ export function OccasionBrowsing() {
 
                             <div className="absolute inset-0 p-8 flex flex-col justify-end">
                                 <Link href={`/collections?occasion=${occ.slug}`} className="space-y-2">
-                                    <h3 className="text-white font-serif text-3xl md:text-4xl italic tracking-tight group-hover:text-amber-500 transition-colors">
+                                    <h3 className="text-white font-serif text-3xl md:text-4xl italic tracking-tight group-hover:text-primary transition-colors">
                                         {occ.name}
                                     </h3>
                                     <p className="text-white/40 text-[10px] uppercase tracking-[0.3em] font-bold group-hover:text-white/70">
                                         {occ.title}
                                     </p>
-                                    <div className="w-12 h-[1px] bg-amber-500/50 group-hover:w-full transition-all duration-700 mt-4" />
+                                    <div className="w-12 h-[1px] bg-primary/50 group-hover:w-full transition-all duration-700 mt-4" />
                                 </Link>
                             </div>
                         </motion.div>
