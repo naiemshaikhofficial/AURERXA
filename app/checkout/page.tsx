@@ -244,8 +244,8 @@ export default function CheckoutPage() {
                                     email: rp.customer.email,
                                     contact: rp.customer.contact
                                 },
-                                theme: {
-                                    color: "#F59E0B" // Amber-500
+                                themes: {
+                                    color: "hsl(var(--primary))"
                                 },
                                 modal: {
                                     ondismiss: function () {
@@ -348,7 +348,7 @@ export default function CheckoutPage() {
                     {error && (
                         <div className="alert-luxury-error mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-500">
                             <div className="flex items-center justify-center gap-3">
-                                <AlertCircle size={14} className="text-red-500" />
+                                <AlertCircle size={14} className="text-destructive" />
                                 <p>{error}</p>
                             </div>
                         </div>
@@ -716,17 +716,17 @@ export default function CheckoutPage() {
                                         Access Code
                                     </label>
                                     {couponApplied ? (
-                                        <div className="bg-emerald-950/20 border border-emerald-900/50 p-3 rounded-none animate-in fade-in duration-500">
+                                        <div className="bg-primary/10 border border-primary/20 p-3 rounded-none animate-in fade-in duration-500">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <Check size={12} className="text-emerald-500" />
-                                                    <span className="text-emerald-500 font-premium-sans text-xs tracking-widest">{couponApplied.code}</span>
+                                                    <Check size={12} className="text-primary" />
+                                                    <span className="text-primary font-premium-sans text-xs tracking-widest">{couponApplied.code}</span>
                                                 </div>
                                                 <button onClick={removeCoupon} className="text-muted-foreground hover:text-foreground transition-colors">
                                                     <X className="w-3 h-3" />
                                                 </button>
                                             </div>
-                                            <p className="text-[9px] text-emerald-500/70 mt-1 tracking-wider uppercase">{couponApplied.message}</p>
+                                            <p className="text-[9px] text-primary/70 mt-1 tracking-wider uppercase">{couponApplied.message}</p>
                                         </div>
                                     ) : (
                                         <div className="flex gap-2">
@@ -746,7 +746,7 @@ export default function CheckoutPage() {
                                         </div>
                                     )}
                                     {couponError && (
-                                        <p className="text-[9px] font-premium-sans text-red-400/80 mt-2 px-1 tracking-widest flex items-center gap-1">
+                                        <p className="text-[9px] font-premium-sans text-destructive/80 mt-2 px-1 tracking-widest flex items-center gap-1">
                                             <AlertCircle size={10} />
                                             {couponError}
                                         </p>
@@ -775,7 +775,7 @@ export default function CheckoutPage() {
                                         </div>
                                     )}
                                     {discount > 0 && (
-                                        <div className="flex justify-between text-emerald-500/80 text-xs uppercase tracking-widest">
+                                        <div className="flex justify-between text-primary text-xs uppercase tracking-widest">
                                             <span>Privilege</span>
                                             <span>-₹{discount.toLocaleString('en-IN')}</span>
                                         </div>
@@ -807,7 +807,7 @@ export default function CheckoutPage() {
                                     )}
                                 </Button>
 
-                                <p className="text-xs text-white/40 text-center mt-4">
+                                <p className="text-xs text-muted-foreground/40 text-center mt-4">
                                     By placing this order, you agree to our Terms & Conditions
                                 </p>
                             </div>

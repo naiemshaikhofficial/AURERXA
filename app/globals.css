@@ -69,12 +69,12 @@ body {
   }
 
   .bg-emerald-luxury {
-    background-color: #0d2e21;
-    /* Darker, matte emerald */
+    background-color: hsl(158 55% 12%);
+    /* Derived from a deep emerald that works in dark mode */
   }
 
   .text-emerald-luxury {
-    color: #1a4d3a;
+    color: hsl(158 55% 20%);
   }
 
   .border-premium {
@@ -90,22 +90,22 @@ body {
   }
 
   .glass-premium {
-    @apply bg-neutral-900/60 backdrop-blur-md border border-white/5;
+    @apply bg-background/60 backdrop-blur-md border border-border;
   }
 
   .alert-luxury-success {
-    @apply p-8 bg-neutral-900/95 border border-emerald-900/30 text-emerald-100/80 font-premium-sans text-[10px] tracking-[0.3em] uppercase;
+    @apply p-8 bg-card/95 border border-primary/30 text-primary font-premium-sans text-[10px] tracking-[0.3em] uppercase;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 
   .alert-luxury-error {
-    @apply p-8 bg-neutral-900/95 border border-red-900/30 text-red-100/80 font-premium-sans text-[10px] tracking-[0.3em] uppercase;
+    @apply p-8 bg-card/95 border border-destructive/30 text-destructive font-premium-sans text-[10px] tracking-[0.3em] uppercase;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 
   .notification-luxury {
-    @apply fixed bottom-8 right-8 z-[100] p-6 backdrop-blur-xl border border-white/5 text-white font-premium-sans text-[9px] tracking-[0.3em] uppercase;
-    background: #0a0a0a;
+    @apply fixed bottom-8 right-8 z-[100] p-6 backdrop-blur-xl border border-border text-foreground font-premium-sans text-[9px] tracking-[0.3em] uppercase;
+    background: hsl(var(--card));
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
   }
 }

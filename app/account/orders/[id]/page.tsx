@@ -111,8 +111,8 @@ export default function OrderDetailPage() {
 
                     {/* Success Banner */}
                     {isSuccess && (
-                        <div className="mb-8 p-6 bg-emerald-500/10 border border-emerald-500/30 text-center animate-in fade-in zoom-in duration-500">
-                            <CheckCircle className="w-12 h-12 mx-auto mb-4 text-emerald-400" />
+                        <div className="mb-8 p-6 bg-primary/10 border border-primary/30 text-center animate-in fade-in zoom-in duration-500">
+                            <CheckCircle className="w-12 h-12 mx-auto mb-4 text-primary" />
                             <h2 className="text-2xl font-serif font-bold mb-2">Order Placed Successfully!</h2>
                             <p className="text-muted-foreground">Thank you for your order. We'll notify you when it ships.</p>
                         </div>
@@ -134,8 +134,8 @@ export default function OrderDetailPage() {
                                             })}
                                         </p>
                                     </div>
-                                    <span className={`px-3 py-1 text-xs uppercase tracking-wider ${order.status === 'delivered' ? 'text-emerald-400 bg-emerald-500/10' :
-                                        order.status === 'shipped' ? 'text-blue-400 bg-blue-500/10' :
+                                    <span className={`px-3 py-1 text-xs uppercase tracking-wider ${order.status === 'delivered' ? 'text-primary bg-primary/20' :
+                                        order.status === 'shipped' ? 'text-foreground/80 bg-muted' :
                                             order.status === 'cancelled' ? 'text-destructive bg-destructive/10' :
                                                 'text-primary bg-primary/10'
                                         }`}>
@@ -178,7 +178,7 @@ export default function OrderDetailPage() {
                                         {trackingData && trackingData.scans && (
                                             <div className="border border-border bg-card p-4 rounded-sm">
                                                 <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
-                                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                                                     Live Tracking Updates
                                                 </h3>
                                                 <div className="space-y-6 relative pl-2">
@@ -327,7 +327,7 @@ export default function OrderDetailPage() {
                                         <span>{order.shipping === 0 ? 'FREE' : `₹${order.shipping}`}</span>
                                     </div>
                                     {order.coupon_discount > 0 && (
-                                        <div className="flex justify-between text-emerald-400">
+                                        <div className="flex justify-between text-primary">
                                             <span>Discount</span>
                                             <span>-₹{order.coupon_discount.toLocaleString('en-IN')}</span>
                                         </div>
