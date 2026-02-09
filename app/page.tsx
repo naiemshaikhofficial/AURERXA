@@ -8,6 +8,12 @@ import { Footer } from '@/components/footer'
 import { Heritage } from '@/components/heritage'
 import { NewReleases } from '@/components/new-releases'
 import { HeritageHighlights } from '@/components/heritage-highlights'
+import { CategoryBrowsing } from '@/components/category-browsing'
+import { ShopByGender } from '@/components/shop-by-gender'
+import { TrustBar } from '@/components/trust-bar'
+import { GoldRateCard } from '@/components/gold-rate-card'
+import { OccasionBrowsing } from '@/components/occasion-browsing'
+import { ConciergeServices, FloatingConcierge } from '@/components/concierge'
 import { getNewReleases } from './actions'
 
 export default async function HomePage() {
@@ -18,7 +24,13 @@ export default async function HomePage() {
       <Navbar />
       <Hero />
       <Heritage />
+      <TrustBar />
+      <CategoryBrowsing />
+      <ShopByGender />
+      <OccasionBrowsing />
+      <ConciergeServices />
       <NewReleases products={newReleases} />
+      <GoldRateCard />
       <FeaturedCollections />
       <Bestsellers />
       <HeritageHighlights />
@@ -26,6 +38,7 @@ export default async function HomePage() {
         <CustomOrderForm />
         <Newsletter />
       </div>
+      <FloatingConcierge />
       <Footer />
     </div>
   )

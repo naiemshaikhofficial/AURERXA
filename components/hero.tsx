@@ -21,16 +21,16 @@ export function Hero() {
   const ySpotlight = useTransform(scrollYProgress, [0, 1], [0, -150])
 
   return (
-    <section ref={ref} className="relative h-screen flex items-center justify-center overflow-hidden bg-black text-white">
+    <section ref={ref} className="relative h-screen flex items-center justify-center overflow-hidden bg-neutral-950 text-white">
       {/* 1. Cinematic Background Layer */}
       <motion.div
         style={{ y: yBg }}
         className="absolute inset-0 z-0"
       >
-        <div className="absolute inset-0 bg-black/40 z-10" /> {/* Dimmer */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/60 z-10" /> {/* Vignette */}
+        <div className="absolute inset-0 bg-neutral-950/60 z-10" /> {/* Matte Dimmer */}
+        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-neutral-950/40 z-10" />
 
-        {/* High-Res Luxury Background (Optimized with Next.js Image) */}
+        {/* High-Res Luxury Background */}
         <div className="relative w-full h-full">
           <Image
             src="/pexels-the-glorious-studio-3584518-29245554.jpg"
@@ -38,68 +38,52 @@ export function Hero() {
             fill
             priority
             quality={90}
-            className="object-cover object-center scale-105"
+            className="object-cover object-center scale-105 opacity-80"
           />
         </div>
       </motion.div>
 
-      {/* 2. "Cayenne Black" Atmospheric Effects */}
+      {/* 2. Atmospheric Effects - Subtle & Clean */}
       <div className="absolute inset-0 z-[5] pointer-events-none">
-        {/* Scanlines for that "Tech/Auto" precision feel - CSS Implementation */}
-        <div
-          className="absolute inset-0 opacity-[0.05] pointer-events-none"
-          style={{
-            backgroundImage: 'linear-gradient(to bottom, rgba(255,255,255,0.5) 50%, transparent 50%)',
-            backgroundSize: '100% 3px'
-          }}
-        />
-
-        {/* Spotlight Effect */}
-        <motion.div
-          style={{ y: ySpotlight }}
-          className="absolute -top-[50%] left-1/2 -translate-x-1/2 w-[150vw] h-[150vw] bg-white/[0.05] rounded-full blur-[100px] mix-blend-overlay"
-        />
+        {/* Subtle Grain instead of Scanlines for analog luxury feel */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
       </div>
 
-      {/* 3. Main Content - High Contrast & Bold Typography */}
+      {/* 3. Main Content - Refined Typography */}
       <div className="relative z-10 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center">
         <motion.div
           style={{ y: yText, opacity: opacityFade }}
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="space-y-12"
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-10"
         >
-          {/* Logo Brand Mark */}
-          <div className="mb-8 relative inline-block">
-            {/* Sharper, more defined gold glow */}
-            <div className="absolute inset-[-20px] bg-amber-500/10 blur-[40px] rounded-full opacity-0 animate-pulse-slow" />
+          {/* Logo Brand Mark - No Glow */}
+          <div className="mb-6 relative inline-block">
             <img
               src="/logo.png"
               alt="Aurerxa Logo"
-              className="w-24 md:w-32 h-auto relative z-10 drop-shadow-2xl"
+              className="w-20 md:w-28 h-auto relative z-10 opacity-90 drop-shadow-xl"
             />
           </div>
 
-          <div className="space-y-4">
-
-
-            {/* Massive Bold Headline */}
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-black tracking-tighter text-white leading-[0.9] mix-blend-hard-light drop-shadow-2xl">
+          <div className="space-y-2">
+            {/* Elegant Headline */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-medium tracking-tight text-white/90 leading-[1.1]">
               PURE<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-white/80 to-white/20">PRESTIGE</span>
+              <span className="text-white/40 font-light italic">PRESTIGE</span>
             </h1>
           </div>
 
-          <p className="max-w-xl mx-auto text-white/60 font-medium text-lg md:text-xl tracking-wide leading-relaxed border-l-2 border-amber-500 pl-6 text-left">
-            Forged in shadow. Defined by brilliance. <br />
-            Experience the darker side of luxury.
+          <p className="max-w-lg mx-auto text-white/50 font-light text-sm md:text-base tracking-widest leading-loose uppercase">
+            Forged in shadow. Defined by brilliance.<br />
+            The quiet authority of true luxury.
           </p>
 
-          <div className="pt-8">
-            <button className="group relative px-12 py-4 bg-white text-black font-bold uppercase tracking-widest hover:bg-amber-500 hover:text-white transition-colors duration-500 overflow-hidden">
+          <div className="pt-10">
+            <button className="group relative px-10 py-4 border border-white/20 text-white font-premium-sans text-[10px] uppercase tracking-[0.3em] hover:border-primary/50 hover:text-primary transition-all duration-700">
               <span className="relative z-10">Discover Collection</span>
-              <div className="absolute inset-0 bg-neutral-900 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500 -z-0" />
+              <div className="absolute inset-0 bg-white/[0.02] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-center duration-700 -z-0" />
             </button>
           </div>
         </motion.div>
@@ -108,9 +92,9 @@ export function Hero() {
       {/* 4. Scroll Indicator */}
       <motion.div
         initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: 100 }}
-        transition={{ delay: 1, duration: 1.5 }}
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-amber-500/50 hidden md:block"
+        animate={{ opacity: 1, height: 60 }}
+        transition={{ delay: 1.5, duration: 1.5 }}
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-gradient-to-t from-transparent via-white/20 to-transparent hidden md:block"
       />
     </section>
   )

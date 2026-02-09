@@ -796,6 +796,113 @@ export async function submitContact(formData: any) {
 // SEARCH
 // ============================================
 
+export async function getGoldRates() {
+  const { data, error } = await supabase
+    .from('gold_rates')
+    .select('*')
+    .order('purity', { ascending: false }) // 24K, 22K, 18K
+
+  if (error) {
+    console.error('Error fetching gold rates:', error)
+    return null
+  }
+
+  // Convert to object for easier use
+  const ratesObj: Record<string, number> = {}
+  data.forEach((item: any) => {
+    ratesObj[item.purity] = item.rate
+  })
+
+  return ratesObj
+}
+
+export async function updateGoldRate(purity: string, rate: number) {
+  const { error } = await supabase
+    .from('gold_rates')
+    .upsert({ purity, rate, updated_at: new Date().toISOString() }, { onConflict: 'purity' })
+
+  if (error) {
+    console.error(`Error updating gold rate for ${purity}:`, error)
+    return { success: false, error: error.message }
+  }
+  return { success: true }
+}
+
+/**
+ * Automate Multi-Metal Rate Synchronization
+ * Uses GoldAPI.io (Free Tier) to fetch live Indian market rates for Gold, Silver, and Platinum
+ */
+export async function syncLiveGoldRates() {
+  const apiKey = process.env.GOLD_API_KEY
+
+  if (!apiKey || apiKey === 'YOUR_GOLD_API_KEY') {
+    return { success: false, error: 'Gold API Key not configured' }
+  }
+
+  try {
+    const results: Record<string, number> = {}
+
+    // 1. Fetch Gold (XAU)
+    const goldRes = await fetch('https://www.goldapi.io/api/XAU/INR', {
+      headers: {
+        'x-access-token': apiKey,
+        'Content-Type': 'application/json'
+      },
+      next: { revalidate: 3600 }
+    })
+
+    if (goldRes.ok) {
+      const data = await goldRes.json()
+      const price24K = data.price_gram_24k
+      if (price24K) {
+        await updateGoldRate('24K', price24K)
+        await updateGoldRate('22K', price24K * 0.9167)
+        await updateGoldRate('18K', price24K * 0.75)
+        results['24K'] = price24K
+        results['22K'] = price24K * 0.9167
+        results['18K'] = price24K * 0.75
+      }
+    }
+
+    // 2. Fetch Silver (XAG)
+    const silverRes = await fetch('https://www.goldapi.io/api/XAG/INR', {
+      headers: {
+        'x-access-token': apiKey,
+        'Content-Type': 'application/json'
+      },
+      next: { revalidate: 3600 }
+    })
+    if (silverRes.ok) {
+      const data = await silverRes.json()
+      if (data.price_gram) {
+        await updateGoldRate('Silver', data.price_gram)
+        results['Silver'] = data.price_gram
+      }
+    }
+
+    // 3. Fetch Platinum (XPT)
+    const platinumRes = await fetch('https://www.goldapi.io/api/XPT/INR', {
+      headers: {
+        'x-access-token': apiKey,
+        'Content-Type': 'application/json'
+      },
+      next: { revalidate: 3600 }
+    })
+    if (platinumRes.ok) {
+      const data = await platinumRes.json()
+      if (data.price_gram) {
+        await updateGoldRate('Platinum', data.price_gram)
+        results['Platinum'] = data.price_gram
+      }
+    }
+
+    return { success: true, rates: results }
+  } catch (err: any) {
+    console.error('Multi-Metal Sync Error:', err)
+    return { success: false, error: err.message }
+  }
+}
+
 export async function searchProducts(query: string) {
   try {
     if (!query || query.length < 2) return []

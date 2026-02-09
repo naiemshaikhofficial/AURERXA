@@ -37,102 +37,97 @@ export default function CartPage() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
+        <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/30">
             <Navbar />
 
-            <main className="pt-16 md:pt-24 pb-24 min-h-[70vh]">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-3xl md:text-4xl font-serif font-bold mb-2 text-center">Shopping Cart</h1>
-                    <p className="text-white/50 text-center mb-12">{cart.length} items in your cart</p>
+            <main className="pt-24 pb-24 min-h-[70vh]">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between mb-12">
+                        <h1 className="text-3xl md:text-5xl font-serif text-white tracking-tight">
+                            Your <span className="text-amber-200/60 italic">Selection</span>
+                        </h1>
+                        <p className="text-amber-200/60 text-[10px] uppercase tracking-[0.3em] font-bold">
+                            {cart.length} Artifacts
+                        </p>
+                    </div>
 
                     {cart.length === 0 ? (
-                        <div className="text-center py-16">
-                            <img
-                                src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=F59E0B"
-                                alt="Empty Cart"
-                                className="w-16 h-16 mx-auto mb-6 opacity-40"
-                            />
-                            <p className="text-xl text-white/50 mb-8">Your cart is empty</p>
+                        <div className="text-center py-24 border-t border-b border-white/5">
+                            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-white/5 flex items-center justify-center">
+                                <ShoppingBag className="w-8 h-8 text-white/20" />
+                            </div>
+                            <h2 className="text-2xl font-serif text-white/60 mb-6 italic">Your collection is currently empty</h2>
                             <Link href="/collections">
-                                <Button className="bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest">
-                                    Continue Shopping
+                                <Button className="bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.2em] px-8 py-6 rounded-none transition-all">
+                                    Explore Collections
                                 </Button>
                             </Link>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                             {/* Cart Items */}
-                            <div className="lg:col-span-2 space-y-4">
-                                {cart.map((item) => (
+                            <div className="lg:col-span-2 space-y-0">
+                                {cart.map((item, index) => (
                                     <div
                                         key={item.id}
-                                        className="bg-neutral-900 border border-neutral-800/50 p-6 flex gap-6 hover:border-amber-500/30 transition-all duration-500 group"
+                                        className={`group py-8 flex gap-6 md:gap-8 border-t border-white/5 ${index === cart.length - 1 ? 'border-b' : ''}`}
                                     >
-                                        <Link href={`/products/${item.products?.slug || item.product_id}`} className="relative w-28 h-28 flex-shrink-0 overflow-hidden bg-neutral-950">
+                                        <Link href={`/products/${item.products?.slug || item.product_id}`} className="relative w-32 h-40 md:w-40 md:h-48 flex-shrink-0 bg-neutral-900 overflow-hidden">
                                             <Image
                                                 src={item.products?.image_url || '/placeholder.jpg'}
                                                 alt={item.products?.name || 'Product'}
                                                 fill
-                                                className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                                className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
                                                 unoptimized
                                             />
                                         </Link>
 
-                                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                                        <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                                             <div>
                                                 <div className="flex justify-between items-start gap-4">
                                                     <Link href={`/products/${item.products?.slug || item.product_id}`}>
-                                                        <h3 className="font-serif text-lg font-medium tracking-wide hover:text-amber-500 transition-colors">
+                                                        <h3 className="font-serif text-2xl font-light tracking-wide text-white hover:text-amber-200/80 transition-colors">
                                                             {item.products?.name}
                                                         </h3>
                                                     </Link>
-                                                    <p className="text-amber-500 font-medium">
+                                                    <p className="font-premium-sans text-lg text-white/90">
                                                         ₹{(item.products?.price || 0).toLocaleString('en-IN')}
                                                     </p>
                                                 </div>
                                                 {item.size && (
-                                                    <p className="text-xs text-white/40 mt-1 uppercase tracking-widest">Size: {item.size}</p>
+                                                    <p className="text-[10px] text-white/40 mt-2 uppercase tracking-[0.2em]">Size: <span className="text-white/60">{item.size}</span></p>
+                                                )}
+                                                {item.products?.purity && (
+                                                    <p className="text-[10px] text-white/40 mt-1 uppercase tracking-[0.2em]">Purity: <span className="text-white/60">{item.products.purity}</span></p>
                                                 )}
                                             </div>
 
-                                            <div className="flex items-center justify-between mt-4">
-                                                <div className="flex items-center bg-neutral-950 border border-neutral-800 p-1">
+                                            <div className="flex items-center justify-between mt-6">
+                                                <div className="flex items-center border border-white/10">
                                                     <button
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                                        className="w-10 h-10 flex items-center justify-center hover:bg-neutral-900 transition-colors disabled:opacity-30 group"
+                                                        className="w-10 h-10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-colors disabled:opacity-20"
                                                         disabled={item.quantity <= 1}
                                                     >
-                                                        <img
-                                                            src="https://img.icons8.com/?size=100&id=82743&format=png&color=999999"
-                                                            alt="Minus"
-                                                            className="w-5 h-5 group-hover:scale-110"
-                                                        />
+                                                        <Minus className="w-3 h-3" />
                                                     </button>
-                                                    <span className="w-8 text-center text-sm font-medium">
+                                                    <span className="w-10 text-center text-sm font-medium text-white/80">
                                                         {item.quantity}
                                                     </span>
                                                     <button
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                                        className="w-10 h-10 flex items-center justify-center hover:bg-neutral-900 transition-colors group"
+                                                        className="w-10 h-10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/5 transition-colors"
                                                     >
-                                                        <img
-                                                            src="https://img.icons8.com/?size=100&id=82744&format=png&color=F59E0B"
-                                                            alt="Plus"
-                                                            className="w-5 h-5 group-hover:scale-110"
-                                                        />
+                                                        <Plus className="w-3 h-3" />
                                                     </button>
                                                 </div>
 
                                                 <button
                                                     onClick={() => handleRemove(item.id)}
-                                                    className="text-[10px] uppercase tracking-widest text-white/30 hover:text-red-500 transition-all flex items-center gap-2 group/remove"
+                                                    className="text-[10px] uppercase tracking-[0.2em] text-white/30 hover:text-red-400 transition-colors flex items-center gap-2 group/remove"
                                                 >
-                                                    <img
-                                                        src="https://img.icons8.com/?size=100&id=82717&format=png&color=666666"
-                                                        alt="Remove"
-                                                        className="w-5 h-5 opacity-50 group-hover/remove:opacity-100 group-hover/remove:translate-y-[-1px] transition-all"
-                                                    />
-                                                    Remove
+                                                    <Trash2 className="w-3 h-3 opacity-50 group-hover/remove:opacity-100 transition-all" />
+                                                    <span className="hidden sm:inline">Remove Artifact</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -142,43 +137,44 @@ export default function CartPage() {
 
                             {/* Order Summary */}
                             <div className="lg:col-span-1">
-                                <div className="bg-neutral-900 border border-neutral-800 p-6 sticky top-24">
-                                    <h2 className="font-serif text-lg font-medium mb-6">Order Summary</h2>
+                                <div className="bg-neutral-900/30 border border-white/5 p-8 sticky top-24 backdrop-blur-sm">
+                                    <h2 className="font-serif text-2xl font-light mb-8 italic text-white/90">Order Summary</h2>
 
-                                    <div className="space-y-3 mb-6 text-sm">
-                                        <div className="flex justify-between text-white/70">
+                                    <div className="space-y-4 mb-8">
+                                        <div className="flex justify-between text-sm text-white/60 font-light tracking-wide">
                                             <span>Subtotal</span>
-                                            <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                                            <span className="font-medium text-white">₹{subtotal.toLocaleString('en-IN')}</span>
                                         </div>
-                                        <div className="flex justify-between text-white/70">
+                                        <div className="flex justify-between text-sm text-white/60 font-light tracking-wide">
                                             <span>Shipping</span>
-                                            <span>{subtotal >= 50000 ? 'FREE' : '₹90'}</span>
+                                            <span className="font-medium text-white">{subtotal >= 50000 ? 'Complimentary' : '₹90'}</span>
                                         </div>
                                         {subtotal < 50000 && (
-                                            <p className="text-xs text-amber-500">
-                                                Add ₹{(50000 - subtotal).toLocaleString('en-IN')} more for free shipping
-                                            </p>
+                                            <div className="py-3 px-4 bg-amber-500/5 border border-amber-500/10 mt-2">
+                                                <p className="text-[10px] text-amber-200/80 uppercase tracking-wider text-center leading-relaxed">
+                                                    Add <span className="font-bold text-amber-400">₹{(50000 - subtotal).toLocaleString('en-IN')}</span> more for complimentary insured shipping
+                                                </p>
+                                            </div>
                                         )}
-                                        <div className="border-t border-neutral-800 pt-3 flex justify-between font-medium text-lg">
-                                            <span>Total</span>
-                                            <span className="text-amber-400">₹{total.toLocaleString('en-IN')}</span>
+                                        <div className="border-t border-white/10 pt-4 mt-4 flex justify-between items-baseline">
+                                            <span className="text-sm uppercase tracking-widest text-white/80">Total</span>
+                                            <span className="font-serif text-2xl text-amber-200/80">₹{total.toLocaleString('en-IN')}</span>
                                         </div>
+                                        <p className="text-[9px] text-white/30 uppercase tracking-widest text-right">Including all taxes</p>
                                     </div>
 
-                                    <Link href="/checkout">
-                                        <Button className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-12 group">
-                                            Checkout
-                                            <img
-                                                src="https://img.icons8.com/?size=100&id=82731&format=png&color=000000"
-                                                alt="Arrow"
-                                                className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1"
-                                            />
+                                    <Link href="/checkout" className="block">
+                                        <Button className="w-full bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.25em] py-7 text-xs rounded-none group transition-all">
+                                            Proceed to Checkout
+                                            <ArrowRight className="w-4 h-4 ml-2 opacity-50 group-hover:translate-x-1 transition-transform" />
                                         </Button>
                                     </Link>
 
-                                    <Link href="/collections" className="block text-center text-sm text-white/50 hover:text-amber-400 mt-4">
-                                        Continue Shopping
-                                    </Link>
+                                    <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-center gap-4 opacity-30 grayscale hover:grayscale-0 hover:opacity-60 transition-all duration-500">
+                                        <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-6" />
+                                        <img src="https://img.icons8.com/?size=100&id=13608&format=png&color=FFFFFF" alt="Mastercard" className="h-6" />
+                                        <img src="https://img.icons8.com/?size=100&id=r1iO8o8370Pj&format=png&color=FFFFFF" alt="UPI" className="h-6" />
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -122,7 +122,7 @@ export function CinematicFilter({
                 <motion.div
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    className="bg-black/40 backdrop-blur-xl border border-white/5 rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between p-2"
+                    className="bg-neutral-950/80 backdrop-blur-md border border-white/5 rounded-none md:rounded-full shadow-none overflow-hidden flex flex-col md:flex-row items-center justify-between p-2"
                 >
                     {/* Material/Collection Links (Horizontal Scroll) */}
                     <div className="w-full md:w-auto overflow-x-auto no-scrollbar flex items-center gap-1 p-1 order-2 md:order-1">
@@ -131,10 +131,10 @@ export function CinematicFilter({
                                 key={cat.slug}
                                 onClick={() => handleCategoryChange(cat.slug)}
                                 className={cn(
-                                    "px-4 py-2 rounded-xl text-[10px] uppercase tracking-[0.2em] font-premium-sans whitespace-nowrap transition-all duration-300",
+                                    "px-6 py-3 rounded-full text-[9px] uppercase tracking-[0.2em] font-premium-sans whitespace-nowrap transition-all duration-300",
                                     filters.category === cat.slug
-                                        ? "bg-amber-500 text-black font-bold shadow-[0_0_15px_rgba(245,158,11,0.3)]"
-                                        : "text-white/60 hover:text-white hover:bg-white/5"
+                                        ? "bg-white text-neutral-950 font-bold"
+                                        : "text-white/40 hover:text-white hover:bg-white/5"
                                 )}
                             >
                                 {cat.name}
@@ -144,22 +144,22 @@ export function CinematicFilter({
 
                     {/* Filter Trigger Button */}
                     <div className="w-full md:w-auto flex items-center justify-between gap-4 p-1 order-1 md:order-2 border-b md:border-b-0 border-white/5 md:pl-6 mb-2 md:mb-0">
-                        <span className="text-white/40 text-xs font-serif italic">
+                        <span className="text-white/30 text-[10px] font-premium-sans tracking-widest uppercase">
                             {productCount} Artifacts
                         </span>
 
                         <button
                             onClick={() => setIsOpen(true)}
-                            className="group flex items-center gap-2 px-5 py-2.5 bg-neutral-900 border border-white/10 rounded-xl hover:border-amber-500/50 transition-all active:scale-95"
+                            className="group flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/5 rounded-full hover:bg-white hover:text-black hover:border-white transition-all active:scale-95"
                         >
                             <img
-                                src="https://img.icons8.com/?size=100&id=82746&format=png&color=F59E0B"
+                                src="https://img.icons8.com/?size=100&id=82746&format=png&color=FFFFFF"
                                 alt="Filter"
-                                className="w-5 h-5 transition-transform duration-300 group-hover:rotate-180"
+                                className="w-4 h-4 transition-all duration-300 group-hover:invert group-hover:rotate-180 opacity-60 group-hover:opacity-100"
                             />
-                            <span className="text-xs font-premium-sans text-white tracking-widest">Filters</span>
+                            <span className="text-[9px] font-premium-sans text-white group-hover:text-black tracking-[0.2em] uppercase">Refine</span>
                             {activeFilterCount > 0 && (
-                                <span className="ml-1 w-5 h-5 flex items-center justify-center bg-amber-500 text-black text-[9px] font-bold rounded-full">
+                                <span className="ml-1 w-4 h-4 flex items-center justify-center bg-amber-500 text-black text-[8px] font-bold rounded-full">
                                     {activeFilterCount}
                                 </span>
                             )}
@@ -177,38 +177,34 @@ export function CinematicFilter({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100]"
+                            className="fixed inset-0 bg-neutral-950/90 backdrop-blur-sm z-[100]"
                         />
                         <motion.div
                             initial={{ y: "100%" }}
                             animate={{ y: 0 }}
                             exit={{ y: "100%" }}
                             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-                            className="fixed bottom-0 left-0 right-0 h-[85vh] md:h-[70vh] bg-neutral-950 border-t border-white/10 z-[100] rounded-t-[2rem] overflow-hidden flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.8)]"
+                            className="fixed bottom-0 left-0 right-0 h-[85vh] md:h-[70vh] bg-neutral-950 border-t border-white/10 z-[100] rounded-t-[2rem] overflow-hidden flex flex-col shadow-2xl"
                             // Prevent scroll event from bubbling to body even if body scroll isn't locked properly
                             onWheel={(e) => e.stopPropagation()}
                         >
                             {/* Drawer Header */}
-                            <div className="flex items-center justify-between p-6 border-b border-white/5">
-                                <h2 className="text-xl font-serif text-white italic">Refine Collection</h2>
-                                <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-between p-8 border-b border-white/5">
+                                <h2 className="text-2xl font-serif text-white font-medium italic">Refine Collection</h2>
+                                <div className="flex items-center gap-6">
                                     {activeFilterCount > 0 && (
                                         <button
                                             onClick={clearFilters}
-                                            className="text-xs text-white/40 hover:text-white transition-colors uppercase tracking-widest"
+                                            className="text-[10px] text-white/40 hover:text-white transition-colors uppercase tracking-[0.2em] border-b border-white/40 pb-px"
                                         >
                                             Reset
                                         </button>
                                     )}
                                     <button
                                         onClick={() => setIsOpen(false)}
-                                        className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors"
+                                        className="p-3 bg-white/5 rounded-full hover:bg-white hover:text-black transition-all group"
                                     >
-                                        <img
-                                            src="https://img.icons8.com/?size=100&id=aJXCfqpXgZUC&format=png&color=FFFFFF"
-                                            alt="Close"
-                                            className="w-5 h-5"
-                                        />
+                                        <X className="w-5 h-5 text-white group-hover:text-black transition-colors" />
                                     </button>
                                 </div>
                             </div>
@@ -216,7 +212,7 @@ export function CinematicFilter({
                             {/* Drawer Content */}
                             <div className="flex-1 flex overflow-hidden">
                                 {/* Sidebar Tabs */}
-                                <div className="w-1/3 md:w-1/4 bg-neutral-900/50 border-r border-white/5 flex flex-col">
+                                <div className="w-1/3 md:w-1/4 bg-neutral-900/30 border-r border-white/5 flex flex-col">
                                     {[
                                         { id: 'type', label: 'Type' },
                                         { id: 'gender', label: 'Gender' },
@@ -227,26 +223,29 @@ export function CinematicFilter({
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id as any)}
                                             className={cn(
-                                                "w-full text-left px-6 py-5 text-xs uppercase tracking-widest transition-all",
+                                                "w-full text-left px-8 py-6 text-[10px] uppercase tracking-[0.2em] transition-all relative overflow-hidden",
                                                 activeTab === tab.id
-                                                    ? "bg-amber-500/10 text-amber-500 border-l-2 border-amber-500"
-                                                    : "text-white/40 hover:text-white hover:bg-white/5 border-l-2 border-transparent"
+                                                    ? "text-white bg-white/5"
+                                                    : "text-white/30 hover:text-white hover:bg-white/5"
                                             )}
                                         >
+                                            {activeTab === tab.id && (
+                                                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-amber-500" />
+                                            )}
                                             {tab.label}
                                         </button>
                                     ))}
                                 </div>
 
                                 {/* Tab Content - Added pb-safe to prevent cutoff */}
-                                <div className="flex-1 overflow-y-auto p-6 md:p-10 pb-40 bg-black/20 no-scrollbar overscroll-contain touch-pan-y">
+                                <div className="flex-1 overflow-y-auto p-8 md:p-12 pb-40 bg-neutral-950 no-scrollbar overscroll-contain touch-pan-y">
                                     <AnimatePresence mode="wait">
                                         <motion.div
                                             key={activeTab}
                                             initial={{ opacity: 0, x: 20 }}
                                             animate={{ opacity: 1, x: 0 }}
                                             exit={{ opacity: 0, x: -20 }}
-                                            transition={{ duration: 0.2 }}
+                                            transition={{ duration: 0.3, ease: "easeOut" }}
                                             className="h-full"
                                         >
                                             {activeTab === 'type' && (
@@ -256,51 +255,46 @@ export function CinematicFilter({
                                                             key={type.value}
                                                             onClick={() => handleFilterUpdate('type', type.value)}
                                                             className={cn(
-                                                                "h-24 rounded-xl border flex flex-col items-center justify-center gap-3 transition-all duration-300 group",
+                                                                "h-32 rounded-none border flex flex-col items-center justify-center gap-4 transition-all duration-500 group relative overflow-hidden",
                                                                 filters.type === type.value
-                                                                    ? "bg-amber-500 text-black border-amber-500"
-                                                                    : "bg-white/5 border-white/5 hover:border-amber-500/50 hover:bg-white/10"
+                                                                    ? "bg-white text-neutral-950 border-white"
+                                                                    : "bg-transparent border-white/10 hover:border-white/30 hover:bg-white/5"
                                                             )}
                                                         >
                                                             <img
                                                                 src={type.iconId.startsWith('/')
                                                                     ? type.iconId
-                                                                    : `https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${filters.type === type.value ? '000000' : 'F59E0B'}`
+                                                                    : `https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${filters.type === type.value ? '000000' : 'FFFFFF'}`
                                                                 }
                                                                 alt={type.label}
                                                                 className={cn(
-                                                                    "w-5 h-5 transition-all duration-300 group-hover:scale-110",
-                                                                    type.iconId.startsWith('/') && (filters.type === type.value
-                                                                        ? "brightness-0"
-                                                                        : "[filter:brightness(0)_saturate(100%)_invert(73%)_sepia(50%)_saturate(1478%)_hue-rotate(350deg)_brightness(105%)_contrast(92%)]")
+                                                                    "w-8 h-8 transition-all duration-500 group-hover:scale-110",
+                                                                    type.iconId.startsWith('/') && (filters.type !== type.value && "invert opacity-60")
+
                                                                 )}
                                                             />
-                                                            <span className="text-[10px] uppercase tracking-widest">{type.label}</span>
+                                                            <span className="text-[10px] uppercase tracking-[0.2em]">{type.label}</span>
                                                         </button>
                                                     ))}
                                                 </div>
                                             )}
 
                                             {activeTab === 'gender' && (
-                                                <div className="space-y-2">
+                                                <div className="space-y-4">
                                                     {GENDERS.map((gender) => (
                                                         <button
                                                             key={gender.value}
                                                             onClick={() => handleFilterUpdate('gender', gender.value)}
                                                             className={cn(
-                                                                "w-full flex items-center justify-between p-4 rounded-lg border transition-all",
+                                                                "w-full flex items-center justify-between p-6 rounded-none border transition-all",
                                                                 filters.gender === gender.value
-                                                                    ? "bg-amber-500/10 border-amber-500 text-amber-500"
-                                                                    : "bg-white/5 border-white/5 text-white/50 hover:border-white/20 hover:text-white"
+                                                                    ? "bg-white text-neutral-950 border-white"
+                                                                    : "bg-transparent border-white/10 text-white/40 hover:text-white"
                                                             )}
                                                         >
-                                                            <span className="text-sm uppercase tracking-wider">{gender.label}</span>
+                                                            <span className="text-xs uppercase tracking-[0.2em]">{gender.label}</span>
                                                             {filters.gender === gender.value && (
-                                                                <img
-                                                                    src="https://img.icons8.com/?size=100&id=82736&format=png&color=F59E0B"
-                                                                    alt="Selected"
-                                                                    className="w-4 h-4"
-                                                                />
+                                                                <Check className="w-4 h-4" />
                                                             )}
                                                         </button>
                                                     ))}
@@ -308,19 +302,19 @@ export function CinematicFilter({
                                             )}
 
                                             {activeTab === 'price' && (
-                                                <div className="space-y-2">
+                                                <div className="space-y-4">
                                                     {PRICE_RANGES.map((range) => (
                                                         <button
                                                             key={range.label}
                                                             onClick={() => handleFilterUpdate('priceRange', range)}
                                                             className={cn(
-                                                                "w-full flex items-center justify-between p-4 rounded-lg border transition-all",
+                                                                "w-full flex items-center justify-between p-6 rounded-none border transition-all",
                                                                 filters.priceRange.min === range.min && filters.priceRange.max === range.max
-                                                                    ? "bg-amber-500/10 border-amber-500 text-amber-500"
-                                                                    : "bg-white/5 border-white/5 text-white/50 hover:border-white/20 hover:text-white"
+                                                                    ? "bg-white text-neutral-950 border-white"
+                                                                    : "bg-transparent border-white/10 text-white/40 hover:text-white"
                                                             )}
                                                         >
-                                                            <span className="text-sm uppercase tracking-wider">{range.label}</span>
+                                                            <span className="text-xs uppercase tracking-[0.2em]">{range.label}</span>
                                                             {filters.priceRange.min === range.min && filters.priceRange.max === range.max && <Check className="w-4 h-4" />}
                                                         </button>
                                                     ))}
@@ -328,19 +322,19 @@ export function CinematicFilter({
                                             )}
 
                                             {activeTab === 'sort' && (
-                                                <div className="space-y-2">
+                                                <div className="space-y-4">
                                                     {SORT_OPTIONS.map((option) => (
                                                         <button
                                                             key={option.value}
                                                             onClick={() => handleFilterUpdate('sortBy', option.value)}
                                                             className={cn(
-                                                                "w-full flex items-center justify-between p-4 rounded-lg border transition-all",
+                                                                "w-full flex items-center justify-between p-6 rounded-none border transition-all",
                                                                 filters.sortBy === option.value
-                                                                    ? "bg-amber-500/10 border-amber-500 text-amber-500"
-                                                                    : "bg-white/5 border-white/5 text-white/50 hover:border-white/20 hover:text-white"
+                                                                    ? "bg-white text-neutral-950 border-white"
+                                                                    : "bg-transparent border-white/10 text-white/40 hover:text-white"
                                                             )}
                                                         >
-                                                            <span className="text-sm uppercase tracking-wider">{option.label}</span>
+                                                            <span className="text-xs uppercase tracking-[0.2em]">{option.label}</span>
                                                             {filters.sortBy === option.value && <Check className="w-4 h-4" />}
                                                         </button>
                                                     ))}
@@ -352,12 +346,12 @@ export function CinematicFilter({
                             </div>
 
                             {/* Drawer Footer */}
-                            <div className="p-6 pb-12 md:pb-6 border-t border-white/10 bg-neutral-900">
+                            <div className="p-8 pb-12 md:pb-8 border-t border-white/10 bg-neutral-950">
                                 <button
                                     onClick={() => setIsOpen(false)}
-                                    className="w-full py-4 bg-amber-500 text-black font-premium-sans font-bold uppercase tracking-[0.2em] rounded-xl hover:bg-amber-400 transition-colors shadow-[0_0_20px_rgba(245,158,11,0.3)]"
+                                    className="w-full py-5 bg-white text-neutral-950 font-premium-sans font-bold uppercase tracking-[0.3em] rounded-none hover:bg-neutral-200 transition-colors"
                                 >
-                                    Show {productCount} Results
+                                    View {productCount} Artifacts
                                 </button>
                             </div>
                         </motion.div>

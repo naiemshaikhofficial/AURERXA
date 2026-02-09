@@ -144,7 +144,7 @@ export default function ContactPage() {
                       onChange={handleChange}
                       placeholder="Your name"
                       required
-                      className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/30 h-12 focus:border-amber-500/50"
+                      className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-14 focus:border-amber-500/50 rounded-none transition-colors"
                     />
                   </div>
 
@@ -160,7 +160,7 @@ export default function ContactPage() {
                       onChange={handleChange}
                       placeholder="your@email.com"
                       required
-                      className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/30 h-12 focus:border-amber-500/50"
+                      className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-14 focus:border-amber-500/50 rounded-none transition-colors"
                     />
                   </div>
                 </div>
@@ -175,7 +175,7 @@ export default function ContactPage() {
                     value={formData.subject}
                     onChange={handleChange}
                     placeholder="What is this about?"
-                    className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/30 h-12 focus:border-amber-500/50"
+                    className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-14 focus:border-amber-500/50 rounded-none transition-colors"
                   />
                 </div>
 
@@ -191,7 +191,7 @@ export default function ContactPage() {
                     placeholder="Tell us more about your inquiry..."
                     required
                     rows={6}
-                    className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/30 resize-none focus:border-amber-500/50"
+                    className="bg-neutral-950/50 border-neutral-800 text-white placeholder:text-white/20 resize-none focus:border-amber-500/50 rounded-none transition-colors"
                   />
                 </div>
 
@@ -216,7 +216,7 @@ export default function ContactPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-medium uppercase tracking-[0.15em] h-14 text-sm transition-all duration-300"
+                  className="w-full bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.2em] h-14 rounded-none transition-all duration-300 mt-4"
                 >
                   {isLoading ? (
                     <>

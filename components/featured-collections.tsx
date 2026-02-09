@@ -121,7 +121,7 @@ export function FeaturedCollections() {
   if (categories.length === 0) return null
 
   return (
-    <section className="py-12 md:py-32 px-4 md:px-6 lg:px-12 bg-[#004028] relative overflow-hidden">
+    <section className="py-12 md:py-32 px-4 md:px-6 lg:px-12 bg-neutral-950 relative overflow-hidden">
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}

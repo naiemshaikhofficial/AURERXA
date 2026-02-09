@@ -13,6 +13,7 @@ import { addToRecentlyViewed } from '@/components/recently-viewed'
 import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { motion, AnimatePresence } from 'framer-motion'
+import { VTOModal } from '@/components/vto-modal'
 
 
 interface ProductClientProps {
@@ -93,7 +94,7 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full overflow-hidden cursor-zoom-in active:cursor-grabbing"
+            className="relative w-full h-full overflow-hidden cursor-zoom-in active:cursor-grabbing bg-neutral-950"
             style={{ touchAction: scale > 1 ? 'none' : 'pan-y' }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
@@ -128,18 +129,14 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
             <div className={`absolute bottom-6 right-6 flex gap-2 transition-opacity duration-300 ${scale > 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 <button
                     onClick={() => { setScale(1); setPosition({ x: 0, y: 0 }) }}
-                    className="p-2 bg-black/60 text-white rounded-full hover:bg-amber-500 hover:text-black transition-colors"
+                    className="p-3 bg-neutral-900/80 backdrop-blur-md text-white rounded-full hover:bg-white hover:text-black transition-colors border border-white/10"
                 >
-                    <img
-                        src="https://img.icons8.com/?size=100&id=82738&format=png&color=FFFFFF"
-                        alt="Reset"
-                        className="w-4 h-4"
-                    />
+                    <RefreshCw className="w-4 h-4" />
                 </button>
             </div>
 
             {/* Hint only when not zoomed */}
-            <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-black/40 backdrop-blur-md rounded-full text-[10px] text-white/80 uppercase tracking-widest pointer-events-none transition-opacity duration-300 ${scale === 1 ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-neutral-900/60 backdrop-blur-md rounded-full text-[10px] text-white/60 uppercase tracking-[0.2em] pointer-events-none transition-opacity duration-300 border border-white/5 ${scale === 1 ? 'opacity-100' : 'opacity-0'}`}>
                 Pinch / Scroll to Zoom
             </div>
         </div>
@@ -158,6 +155,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const [inWishlist, setInWishlist] = useState(isWishlisted)
     const [message, setMessage] = useState<string | null>(null)
     const [selectedImage, setSelectedImage] = useState(0)
+    const [isVTOOpen, setIsVTOOpen] = useState(false)
 
     // Memoize image array to prevent re-calculations on every render
     const allImages = React.useMemo(() => {
@@ -262,14 +260,14 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     if (!product) return null // Should be handled by server page redirect or 404
 
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-amber-500/30">
+        <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/30">
             <Navbar />
 
             <div className="pt-20 lg:pt-24 min-h-screen flex flex-col lg:flex-row relative z-10">
                 {/* LEFT: Image Gallery */}
-                <div className="w-full lg:w-[55%] lg:h-[calc(100vh-6rem)] lg:sticky lg:top-24 p-6 flex flex-col gap-6">
+                <div className="w-full lg:w-[55%] lg:h-[calc(100vh-6rem)] lg:sticky lg:top-24 p-0 lg:p-6 flex flex-col gap-6">
                     {/* Main Image */}
-                    <div className="relative w-full aspect-[4/5] lg:aspect-auto flex-1 bg-neutral-900 border border-white/5 overflow-hidden group">
+                    <div className="relative w-full aspect-[4/5] lg:aspect-auto flex-1 bg-neutral-900/20 border border-white/5 overflow-hidden group">
                         <div className="absolute inset-0 z-10">
                             <ZoomableImage src={allImages[selectedImage]} alt={product.name} />
                         </div>
@@ -279,52 +277,38 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             <>
                                 <button
                                     onClick={() => setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1))}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform -translate-x-2 group-hover:translate-x-0 duration-300"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-neutral-950/80 backdrop-blur-md border border-white/5 rounded-full flex items-center justify-center text-white/50 hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform -translate-x-4 group-hover:translate-x-0 duration-500"
                                 >
-                                    <img
-                                        src="https://img.icons8.com/?size=100&id=82733&format=png&color=FFFFFF"
-                                        alt="Previous"
-                                        className="w-5 h-5"
-                                    />
+                                    <ArrowLeft className="w-4 h-4" />
                                 </button>
                                 <button
                                     onClick={() => setSelectedImage((prev) => (prev === allImages.length - 1 ? 0 : prev + 1))}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 duration-300"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-neutral-950/80 backdrop-blur-md border border-white/5 rounded-full flex items-center justify-center text-white/50 hover:bg-white hover:text-black transition-all opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 duration-500"
                                 >
-                                    <img
-                                        src="https://img.icons8.com/?size=100&id=82731&format=png&color=FFFFFF"
-                                        alt="Next"
-                                        className="w-5 h-5"
-                                    />
+                                    <ArrowRight className="w-4 h-4" />
                                 </button>
                             </>
                         )}
 
                         {/* Share Button */}
-                        <div className="absolute top-4 right-4 z-20">
+                        <div className="absolute top-6 right-6 z-20">
                             <button
                                 onClick={handleShare}
-                                className="w-10 h-10 bg-black/50 backdrop-blur-md border border-white/10 rounded-full flex items-center justify-center text-white/70 hover:bg-white hover:text-black transition-all"
+                                className="w-10 h-10 bg-transparent flex items-center justify-center text-white/30 hover:text-white transition-all transform hover:rotate-12"
                             >
-                                <img
-                                    src="https://img.icons8.com/?size=100&id=82741&format=png&color=FFFFFF"
-                                    alt="Share"
-                                    className="w-5 h-5"
-                                />
+                                <Share2 className="w-5 h-5" />
                             </button>
                         </div>
-
-
                     </div>
 
                     {/* Thumbnails */}
                     {allImages.length > 1 && (
-                        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                        <div className="hidden lg:flex gap-4 overflow-x-auto pb-2 no-scrollbar px-6 lg:px-0">
                             {allImages.map((img: string, i: number) => (
                                 <button
                                     key={i}
                                     onClick={() => setSelectedImage(i)}
-                                    className={`relative w-24 h-24 flex-shrink-0 border transition-all duration-300 ${selectedImage === i ? 'border-amber-500 opacity-100' : 'border-white/10 opacity-50 hover:opacity-100'
+                                    className={`relative w-24 h-24 flex-shrink-0 border transition-all duration-300 ${selectedImage === i ? 'border-amber-200/40 opacity-100' : 'border-white/5 opacity-40 hover:opacity-100'
                                         }`}
                                 >
                                     <Image
@@ -342,90 +326,108 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                 </div>
 
                 {/* RIGHT: Product Details Scroll - Added safe bottom padding */}
-                <div className="w-full lg:w-[45%] p-6 lg:p-12 lg:pr-24 flex flex-col justify-center pb-32">
-                    <div className="space-y-8 animate-in fade-in slide-in-from-right-10 duration-700">
+                <div className="w-full lg:w-[45%] p-6 lg:p-12 lg:pr-24 flex flex-col justify-center pb-32 bg-neutral-950">
+                    <div className="space-y-10 animate-in fade-in slide-in-from-right-10 duration-1000">
                         {/* Header */}
-                        <div className="space-y-4">
+                        <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <Link href={`/collections?category=${product.categories?.slug}`} className="text-amber-500 text-xs font-bold tracking-[0.3em] uppercase hover:underline underline-offset-4">
+                                <Link href={`/collections?category=${product.categories?.slug}`} className="text-amber-200/60 text-[10px] font-bold tracking-[0.3em] uppercase hover:text-white transition-colors">
                                     {product.categories?.name || 'Collection'}
                                 </Link>
                                 <div className="flex flex-wrap gap-2">
                                     {product.gender && (
-                                        <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase tracking-wider text-white/60">
+                                        <span className="px-3 py-1 border border-white/5 text-[9px] uppercase tracking-widest text-white/40">
                                             {product.gender}
                                         </span>
                                     )}
                                     {product.purity && (
-                                        <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-[10px] uppercase tracking-wider text-amber-500 font-medium">
+                                        <span className="px-3 py-1 bg-amber-900/10 border border-amber-500/10 text-[9px] uppercase tracking-widest text-amber-500/80">
                                             {product.purity}
                                         </span>
                                     )}
-                                    {product.weight_grams && (
-                                        <span className="px-2 py-0.5 border border-white/10 text-[10px] uppercase tracking-wider text-white/60">
-                                            {product.weight_grams} g
-                                        </span>
-                                    )}
                                     {product.stock < 5 && product.stock > 0 && (
-                                        <span className="bg-red-500/20 text-red-500 text-[10px] px-2 py-1 uppercase tracking-widest font-bold border border-red-500/20">
+                                        <span className="px-3 py-1 border border-red-500/20 text-[9px] uppercase tracking-widest text-red-500/80">
                                             Low Stock
                                         </span>
                                     )}
                                 </div>
                             </div>
 
-                            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white leading-[0.9] tracking-tight">
+                            <h1 className="text-4xl md:text-5xl lg:text-7xl font-serif text-white/90 leading-[0.9] tracking-tight">
                                 {product.name}
                             </h1>
 
-                            <p className="text-3xl font-light text-white/90">
+                            <p className="text-3xl font-light text-amber-100/80 font-serif italic">
                                 ₹{product.price.toLocaleString('en-IN')}
                             </p>
                         </div>
 
-                        <div className="h-[1px] w-full bg-white/10" />
+                        <div className="h-px w-24 bg-gradient-to-r from-amber-500/40 to-transparent" />
 
                         {/* Description */}
-                        <div className="prose prose-invert prose-sm max-w-none text-white/60 font-light leading-relaxed">
+                        <div className="prose prose-invert prose-sm max-w-none text-white/50 font-light leading-relaxed tracking-wide">
                             <p>{product.description}</p>
-                            <ul className="list-none pl-0 space-y-2 mt-4 text-[11px] uppercase tracking-wider text-white/40">
-                                <li className="flex items-center gap-3">
-                                    <img src="https://img.icons8.com/?size=100&id=82718&format=png&color=F59E0B" alt="Security" className="w-5 h-5" />
-                                    Authenticity Certified
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <img src="https://img.icons8.com/?size=100&id=82730&format=png&color=F59E0B" alt="Shipping" className="w-5 h-5" />
-                                    Premium Insured Shipping
-                                </li>
-                                <li className="flex items-center gap-3">
-                                    <img src="https://img.icons8.com/?size=100&id=82738&format=png&color=F59E0B" alt="Maintenance" className="w-5 h-5" />
-                                    Lifetime Maintenance
-                                </li>
-                            </ul>
+
+                            {/* NEW: Virtual Try-On Trigger */}
+                            <div className="mt-10">
+                                <button
+                                    onClick={() => setIsVTOOpen(true)}
+                                    className="w-full relative group flex items-center justify-between bg-white/5 border border-white/5 p-6 overflow-hidden transition-all hover:bg-neutral-900"
+                                >
+                                    <div className="relative z-10 flex items-center gap-6">
+                                        <div className="w-12 h-12 rounded-full bg-neutral-950 border border-white/10 flex items-center justify-center text-amber-200/80 group-hover:scale-110 transition-transform duration-500">
+                                            <Maximize2 className="w-5 h-5" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-[10px] text-amber-200/60 font-bold uppercase tracking-[0.3em] mb-2">Interactive Mirror</p>
+                                            <p className="text-lg font-serif italic text-white/90 group-hover:text-amber-100 transition-colors">Virtual Try-On Experience</p>
+                                        </div>
+                                    </div>
+                                    <ArrowRight className="w-5 h-5 text-white/20 group-hover:text-white group-hover:translate-x-2 transition-all duration-500" />
+
+                                    {/* Shine effect */}
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 py-8 border-t border-b border-white/5">
+                                <div className="flex flex-col items-center text-center gap-3 group">
+                                    <Shield className="w-6 h-6 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
+                                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/40">Authenticity Certified</span>
+                                </div>
+                                <div className="flex flex-col items-center text-center gap-3 group">
+                                    <Truck className="w-6 h-6 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
+                                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/40">Insured Shipping</span>
+                                </div>
+                                <div className="flex flex-col items-center text-center gap-3 group">
+                                    <RefreshCw className="w-6 h-6 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
+                                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/40">Lifetime Maintenance</span>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Delivery Check */}
                         {/* Product Specifications Section */}
                         {(product.dimensions_width || product.dimensions_height || product.dimensions_length) && (
-                            <div className="space-y-6 pt-10 border-t border-white/5">
-                                <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">Specifications</h3>
-                                <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-6 pt-6">
+                                <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Dimensions</h3>
+                                <div className="grid grid-cols-3 gap-px bg-white/5 border border-white/5">
                                     {product.dimensions_width && (
-                                        <div className="bg-white/5 backdrop-blur-md border border-white/5 p-4 text-center">
-                                            <p className="text-[8px] text-amber-500/60 uppercase tracking-widest mb-1">Width</p>
-                                            <p className="text-sm font-serif italic">{product.dimensions_width}{product.dimensions_unit || 'mm'}</p>
+                                        <div className="bg-neutral-950 p-4 text-center">
+                                            <p className="text-[8px] text-white/30 uppercase tracking-widest mb-1">Width</p>
+                                            <p className="text-sm font-serif italic text-white/80">{product.dimensions_width}{product.dimensions_unit || 'mm'}</p>
                                         </div>
                                     )}
                                     {product.dimensions_height && (
-                                        <div className="bg-white/5 backdrop-blur-md border border-white/5 p-4 text-center">
-                                            <p className="text-[8px] text-amber-500/60 uppercase tracking-widest mb-1">Height</p>
-                                            <p className="text-sm font-serif italic">{product.dimensions_height}{product.dimensions_unit || 'mm'}</p>
+                                        <div className="bg-neutral-950 p-4 text-center">
+                                            <p className="text-[8px] text-white/30 uppercase tracking-widest mb-1">Height</p>
+                                            <p className="text-sm font-serif italic text-white/80">{product.dimensions_height}{product.dimensions_unit || 'mm'}</p>
                                         </div>
                                     )}
                                     {product.dimensions_length && (
-                                        <div className="bg-white/5 backdrop-blur-md border border-white/5 p-4 text-center">
-                                            <p className="text-[8px] text-amber-500/60 uppercase tracking-widest mb-1">Length</p>
-                                            <p className="text-sm font-serif italic">{product.dimensions_length}{product.dimensions_unit || 'mm'}</p>
+                                        <div className="bg-neutral-950 p-4 text-center">
+                                            <p className="text-[8px] text-white/30 uppercase tracking-widest mb-1">Length</p>
+                                            <p className="text-sm font-serif italic text-white/80">{product.dimensions_length}{product.dimensions_unit || 'mm'}</p>
                                         </div>
                                     )}
                                 </div>
@@ -436,19 +438,19 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
 
                         {/* Selectors */}
-                        <div className="space-y-6 pt-4">
+                        <div className="space-y-8 pt-4">
                             {/* Sizes */}
                             {product.sizes && product.sizes.length > 0 && (
-                                <div className="space-y-3">
-                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/40">Select Size</span>
-                                    <div className="flex flex-wrap gap-3">
+                                <div className="space-y-4">
+                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 block mb-3">Select Size</span>
+                                    <div className="flex flex-wrap gap-2">
                                         {product.sizes.map((size: string) => (
                                             <button
                                                 key={size}
                                                 onClick={() => setSelectedSize(size)}
-                                                className={`min-w-[3rem] px-3 h-12 flex items-center justify-center text-xs font-bold border transition-all ${selectedSize === size
-                                                    ? 'bg-amber-500 text-black border-amber-500'
-                                                    : 'border-white/20 text-white hover:border-white'
+                                                className={`min-w-[3.5rem] px-4 h-12 flex items-center justify-center text-[10px] font-bold border transition-all duration-300 uppercase tracking-widest ${selectedSize === size
+                                                    ? 'bg-white text-black border-white'
+                                                    : 'bg-transparent border-white/10 text-white/40 hover:border-white/40 hover:text-white'
                                                     }`}
                                             >
                                                 {size}
@@ -457,30 +459,27 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                         {/* Custom Size Option */}
                                         <button
                                             onClick={() => setSelectedSize('Custom')}
-                                            className={`px-4 h-12 flex items-center justify-center text-xs font-bold border transition-all ${selectedSize === 'Custom'
-                                                ? 'bg-amber-500 text-black border-amber-500'
-                                                : 'border-white/20 text-white hover:border-white'
+                                            className={`px-6 h-12 flex items-center justify-center text-[10px] font-bold border transition-all duration-300 uppercase tracking-widest ${selectedSize === 'Custom'
+                                                ? 'bg-white text-black border-white'
+                                                : 'bg-transparent border-white/10 text-white/40 hover:border-white/40 hover:text-white'
                                                 }`}
                                         >
-                                            Custom Size
+                                            Custom
                                         </button>
                                     </div>
 
                                     {/* Custom Size Input */}
                                     {selectedSize === 'Custom' && (
-                                        <div className="animate-in fade-in slide-in-from-top-2">
+                                        <div className="animate-in fade-in slide-in-from-top-2 pt-2">
                                             <input
                                                 type="text"
-                                                placeholder="Enter your size (e.g., US 7.5, 18mm)"
-                                                className="w-full h-12 bg-transparent border border-amber-500/50 text-white px-4 text-xs tracking-wider focus:outline-none focus:border-amber-500 placeholder:text-white/20"
+                                                placeholder="Enter size (e.g., US 7.5, 18mm)"
+                                                className="w-full h-12 bg-white/5 border border-white/10 text-white px-4 text-xs tracking-wider focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-all mb-2"
                                                 onChange={(e) => setCustomSizeInput(e.target.value)}
                                             />
-                                            <div className="mt-2 space-y-1">
-                                                <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider flex items-center gap-1">
-                                                    <img src="https://img.icons8.com/?size=100&id=82718&format=png&color=EF4444" alt="Warning" className="w-3 h-3" />
-                                                    Custom size will not be returnable
-                                                </p>
-                                                <p className="text-[9px] text-amber-500/60 uppercase tracking-wider">* We will contact you to confirm details</p>
+                                            <div className="flex items-center gap-2 text-[9px] text-white/40 uppercase tracking-wider">
+                                                <span className="w-1 h-1 rounded-full bg-amber-500"></span>
+                                                Our concierge will verify measurements
                                             </div>
                                         </div>
                                     )}
@@ -488,37 +487,35 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             )}
 
                             {/* Actions */}
-                            <div className="flex gap-4 pt-4">
+                            <div className="flex flex-col gap-4 pt-6">
                                 <Button
-                                    onClick={handleAddToCart}
+                                    onClick={handleBuyNow}
                                     disabled={addingToCart || product.stock === 0}
-                                    className="flex-1 bg-neutral-900 border border-white/20 text-white h-14 uppercase tracking-[0.2em] text-xs font-bold hover:bg-white hover:text-black transition-all rounded-none"
+                                    className="w-full bg-white text-neutral-950 h-16 uppercase tracking-[0.3em] text-xs font-bold hover:bg-neutral-200 transition-all rounded-none"
                                 >
-                                    {addingToCart ? <Loader2 className="animate-spin" /> : 'Add to Cart'}
+                                    Purchase Now
                                 </Button>
 
-                                <button
-                                    onClick={handleAddToWishlist}
-                                    className={`w-14 h-14 flex items-center justify-center border transition-all ${inWishlist
-                                        ? 'bg-red-500/10 border-red-500 text-red-500'
-                                        : 'border-white/20 text-white hover:border-amber-500 hover:text-amber-500 group'
-                                        }`}
-                                >
-                                    <img
-                                        src={`https://img.icons8.com/?size=100&id=85138&format=png&color=${inWishlist ? 'EF4444' : '999999'}`}
-                                        alt="Wishlist"
-                                        className={`w-5 h-5 transition-transform duration-300 ${!inWishlist && 'group-hover:scale-110 group-hover:brightness-150'}`}
-                                    />
-                                </button>
-                            </div>
+                                <div className="flex gap-4">
+                                    <Button
+                                        onClick={handleAddToCart}
+                                        disabled={addingToCart || product.stock === 0}
+                                        className="flex-1 bg-transparent border border-white/20 text-white h-14 uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
+                                    >
+                                        {addingToCart ? <Loader2 className="animate-spin w-4 h-4" /> : 'Add to Bag'}
+                                    </Button>
 
-                            <Button
-                                onClick={handleBuyNow}
-                                disabled={addingToCart || product.stock === 0}
-                                className="w-full bg-amber-500 text-black h-14 uppercase tracking-[0.2em] text-sm font-bold hover:bg-amber-400 rounded-none shadow-[0_0_20px_rgba(245,158,11,0.3)] animate-pulse hover:animate-none"
-                            >
-                                Buy Now
-                            </Button>
+                                    <button
+                                        onClick={handleAddToWishlist}
+                                        className={`w-14 h-14 flex items-center justify-center border transition-all duration-300 ${inWishlist
+                                            ? 'bg-red-500/10 border-red-500/50 text-red-500'
+                                            : 'bg-transparent border-white/20 text-white hover:border-white hover:bg-white hover:text-black'
+                                            }`}
+                                    >
+                                        <Heart className={`w-5 h-5 ${inWishlist && 'fill-current'}`} />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -528,27 +525,28 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             {related.length > 0 && (
                 <div className="py-32 border-t border-white/5 relative bg-neutral-950">
                     <div className="max-w-7xl mx-auto px-6">
-                        <div className="flex flex-col items-center mb-16 text-center">
-                            <span className="text-amber-500 text-[10px] uppercase tracking-[0.4em] mb-4">Complete Your Look</span>
-                            <h2 className="text-3xl md:text-5xl font-serif text-white">Curated Pairings</h2>
+                        <div className="flex flex-col items-center mb-20 text-center">
+                            <span className="text-amber-200/60 text-[9px] uppercase tracking-[0.4em] mb-6">Complete The Set</span>
+                            <h2 className="text-4xl md:text-5xl font-serif text-white/90 italic">Curated Pairings</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-16">
                             {related.map((item) => (
                                 <Link key={item.id} href={`/products/${item.id}`} className="group block">
-                                    <div className="aspect-[3/4] bg-neutral-900 relative overflow-hidden border border-white/5 group-hover:border-amber-500/30 transition-colors">
+                                    <div className="aspect-[3/4] bg-neutral-900/40 relative overflow-hidden border border-white/5 group-hover:border-white/20 transition-all duration-700">
                                         <Image
                                             src={item.image_url}
                                             alt={item.name}
                                             fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-105 contrast-125"
+                                            className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                                             sizes="(max-width: 768px) 100vw, 33vw"
                                             unoptimized
                                         />
-                                        <div className="absolute inset-0 bg-black/60 group-hover:bg-transparent transition-colors duration-500" />
-                                        <div className="absolute bottom-0 inset-x-0 p-6 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                                            <p className="text-white font-serif text-lg">{item.name}</p>
-                                            <p className="text-amber-500 text-sm mt-1">₹{item.price.toLocaleString()}</p>
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+
+                                        <div className="absolute bottom-8 left-8 right-8 text-center transform translate-y-4 group-hover:translate-y-0 opacity-80 group-hover:opacity-100 transition-all duration-700">
+                                            <p className="text-white font-serif text-xl italic mb-2">{item.name}</p>
+                                            <p className="text-white/60 text-xs tracking-widest uppercase">View Artifact</p>
                                         </div>
                                     </div>
                                 </Link>
@@ -559,12 +557,18 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             )}
 
             {message && (
-                <div className="fixed bottom-8 right-8 z-50 bg-neutral-900 border border-amber-500/50 text-white px-6 py-4 flex items-center gap-4 shadow-2xl animate-in slide-in-from-bottom-5">
-                    <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                    <p className="text-xs uppercase tracking-widest">{message}</p>
+                <div className="fixed bottom-8 right-8 z-50 bg-neutral-900 border border-white/10 text-white px-8 py-4 flex items-center gap-4 shadow-2xl animate-in slide-in-from-bottom-5">
+                    <span className="w-1 h-1 bg-amber-200 rounded-full" />
+                    <p className="text-[10px] uppercase tracking-[0.2em]">{message}</p>
                 </div>
             )}
 
+            <VTOModal
+                isOpen={isVTOOpen}
+                onClose={() => setIsVTOOpen(false)}
+                productImage={product.image_url}
+                productName={product.name}
+            />
             <Footer />
         </div>
     )

@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getAddresses, addAddress, createOrder, validateCoupon, initiatePayment, verifyPayment } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
-import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle, Clock, Pencil } from 'lucide-react'
+import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle, Clock, Pencil, ShoppingBag } from 'lucide-react'
 import { DeliveryEstimate } from '@/components/delivery-checker'
 
 
@@ -312,12 +312,18 @@ export default function CheckoutPage() {
 
     if (cart.length === 0 && !cartLoading && !loading) {
         return (
-            <div className="min-h-screen bg-neutral-950 text-white">
+            <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/30">
                 <Navbar />
                 <main className="pt-24 pb-24 min-h-[70vh] flex flex-col items-center justify-center">
-                    <p className="text-xl text-white/50 mb-8 font-serif italic">Your bespoke collection is currently empty</p>
+                    <div className="w-20 h-20 mb-8 rounded-full bg-white/5 flex items-center justify-center border border-white/5">
+                        <ShoppingBag className="w-8 h-8 text-white/20" />
+                    </div>
+                    <h1 className="text-3xl md:text-4xl font-serif text-white mb-4 italic">Your collection is empty</h1>
+                    <p className="text-white/40 mb-12 font-premium-sans text-sm tracking-wide max-w-md text-center">
+                        Explore our curated selection of heritage pieces and add them to your collection.
+                    </p>
                     <Link href="/collections">
-                        <Button className="bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest px-8 h-12">
+                        <Button className="bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.2em] px-10 py-7 rounded-none transition-all">
                             Explore Collections
                         </Button>
                     </Link>
@@ -328,12 +334,16 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
+        <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/30">
             <Navbar />
 
-            <main className="pt-16 md:pt-24 pb-24">
-                <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-3xl md:text-4xl font-serif font-bold mb-8 text-center">Checkout</h1>
+            <main className="pt-24 pb-24">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-center mb-12">
+                        <h1 className="text-3xl md:text-5xl font-serif text-white tracking-tight">
+                            Secure <span className="text-amber-200/60 italic">Checkout</span>
+                        </h1>
+                    </div>
 
                     {error && (
                         <div className="alert-luxury-error mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-500">
@@ -346,13 +356,13 @@ export default function CheckoutPage() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left: Address & Payment */}
-                        <div className="lg:col-span-2 space-y-6">
+                        <div className="lg:col-span-2 space-y-8">
                             {/* Delivery Address */}
-                            <div className="bg-neutral-900 border border-neutral-800 p-6">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h2 className="font-serif text-lg font-medium flex items-center gap-2">
-                                        <MapPin className="w-5 h-5 text-amber-500" />
-                                        Delivery Address
+                            <div className="bg-neutral-900/30 border border-white/5 p-8 backdrop-blur-sm">
+                                <div className="flex items-center justify-between mb-8">
+                                    <h2 className="font-serif text-2xl font-light flex items-center gap-3 text-white/90">
+                                        <MapPin className="w-5 h-5 text-amber-200/60" />
+                                        Delivery Details
                                     </h2>
                                     {!showAddressForm && addresses.length < 5 && (
                                         <button
@@ -370,18 +380,18 @@ export default function CheckoutPage() {
                                                 })
                                                 setShowAddressForm(true)
                                             }}
-                                            className="text-sm text-amber-500 hover:text-amber-400 flex items-center gap-1"
+                                            className="text-[10px] uppercase tracking-[0.2em] text-amber-200/60 hover:text-white flex items-center gap-2 transition-colors"
                                         >
-                                            <Plus className="w-4 h-4" />
+                                            <Plus className="w-3 h-3" />
                                             Add New
                                         </button>
                                     )}
                                 </div>
 
                                 {showAddressForm && (
-                                    <form onSubmit={handleSaveAddress} className="mb-6 p-4 border border-amber-500/30 bg-amber-500/5 space-y-4 rounded-xl">
+                                    <form onSubmit={handleSaveAddress} className="mb-8 p-6 border border-amber-500/20 bg-amber-500/5 space-y-6 rounded-sm">
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="text-sm font-medium text-amber-500 uppercase tracking-widest">
+                                            <h3 className="text-xs font-bold text-amber-200/80 uppercase tracking-widest">
                                                 {editingAddressId ? 'Edit Address' : 'New Address'}
                                             </h3>
                                             <button
@@ -390,93 +400,92 @@ export default function CheckoutPage() {
                                                     setShowAddressForm(false)
                                                     setEditingAddressId(null)
                                                 }}
-                                                className="text-white/40 hover:text-white"
+                                                className="text-white/40 hover:text-white transition-colors"
                                             >
                                                 <X size={16} />
                                             </button>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label className="text-white/70 text-xs">Label</Label>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">Label</Label>
                                                 <Input
                                                     value={newAddress.label}
                                                     onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
                                                     placeholder="Home, Office..."
-                                                    className="bg-neutral-950 border-neutral-700 text-white h-10"
+                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors placeholder:text-white/20"
                                                 />
                                             </div>
-                                            <div>
-                                                <Label className="text-white/70 text-xs">Full Name</Label>
+                                            <div className="space-y-2">
+                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">Full Name</Label>
                                                 <Input
                                                     value={newAddress.full_name}
                                                     onChange={(e) => setNewAddress({ ...newAddress, full_name: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-neutral-700 text-white h-10"
+                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label className="text-white/70 text-xs">Phone</Label>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">Phone</Label>
                                                 <Input
                                                     value={newAddress.phone}
                                                     onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-neutral-700 text-white h-10"
+                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
                                                 />
                                             </div>
-                                            <div>
-                                                <Label className="text-white/70 text-xs">Pincode</Label>
+                                            <div className="space-y-2">
+                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">Pincode</Label>
                                                 <Input
                                                     value={newAddress.pincode}
                                                     onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-neutral-700 text-white h-10"
+                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
                                                 />
                                             </div>
                                         </div>
-                                        <div>
-                                            <Label className="text-white/70 text-xs">Street Address</Label>
+                                        <div className="space-y-2">
+                                            <Label className="text-white/40 text-[10px] uppercase tracking-widest">Street Address</Label>
                                             <Input
                                                 value={newAddress.street_address}
                                                 onChange={(e) => setNewAddress({ ...newAddress, street_address: e.target.value })}
                                                 required
-                                                className="bg-neutral-950 border-neutral-700 text-white h-10"
+                                                className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
                                             />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label className="text-white/70 text-xs">City</Label>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">City</Label>
                                                 <Input
                                                     value={newAddress.city}
                                                     onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-neutral-700 text-white h-10"
+                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
                                                 />
                                             </div>
-                                            <div>
-                                                <Label className="text-white/70 text-xs">State</Label>
+                                            <div className="space-y-2">
+                                                <Label className="text-white/40 text-[10px] uppercase tracking-widest">State</Label>
                                                 <Input
                                                     value={newAddress.state}
                                                     onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
                                                     required
-                                                    className="bg-neutral-950 border-neutral-700 text-white h-10"
+                                                    className="bg-neutral-950 border-white/10 text-white h-12 rounded-none focus:border-amber-500/50 transition-colors"
                                                 />
                                             </div>
                                         </div>
-                                        <div className="flex gap-3">
-                                            <Button type="submit" size="sm" className="bg-amber-500 hover:bg-amber-400 text-neutral-950 px-8">
-                                                {editingAddressId ? 'Update Address' : 'Save Address'}
+                                        <div className="flex gap-4 pt-2">
+                                            <Button type="submit" className="bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.2em] px-8 rounded-none transition-all">
+                                                {editingAddressId ? 'Update' : 'Save'}
                                             </Button>
                                             <Button
                                                 type="button"
                                                 variant="ghost"
-                                                size="sm"
                                                 onClick={() => {
                                                     setShowAddressForm(false)
                                                     setEditingAddressId(null)
                                                 }}
-                                                className="text-white/50 hover:text-white"
+                                                className="text-white/40 hover:text-white hover:bg-white/5 uppercase tracking-[0.2em] rounded-none"
                                             >
                                                 Cancel
                                             </Button>
@@ -536,9 +545,9 @@ export default function CheckoutPage() {
                             </div>
 
                             {/* Gift Wrapping */}
-                            <div className="bg-neutral-900 border border-neutral-800 p-6">
-                                <h2 className="font-serif text-lg font-medium mb-4 flex items-center gap-2">
-                                    <Gift className="w-5 h-5 text-amber-500" />
+                            <div className="bg-neutral-900/30 border border-white/5 p-8 backdrop-blur-sm">
+                                <h2 className="font-serif text-2xl font-light mb-6 flex items-center gap-3 text-white/90">
+                                    <Gift className="w-5 h-5 text-amber-200/60" />
                                     Gift Options
                                 </h2>
 
@@ -574,10 +583,10 @@ export default function CheckoutPage() {
                             </div>
 
                             {/* Delivery Time Slot */}
-                            <div className="bg-neutral-900 border border-neutral-800 p-6">
-                                <h2 className="font-serif text-lg font-medium mb-4 flex items-center gap-2">
-                                    <Clock className="w-5 h-5 text-amber-500" />
-                                    Preferred Delivery Time
+                            <div className="bg-neutral-900/30 border border-white/5 p-8 backdrop-blur-sm">
+                                <h2 className="font-serif text-2xl font-light mb-6 flex items-center gap-3 text-white/90">
+                                    <Clock className="w-5 h-5 text-amber-200/60" />
+                                    Delivery Preference
                                 </h2>
                                 <p className="text-white/50 text-xs mb-4">Select a preferred time slot for your delivery. We will try our best to accommodate your request.</p>
 
@@ -612,10 +621,10 @@ export default function CheckoutPage() {
                             </div>
 
                             {/* Payment Method */}
-                            <div className="bg-neutral-900 border border-neutral-800 p-6">
-                                <h2 className="font-serif text-lg font-medium mb-6 flex items-center gap-2">
-                                    <CreditCard className="w-5 h-5 text-amber-500" />
-                                    Payment Method
+                            <div className="bg-neutral-900/30 border border-white/5 p-8 backdrop-blur-sm">
+                                <h2 className="font-serif text-2xl font-light mb-6 flex items-center gap-3 text-white/90">
+                                    <CreditCard className="w-5 h-5 text-amber-200/60" />
+                                    Payment
                                 </h2>
 
                                 <div className="space-y-4">
@@ -660,8 +669,8 @@ export default function CheckoutPage() {
 
                         {/* Right: Order Summary */}
                         <div className="lg:col-span-1">
-                            <div className="bg-neutral-900 border border-neutral-800 p-6 sticky top-24">
-                                <div className="font-serif text-lg font-medium mb-6 flex items-center justify-between">
+                            <div className="bg-neutral-900/30 border border-white/5 p-8 sticky top-24 backdrop-blur-sm">
+                                <div className="font-serif text-2xl font-light mb-8 flex items-center justify-between italic text-white/90">
                                     <span>Order Summary</span>
                                     <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-help" title="BIS Hallmarked & Certified">
                                         <div className="relative w-6 h-6">
@@ -671,118 +680,109 @@ export default function CheckoutPage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 mb-6 max-h-48 overflow-y-auto">
+                                <div className="space-y-4 mb-8 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                     {cart.map((item) => (
-                                        <div key={item.id} className="flex gap-3">
-                                            <div className="relative w-14 h-14 flex-shrink-0 bg-neutral-800">
+                                        <div key={item.id} className="flex gap-4 p-2 hover:bg-white/5 transition-colors group rounded-sm">
+                                            <div className="relative w-16 h-16 flex-shrink-0 bg-neutral-900 border border-white/5 overflow-hidden">
                                                 <Image
                                                     src={item.products?.image_url || '/placeholder.jpg'}
                                                     alt={item.products?.name || 'Product'}
                                                     fill
-                                                    className="object-cover"
+                                                    className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
                                                     unoptimized
                                                 />
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm truncate font-medium">{item.products?.name}</p>
-                                                <div className="flex flex-wrap items-center gap-x-2 text-[10px] text-white/50 uppercase tracking-wider mt-0.5">
+                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                <p className="text-sm font-serif text-white/90 truncate group-hover:text-amber-200/80 transition-colors">{item.products?.name}</p>
+                                                <div className="flex flex-wrap items-center gap-x-3 text-[10px] text-white/40 uppercase tracking-wider mt-1">
                                                     <span>Qty: {item.quantity}</span>
                                                     {item.size && (
                                                         <>
-                                                            <span className="opacity-30">•</span>
-                                                            <span className="text-amber-500/70">Size: {item.size}</span>
-                                                        </>
-                                                    )}
-                                                    {item.products?.weight_grams && (
-                                                        <>
-                                                            <span className="opacity-30">•</span>
-                                                            <span>{item.products.weight_grams}g</span>
-                                                        </>
-                                                    )}
-                                                    {item.products?.purity && (
-                                                        <>
-                                                            <span className="opacity-30">•</span>
-                                                            <span>{item.products.purity}</span>
+                                                            <span className="opacity-20">|</span>
+                                                            <span className="text-white/60">{item.size}</span>
                                                         </>
                                                     )}
                                                 </div>
-                                                <p className="text-sm text-amber-400 mt-1">₹{((item.products?.price || 0) * item.quantity).toLocaleString('en-IN')}</p>
+                                                <p className="text-xs font-premium-sans text-amber-200/60 mt-1">₹{((item.products?.price || 0) * item.quantity).toLocaleString('en-IN')}</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
 
                                 {/* Coupon Code */}
-                                <div className="border-t border-neutral-800 pt-4 mb-4">
-                                    <label className="text-xs text-white/60 uppercase tracking-wider flex items-center gap-1 mb-2">
+                                <div className="border-t border-white/5 pt-6 mb-6">
+                                    <label className="text-[10px] text-white/40 uppercase tracking-[0.2em] flex items-center gap-2 mb-3">
                                         <Tag className="w-3 h-3" />
-                                        Coupon Code
+                                        Access Code
                                     </label>
                                     {couponApplied ? (
-                                        <div className="alert-luxury-success animate-in fade-in duration-500">
+                                        <div className="bg-emerald-950/20 border border-emerald-900/50 p-3 rounded-none animate-in fade-in duration-500">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
                                                     <Check size={12} className="text-emerald-500" />
-                                                    <span className="text-emerald-400 font-medium">{couponApplied.code}</span>
+                                                    <span className="text-emerald-400 font-premium-sans text-xs tracking-widest">{couponApplied.code}</span>
                                                 </div>
                                                 <button onClick={removeCoupon} className="text-white/30 hover:text-white transition-colors">
-                                                    <X className="w-4 h-4" />
+                                                    <X className="w-3 h-3" />
                                                 </button>
                                             </div>
-                                            <p className="text-[9px] text-emerald-400/70 mt-1">{couponApplied.message}</p>
+                                            <p className="text-[9px] text-emerald-400/50 mt-1 tracking-wider uppercase">{couponApplied.message}</p>
                                         </div>
                                     ) : (
                                         <div className="flex gap-2">
                                             <Input
                                                 value={couponCode}
                                                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                                                placeholder="Enter code"
-                                                className="bg-neutral-950 border-neutral-700 text-white h-10 uppercase"
+                                                placeholder="ENTER CODE"
+                                                className="bg-neutral-950 border-white/10 text-white h-10 uppercase text-xs tracking-widest rounded-none focus:border-amber-500/50 placeholder:text-white/20"
                                             />
                                             <Button
                                                 onClick={handleApplyCoupon}
                                                 disabled={couponLoading || !couponCode.trim()}
-                                                className="bg-neutral-800 hover:bg-neutral-700 text-white h-10 px-4"
+                                                className="bg-white/5 hover:bg-white/10 text-white h-10 px-6 rounded-none uppercase text-[10px] tracking-widest border border-white/5"
                                             >
-                                                {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Apply'}
+                                                {couponLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Apply'}
                                             </Button>
                                         </div>
                                     )}
                                     {couponError && (
-                                        <p className="text-[10px] font-premium-sans text-red-400 mt-2 px-1 tracking-widest">{couponError}</p>
+                                        <p className="text-[9px] font-premium-sans text-red-400/80 mt-2 px-1 tracking-widest flex items-center gap-1">
+                                            <AlertCircle size={10} />
+                                            {couponError}
+                                        </p>
                                     )}
                                 </div>
 
-                                <div className="border-t border-neutral-800 pt-4 space-y-2 text-sm">
-                                    <div className="flex justify-between text-white/70">
+                                <div className="border-t border-white/5 pt-6 space-y-3">
+                                    <div className="flex justify-between text-white/40 text-xs uppercase tracking-widest">
                                         <span>Subtotal</span>
-                                        <span>₹{subtotal.toLocaleString('en-IN')}</span>
+                                        <span className="text-white/80">₹{subtotal.toLocaleString('en-IN')}</span>
                                     </div>
-                                    <div className="flex justify-between text-white/70">
+                                    <div className="flex justify-between text-white/40 text-xs uppercase tracking-widest">
                                         <span>Shipping</span>
-                                        <span>
+                                        <span className="text-white/80">
                                             {shippingLoading ? (
                                                 <Loader2 className="w-3 h-3 animate-spin" />
                                             ) : (
-                                                shipping === 0 ? 'FREE' : `₹${shipping}`
+                                                shipping === 0 ? 'Complimentary' : `₹${shipping}`
                                             )}
                                         </span>
                                     </div>
                                     {giftWrap && (
-                                        <div className="flex justify-between text-white/70">
+                                        <div className="flex justify-between text-white/40 text-xs uppercase tracking-widest">
                                             <span>Gift Wrapping</span>
-                                            <span>₹{giftWrapCost}</span>
+                                            <span className="text-amber-200/60 font-bold">₹{giftWrapCost}</span>
                                         </div>
                                     )}
                                     {discount > 0 && (
-                                        <div className="flex justify-between text-green-400">
-                                            <span>Discount</span>
+                                        <div className="flex justify-between text-emerald-400/80 text-xs uppercase tracking-widest">
+                                            <span>Privilege</span>
                                             <span>-₹{discount.toLocaleString('en-IN')}</span>
                                         </div>
                                     )}
-                                    <div className="border-t border-neutral-800 pt-2 flex justify-between font-medium text-lg">
-                                        <span>Total</span>
-                                        <span className="text-amber-400">₹{total.toLocaleString('en-IN')}</span>
+                                    <div className="border-t border-white/5 pt-4 flex justify-between items-baseline">
+                                        <span className="text-sm uppercase tracking-widest text-white/60">Total</span>
+                                        <span className="font-serif text-2xl text-amber-200/80">₹{total.toLocaleString('en-IN')}</span>
                                     </div>
 
                                     {/* Estimated Delivery */}
@@ -795,14 +795,14 @@ export default function CheckoutPage() {
                                 <Button
                                     onClick={handlePlaceOrder}
                                     disabled={placing || !selectedAddress || !termsAccepted}
-                                    className="w-full mt-6 bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-12 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full mt-8 bg-white hover:bg-neutral-200 text-neutral-950 font-bold uppercase tracking-[0.25em] h-14 rounded-none disabled:opacity-50 disabled:cursor-not-allowed group transition-all"
                                 >
                                     {placing ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
                                         <>
-                                            Pay Securely
-                                            <ChevronRight className="w-4 h-4 ml-2" />
+                                            Secure Payment
+                                            <ChevronRight className="w-4 h-4 ml-2 opacity-50 group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}
                                 </Button>

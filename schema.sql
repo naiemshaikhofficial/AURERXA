@@ -465,3 +465,30 @@ create policy "Users can manage own subscriptions" on push_subscriptions
 drop policy if exists "Allow public insertion for anonymous push" on push_subscriptions;
 create policy "Allow public insertion for anonymous push" on push_subscriptions 
   for insert with check (true);
+-- ============================================
+-- 20. GOLD RATES TABLE
+-- ============================================
+create table if not exists gold_rates (
+  id uuid default gen_random_uuid() primary key,
+  purity text not null unique, -- '24K', '22K', '18K'
+  rate decimal(10, 2) not null,
+  currency text default 'INR',
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table gold_rates enable row level security;
+
+drop policy if exists "Allow public read gold rates" on gold_rates;
+create policy "Allow public read gold rates" on gold_rates for select using (true);
+
+drop policy if exists "Allow admin update gold rates" on gold_rates;
+create policy "Allow admin update gold rates" on gold_rates for update using (auth.uid() is not null);
+
+-- Seed Gold Rates
+insert into gold_rates (purity, rate) values
+  ('24K', 15660),
+  ('22K', 14355),
+  ('18K', 11745),
+  ('Silver', 285),
+  ('Platinum', 5666)
+on conflict (purity) do update set rate = excluded.rate, updated_at = now();

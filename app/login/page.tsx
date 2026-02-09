@@ -77,7 +77,7 @@ function LoginForm() {
     return (
         <div className="min-h-screen bg-neutral-950 flex items-center justify-center px-4 relative overflow-hidden">
 
-            <div className="w-full max-w-md bg-neutral-900 border border-neutral-800 p-8 md:p-12 relative z-10 shadow-2xl">
+            <div className="w-full max-w-md bg-neutral-900/30 backdrop-blur-md border border-white/5 p-8 md:p-12 relative z-10 shadow-2xl">
                 <div className="text-center mb-10">
                     <Link href="/">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -101,7 +101,7 @@ function LoginForm() {
                         onClick={handleGoogleLogin}
                         disabled={loading}
                         variant="outline"
-                        className="w-full bg-neutral-800 text-white hover:bg-neutral-700 h-12 font-medium flex items-center justify-center gap-3 border border-neutral-700 hover:border-neutral-600 transition-all duration-300 disabled:opacity-50"
+                        className="w-full bg-white/5 text-white hover:bg-white/10 h-12 font-medium flex items-center justify-center gap-3 border border-white/10 hover:border-white/20 transition-all duration-300 disabled:opacity-50 rounded-none uppercase tracking-widest text-xs"
                     >
                         {loading ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -130,10 +130,10 @@ function LoginForm() {
 
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-neutral-700" />
+                            <span className="w-full border-t border-white/5" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-neutral-900 px-2 text-white/40">Or continue with email</span>
+                            <span className="bg-neutral-900 px-2 text-white/40 tracking-widest text-[10px]">Or continue with email</span>
                         </div>
                     </div>
 
@@ -148,7 +148,7 @@ function LoginForm() {
                                 required
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50"
+                                className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 rounded-none transition-colors"
                             />
                         </div>
                         <div className="space-y-2">
@@ -164,7 +164,7 @@ function LoginForm() {
                                     required
                                     value={formData.password}
                                     onChange={handleChange}
-                                    className="bg-neutral-950 border-neutral-800 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 pr-10"
+                                    className="bg-neutral-950/50 border-white/10 text-white placeholder:text-white/20 h-12 focus:border-amber-500/50 pr-10 rounded-none transition-colors"
                                 />
                                 <button
                                     type="button"
@@ -192,7 +192,7 @@ function LoginForm() {
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-widest h-12 transition-all duration-300"
+                            className="w-full bg-amber-500 hover:bg-amber-400 text-neutral-950 font-bold uppercase tracking-[0.2em] h-12 transition-all duration-300 rounded-none"
                         >
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
                         </Button>
@@ -206,7 +206,7 @@ function LoginForm() {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 

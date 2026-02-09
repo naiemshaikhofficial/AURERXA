@@ -28,7 +28,7 @@ export function Bestsellers() {
   if (bestsellers.length === 0) return null
 
   return (
-    <section className="py-12 md:py-32 px-4 md:px-6 lg:px-12 bg-black relative">
+    <section className="py-12 md:py-32 px-4 md:px-6 lg:px-12 bg-neutral-950 relative">
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
         <div className="text-center mb-12 md:mb-24">

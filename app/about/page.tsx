@@ -62,7 +62,7 @@ export default function AboutPage() {
     const scaleHero = useTransform(heroScroll, [0, 1], [1, 1.05])
 
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-amber-500/50 overflow-x-hidden">
+        <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/50 overflow-x-hidden">
             <Navbar />
 
             {/* Global Smoothness Overlays */}
@@ -269,7 +269,7 @@ export default function AboutPage() {
                 </section>
 
                 {/* Section 5: The Visionary */}
-                <section className="py-32 md:py-48 bg-black relative overflow-hidden">
+                <section className="py-32 md:py-48 bg-neutral-950 relative overflow-hidden">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 lg:gap-32 items-center">
                             <div className="relative aspect-[3/4] md:aspect-[4/5] overflow-hidden border border-white/5 shadow-2xl group rounded-sm" style={{ transform: 'translateZ(0)' }}>

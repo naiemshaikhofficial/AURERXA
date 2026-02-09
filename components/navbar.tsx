@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { LogOut, User, ShoppingBag, Heart, Package, Search } from 'lucide-react'
+import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings } from 'lucide-react'
 import { useCart } from '@/context/cart-context'
 import {
   DropdownMenu,
@@ -102,28 +102,27 @@ export function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 md:bg-black/90 md:backdrop-blur-xl md:border-b md:border-white/10 h-auto md:h-24 flex items-center transition-all duration-500 md:shadow-[0_4px_30px_rgba(0,0,0,0.5)] p-4 md:p-0">
+      <nav className="fixed top-0 left-0 right-0 z-50 md:bg-neutral-950/80 md:backdrop-blur-md md:border-b md:border-white/5 h-auto md:h-24 flex items-center transition-all duration-500 p-4 md:p-0">
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
             <Link href="/" className="flex-shrink-0 group relative z-50">
               <img
                 src="/logo.png"
                 alt="AURERXA Logo"
-                // Mobile: Smaller, nicely positioned. Desktop: Larger.
-                className="h-12 md:h-24 w-auto object-contain drop-shadow-lg"
+                className="h-10 md:h-20 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity"
               />
             </Link>
 
             {/* Mobile Cart & Search Actions (Visible only on mobile) */}
             <div className="flex gap-4 items-center md:hidden relative z-50 pt-1">
-              <Link href="/cart" className="relative text-amber-500 hover:text-white transition-colors p-2 bg-black/50 rounded-full backdrop-blur-sm border border-white/10 group">
+              <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-neutral-900/50 rounded-full backdrop-blur-sm border border-white/5 group">
                 <img
-                  src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=F59E0B"
+                  src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=BF9B65"
                   alt="Cart"
-                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
+                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-105"
                 />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center border border-black">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-neutral-800 text-primary text-[9px] font-medium rounded-full flex items-center justify-center border border-black/50">
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
@@ -131,44 +130,69 @@ export function Navbar() {
 
               <Sheet>
                 <SheetTrigger asChild>
-                  <button className="text-white hover:text-amber-500 transition-colors p-2">
-                    <img
-                      src="https://img.icons8.com/?size=100&id=82744&format=png&color=FFFFFF"
-                      alt="Menu"
-                      className="w-5 h-5"
-                    />
+                  <button className="text-white/80 hover:text-primary transition-colors p-2">
+                    <Menu className="w-6 h-6 stroke-1" />
                   </button>
                 </SheetTrigger>
-                <SheetContent side="left" className="bg-black border-r border-white/10 text-white w-[300px] p-0">
-                  <SheetHeader className="p-6 border-b border-white/10 text-left">
-                    <SheetTitle className="text-2xl font-serif font-bold text-white">AURERXA</SheetTitle>
-                    <p className="text-xs text-white/50 uppercase tracking-widest">Est. 1989</p>
+                <SheetContent side="left" className="bg-neutral-950 border-r border-white/5 text-white w-[300px] p-0">
+                  <SheetHeader className="p-8 border-b border-white/5 text-left bg-neutral-900/30">
+                    <SheetTitle className="text-3xl font-serif text-white/90 font-light tracking-wide">AURERXA</SheetTitle>
+                    <p className="text-[10px] text-white/30 uppercase tracking-[0.3em]">Est. 1989</p>
                   </SheetHeader>
-                  <div className="flex flex-col py-6">
-                    <Link href="/" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
-                      Home
-                    </Link>
-                    <Link href="/collections" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
-                      Shop Collections
-                    </Link>
-                    <Link href="/custom-jewelry" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
-                      Custom Jewelry
-                    </Link>
-                    <Link href="/about" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
-                      Our Story
-                    </Link>
-                    <Link href="/blog" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
-                      Blog
-                    </Link>
-                    <Link href="/contact" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
-                      Contact Us
-                    </Link>
-                    <Link href="/faq" className="px-6 py-4 text-lg font-light hover:bg-white/5 hover:text-amber-500 transition-colors border-b border-white/5">
+                  <div className="flex flex-col py-6 relative">
+                    {['Home', 'Shop Collections', 'Custom Jewelry', 'Our Story', 'Blog', 'Contact Us'].map((item, idx) => {
+                      const href = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`
+                      return (
+                        <Link key={idx} href={href} className="px-8 py-5 text-sm uppercase tracking-widest font-light text-white/60 hover:bg-white/[0.02] hover:text-primary transition-all border-b border-white/[0.02]">
+                          {item}
+                        </Link>
+                      )
+                    })}
+                    <Link href="/faq" className="px-8 py-5 text-sm uppercase tracking-widest font-light text-white/60 hover:bg-white/[0.02] hover:text-primary transition-all">
                       FAQs
                     </Link>
+
+                    {/* User Profile Section in Mobile Menu */}
+                    <div className="mt-8 px-6 pt-8 border-t border-white/5 space-y-4">
+                      {user ? (
+                        <>
+                          <div className="flex items-center gap-4 mb-6 p-4 rounded-sm bg-white/[0.02] border border-white/5">
+                            <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-serif text-lg">
+                              {getInitials()}
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <span className="text-xs font-medium text-white/80 uppercase tracking-wider">{profile?.full_name || 'My Account'}</span>
+                              <span className="text-[10px] text-white/30 font-light">{user.email}</span>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <Link
+                              href="/account"
+                              className="flex flex-col items-center justify-center p-4 rounded-sm bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group"
+                            >
+                              <Settings className="w-5 h-5 mb-2 text-white/40 group-hover:text-primary/60 transition-colors stroke-1" />
+                              <span className="text-[9px] uppercase tracking-widest text-white/40 group-hover:text-primary/80">Account</span>
+                            </Link>
+                            <button
+                              onClick={handleSignOut}
+                              className="flex flex-col items-center justify-center p-4 rounded-sm bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all group"
+                            >
+                              <LogOut className="w-5 h-5 mb-2 text-white/40 group-hover:text-red-400/60 transition-colors stroke-1" />
+                              <span className="text-[9px] uppercase tracking-widest text-white/40 group-hover:text-red-400/80">Sign Out</span>
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <Link href="/login" className="block">
+                          <Button className="w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-premium-sans py-6 rounded-none uppercase tracking-[0.2em] text-[10px] transition-all">
+                            Sign In / Register
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/10 bg-neutral-900/50">
-                    <p className="text-xs text-white/40 text-center">© 2024 AURERXA. All rights reserved.</p>
+                  <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/5 bg-neutral-900/30">
+                    <p className="text-[9px] text-white/20 text-center uppercase tracking-widest">© 2026 AURERXA.</p>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -176,62 +200,35 @@ export function Navbar() {
 
             {/* Desktop Menu */}
             <div className="hidden md:flex gap-12 items-center">
-              <Link
-                href="/"
-                className="text-[10px] font-premium-sans text-white/60 hover:text-amber-500 transition-colors duration-500"
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                className="text-[10px] font-premium-sans text-white/60 hover:text-amber-500 transition-colors duration-500"
-              >
-                Our Story
-              </Link>
-              <Link
-                href="/collections"
-                className="text-[10px] font-premium-sans text-white/60 hover:text-amber-500 transition-colors duration-500"
-              >
-                Collections
-              </Link>
-              <Link
-                href="/blog"
-                className="text-[10px] font-premium-sans text-white/60 hover:text-amber-500 transition-colors duration-500"
-              >
-                Blog
-              </Link>
+              {['Home', 'Our Story', 'Collections', 'Blog'].map((item) => (
+                <Link
+                  key={item}
+                  href={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`}
+                  className="text-[11px] font-premium-sans text-white/50 hover:text-primary transition-colors duration-500 tracking-[0.2em]"
+                >
+                  {item}
+                </Link>
+              ))}
 
               {/* Search */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="text-white/40 hover:text-amber-500 transition-colors flex items-center gap-2 group"
+                className="text-white/40 hover:text-primary transition-colors flex items-center gap-3 group"
               >
-                <img
-                  src="https://img.icons8.com/?size=100&id=VNGluvySmxmA&format=png&color=999999"
-                  alt="Search"
-                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-                />
-                <span className="text-[9px] font-premium-sans text-white/20 group-hover:text-amber-500/50 hidden lg:block">Search</span>
+                <Search className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
+                <span className="text-[10px] font-premium-sans text-white/30 group-hover:text-primary/70 hidden lg:block tracking-widest">SEARCH</span>
               </button>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative text-white/40 hover:text-amber-500 transition-colors group">
-                <img
-                  src="https://img.icons8.com/?size=100&id=HLkJG1mxr6Xj&format=png&color=999999"
-                  alt="Wishlist"
-                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-                />
+              <Link href="/wishlist" className="relative text-white/40 hover:text-primary transition-colors group">
+                <Heart className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
               </Link>
 
               {/* Cart */}
-              <Link href="/cart" className="relative text-white/40 hover:text-amber-500 transition-colors group">
-                <img
-                  src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=F59E0B"
-                  alt="Cart"
-                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-                />
+              <Link href="/cart" className="relative text-white/40 hover:text-primary transition-colors group">
+                <ShoppingBag className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-amber-600 text-white text-[8px] font-premium-sans flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 w-4 h-4 bg-primary text-neutral-950 text-[9px] font-medium rounded-full flex items-center justify-center">
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
@@ -241,54 +238,42 @@ export function Navbar() {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger className="outline-none">
-                    <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/50 flex items-center justify-center text-amber-500 font-serif font-bold text-sm hover:bg-amber-500 hover:text-neutral-950 transition-all cursor-pointer">
+                    <div className="w-9 h-9 rounded-sm bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer">
                       {getInitials()}
                     </div>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-neutral-900 border-neutral-800 text-white min-w-[200px]">
-                    <DropdownMenuLabel>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{profile?.full_name || 'User'}</span>
-                        <span className="text-xs text-white/50 font-normal">{user.email}</span>
+                  <DropdownMenuContent align="end" className="bg-neutral-950 border-white/5 text-white min-w-[220px] p-2">
+                    <DropdownMenuLabel className="px-3 py-2">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-premium-sans text-[10px] tracking-widest text-white/90">{profile?.full_name || 'User'}</span>
+                        <span className="text-[9px] text-white/30 font-light tracking-wide">{user.email}</span>
                       </div>
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-neutral-800" />
-                    <DropdownMenuItem asChild className="focus:bg-neutral-800 focus:text-white cursor-pointer group">
-                      <Link href="/account">
-                        <img
-                          src="https://img.icons8.com/?size=100&id=82712&format=png&color=999999"
-                          alt="Profile"
-                          className="mr-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity"
-                        />
-                        <span>Profile</span>
+                    <DropdownMenuSeparator className="bg-white/5 my-2" />
+                    <DropdownMenuItem asChild className="focus:bg-white/5 focus:text-primary cursor-pointer group p-3 rounded-sm">
+                      <Link href="/account" className="flex items-center">
+                        <User className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />
+                        <span className="text-[10px] tracking-widest uppercase text-white/60 group-hover:text-primary">Profile</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="focus:bg-neutral-800 focus:text-white cursor-pointer group">
-                      <Link href="/account/orders">
-                        <img
-                          src="https://img.icons8.com/?size=100&id=82704&format=png&color=999999"
-                          alt="Orders"
-                          className="mr-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity"
-                        />
-                        <span>My Orders</span>
+                    <DropdownMenuItem asChild className="focus:bg-white/5 focus:text-primary cursor-pointer group p-3 rounded-sm">
+                      <Link href="/account/orders" className="flex items-center">
+                        <Package className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />
+                        <span className="text-[10px] tracking-widest uppercase text-white/60 group-hover:text-primary">Orders</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-neutral-800" />
-                    <DropdownMenuItem className="focus:bg-neutral-800 focus:text-white cursor-pointer group" onClick={handleSignOut}>
-                      <img
-                        src="https://img.icons8.com/?size=100&id=8119&format=png&color=FF4444"
-                        alt="Logout"
-                        className="mr-2 h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity"
-                      />
-                      <span>Sign Out</span>
+                    <DropdownMenuSeparator className="bg-white/5 my-2" />
+                    <DropdownMenuItem className="focus:bg-red-950/20 focus:text-red-400 cursor-pointer group p-3 rounded-sm" onClick={handleSignOut}>
+                      <LogOut className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />
+                      <span className="text-[10px] tracking-widest uppercase text-white/60 group-hover:text-red-400">Sign Out</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
                 <Link href="/login">
-                  <Button variant="outline" className="bg-transparent border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-neutral-950 text-[10px] font-premium-sans h-9 px-6 rounded-none transition-all">
-                    Sign In
-                  </Button>
+                  <span className="text-[10px] font-premium-sans text-white/40 hover:text-white transition-colors tracking-[0.2em] border-b border-transparent hover:border-primary pb-1">
+                    SIGN IN
+                  </span>
                 </Link>
               )}
             </div>

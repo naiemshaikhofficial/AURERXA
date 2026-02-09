@@ -75,36 +75,28 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
     const freeShipping = productPrice >= 50000
 
     return (
-        <div className={`relative overflow-hidden ${compact ? '' : 'rounded-sm'}`}>
-            {/* Premium Background with Gradient */}
-            <div className={`relative ${compact ? '' : 'bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-800 border border-neutral-700/50 p-6'}`}>
-
-                {/* Subtle Gold Accent Line */}
-                {!compact && (
-                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-                )}
+        <div className={`relative overflow-hidden ${compact ? '' : ''}`}>
+            {/* Premium Background */}
+            <div className={`relative ${compact ? '' : 'bg-neutral-950 border border-white/5 p-6'}`}>
 
                 {/* Header with Icon */}
-                <div className="flex items-center gap-3 mb-5">
+                <div className="flex items-center gap-4 mb-6">
                     <div className="relative">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center border border-amber-500/30">
-                            <MapPin className="w-4 h-4 text-amber-400" />
+                        <div className="w-8 h-8 rounded-full bg-neutral-900 flex items-center justify-center border border-white/10">
+                            <MapPin className="w-4 h-4 text-amber-500/80" />
                         </div>
-                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
                     </div>
                     <div>
-                        <h4 className="text-xs font-medium uppercase tracking-[0.2em] text-white/80">
+                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
                             Delivery Availability
                         </h4>
-                        <p className="text-[10px] text-white/40 mt-0.5">Check delivery to your location</p>
+                        <p className="text-[9px] text-white/30 mt-1 uppercase tracking-wider">Check delivery to your location</p>
                     </div>
                 </div>
 
                 {/* Premium Input Row */}
-                <div className="flex gap-3">
-                    <div className="relative flex-1 group">
-                        {/* Input Glow Effect */}
-                        <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-amber-500/20 rounded-sm opacity-0 group-focus-within:opacity-100 blur transition-opacity duration-300" />
+                <div className="flex gap-0 border border-white/10">
+                    <div className="relative flex-1 group bg-neutral-900/50">
                         <input
                             type="text"
                             value={pincode}
@@ -121,15 +113,13 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
                                 }
                             }}
                             placeholder="Enter 6-digit pincode"
-                            className="relative w-full bg-neutral-950/80 border border-neutral-600/50 text-white h-12 px-4 text-sm font-light
-                                       placeholder:text-white/25 focus:outline-none focus:border-amber-500/60 focus:bg-neutral-950
-                                       transition-all duration-300 rounded-sm tracking-wide"
+                            className="relative w-full bg-transparent text-white h-12 px-4 text-xs font-light tracking-wider placeholder:text-white/20 focus:outline-none"
                             maxLength={6}
                         />
                         {pincode && (
                             <button
                                 onClick={handleClear}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-amber-400 transition-colors duration-200"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors duration-200"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -138,12 +128,10 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
                     <button
                         onClick={() => handleCheck()}
                         disabled={loading || pincode.length !== 6}
-                        className="group relative px-6 h-12 bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 text-xs font-bold uppercase tracking-wider
-                                   hover:from-amber-400 hover:to-amber-500 disabled:opacity-40 disabled:cursor-not-allowed 
-                                   transition-all duration-300 rounded-sm overflow-hidden"
+                        className="group relative px-6 h-12 bg-white text-neutral-950 text-[10px] font-bold uppercase tracking-[0.2em]
+                                   hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed 
+                                   transition-all duration-300 border-l border-white/10"
                     >
-                        {/* Button Shine Effect */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                         <span className="relative">
                             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Check'}
                         </span>
@@ -152,53 +140,50 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
 
                 {/* Error State */}
                 {error && (
-                    <div className="mt-4 flex items-center gap-2 text-red-400 text-sm animate-in fade-in slide-in-from-top-2 duration-300
-                                    bg-red-500/10 border border-red-500/20 rounded-sm px-4 py-3">
+                    <div className="mt-4 flex items-center gap-2 text-red-500/80 text-xs animate-in fade-in slide-in-from-top-2 duration-300
+                                    bg-red-500/5 border border-red-500/10 px-4 py-3">
                         <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                        <span className="font-light">{error}</span>
+                        <span className="uppercase tracking-wider font-bold text-[9px]">{error}</span>
                     </div>
                 )}
 
                 {/* Delivery Info */}
                 {deliveryInfo && deliveryInfo.success && (
-                    <div className="mt-5 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="mt-6 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                         {/* Not Serviceable State */}
                         {deliveryInfo.available === false ? (
-                            <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 rounded-sm px-4 py-3">
-                                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                                <span className="text-sm text-red-300 font-light">
-                                    {deliveryInfo.error || 'Sorry, we do not deliver to this pincode currently.'}
+                            <div className="flex items-center gap-3 bg-red-500/5 border border-red-500/10 px-4 py-3">
+                                <AlertCircle className="w-4 h-4 text-red-500/60 flex-shrink-0" />
+                                <span className="text-xs text-red-500/60 font-medium uppercase tracking-wider">
+                                    {deliveryInfo.error || 'Currently Not Serviceable'}
                                 </span>
                             </div>
                         ) : (
                             <>
                                 {/* Estimated Delivery - Premium Card */}
-                                <div className="relative bg-gradient-to-br from-neutral-800/80 to-neutral-800/40 border border-neutral-700/50 rounded-sm p-4 overflow-hidden">
-                                    {/* Card Accent */}
-                                    <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-amber-500 to-amber-600" />
-
-                                    <div className="flex items-start gap-4 pl-3">
-                                        <div className="w-10 h-10 rounded-full bg-white/5 backdrop-blur-md flex items-center justify-center border border-white/10 flex-shrink-0">
-                                            <Clock className="w-5 h-5 text-amber-500" />
+                                <div className="relative bg-neutral-900/30 border border-white/5 p-5">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/5 flex-shrink-0">
+                                            <Clock className="w-4 h-4 text-amber-200/60" />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-white text-sm font-light tracking-wide">
-                                                Get it by <span className="text-amber-500 font-bold">{deliveryInfo.estimatedDelivery?.from}</span> - <span className="text-amber-500 font-bold">{deliveryInfo.estimatedDelivery?.to}</span>
+                                            <p className="text-white/80 text-xs font-serif italic tracking-wide mb-1">
+                                                Estimated Delivery
                                             </p>
-                                            <p className="text-white/40 text-[10px] mt-1 uppercase tracking-widest font-medium">
-                                                Estimated {deliveryInfo.deliveryDays?.min}-{deliveryInfo.deliveryDays?.max} business days
+                                            <p className="text-white text-sm">
+                                                <span className="font-bold">{deliveryInfo.estimatedDelivery?.from}</span> - <span className="font-bold">{deliveryInfo.estimatedDelivery?.to}</span>
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Feature Badges - Premium Grid */}
-                                <div className="grid grid-cols-2 gap-3">
+                                {/* Feature Badges - Text Only Grid */}
+                                <div className="grid grid-cols-2 gap-px bg-white/5 border border-white/5 mt-4">
                                     {/* Express Badge */}
                                     {deliveryInfo.expressAvailable && (
-                                        <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500">
-                                            <Zap className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
-                                            <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
+                                        <div className="bg-neutral-950 p-4 text-center">
+                                            <Zap className="w-4 h-4 text-amber-500/60 mx-auto mb-2" />
+                                            <span className="text-[9px] text-white/40 font-bold uppercase tracking-[0.2em] block">
                                                 Express
                                             </span>
                                         </div>
@@ -206,80 +191,33 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
 
                                     {/* Free Shipping Badge */}
                                     {freeShipping && (
-                                        <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500">
-                                            <Truck className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
-                                            <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
+                                        <div className="bg-neutral-950 p-4 text-center">
+                                            <Truck className="w-4 h-4 text-amber-500/60 mx-auto mb-2" />
+                                            <span className="text-[9px] text-white/40 font-bold uppercase tracking-[0.2em] block">
                                                 Free Ship
                                             </span>
                                         </div>
                                     )}
 
                                     {/* Insured Shipping */}
-                                    <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500">
-                                        <Package className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
-                                        <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
+                                    <div className="bg-neutral-950 p-4 text-center">
+                                        <Package className="w-4 h-4 text-amber-500/60 mx-auto mb-2" />
+                                        <span className="text-[9px] text-white/40 font-bold uppercase tracking-[0.2em] block">
                                             Insured
                                         </span>
                                     </div>
 
                                     {/* Authenticity Certified */}
-                                    <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500">
-                                        <Shield className="w-3.5 h-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
-                                        <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
+                                    <div className="bg-neutral-950 p-4 text-center">
+                                        <Shield className="w-4 h-4 text-amber-500/60 mx-auto mb-2" />
+                                        <span className="text-[9px] text-white/40 font-bold uppercase tracking-[0.2em] block">
                                             Certified
                                         </span>
                                     </div>
-
-                                    {/* Easy Returns */}
-                                    <div className="group flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/10 rounded-none px-4 py-3 hover:border-amber-500/30 transition-all duration-500 col-span-2">
-                                        <RefreshCw className="w-3.5 h-3.5 text-amber-500 group-hover:rotate-180 transition-transform duration-700" />
-                                        <span className="text-[9px] text-white/70 font-bold uppercase tracking-[0.2em]">
-                                            7-Day Easy Returns
-                                        </span>
-                                    </div>
                                 </div>
-
-                                {/* Zone Info - Premium Footer */}
-                                {deliveryInfo.zone && (
-                                    <div className="flex items-center justify-between pt-3 border-t border-neutral-700/50">
-                                        <div className="flex items-center gap-2">
-                                            <Sparkles className="w-3 h-3 text-amber-500/60" />
-                                            <span className="text-[10px] uppercase tracking-[0.15em] text-white/30 font-medium">
-                                                {deliveryInfo.message}
-                                            </span>
-                                        </div>
-                                        <div className="flex flex-col items-end gap-1">
-                                            <span className="text-[10px] uppercase tracking-wider text-amber-500/60 font-medium bg-amber-500/10 px-2 py-0.5 rounded-sm">
-                                                {deliveryInfo.zone === 'metro' && 'Metro City'}
-                                                {deliveryInfo.zone === 'tier2' && 'Tier-2 City'}
-                                                {deliveryInfo.zone === 'other' && 'Remote Area'}
-                                            </span>
-                                            {!freeShipping && (
-                                                <span className="text-[9px] text-white/40 uppercase tracking-widest font-medium">
-                                                    Standard Shipping: ₹90
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
                             </>
                         )}
                     </div>
-                )}
-
-                {/* Hint when empty - Premium */}
-                {!deliveryInfo && !error && !loading && (
-                    <div className="mt-4 flex items-center gap-2 text-white/25">
-                        <Sparkles className="w-3 h-3 text-amber-500/40" />
-                        <p className="text-[11px] font-light tracking-wide">
-                            Enter your pincode to see delivery options
-                        </p>
-                    </div>
-                )}
-
-                {/* Bottom Accent */}
-                {!compact && (
-                    <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
                 )}
             </div>
         </div>
@@ -299,13 +237,13 @@ export function DeliveryEstimate({ pincode }: { pincode?: string }) {
     if (!deliveryInfo || !deliveryInfo.success || !deliveryInfo.available) return null
 
     return (
-        <div className="flex items-center gap-3 py-3 border-t border-neutral-700/50">
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/10 flex items-center justify-center border border-amber-500/30">
-                <Truck className="w-3.5 h-3.5 text-amber-400" />
+        <div className="flex items-center gap-4 py-4 border-t border-white/10">
+            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                <Truck className="w-4 h-4 text-amber-200/60" />
             </div>
             <div className="flex-1">
-                <p className="text-sm text-white/70 font-light">
-                    Delivery by <span className="text-amber-400 font-medium">{deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}</span>
+                <p className="text-xs text-white/60 font-light uppercase tracking-wider">
+                    Delivery by <span className="text-white font-bold">{deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}</span>
                 </p>
             </div>
         </div>
