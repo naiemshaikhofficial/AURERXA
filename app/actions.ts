@@ -8,6 +8,12 @@ import { createCashfreeOrder, getCashfreePayments } from '@/lib/cashfree'
 import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib } from '@/lib/razorpay'
 import { unstable_cache, revalidateTag } from 'next/cache'
 
+export async function getTestProductCount() {
+  const { count, error } = await supabase.from('products').select('*', { count: 'exact', head: true })
+  console.log('DEBUG: Product count:', count, error)
+  return { count, error }
+}
+
 // Helper to get authenticated supabase client
 async function getAuthClient() {
   const cookieStore = await cookies()
@@ -80,8 +86,7 @@ export const getCategories = unstable_cache(
 
 export const getBestsellers = unstable_cache(
   async () => {
-    const client = await getAuthClient()
-    const { data, error } = await client
+    const { data, error } = await supabase
       .from('products')
       .select('*, categories(*)')
       .eq('bestseller', true)
@@ -99,8 +104,7 @@ export const getBestsellers = unstable_cache(
 
 export const getNewReleases = unstable_cache(
   async (limit: number = 8) => {
-    const client = await getAuthClient()
-    const { data, error } = await client
+    const { data, error } = await supabase
       .from('products')
       .select('*, categories(*)')
       .order('created_at', { ascending: false })
@@ -118,14 +122,13 @@ export const getNewReleases = unstable_cache(
 
 export const getProducts = unstable_cache(
   async (categorySlug?: string, sortBy?: string) => {
-    const client = await getAuthClient()
-    let query = client
+    let query = supabase
       .from('products')
       .select('*, categories(*)')
 
     if (categorySlug) {
       // Since it's a join, we filter by the related table's field
-      const { data: cat } = await client
+      const { data: cat } = await supabase
         .from('categories')
         .select('id')
         .eq('slug', categorySlug)
@@ -1092,14 +1095,13 @@ export async function getFilteredProducts(options: {
   type?: string
 }) {
   try {
-    const client = await getAuthClient()
-    let query = client
+    let query = supabase
       .from('products')
       .select('*, categories(*)')
 
     // Category filter
     if (options.category) {
-      const { data: cat } = await client
+      const { data: cat } = await supabase
         .from('categories')
         .select('id')
         .eq('slug', options.category)
