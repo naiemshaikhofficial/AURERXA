@@ -1886,9 +1886,20 @@ export async function getPaymentGatewayConfig() {
 
 export async function initiatePayment(orderId: string): Promise<PaymentResult> {
   const config = await getPaymentGatewayConfig()
+  console.log('initiatePayment: Selected gateway is', config.gateway)
+
   if (config.gateway === 'razorpay') {
+    if (!process.env.RAZORPAY_KEY_ID) {
+      console.error('initiatePayment: Razorpay Key ID is missing');
+      return { success: false, error: 'Razorpay configuration error' };
+    }
     const result = await initiateRazorpayPayment(orderId)
     return result as PaymentResult
+  }
+
+  if (!process.env.CASHFREE_APP_ID) {
+    console.error('initiatePayment: Cashfree App ID is missing');
+    return { success: false, error: 'Cashfree configuration error' };
   }
   const result = await initiateCashfreePayment(orderId)
   return result as PaymentResult
@@ -1896,13 +1907,26 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
 
 export async function verifyPayment(orderId: string, params?: any) {
   const config = await getPaymentGatewayConfig()
+  console.log('verifyPayment: Selected gateway is', config.gateway, 'for order', orderId)
+
   if (config.gateway === 'razorpay') {
     const result = await verifyRazorpayPayment(orderId, params)
-    if (result.success) await clearCart()
+    if (result.success) {
+      console.log('verifyPayment: Razorpay verification successful');
+      await clearCart()
+    } else {
+      console.warn('verifyPayment: Razorpay verification failed', result.error);
+    }
     return result
   }
+
   const result = await verifyCashfreePayment(orderId)
-  if (result.success) await clearCart()
+  if (result.success) {
+    console.log('verifyPayment: Cashfree verification successful');
+    await clearCart()
+  } else {
+    console.warn('verifyPayment: Cashfree verification failed', result.error);
+  }
   return result
 }
 

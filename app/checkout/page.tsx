@@ -58,8 +58,8 @@ export default function CheckoutPage() {
     const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('anytime')
 
     // Script loading state
-    const [razorpayLoaded, setRazorpayLoaded] = useState(true)
-    const [cashfreeLoaded, setCashfreeLoaded] = useState(true)
+    const [razorpayLoaded, setRazorpayLoaded] = useState(false)
+    const [cashfreeLoaded, setCashfreeLoaded] = useState(false)
 
     const [newAddress, setNewAddress] = useState({
         label: 'Home',
@@ -80,19 +80,20 @@ export default function CheckoutPage() {
 
         // Check for scripts periodically as a fallback
         const checkScripts = () => {
-            // @ts-ignore
-            if (window.Razorpay) {
-                if (!razorpayLoaded) {
-                    console.log('Razorpay detected on window');
-                    setRazorpayLoaded(true);
-                }
+            const isRPReady = typeof window !== 'undefined' && (window as any).Razorpay;
+            const isCFReady = typeof window !== 'undefined' && (window as any).Cashfree;
+
+            if (isRPReady !== razorpayLoaded || isCFReady !== cashfreeLoaded) {
+                console.log('CheckoutPage: Script status check:', { razorpay: !!isRPReady, cashfree: !!isCFReady });
             }
-            // @ts-ignore
-            if (window.Cashfree) {
-                if (!cashfreeLoaded) {
-                    console.log('Cashfree detected on window');
-                    setCashfreeLoaded(true);
-                }
+
+            if (isRPReady && !razorpayLoaded) {
+                console.log('Razorpay detected on window');
+                setRazorpayLoaded(true);
+            }
+            if (isCFReady && !cashfreeLoaded) {
+                console.log('Cashfree detected on window');
+                setCashfreeLoaded(true);
             }
         };
 

@@ -78,11 +78,11 @@ export default function RootLayout({
         </ThemeProvider>
         <Script
           src="https://checkout.razorpay.com/v1/checkout.js"
-          strategy="lazyOnload"
+          strategy="afterInteractive"
         />
         <Script
           src="https://sdk.cashfree.com/js/v3/cashfree.js"
-          strategy="lazyOnload"
+          strategy="afterInteractive"
         />
       </body>
     </html>
