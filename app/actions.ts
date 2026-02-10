@@ -437,6 +437,17 @@ export async function isInWishlist(productId: string) {
 // ADDRESSES (Max 5 per user)
 // ============================================
 
+export async function getPincodeDetails(pincode: string) {
+  try {
+    const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`)
+    const data = await response.json()
+    return data
+  } catch (error) {
+    console.error('Server Pincode Error:', error)
+    return null
+  }
+}
+
 export async function getAddresses() {
   const client = await getAuthClient()
   const { data: { user } } = await client.auth.getUser()

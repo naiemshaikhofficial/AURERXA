@@ -3,13 +3,15 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Country, State, City } from 'country-state-city'
 import PhoneInput from 'react-phone-number-input'
+import flags from 'react-phone-number-input/flags'
 import 'react-phone-number-input/style.css'
-import { Check, ChevronsUpDown, Search, MapPin, Phone, User, Home, Tag, Sparkles } from 'lucide-react'
+import { Check, ChevronsUpDown, Search, MapPin, Phone, User, Home, Tag, Sparkles, X, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import {
     Command,
@@ -24,6 +26,8 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover'
+
+import { getPincodeDetails } from '@/app/actions'
 
 interface AddressFormProps {
     initialData?: any
@@ -42,12 +46,71 @@ const formatInitialPhone = (phone: string, country: string = 'IN') => {
     return phone;
 }
 
+// Global styles moved outside to prevent re-injection on every keystroke
+const PhoneInputStyles = () => (
+    <style jsx global>{`
+        .phone-input-wrapper .PhoneInput {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .phone-input-wrapper .PhoneInputInput {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #f2f2f2;
+            font-size: 1rem;
+            width: 100%;
+            font-family: inherit;
+            font-weight: 300;
+            text-align: center;
+        }
+        .phone-input-wrapper .PhoneInputCountry {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .phone-input-wrapper .PhoneInputCountrySelectArrow {
+            color: #BF9B65;
+            margin-left: 8px;
+            opacity: 0.6;
+        }
+        .phone-input-wrapper .PhoneInputCountryIcon {
+            width: 28px;
+            height: 20px;
+            border-radius: 2px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.05);
+        }
+        .phone-input-wrapper .PhoneInputCountryIconImg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(191,155,101,0.2);
+        }
+    `}</style>
+)
+
 export function AddressForm({ initialData, onSave, onCancel, loading }: AddressFormProps) {
     const [formData, setFormData] = useState({
         label: initialData?.label || 'Home',
         full_name: initialData?.full_name || '',
         phone: formatInitialPhone(initialData?.phone, initialData?.country),
         street_address: initialData?.street_address || '',
+        address_line1: initialData?.address_line1 || (initialData?.street_address?.split(', ')[0] || ''),
+        address_line2: initialData?.address_line2 || (initialData?.street_address?.split(', ').slice(1, -1).join(', ') || ''),
+        landmark: initialData?.landmark || (initialData?.street_address?.split(', ').slice(-1)[0] || ''),
         city: initialData?.city || '',
         state: initialData?.state || '',
         country: initialData?.country || 'IN',
@@ -58,6 +121,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
     const [countryOpen, setCountryOpen] = useState(false)
     const [stateOpen, setStateOpen] = useState(false)
     const [cityOpen, setCityOpen] = useState(false)
+    const [pincodeLoading, setPincodeLoading] = useState(false)
 
     const countries = useMemo(() => Country.getAllCountries(), [])
     const states = useMemo(() =>
@@ -67,13 +131,66 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
         formData.country && formData.state ? City.getCitiesOfState(formData.country, formData.state) : [],
         [formData.country, formData.state])
 
-    // Get current labels for display
-    const currentCountry = countries.find(c => c.isoCode === formData.country)
-    const currentState = states.find(s => s.isoCode === formData.state)
+    const currentCountry = useMemo(() => countries.find(c => c.isoCode === formData.country), [countries, formData.country])
+    const currentState = useMemo(() => states.find(s => s.isoCode === formData.state), [states, formData.state])
+
+    // Pincode auto-detection
+    useEffect(() => {
+        const detectAddress = async () => {
+            // Only trigger for India and 6 digits
+            if (formData.country === 'IN' && formData.pincode.length === 6) {
+                setPincodeLoading(true)
+                try {
+                    const data = await getPincodeDetails(formData.pincode)
+
+                    if (data && data[0] && data[0].Status === 'Success') {
+                        const postOffice = data[0].PostOffice[0]
+                        const cityName = postOffice.District
+                        const stateName = postOffice.State
+
+                        // Find state code from our library
+                        const stateObj = states.find(s =>
+                            s.name.toLowerCase() === stateName.toLowerCase() ||
+                            s.name.toLowerCase().includes(stateName.toLowerCase())
+                        )
+
+                        setFormData(prev => ({
+                            ...prev,
+                            city: cityName,
+                            state: stateObj ? stateObj.isoCode : prev.state
+                        }))
+                    }
+                } catch (err) {
+                    console.error('Pincode detection error:', err)
+                } finally {
+                    setPincodeLoading(false)
+                }
+            }
+        }
+
+        detectAddress()
+    }, [formData.pincode, formData.country, states])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        onSave(formData)
+
+        const stateName = currentState?.name || formData.state
+        const countryName = currentCountry?.name || formData.country
+
+        // Format: Address 1, Address 2, City, State, Country, Pincode
+        const combinedAddress = [
+            formData.address_line1,
+            formData.address_line2,
+            formData.city,
+            stateName,
+            countryName,
+            formData.pincode
+        ].filter(Boolean).join(', ')
+
+        onSave({
+            ...formData,
+            street_address: combinedAddress
+        })
     }
 
     const containerVariants = {
@@ -93,6 +210,10 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
         visible: { opacity: 1, y: 0 }
     }
 
+    const updateField = (field: string, value: any) => {
+        setFormData(prev => ({ ...prev, [field]: value }))
+    }
+
     return (
         <motion.form
             onSubmit={handleSubmit}
@@ -101,6 +222,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
             animate="visible"
             className="space-y-10"
         >
+            <PhoneInputStyles />
             {/* Form Section Header */}
             <div className="relative pb-4 flex items-center justify-between">
                 <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-primary/30 via-primary/5 to-transparent" />
@@ -120,9 +242,9 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                         </Label>
                         <Input
                             value={formData.label}
-                            onChange={(e) => setFormData({ ...formData, label: e.target.value })}
+                            onChange={(e) => updateField('label', e.target.value)}
                             placeholder="e.g. Home, Office, Studio"
-                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all placeholder:text-muted-foreground/20 font-light italic text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30"
+                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all placeholder:text-muted-foreground/20 font-light italic text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
                         />
                     </div>
 
@@ -133,10 +255,10 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                         </Label>
                         <Input
                             value={formData.full_name}
-                            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                            onChange={(e) => updateField('full_name', e.target.value)}
                             required
                             placeholder="Enter your full name"
-                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30"
+                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
                         />
                     </div>
                 </motion.div>
@@ -152,95 +274,28 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             <PhoneInput
                                 international
                                 defaultCountry="IN"
-                                flagUrl="https://purecatamphetamine.github.io/country-flag-icons/3x2/{XX}.svg"
+                                flags={flags}
+                                flagUrl="https://flagcdn.com/{xx}.svg"
                                 value={formData.phone}
-                                onChange={(val) => setFormData({ ...formData, phone: val || '' })}
+                                onChange={(val) => updateField('phone', val || '')}
                                 className="flex h-14 w-full bg-transparent px-0 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/20 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
                             />
                         </div>
-                        <style jsx global>{`
-                            .phone-input-wrapper .PhoneInput {
-                                display: flex;
-                                items-center;
-                                gap: 16px;
-                            }
-                            .phone-input-wrapper .PhoneInputInput {
-                                background: transparent;
-                                border: none;
-                                outline: none;
-                                color: #f2f2f2;
-                                font-size: 1rem;
-                                width: 100%;
-                                font-family: inherit;
-                                font-weight: 300;
-                            }
-                            .phone-input-wrapper .PhoneInputCountry {
-                                position: relative;
-                                display: flex;
-                                align-items: center;
-                            }
-                            .phone-input-wrapper .PhoneInputCountrySelect {
-                                background: #080808;
-                                border: none;
-                                outline: none;
-                                color: #ffffff;
-                                cursor: pointer;
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 100%;
-                                opacity: 0;
-                                z-index: 20;
-                            }
-                            .phone-input-wrapper .PhoneInputCountryIcon {
-                                width: 28px;
-                                height: 20px;
-                                border-radius: 2px;
-                                overflow: hidden;
-                                box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-                                border: 1px solid rgba(255,255,255,0.05);
-                                background: rgba(255,255,255,0.05);
-                            }
-                            .phone-input-wrapper .PhoneInputCountryIconImg {
-                                display: block;
-                                width: 100%;
-                                height: 100%;
-                                object-fit: cover;
-                            }
-                            .phone-input-wrapper .PhoneInputCountrySelectArrow {
-                                color: #BF9B65;
-                                margin-left: 8px;
-                                width: 0;
-                                height: 0;
-                                border-left: 5px solid transparent;
-                                border-right: 5px solid transparent;
-                                border-top: 5px solid currentColor;
-                                opacity: 0.6;
-                            }
-                            .custom-scrollbar::-webkit-scrollbar {
-                                width: 3px;
-                            }
-                            .custom-scrollbar::-webkit-scrollbar-track {
-                                background: transparent;
-                            }
-                            .custom-scrollbar::-webkit-scrollbar-thumb {
-                                background: rgba(191,155,101,0.2);
-                            }
-                        `}</style>
                     </div>
 
                     <div className="space-y-3 group">
                         <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
                             <MapPin className="w-3.5 h-3.5" />
                             Pincode / ZIP
+                            {pincodeLoading && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
                         </Label>
                         <Input
                             value={formData.pincode}
-                            onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                            onChange={(e) => updateField('pincode', e.target.value)}
                             required
                             placeholder="e.g. 422001"
-                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30"
+                            maxLength={6}
+                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
                         />
                     </div>
                 </motion.div>
@@ -260,19 +315,46 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                     <div className="space-y-3 group">
                         <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
                             <MapPin className="w-3.5 h-3.5" />
-                            Street Address
+                            Address Line 1 (House No., Building, Area)
                         </Label>
-                        <Input
-                            value={formData.street_address}
-                            onChange={(e) => setFormData({ ...formData, street_address: e.target.value })}
+                        <Textarea
+                            value={formData.address_line1}
+                            onChange={(e) => updateField('address_line1', e.target.value)}
                             required
-                            placeholder="House No., Building Name, Area, Landmark"
-                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30"
+                            placeholder="e.g. House No. 12, AURERXA Residency, Heritage Colony"
+                            className="bg-background/20 border-white/5 text-foreground min-h-[100px] rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-center py-8 text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 resize-none"
                         />
                     </div>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-3 group">
+                            <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
+                                <MapPin className="w-3.5 h-3.5" />
+                                Address Line 2 (Optional)
+                            </Label>
+                            <Input
+                                value={formData.address_line2}
+                                onChange={(e) => updateField('address_line2', e.target.value)}
+                                placeholder="e.g. Near Heritage Tower"
+                                className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
+                            />
+                        </div>
+
+                        <div className="space-y-3 group">
+                            <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
+                                <MapPin className="w-3.5 h-3.5" />
+                                Landmark
+                            </Label>
+                            <Input
+                                value={formData.landmark}
+                                onChange={(e) => updateField('landmark', e.target.value)}
+                                placeholder="e.g. Opp. Gold Market"
+                                className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
+                            />
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {/* Country */}
                         <div className="space-y-3">
                             <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60">Country</Label>
                             <Popover open={countryOpen} onOpenChange={setCountryOpen}>
@@ -280,16 +362,13 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                     <Button
                                         variant="outline"
                                         role="combobox"
-                                        className="w-full justify-between h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground hover:bg-white/5 transition-all text-base px-0 border-b-primary/20"
+                                        className="w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground hover:bg-white/5 transition-all text-base px-12 border-b-primary/20"
                                     >
                                         <span className="truncate">{formData.country ? currentCountry?.name : "Select Country"}</span>
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-40 text-primary" />
+                                        <ChevronsUpDown className="absolute right-4 h-4 w-4 shrink-0 opacity-40 text-primary" />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent
-                                    className="w-[var(--radix-popover-trigger-width)] p-0 border-white/10 bg-[#080808] shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-none z-[1001] backdrop-blur-xl"
-                                    align="start"
-                                >
+                                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 border-white/10 bg-[#080808] rounded-none z-[1001] backdrop-blur-xl" align="start">
                                     <Command className="bg-transparent text-zinc-100">
                                         <CommandInput placeholder="Search country..." className="border-white/5 h-12" />
                                         <CommandList className="max-h-[350px] custom-scrollbar">
@@ -300,15 +379,15 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                                         key={country.isoCode}
                                                         value={country.name}
                                                         onSelect={() => {
-                                                            setFormData({
-                                                                ...formData,
+                                                            setFormData(prev => ({
+                                                                ...prev,
                                                                 country: country.isoCode,
                                                                 state: '',
                                                                 city: ''
-                                                            })
+                                                            }))
                                                             setCountryOpen(false)
                                                         }}
-                                                        className="cursor-pointer hover:bg-white/5 py-4 aria-selected:bg-white/10 transition-colors"
+                                                        className="cursor-pointer hover:bg-white/5 py-4 transition-colors"
                                                     >
                                                         <Check className={cn("mr-3 h-4 w-4 text-primary", formData.country === country.isoCode ? "opacity-100" : "opacity-0")} />
                                                         <span className="text-sm font-light tracking-wide">{country.name}</span>
@@ -321,7 +400,6 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             </Popover>
                         </div>
 
-                        {/* State */}
                         <div className="space-y-3">
                             <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60">State</Label>
                             <Popover open={stateOpen} onOpenChange={setStateOpen}>
@@ -330,16 +408,13 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                         variant="outline"
                                         role="combobox"
                                         disabled={!formData.country}
-                                        className="w-full justify-between h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-0 border-b-primary/20"
+                                        className="w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-12 border-b-primary/20"
                                     >
                                         <span className="truncate">{formData.state ? currentState?.name : "Select State"}</span>
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-40 text-primary" />
+                                        <ChevronsUpDown className="absolute right-4 h-4 w-4 shrink-0 opacity-40 text-primary" />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent
-                                    className="w-[var(--radix-popover-trigger-width)] p-0 border-white/10 bg-[#080808] shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-none z-[1001] backdrop-blur-xl"
-                                    align="start"
-                                >
+                                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 border-white/10 bg-[#080808] rounded-none z-[1001] backdrop-blur-xl" align="start">
                                     <Command className="bg-transparent text-zinc-100">
                                         <CommandInput placeholder="Search state..." className="border-white/5 h-12" />
                                         <CommandList className="max-h-[350px] custom-scrollbar">
@@ -350,10 +425,10 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                                         key={state.isoCode}
                                                         value={state.name}
                                                         onSelect={() => {
-                                                            setFormData({ ...formData, state: state.isoCode, city: '' })
+                                                            setFormData(prev => ({ ...prev, state: state.isoCode, city: '' }))
                                                             setStateOpen(false)
                                                         }}
-                                                        className="cursor-pointer hover:bg-white/5 py-4 aria-selected:bg-white/10 transition-colors"
+                                                        className="cursor-pointer hover:bg-white/5 py-4 transition-colors"
                                                     >
                                                         <Check className={cn("mr-3 h-4 w-4 text-primary", formData.state === state.isoCode ? "opacity-100" : "opacity-0")} />
                                                         <span className="text-sm font-light tracking-wide">{state.name}</span>
@@ -366,7 +441,6 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             </Popover>
                         </div>
 
-                        {/* City */}
                         <div className="space-y-3">
                             <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60">City</Label>
                             <Popover open={cityOpen} onOpenChange={setCityOpen}>
@@ -375,16 +449,13 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                         variant="outline"
                                         role="combobox"
                                         disabled={!formData.state}
-                                        className="w-full justify-between h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-0 border-b-primary/20"
+                                        className="w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-12 border-b-primary/20"
                                     >
                                         <span className="truncate">{formData.city ? formData.city : "Select City"}</span>
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-40 text-primary" />
+                                        <ChevronsUpDown className="absolute right-4 h-4 w-4 shrink-0 opacity-40 text-primary" />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent
-                                    className="w-[var(--radix-popover-trigger-width)] p-0 border-white/10 bg-[#080808] shadow-[0_30px_60px_rgba(0,0,0,0.8)] rounded-none z-[1001] backdrop-blur-xl"
-                                    align="start"
-                                >
+                                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 border-white/10 bg-[#080808] rounded-none z-[1001] backdrop-blur-xl" align="start">
                                     <Command className="bg-transparent text-zinc-100">
                                         <CommandInput placeholder="Search city..." className="border-white/5 h-12" />
                                         <CommandList className="max-h-[350px] custom-scrollbar">
@@ -395,10 +466,10 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                                         key={city.name}
                                                         value={city.name}
                                                         onSelect={() => {
-                                                            setFormData({ ...formData, city: city.name })
+                                                            setFormData(prev => ({ ...prev, city: city.name }))
                                                             setCityOpen(false)
                                                         }}
-                                                        className="cursor-pointer hover:bg-white/5 py-4 aria-selected:bg-white/10 transition-colors"
+                                                        className="cursor-pointer hover:bg-white/5 py-4 transition-colors"
                                                     >
                                                         <Check className={cn("mr-3 h-4 w-4 text-primary", formData.city === city.name ? "opacity-100" : "opacity-0")} />
                                                         <span className="text-sm font-light tracking-wide">{city.name}</span>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Script from 'next/script'
@@ -29,7 +29,7 @@ export default function CheckoutPage() {
             }
         }
         checkAuth()
-    }, [])
+    }, [router])
 
     const { items: cart, loading: cartLoading, refreshCart } = useCart()
     const [addresses, setAddresses] = useState<any[]>([])
@@ -67,6 +67,9 @@ export default function CheckoutPage() {
         label: 'Home',
         full_name: '',
         phone: '',
+        address_line1: '',
+        address_line2: '',
+        landmark: '',
         street_address: '',
         city: '',
         state: '',
@@ -74,27 +77,46 @@ export default function CheckoutPage() {
         is_default: false
     })
 
+    const loadData = useCallback(async () => {
+        setLoading(true)
+        try {
+            const [addressData, config] = await Promise.all([
+                getAddresses(),
+                import('@/app/actions').then(m => m.getPaymentGatewayConfig())
+            ])
+            setAddresses(addressData)
+            setEnableCod(config.enableCod)
+
+            if (addressData.length > 0) {
+                const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0]
+                setSelectedAddress(defaultAddr.id)
+            } else {
+                setShowAddressForm(true)
+            }
+        } catch (err) {
+            console.error('Failed to load checkout data:', err)
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
     useEffect(() => {
         refreshCart()
         loadData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
+    useEffect(() => {
         console.log('CheckoutPage: Checking for payment scripts...');
 
-        // Check for scripts periodically as a fallback
         const checkScripts = () => {
             const isRPReady = typeof window !== 'undefined' && (window as any).Razorpay;
             const isCFReady = typeof window !== 'undefined' && (window as any).Cashfree;
 
-            if (isRPReady !== razorpayLoaded || isCFReady !== cashfreeLoaded) {
-                console.log('CheckoutPage: Script status check:', { razorpay: !!isRPReady, cashfree: !!isCFReady });
-            }
-
             if (isRPReady && !razorpayLoaded) {
-                console.log('Razorpay detected on window');
                 setRazorpayLoaded(true);
             }
             if (isCFReady && !cashfreeLoaded) {
-                console.log('Cashfree detected on window');
                 setCashfreeLoaded(true);
             }
         };
@@ -104,25 +126,7 @@ export default function CheckoutPage() {
         return () => clearInterval(interval);
     }, [razorpayLoaded, cashfreeLoaded])
 
-    async function loadData() {
-        setLoading(true)
-        const [addressData, config] = await Promise.all([
-            getAddresses(),
-            import('@/app/actions').then(m => m.getPaymentGatewayConfig())
-        ])
-        setAddresses(addressData)
-        setEnableCod(config.enableCod)
-
-        if (addressData.length > 0) {
-            const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0]
-            setSelectedAddress(defaultAddr.id)
-        } else {
-            setShowAddressForm(true)
-        }
-        setLoading(false)
-    }
-
-    const updateShippingRate = async (pincode: string, isCod: boolean) => {
+    const updateShippingRate = useCallback(async (pincode: string, isCod: boolean) => {
         if (!pincode || cart.length === 0) return
         setShippingLoading(true)
         try {
@@ -136,7 +140,7 @@ export default function CheckoutPage() {
         } finally {
             setShippingLoading(false)
         }
-    }
+    }, [cart])
 
     // React to changes in address or payment method
     useEffect(() => {
@@ -144,9 +148,9 @@ export default function CheckoutPage() {
         if (addr) {
             updateShippingRate(addr.pincode, paymentMethod === 'cod')
         }
-    }, [selectedAddress, paymentMethod])
+    }, [addresses, selectedAddress, paymentMethod, updateShippingRate])
 
-    const handleSaveAddress = async (formData: any) => {
+    const handleSaveAddress = useCallback(async (formData: any) => {
         setError(null)
 
         let result
@@ -164,13 +168,15 @@ export default function CheckoutPage() {
         } else {
             setError(result.error || 'Failed to save address')
         }
-    }
+    }, [editingAddressId, loadData])
 
     const handleEditAddress = (addr: any) => {
         setEditingAddressId(addr.id)
         setShowAddressForm(true)
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
+
+    const subtotal = useMemo(() => cart.reduce((sum: number, item: any) => sum + (item.products?.price || 0) * item.quantity, 0), [cart])
 
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return
@@ -317,7 +323,6 @@ export default function CheckoutPage() {
         }
     };
 
-    const subtotal = cart.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0)
     const shipping = subtotal >= 50000 ? 0 : shippingCharge
     const discount = couponApplied?.discount || 0
     const giftWrapCost = giftWrap ? GIFT_WRAP_PRICE : 0
@@ -390,6 +395,9 @@ export default function CheckoutPage() {
                                                     label: 'Home',
                                                     full_name: '',
                                                     phone: '',
+                                                    address_line1: '',
+                                                    address_line2: '',
+                                                    landmark: '',
                                                     street_address: '',
                                                     city: '',
                                                     state: '',
@@ -821,7 +829,6 @@ export default function CheckoutPage() {
                     </div>
                 </div>
             </main>
-
 
             <Footer />
         </div>
