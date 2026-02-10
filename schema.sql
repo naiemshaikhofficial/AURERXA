@@ -1,8 +1,33 @@
--- Run this SQL in your Supabase SQL Editor to update/create tables
+-- AURERXA Database Schema
+-- Run this SQL in your Supabase SQL Editor
 -- This script is IDEMPOTENT (Safe to run multiple times)
 
 -- ============================================
--- 1. PROFILES TABLE
+-- HELPER FUNCTIONS (To break RLS recursion)
+-- ============================================
+create or replace function public.is_admin()
+returns boolean as $$
+begin
+  return exists (
+    select 1 from public.admin_users
+    where id = auth.uid()
+  );
+end;
+$$ language plpgsql security definer;
+
+create or replace function public.is_main_admin()
+returns boolean as $$
+begin
+  return exists (
+    select 1 from public.admin_users
+    where id = auth.uid()
+    and role = 'main_admin'
+  );
+end;
+$$ language plpgsql security definer;
+
+-- ============================================
+-- 1. PROFILES & AUTH SYNC
 -- ============================================
 create table if not exists profiles (
   id uuid references auth.users(id) on delete cascade primary key,
@@ -16,403 +41,15 @@ create table if not exists profiles (
 
 alter table profiles enable row level security;
 
-drop policy if exists "Public profiles are viewable by everyone." on profiles;
-create policy "Public profiles are viewable by everyone." on profiles for select using (true);
+drop policy if exists "Public profiles are viewable by everyone" on profiles;
+create policy "Public profiles are viewable by everyone" on profiles for select using (true);
 
-drop policy if exists "Users can insert their own profile." on profiles;
-create policy "Users can insert their own profile." on profiles for insert with check (auth.uid() = id);
+drop policy if exists "Users can update own profile" on profiles;
+create policy "Users can update own profile" on profiles for update using (auth.uid() = id);
 
-drop policy if exists "Users can update own profile." on profiles;
-create policy "Users can update own profile." on profiles for update using (auth.uid() = id);
+drop policy if exists "Admins can view all profiles" on profiles;
+create policy "Admins can view all profiles" on profiles for select using (is_admin());
 
--- ============================================
--- 2. ADDRESSES TABLE
--- ============================================
-create table if not exists addresses (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) on delete cascade not null,
-  label text default 'Home',
-  full_name text not null,
-  phone text not null,
-  street_address text not null,
-  city text not null,
-  state text not null,
-  pincode text not null,
-  is_default boolean default false,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table addresses enable row level security;
-
-drop policy if exists "Users can view own addresses" on addresses;
-create policy "Users can view own addresses" on addresses for select using (auth.uid() = user_id);
-
-drop policy if exists "Users can insert own addresses" on addresses;
-create policy "Users can insert own addresses" on addresses for insert with check (auth.uid() = user_id);
-
-drop policy if exists "Users can update own addresses" on addresses;
-create policy "Users can update own addresses" on addresses for update using (auth.uid() = user_id);
-
-drop policy if exists "Users can delete own addresses" on addresses;
-create policy "Users can delete own addresses" on addresses for delete using (auth.uid() = user_id);
-
--- ============================================
--- 3. CATEGORIES TABLE
--- ============================================
-create table if not exists categories (
-  id uuid default gen_random_uuid() primary key,
-  slug text not null unique,
-  name text not null,
-  description text,
-  image_url text not null, 
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table categories enable row level security;
-
-drop policy if exists "Allow public read categories" on categories;
-create policy "Allow public read categories" on categories for select using (true);
-
--- ============================================
--- 4. PRODUCTS TABLE
--- ============================================
-create table if not exists products (
-  id uuid default gen_random_uuid() primary key,
-  category_id uuid references categories(id),
-  name text not null,
-  description text,
-  price decimal(10, 2) not null,
-  image_url text not null,
-  images jsonb default '[]'::jsonb,
-  stock integer default 0,
-  sizes text[] default '{}',
-  featured boolean default false,
-  bestseller boolean default false,
-  slug text unique,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
--- Idempotent column additions
-alter table products add column if not exists purity text;
-alter table products add column if not exists gender text default 'Unisex';
-alter table products add column if not exists weight_grams decimal(10, 2);
-alter table products add column if not exists dimensions_width text;
-alter table products add column if not exists dimensions_height text;
-alter table products add column if not exists dimensions_length text;
-alter table products add column if not exists dimensions_unit text default 'mm';
-
--- Ensure images is jsonb (Correcting previous text[] if it existed)
-do $$ 
-begin 
-    if exists (select 1 from information_schema.columns where table_name='products' and column_name='images' and data_type='ARRAY') then
-        alter table products drop column images;
-        alter table products add column images jsonb default '[]'::jsonb;
-    end if;
-end $$;
-
--- Function: Slugify
-create or replace function public.slugify(v text)
-returns text as $$
-begin
-  return trim(both '-' from regexp_replace(lower(v), '[^a-z0-9]+', '-', 'g'));
-end;
-$$ language plpgsql;
-
--- Trigger: Auto-generate slug
-create or replace function public.handle_product_slug() 
-returns trigger as $$
-begin
-  if new.slug is null or new.slug = '' then
-    new.slug := public.slugify(new.name);
-  end if;
-  return new;
-end;
-$$ language plpgsql;
-
-drop trigger if exists on_product_save_slug on products;
-create trigger on_product_save_slug
-  before insert or update on products
-  for each row execute procedure public.handle_product_slug();
-
-alter table products enable row level security;
-
-drop policy if exists "Allow public read products" on products;
-create policy "Allow public read products" on products for select using (true);
-
-drop policy if exists "Allow update products for authenticated users" on products;
-create policy "Allow update products for authenticated users" on products for update using (auth.uid() is not null);
-
--- ============================================
--- 5. WISHLIST TABLE
--- ============================================
-create table if not exists wishlist (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) on delete cascade not null,
-  product_id uuid references products(id) on delete cascade not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  unique(user_id, product_id)
-);
-
-alter table wishlist enable row level security;
-
-drop policy if exists "Users can view own wishlist" on wishlist;
-create policy "Users can view own wishlist" on wishlist for select using (auth.uid() = user_id);
-
-drop policy if exists "Users can add to own wishlist" on wishlist;
-create policy "Users can add to own wishlist" on wishlist for insert with check (auth.uid() = user_id);
-
-drop policy if exists "Users can remove from own wishlist" on wishlist;
-create policy "Users can remove from own wishlist" on wishlist for delete using (auth.uid() = user_id);
-
--- ============================================
--- 6. CART TABLE
--- ============================================
-create table if not exists cart (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) on delete cascade not null,
-  product_id uuid references products(id) on delete cascade not null,
-  quantity integer default 1,
-  size text,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  unique(user_id, product_id, size)
-);
-
-alter table cart enable row level security;
-
-drop policy if exists "Users can view own cart" on cart;
-create policy "Users can view own cart" on cart for select using (auth.uid() = user_id);
-
-drop policy if exists "Users can add to own cart" on cart;
-create policy "Users can add to own cart" on cart for insert with check (auth.uid() = user_id);
-
-drop policy if exists "Users can update own cart" on cart;
-create policy "Users can update own cart" on cart for update using (auth.uid() = user_id);
-
-drop policy if exists "Users can remove from own cart" on cart;
-create policy "Users can remove from own cart" on cart for delete using (auth.uid() = user_id);
-
--- ============================================
--- 7. ORDERS TABLE
--- ============================================
-create table if not exists orders (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) on delete set null,
-  order_number text unique not null,
-  status text default 'pending',
-  subtotal decimal(10, 2) not null,
-  shipping decimal(10, 2) default 0,
-  total decimal(10, 2) not null,
-  shipping_address jsonb not null,
-  payment_method text,
-  payment_id text,
-  notes text,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table orders add column if not exists coupon_code text;
-alter table orders add column if not exists coupon_discount decimal(10, 2) default 0;
-alter table orders add column if not exists gift_wrap boolean default false;
-alter table orders add column if not exists gift_message text;
-alter table orders add column if not exists delivery_time_slot text;
-alter table orders add column if not exists tracking_number text;
-
-alter table orders enable row level security;
-
-drop policy if exists "Users can view own orders" on orders;
-create policy "Users can view own orders" on orders for select using (auth.uid() = user_id);
-
-drop policy if exists "Users can create own orders" on orders;
-create policy "Users can create own orders" on orders for insert with check (auth.uid() = user_id);
-
--- ============================================
--- 8. ORDER ITEMS TABLE
--- ============================================
-create table if not exists order_items (
-  id uuid default gen_random_uuid() primary key,
-  order_id uuid references orders(id) on delete cascade not null,
-  product_id uuid references products(id) on delete set null,
-  product_name text not null,
-  product_image text,
-  quantity integer not null,
-  size text,
-  price decimal(10, 2) not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table order_items enable row level security;
-
-drop policy if exists "Users can view own order items" on order_items;
-create policy "Users can view own order items" on order_items for select 
-  using (exists (select 1 from orders where orders.id = order_items.order_id and orders.user_id = auth.uid()));
-
-drop policy if exists "Users can create order items" on order_items;
-create policy "Users can create order items" on order_items for insert 
-  with check (exists (select 1 from orders where orders.id = order_items.order_id and orders.user_id = auth.uid()));
-
--- ============================================
--- 9. TICKETS TABLE
--- ============================================
-create table if not exists tickets (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) on delete cascade not null,
-  subject text not null,
-  message text not null,
-  status text default 'open', 
-  urgency text default 'normal',
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table tickets enable row level security;
-
-drop policy if exists "Users can view own tickets" on tickets;
-create policy "Users can view own tickets" on tickets for select using (auth.uid() = user_id);
-
-drop policy if exists "Users can create own tickets" on tickets;
-create policy "Users can create own tickets" on tickets for insert with check (auth.uid() = user_id);
-
--- ============================================
--- 10. REPAIRS TABLE
--- ============================================
-create table if not exists repairs (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) on delete cascade not null,
-  product_name text not null,
-  order_number text, 
-  issue_description text not null,
-  status text default 'requested',
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table repairs enable row level security;
-
-drop policy if exists "Users can view own repairs" on repairs;
-create policy "Users can view own repairs" on repairs for select using (auth.uid() = user_id);
-
-drop policy if exists "Users can create own repairs" on repairs;
-create policy "Users can create own repairs" on repairs for insert with check (auth.uid() = user_id);
-
--- ============================================
--- 11. COUPONS TABLE
--- ============================================
-create table if not exists coupons (
-  id uuid default gen_random_uuid() primary key,
-  code text not null unique,
-  discount_type text not null default 'percentage',
-  discount_value decimal(10, 2) not null,
-  min_order_value decimal(10, 2) default 0,
-  max_discount decimal(10, 2),
-  valid_from timestamp with time zone default now(),
-  valid_until timestamp with time zone,
-  usage_limit integer,
-  used_count integer default 0,
-  is_active boolean default true,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table coupons enable row level security;
-
-drop policy if exists "Allow public read active coupons" on coupons;
-create policy "Allow public read active coupons" on coupons for select using (is_active = true);
-
--- ============================================
--- 12. BLOG POSTS TABLE
--- ============================================
-create table if not exists blog_posts (
-  id uuid default gen_random_uuid() primary key,
-  slug text not null unique,
-  title text not null,
-  excerpt text,
-  content text not null,
-  cover_image text,
-  category text default 'Guide',
-  tags text[] default '{}',
-  author text default 'AURERXA',
-  is_published boolean default true,
-  published_at timestamp with time zone default now(),
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table blog_posts enable row level security;
-
-drop policy if exists "Allow public read published posts" on blog_posts;
-create policy "Allow public read published posts" on blog_posts for select using (is_published = true);
-
--- ============================================
--- 13. STORES TABLE
--- ============================================
-create table if not exists stores (
-  id uuid default gen_random_uuid() primary key,
-  name text not null,
-  city text not null,
-  address text not null,
-  phone text,
-  email text,
-  hours text,
-  lat decimal(10, 8),
-  lng decimal(11, 8),
-  image_url text,
-  is_active boolean default true,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table stores enable row level security;
-
-drop policy if exists "Allow public read active stores" on stores;
-create policy "Allow public read active stores" on stores for select using (is_active = true);
-
--- ============================================
--- 14. NEWSLETTER SUBSCRIBERS (MISSING)
--- ============================================
-create table if not exists newsletter_subscribers (
-  id uuid default gen_random_uuid() primary key,
-  email text not null unique,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table newsletter_subscribers enable row level security;
-
-drop policy if exists "Allow service role or admin access" on newsletter_subscribers;
-create policy "Allow service role or admin access" on newsletter_subscribers for select using (auth.uid() is not null); -- Muted for now, adjust based on admin needs
-
--- ============================================
--- 15. CUSTOM ORDERS (MISSING)
--- ============================================
-create table if not exists custom_orders (
-  id uuid default gen_random_uuid() primary key,
-  name text not null,
-  email text not null,
-  phone text,
-  description text not null,
-  budget text,
-  status text default 'pending',
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table custom_orders enable row level security;
-
--- ============================================
--- 16. CONTACT MESSAGES (MISSING)
--- ============================================
-create table if not exists contact_messages (
-  id uuid default gen_random_uuid() primary key,
-  name text not null,
-  email text not null,
-  phone text,
-  message text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table contact_messages enable row level security;
-
--- ============================================
--- 17. AUTH SYNC TRIGGER
--- ============================================
 create or replace function public.handle_new_user() 
 returns trigger as $$
 begin
@@ -428,93 +65,22 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 
 -- ============================================
--- 18. SEED DATA (Safe to re-run)
--- ============================================
-
--- Categories
-insert into categories (slug, name, description, image_url) values
-  ('gold', 'Gold', 'Timeless 22K and 24K gold jewelry', '/heritage-rings.jpg'),
-  ('silver', 'Silver', 'Premium sterling silver collection', '/stock-photo-pair-of-silver-rings-with-small-diamonds-for-lovers.jpg'),
-  ('diamond', 'Diamond', 'Exquisite diamond masterpieces', '/pexels-abhishek-saini-1415858-3847212.jpg'),
-  ('platinum', 'Platinum', 'The rarest metal for unique moments', '/platinum-ring.jpg')
-on conflict (slug) do update set image_url = excluded.image_url;
-
--- Stores
-insert into stores (name, city, address, phone, email, hours, lat, lng, image_url) values
-  ('AURERXA Mumbai Flagship', 'Mumbai', 'Shop No. 15, Linking Road, Bandra West, Mumbai 400050', '+91 22 2640 5555', 'mumbai@aurerxa.com', 'Mon-Sat: 11AM-9PM, Sun: 12PM-8PM', 19.0596, 72.8295, '/stores/mumbai.jpg')
-on conflict do nothing;
-
--- ============================================
--- 19. PUSH SUBSCRIPTIONS TABLE
--- ============================================
-create table if not exists push_subscriptions (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users(id) on delete cascade,
-  endpoint text not null unique,
-  p256dh text not null,
-  auth text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table push_subscriptions enable row level security;
-
-drop policy if exists "Users can manage own subscriptions" on push_subscriptions;
-create policy "Users can manage own subscriptions" on push_subscriptions 
-  for all using (auth.uid() = user_id or user_id is null);
-
-drop policy if exists "Allow public insertion for anonymous push" on push_subscriptions;
-create policy "Allow public insertion for anonymous push" on push_subscriptions 
-  for insert with check (true);
--- ============================================
--- 20. GOLD RATES TABLE
--- ============================================
-create table if not exists gold_rates (
-  id uuid default gen_random_uuid() primary key,
-  purity text not null unique, -- '24K', '22K', '18K'
-  rate decimal(10, 2) not null,
-  currency text default 'INR',
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table gold_rates enable row level security;
-
-drop policy if exists "Allow public read gold rates" on gold_rates;
-create policy "Allow public read gold rates" on gold_rates for select using (true);
-
-drop policy if exists "Allow admin update gold rates" on gold_rates;
-create policy "Allow admin update gold rates" on gold_rates for update using (auth.uid() is not null);
-
--- Seed Gold Rates
-insert into gold_rates (purity, rate) values
-  ('24K', 15660),
-  ('22K', 14355),
-  ('18K', 11745),
-  ('Silver', 285),
-  ('Platinum', 5666)
-on conflict (purity) do update set rate = excluded.rate, updated_at = now();
-
--- ============================================
--- 21. ADMIN USERS TABLE
+-- 2. ADMIN USERS & LOGS
 -- ============================================
 create table if not exists admin_users (
   id uuid references auth.users(id) on delete cascade primary key,
-  role text not null default 'staff' check (role in ('main_admin', 'support_admin', 'staff')),
+  role text not null check (role in ('main_admin', 'support_admin', 'staff')) default 'staff',
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
 alter table admin_users enable row level security;
 
-drop policy if exists "Admins can view admin_users" on admin_users;
-create policy "Admins can view admin_users" on admin_users for select
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+drop policy if exists "Users can view their own admin status" on admin_users;
+create policy "Users can view their own admin status" on admin_users for select using (auth.uid() = id);
 
-drop policy if exists "Main admin can manage admin_users" on admin_users;
-create policy "Main admin can manage admin_users" on admin_users for all
-  using (exists (select 1 from admin_users au where au.id = auth.uid() and au.role = 'main_admin'));
+drop policy if exists "Main admins can manage all admin users" on admin_users;
+create policy "Main admins can manage all admin users" on admin_users for all using (is_main_admin());
 
--- ============================================
--- 22. ADMIN ACTIVITY LOGS TABLE
--- ============================================
 create table if not exists admin_activity_logs (
   id uuid default gen_random_uuid() primary key,
   admin_id uuid references auth.users(id) on delete set null,
@@ -528,134 +94,199 @@ create table if not exists admin_activity_logs (
 alter table admin_activity_logs enable row level security;
 
 drop policy if exists "Admins can view activity logs" on admin_activity_logs;
-create policy "Admins can view activity logs" on admin_activity_logs for select
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+create policy "Admins can view activity logs" on admin_activity_logs for select using (is_admin());
 
 drop policy if exists "Admins can insert activity logs" on admin_activity_logs;
-create policy "Admins can insert activity logs" on admin_activity_logs for insert
-  with check (exists (select 1 from admin_users au where au.id = auth.uid()));
-
--- Admin-level policies for orders (admins can view/update ALL orders)
-drop policy if exists "Admins can view all orders" on orders;
-create policy "Admins can view all orders" on orders for select
-  using (auth.uid() = user_id or exists (select 1 from admin_users au where au.id = auth.uid()));
-
-drop policy if exists "Admins can update all orders" on orders;
-create policy "Admins can update all orders" on orders for update
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
-
--- Admin-level policies for order_items
-drop policy if exists "Admins can view all order items" on order_items;
-create policy "Admins can view all order items" on order_items for select
-  using (exists (select 1 from admin_users au where au.id = auth.uid())
-    or exists (select 1 from orders where orders.id = order_items.order_id and orders.user_id = auth.uid()));
-
--- Admin product management
-drop policy if exists "Admins can manage products" on products;
-create policy "Admins can manage products" on products for all
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
-
--- Admin coupon management
-drop policy if exists "Admins can manage coupons" on coupons;
-create policy "Admins can manage coupons" on coupons for all
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
-
--- Admin gold rate management
-drop policy if exists "Admins can manage gold rates" on gold_rates;
-create policy "Admins can manage gold rates" on gold_rates for all
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
-
--- Admin tickets management
-drop policy if exists "Admins can view all tickets" on tickets;
-create policy "Admins can view all tickets" on tickets for select
-  using (auth.uid() = user_id or exists (select 1 from admin_users au where au.id = auth.uid()));
-
-drop policy if exists "Admins can update all tickets" on tickets;
-create policy "Admins can update all tickets" on tickets for update
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
-
--- Admin repairs management
-drop policy if exists "Admins can view all repairs" on repairs;
-create policy "Admins can view all repairs" on repairs for select
-  using (auth.uid() = user_id or exists (select 1 from admin_users au where au.id = auth.uid()));
-
-drop policy if exists "Admins can update all repairs" on repairs;
-create policy "Admins can update all repairs" on repairs for update
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
-
--- Admin can view all profiles
-drop policy if exists "Admins can view all profiles" on profiles;
-create policy "Admins can view all profiles" on profiles for select
-  using (true);
-
--- Admin can view newsletter subscribers
-drop policy if exists "Admins can view all subscribers" on newsletter_subscribers;
-create policy "Admins can view all subscribers" on newsletter_subscribers for select
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
-
--- Admin can view custom orders
-drop policy if exists "Admins can view all custom orders" on custom_orders;
-create policy "Admins can view all custom orders" on custom_orders for select
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
-
-drop policy if exists "Admins can update custom orders" on custom_orders;
-create policy "Admins can update custom orders" on custom_orders for update
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
-
--- Admin can view contact messages
-drop policy if exists "Admins can view all contact messages" on contact_messages;
-create policy "Admins can view all contact messages" on contact_messages for select
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+create policy "Admins can insert activity logs" on admin_activity_logs for insert with check (is_admin());
 
 -- ============================================
--- 21. ADMIN USERS TABLE
+-- 3. CATEGORIES & PRODUCTS
 -- ============================================
-create table if not exists admin_users (
-  id uuid references auth.users(id) on delete cascade primary key,
-  role text not null check (role in ('main_admin', 'support_admin', 'staff')) default 'staff',
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
-alter table admin_users enable row level security;
-
--- Policy: Users can view their own admin status (needed for navbar and middleware detection)
-drop policy if exists "Users can view their own admin status" on admin_users;
-create policy "Users can view their own admin status" on admin_users for select
-  using (auth.uid() = id);
-
--- Policy: Only main_admin can manage other admin users
-drop policy if exists "Main admins can manage all admin users" on admin_users;
-create policy "Main admins can manage all admin users" on admin_users for all
-  using (
-    exists (
-      select 1 from admin_users au 
-      where au.id = auth.uid() 
-      and au.role = 'main_admin'
-    )
-  );
-
--- ============================================
--- 22. ADMIN ACTIVITY LOGS TABLE
--- ============================================
-create table if not exists admin_activity_logs (
+create table if not exists categories (
   id uuid default gen_random_uuid() primary key,
-  admin_id uuid references auth.users(id) on delete set null,
-  action text not null,
-  entity_type text not null,
-  entity_id text,
-  details jsonb,
+  slug text not null unique,
+  name text not null,
+  description text,
+  image_url text not null, 
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
-alter table admin_activity_logs enable row level security;
+alter table categories enable row level security;
+drop policy if exists "Allow public read categories" on categories;
+create policy "Allow public read categories" on categories for select using (true);
 
--- Policy: All admin users can view activity logs
-drop policy if exists "Admins can view activity logs" on admin_activity_logs;
-create policy "Admins can view activity logs" on admin_activity_logs for select
-  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+create table if not exists products (
+  id uuid default gen_random_uuid() primary key,
+  category_id uuid references categories(id),
+  name text not null,
+  description text,
+  price decimal(10, 2) not null,
+  image_url text not null,
+  images jsonb default '[]'::jsonb,
+  stock integer default 0,
+  sizes text[] default '{}',
+  featured boolean default false,
+  bestseller boolean default false,
+  slug text unique,
+  purity text,
+  gender text default 'Unisex',
+  weight_grams decimal(10, 2),
+  dimensions_width text,
+  dimensions_height text,
+  dimensions_length text,
+  dimensions_unit text default 'mm',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
 
--- Policy: All admin users can insert activity logs
-drop policy if exists "Admins can insert activity logs" on admin_activity_logs;
-create policy "Admins can insert activity logs" on admin_activity_logs for insert
-  with check (exists (select 1 from admin_users au where au.id = auth.uid()));
+alter table products enable row level security;
 
+drop policy if exists "Allow public read products" on products;
+create policy "Allow public read products" on products for select using (true);
+
+drop policy if exists "Admins can manage products" on products;
+create policy "Admins can manage products" on products for all using (is_admin());
+
+-- ============================================
+-- 4. ORDERS & CART
+-- ============================================
+create table if not exists orders (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete set null,
+  order_number text unique not null,
+  status text default 'pending',
+  subtotal decimal(10, 2) not null,
+  shipping decimal(10, 2) default 0,
+  total decimal(10, 2) not null,
+  shipping_address jsonb not null,
+  payment_method text,
+  payment_id text,
+  coupon_code text,
+  coupon_discount decimal(10, 2) default 0,
+  gift_wrap boolean default false,
+  gift_message text,
+  delivery_time_slot text,
+  tracking_number text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table orders enable row level security;
+
+drop policy if exists "Users can view own orders" on orders;
+create policy "Users can view own orders" on orders for select using (auth.uid() = user_id or is_admin());
+
+drop policy if exists "Admins can update orders" on orders;
+create policy "Admins can update orders" on orders for update using (is_admin());
+
+create table if not exists order_items (
+  id uuid default gen_random_uuid() primary key,
+  order_id uuid references orders(id) on delete cascade not null,
+  product_id uuid references products(id) on delete set null,
+  product_name text not null,
+  product_image text,
+  quantity integer not null,
+  size text,
+  price decimal(10, 2) not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table order_items enable row level security;
+
+drop policy if exists "Users can view own order items" on order_items;
+create policy "Users can view own order items" on order_items for select using (is_admin() or exists (select 1 from orders where orders.id = order_items.order_id and orders.user_id = auth.uid()));
+
+-- ============================================
+-- 5. SUPPORT (TICKETS & REPAIRS)
+-- ============================================
+create table if not exists tickets (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  subject text not null,
+  message text not null,
+  status text default 'open', 
+  urgency text default 'normal',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table tickets enable row level security;
+drop policy if exists "Users can view own tickets" on tickets;
+create policy "Users can view own tickets" on tickets for select using (auth.uid() = user_id or is_admin());
+drop policy if exists "Admins can update tickets" on tickets;
+create policy "Admins can update tickets" on tickets for update using (is_admin());
+
+create table if not exists repairs (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  product_name text not null,
+  order_number text, 
+  issue_description text not null,
+  status text default 'requested',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table repairs enable row level security;
+drop policy if exists "Users can view own repairs" on repairs;
+create policy "Users can view own repairs" on repairs for select using (auth.uid() = user_id or is_admin());
+drop policy if exists "Admins can update repairs" on repairs;
+create policy "Admins can update repairs" on repairs for update using (is_admin());
+
+-- ============================================
+-- 6. MISC (GOLD, COUPONS, STORES, ETC)
+-- ============================================
+create table if not exists gold_rates (
+  id uuid default gen_random_uuid() primary key,
+  purity text not null unique,
+  rate decimal(10, 2) not null,
+  currency text default 'INR',
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table gold_rates enable row level security;
+drop policy if exists "Allow public read gold rates" on gold_rates;
+create policy "Allow public read gold rates" on gold_rates for select using (true);
+drop policy if exists "Admins can manage gold rates" on gold_rates;
+create policy "Admins can manage gold rates" on gold_rates for all using (is_admin());
+
+create table if not exists newsletter_subscribers (
+  id uuid default gen_random_uuid() primary key,
+  email text not null unique,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table newsletter_subscribers enable row level security;
+drop policy if exists "Admins can view subscribers" on newsletter_subscribers;
+create policy "Admins can view subscribers" on newsletter_subscribers for select using (is_admin());
+
+create table if not exists custom_orders (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null,
+  phone text,
+  description text not null,
+  budget text,
+  status text default 'pending',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table custom_orders enable row level security;
+drop policy if exists "Admins can view custom orders" on custom_orders;
+create policy "Admins can view custom orders" on custom_orders for select using (is_admin());
+drop policy if exists "Admins can update custom orders" on custom_orders;
+create policy "Admins can update custom orders" on custom_orders for update using (is_admin());
+
+create table if not exists contact_messages (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null,
+  phone text,
+  message text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table contact_messages enable row level security;
+drop policy if exists "Admins can view contact messages" on contact_messages;
+create policy "Admins can view contact messages" on contact_messages for select using (is_admin());
+
+-- End of standardized schema
