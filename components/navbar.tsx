@@ -63,6 +63,7 @@ export function Navbar() {
       const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
         setUser(session?.user ?? null)
         if (session?.user) {
+          // Fetch Profile
           const { data } = await supabase
             .from('profiles')
             .select('*')
@@ -72,8 +73,17 @@ export function Navbar() {
           else {
             setProfile({ full_name: session.user.user_metadata.full_name || session.user.email })
           }
+
+          // Fetch Admin Status
+          const { data: adminData } = await supabase
+            .from('admin_users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          setIsAdmin(!!adminData)
         } else {
           setProfile(null)
+          setIsAdmin(false)
         }
       })
       authListener = data

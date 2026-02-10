@@ -80,7 +80,8 @@ export const getCategories = unstable_cache(
 
 export const getBestsellers = unstable_cache(
   async () => {
-    const { data, error } = await supabase
+    const client = await getAuthClient()
+    const { data, error } = await client
       .from('products')
       .select('*, categories(*)')
       .eq('bestseller', true)
@@ -90,7 +91,7 @@ export const getBestsellers = unstable_cache(
       console.error('Error fetching bestsellers:', error)
       return []
     }
-    return data
+    return data || []
   },
   ['bestsellers'],
   { tags: ['products', 'bestsellers'] }
@@ -98,7 +99,8 @@ export const getBestsellers = unstable_cache(
 
 export const getNewReleases = unstable_cache(
   async (limit: number = 8) => {
-    const { data, error } = await supabase
+    const client = await getAuthClient()
+    const { data, error } = await client
       .from('products')
       .select('*, categories(*)')
       .order('created_at', { ascending: false })
@@ -108,7 +110,7 @@ export const getNewReleases = unstable_cache(
       console.error('Error fetching new releases:', error)
       return []
     }
-    return data
+    return data || []
   },
   ['new-releases'],
   { tags: ['products', 'new-releases'] }
@@ -116,12 +118,22 @@ export const getNewReleases = unstable_cache(
 
 export const getProducts = unstable_cache(
   async (categorySlug?: string, sortBy?: string) => {
-    let query = supabase
+    const client = await getAuthClient()
+    let query = client
       .from('products')
-      .select('*, categories!inner(*)')
+      .select('*, categories(*)')
 
     if (categorySlug) {
-      query = query.eq('categories.slug', categorySlug)
+      // Since it's a join, we filter by the related table's field
+      const { data: cat } = await client
+        .from('categories')
+        .select('id')
+        .eq('slug', categorySlug)
+        .single()
+
+      if (cat) {
+        query = query.eq('category_id', cat.id)
+      }
     }
 
     // Sorting
@@ -129,8 +141,6 @@ export const getProducts = unstable_cache(
       query = query.order('price', { ascending: true })
     } else if (sortBy === 'price-high') {
       query = query.order('price', { ascending: false })
-    } else if (sortBy === 'newest') {
-      query = query.order('created_at', { ascending: false })
     } else {
       query = query.order('created_at', { ascending: false })
     }
@@ -141,7 +151,7 @@ export const getProducts = unstable_cache(
       console.error('Error fetching products:', error)
       return []
     }
-    return data
+    return data || []
   },
   ['products-list'],
   { tags: ['products'] }
@@ -1082,13 +1092,14 @@ export async function getFilteredProducts(options: {
   type?: string
 }) {
   try {
-    let query = supabase
+    const client = await getAuthClient()
+    let query = client
       .from('products')
-      .select('*, categories:category_id(name, slug)')
+      .select('*, categories(*)')
 
     // Category filter
     if (options.category) {
-      const { data: cat } = await supabase
+      const { data: cat } = await client
         .from('categories')
         .select('id')
         .eq('slug', options.category)
@@ -1103,20 +1114,15 @@ export async function getFilteredProducts(options: {
       query = query.eq('gender', options.gender)
     }
 
-    // Type filter (Simulated via Name pattern since no type column exists)
+    // Type filter
     if (options.type && options.type !== 'all') {
-      // Remove 's' from end if present (e.g., Rings -> Ring) for better matching
       const singularType = options.type.endsWith('s') ? options.type.slice(0, -1) : options.type
       query = query.ilike('name', `%${singularType}%`)
     }
 
     // Price filters
-    if (options.minPrice) {
-      query = query.gte('price', options.minPrice)
-    }
-    if (options.maxPrice) {
-      query = query.lte('price', options.maxPrice)
-    }
+    if (options.minPrice) query = query.gte('price', options.minPrice)
+    if (options.maxPrice) query = query.lte('price', options.maxPrice)
 
     // Search
     if (options.search) {
@@ -1125,14 +1131,13 @@ export async function getFilteredProducts(options: {
 
     // Sorting
     switch (options.sortBy) {
+      case 'price-low':
       case 'price_asc':
         query = query.order('price', { ascending: true })
         break
+      case 'price-high':
       case 'price_desc':
         query = query.order('price', { ascending: false })
-        break
-      case 'newest':
-        query = query.order('created_at', { ascending: false })
         break
       default:
         query = query.order('created_at', { ascending: false })
