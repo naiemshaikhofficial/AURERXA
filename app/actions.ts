@@ -151,9 +151,14 @@ export const getProducts = unstable_cache(
     const { data, error } = await query
 
     if (error) {
-      console.error('Error fetching products:', error)
+      console.error('❌ Error fetching products:', error)
       return []
     }
+
+    if (!data || data.length === 0) {
+      console.log('⚠️ No products found in database or blocked by RLS')
+    }
+
     return data || []
   },
   ['products-list'],
@@ -944,7 +949,7 @@ export async function searchProducts(query: string) {
 
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(*)')
+      .select('*, categories:category_id(*)')
       .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
       .limit(10)
 

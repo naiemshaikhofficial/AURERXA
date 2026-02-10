@@ -41,13 +41,17 @@ export async function middleware(request: NextRequest) {
 
     // 2. Admin Route Protection: Check admin_users table
     if (user && request.nextUrl.pathname.startsWith('/admin')) {
-        const { data: adminData } = await supabase
+        const { data: adminData, error: adminError } = await supabase
             .from('admin_users')
             .select('role')
             .eq('id', user.id)
             .single()
 
-        if (!adminData) {
+        if (adminError || !adminData) {
+            console.error('Middleware: Admin check failed or not an admin', {
+                userId: user.id,
+                error: adminError?.message || 'No record found'
+            })
             // Not an admin — redirect to homepage
             return NextResponse.redirect(new URL('/', request.url))
         }
