@@ -78,6 +78,7 @@ export default function WishlistPage() {
                                             alt={item.products?.name || 'Product'}
                                             fill
                                             className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                            unoptimized
                                         />
                                     </Link>
 

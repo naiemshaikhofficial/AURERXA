@@ -179,7 +179,7 @@ export default function AdminProductsPage() {
                                 <div key={product.id} className="bg-neutral-900 border border-white/5 p-4 grid grid-cols-1 md:grid-cols-4 gap-6 items-center hover:border-amber-500/30 transition-all duration-500 group">
                                     <div className="col-span-2 flex items-center gap-4">
                                         <div className="relative w-16 h-16 bg-black border border-white/5 flex-shrink-0 overflow-hidden">
-                                            <Image src={product.image_url} alt={product.name} fill className="object-cover p-2 transition-transform duration-700 group-hover:scale-110" sizes="64px" />
+                                            <Image src={product.image_url} alt={product.name} fill className="object-cover p-2 transition-transform duration-700 group-hover:scale-110" sizes="64px" unoptimized />
                                         </div>
                                         <div>
                                             <h3 className="font-serif text-lg text-white group-hover:text-amber-500 transition-colors">{product.name}</h3>

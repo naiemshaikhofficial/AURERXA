@@ -65,6 +65,7 @@ export function NewReleases({ products }: { products: any[] }) {
                                             className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
                                             sizes="(max-width: 768px) 280px, 320px"
                                             priority={i < 4}
+                                            unoptimized
                                         />
 
                                         {/* Overlay Gradient */}

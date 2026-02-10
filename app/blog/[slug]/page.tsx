@@ -70,6 +70,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                                 fill
                                 className="object-cover"
                                 priority
+                                unoptimized
                             />
                         </div>
                     )}
@@ -116,6 +117,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                                             alt={p.title}
                                             fill
                                             className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                            unoptimized
                                         />
                                     </div>
                                     <div className="p-4">

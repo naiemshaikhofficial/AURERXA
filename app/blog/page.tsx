@@ -74,6 +74,7 @@ export default async function BlogPage() {
                                             alt={post.title}
                                             fill
                                             className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-70 group-hover:opacity-100"
+                                            unoptimized
                                         />
                                         <div className="absolute bottom-4 left-4">
                                             <span className="px-3 py-1 bg-neutral-950/80 backdrop-blur-md border border-amber-500/20 text-amber-500 text-[9px] font-bold uppercase tracking-widest">
