@@ -8,6 +8,7 @@ import { BottomNav } from '@/components/bottom-nav'
 import { MobileInstallPrompt } from '@/components/mobile-install-prompt'
 import { NotificationManager } from '@/components/notification-manager'
 import { CartSheet } from '@/components/cart-sheet'
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const _geist = Geist({ subsets: ['latin'] })
 
@@ -66,6 +67,7 @@ export default function RootLayout({
               <BottomNav />
               <MobileInstallPrompt />
               <NotificationManager />
+              <SpeedInsights />
             </SmoothScroll>
           </CartProvider>
         </ThemeProvider>
