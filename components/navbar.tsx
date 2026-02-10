@@ -262,7 +262,7 @@ export function Navbar() {
               {['Home', 'Our Story', 'Collections', 'Blog'].map((item) => (
                 <Link
                   key={item}
-                  href={item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`}
+                  href={item === 'Home' ? '/' : item === 'Our Story' ? '/our-story' : `/${item.toLowerCase().replace(' ', '-')}`}
                   className="text-[11px] font-premium-sans text-muted-foreground hover:text-primary transition-colors duration-500 tracking-[0.2em]"
                 >
                   {item}
