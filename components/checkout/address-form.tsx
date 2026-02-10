@@ -27,7 +27,7 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover'
 
-import { getPincodeDetails, checkDeliveryAvailability, calculateShippingRate } from '@/app/actions'
+import { getPincodeDetails } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 
 interface AddressFormProps {
@@ -119,7 +119,6 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
     })
 
     const { items: cartItems } = useCart()
-    const [estimates, setEstimates] = useState<any>(null)
     const [pincodeLoading, setPincodeLoading] = useState(false)
 
     const [countryOpen, setCountryOpen] = useState(false)
@@ -165,30 +164,11 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             state: stateObj ? stateObj.isoCode : prev.state
                         }))
                     }
-
-                    // 2. Get Shipping & Delivery Estimates
-                    const [avail, rate] = await Promise.all([
-                        checkDeliveryAvailability(formData.pincode),
-                        calculateShippingRate(formData.pincode, cartItems, false)
-                    ])
-                    if (isCancelled) return;
-
-                    if (avail.success && rate.success) {
-                        setEstimates({
-                            shipping: rate.rate,
-                            delivery: avail.estimatedDelivery,
-                            message: avail.message
-                        })
-                    } else {
-                        setEstimates(null)
-                    }
                 } catch (err) {
                     console.error('Pincode detection error:', err)
                 } finally {
                     if (!isCancelled) setPincodeLoading(false)
                 }
-            } else {
-                setEstimates(null)
             }
         }
 
@@ -317,33 +297,6 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             maxLength={6}
                             className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
                         />
-
-                        <AnimatePresence>
-                            {estimates && (
-                                <motion.div
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className="overflow-hidden"
-                                >
-                                    <div className="mt-4 p-4 border border-primary/20 bg-primary/5 space-y-2">
-                                        <div className="flex justify-between items-center text-[10px] uppercase tracking-widest">
-                                            <span className="text-muted-foreground">Shipping</span>
-                                            <span className="text-primary font-bold">₹{estimates.shipping}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-[10px] uppercase tracking-widest">
-                                            <span className="text-muted-foreground">Est. Delivery</span>
-                                            <span className="text-foreground">{estimates.delivery?.from} - {estimates.delivery?.to}</span>
-                                        </div>
-                                        {estimates.message && (
-                                            <p className="text-[8px] text-primary/60 text-right uppercase tracking-tighter italic">
-                                                {estimates.message}
-                                            </p>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
                     </div>
                 </motion.div>
             </div>

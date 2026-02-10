@@ -237,15 +237,23 @@ export function DeliveryEstimate({ pincode }: { pincode?: string }) {
     if (!deliveryInfo || !deliveryInfo.success || !deliveryInfo.available) return null
 
     return (
-        <div className="flex items-center gap-4 py-4 border-t border-white/10">
-            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                <Truck className="w-4 h-4 text-amber-200/60" />
+        <div className="flex flex-col gap-2 py-4 border-t border-white/10">
+            <div className="flex items-center gap-4">
+                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                    <Truck className="w-4 h-4 text-amber-200/60" />
+                </div>
+                <div className="flex-1">
+                    <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] mb-0.5">Estimated Delivery</p>
+                    <p className="text-xs text-white uppercase tracking-wider font-bold">
+                        {deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}
+                    </p>
+                </div>
             </div>
-            <div className="flex-1">
-                <p className="text-xs text-white/60 font-light uppercase tracking-wider">
-                    Delivery by <span className="text-white font-bold">{deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}</span>
+            {deliveryInfo.message && (
+                <p className="text-[9px] text-primary/60 text-right uppercase tracking-tighter italic">
+                    {deliveryInfo.message}
                 </p>
-            </div>
+            )}
         </div>
     )
 }
