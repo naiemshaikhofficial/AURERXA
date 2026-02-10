@@ -89,6 +89,7 @@ export function CategoryBrowsing() {
                                         fill
                                         className="object-cover transition-all duration-1000 scale-105 group-hover:scale-110"
                                         sizes="(max-width: 768px) 50vw, 25vw"
+                                        unoptimized
                                     />
 
                                     {/* Luxury Overlays */}
