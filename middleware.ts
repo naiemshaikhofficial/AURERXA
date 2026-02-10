@@ -29,8 +29,21 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    // This will refresh the session if it's expired
-    await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    // 1. Protected Routes Security
+    if (!user) {
+        if (request.nextUrl.pathname.startsWith('/account') ||
+            request.nextUrl.pathname.startsWith('/admin')) {
+            return NextResponse.redirect(new URL('/login', request.url))
+        }
+    }
+
+    // 2. Extra Security Headers (Redundancy)
+    response.headers.set('X-Frame-Options', 'DENY')
+    response.headers.set('X-Content-Type-Options', 'nosniff')
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+    response.headers.set('Permissions-Policy', 'camera=self, microphone=(), geolocation=(), interest-cohort=()')
 
     return response
 }
