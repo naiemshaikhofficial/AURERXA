@@ -119,7 +119,7 @@ export function GoldRateCard() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative min-h-[160px]">
                         {loading && (
                             <div className="absolute inset-0 z-20 flex items-center justify-center">
-                                <div className="w-8 h-8 border-[1px] border-border border-t-primary/50 rounded-full animate-spin duration-[2s]" />
+                                <div className="w-8 h-8 border-[1px] border-border border-t-primary/50 rounded-full animate-spin duration-[2000ms]" />
                             </div>
                         )}
                         <AnimatePresence mode="wait">

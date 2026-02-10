@@ -78,7 +78,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                     src={product.image_url}
                     alt={product.name}
                     fill
-                    className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                    className="object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                     priority={priority || index < 4}
                     unoptimized
@@ -118,7 +118,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 </div>
 
                 {/* Modern Slide-up Buttons */}
-                <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.16,1,0.3,1] z-20">
+                <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] z-20">
                     <div className="grid grid-cols-2 gap-px bg-white/5 backdrop-blur-md border-t border-white/10">
                         <Button
                             onClick={handleAddToCart}

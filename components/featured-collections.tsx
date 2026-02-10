@@ -89,7 +89,7 @@ function CollectionCard({ category }: { category: any }) {
         <div
           className="absolute inset-0 z-10 p-10 flex flex-col justify-end"
         >
-          <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-700 ease-[0.16,1,0.3,1]">
+          <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
             <p className="text-primary/80 text-[9px] uppercase tracking-[0.4em] font-bold mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-700">Explore</p>
             <h3 className="text-2xl md:text-3xl font-serif font-bold text-white italic tracking-tighter leading-none mb-8 group-hover:text-primary transition-colors duration-300">
               {category.name}

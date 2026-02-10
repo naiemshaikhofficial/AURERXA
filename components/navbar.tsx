@@ -35,6 +35,11 @@ export function Navbar() {
   const [profile, setProfile] = useState<any>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     let authListener: { subscription: { unsubscribe: () => void } } | null = null
@@ -197,99 +202,101 @@ export function Navbar() {
                 )}
               </Link>
 
-              <Sheet>
-                <SheetTrigger asChild>
-                  <button className="text-foreground/80 hover:text-primary transition-colors p-2">
-                    <Menu className="w-6 h-6 stroke-1" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[300px] p-0">
-                  <SheetHeader className="p-8 border-b border-border text-left bg-card/30 flex flex-row items-center justify-between">
-                    <div>
-                      <SheetTitle className="text-3xl font-serif text-foreground/90 font-light tracking-wide">AURERXA</SheetTitle>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">Est. 1989</p>
-                    </div>
-                    <ModeToggle />
-                  </SheetHeader>
-                  <div className="flex flex-col py-6 relative">
-                    <motion.div
-                      variants={staggerContainer}
-                      initial="initial"
-                      animate="animate"
-                      className="flex flex-col"
-                    >
-                      {['Home', 'Shop Collections', 'Custom Jewelry', 'Our Story', 'Blog', 'Contact Us'].map((item, idx) => {
-                        const href = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`
-                        return (
-                          <motion.div key={idx} variants={fadeInUp}>
-                            <Link href={href} className="flex px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all border-b border-border/10">
-                              {item}
-                            </Link>
-                          </motion.div>
-                        )
-                      })}
-                      <motion.div variants={fadeInUp}>
-                        <Link href="/faq" className="px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all">
-                          FAQs
-                        </Link>
-                      </motion.div>
-                    </motion.div>
-
-                    {/* User Profile Section in Mobile Menu */}
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5, duration: 0.8 }}
-                      className="mt-8 px-6 pt-8 border-t border-border space-y-4"
-                    >
-                      {user ? (
-                        <>
-                          <div className="flex items-center gap-4 mb-6 p-4 rounded-sm bg-muted/10 border border-border">
-                            <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-serif text-lg">
-                              {getInitials()}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <span className="text-xs font-medium text-foreground/80 uppercase tracking-wider">{profile?.full_name || 'My Account'}</span>
-                              <span className="text-[10px] text-muted-foreground font-light">{user.email}</span>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <Link
-                              href="/account"
-                              className="flex flex-col items-center justify-center p-4 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
-                            >
-                              <Settings className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-primary/60 transition-colors stroke-1" />
-                              <span className="text-[9px] uppercase tracking-widest text-muted-foreground group-hover:text-primary/80">Account</span>
-                            </Link>
-                            <button
-                              onClick={handleSignOut}
-                              className="flex flex-col items-center justify-center p-4 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
-                            >
-                              <LogOut className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-destructive/60 transition-colors stroke-1" />
-                              <span className="text-[9px] uppercase tracking-widest text-muted-foreground group-hover:text-destructive/80">Sign Out</span>
-                            </button>
-                            {isAdmin && (
-                              <Link
-                                href="/admin"
-                                className="flex flex-col items-center justify-center p-4 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2"
-                              >
-                                <Shield className="w-5 h-5 mb-2 text-[#D4AF37] transition-colors stroke-1" />
-                                <span className="text-[9px] uppercase tracking-widest text-[#D4AF37]">Admin Panel</span>
+              {mounted && (
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <button className="text-foreground/80 hover:text-primary transition-colors p-2">
+                      <Menu className="w-6 h-6 stroke-1" />
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[300px] p-0">
+                    <SheetHeader className="p-8 border-b border-border text-left bg-card/30 flex flex-row items-center justify-between">
+                      <div>
+                        <SheetTitle className="text-3xl font-serif text-foreground/90 font-light tracking-wide">AURERXA</SheetTitle>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">Est. 1989</p>
+                      </div>
+                      <ModeToggle />
+                    </SheetHeader>
+                    <div className="flex flex-col py-6 relative">
+                      <motion.div
+                        variants={staggerContainer}
+                        initial="initial"
+                        animate="animate"
+                        className="flex flex-col"
+                      >
+                        {['Home', 'Shop Collections', 'Custom Jewelry', 'Our Story', 'Blog', 'Contact Us'].map((item, idx) => {
+                          const href = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`
+                          return (
+                            <motion.div key={idx} variants={fadeInUp}>
+                              <Link href={href} className="flex px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all border-b border-border/10">
+                                {item}
                               </Link>
-                            )}
-                          </div>
-                        </>
-                      ) : (
-                        <Link href="/login" className="block">
-                          <Button className="w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-premium-sans py-6 rounded-none uppercase tracking-[0.2em] text-[10px] transition-all">
-                            Sign In / Register
-                          </Button>
-                        </Link>
-                      )}
-                    </motion.div>
-                  </div>
-                </SheetContent>
-              </Sheet>
+                            </motion.div>
+                          )
+                        })}
+                        <motion.div variants={fadeInUp}>
+                          <Link href="/faq" className="px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all">
+                            FAQs
+                          </Link>
+                        </motion.div>
+                      </motion.div>
+
+                      {/* User Profile Section in Mobile Menu */}
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5, duration: 0.8 }}
+                        className="mt-8 px-6 pt-8 border-t border-border space-y-4"
+                      >
+                        {user ? (
+                          <>
+                            <div className="flex items-center gap-4 mb-6 p-4 rounded-sm bg-muted/10 border border-border">
+                              <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-serif text-lg">
+                                {getInitials()}
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <span className="text-xs font-medium text-foreground/80 uppercase tracking-wider">{profile?.full_name || 'My Account'}</span>
+                                <span className="text-[10px] text-muted-foreground font-light">{user.email}</span>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <Link
+                                href="/account"
+                                className="flex flex-col items-center justify-center p-4 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
+                              >
+                                <Settings className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-primary/60 transition-colors stroke-1" />
+                                <span className="text-[9px] uppercase tracking-widest text-muted-foreground group-hover:text-primary/80">Account</span>
+                              </Link>
+                              <button
+                                onClick={handleSignOut}
+                                className="flex flex-col items-center justify-center p-4 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
+                              >
+                                <LogOut className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-destructive/60 transition-colors stroke-1" />
+                                <span className="text-[9px] uppercase tracking-widest text-muted-foreground group-hover:text-destructive/80">Sign Out</span>
+                              </button>
+                              {isAdmin && (
+                                <Link
+                                  href="/admin"
+                                  className="flex flex-col items-center justify-center p-4 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2"
+                                >
+                                  <Shield className="w-5 h-5 mb-2 text-[#D4AF37] transition-colors stroke-1" />
+                                  <span className="text-[9px] uppercase tracking-widest text-[#D4AF37]">Admin Panel</span>
+                                </Link>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <Link href="/login" className="block">
+                            <Button className="w-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 font-premium-sans py-6 rounded-none uppercase tracking-[0.2em] text-[10px] transition-all">
+                              Sign In / Register
+                            </Button>
+                          </Link>
+                        )}
+                      </motion.div>
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              )}
             </div>
 
             {/* Desktop Menu */}

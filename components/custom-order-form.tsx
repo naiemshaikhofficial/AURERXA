@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +14,12 @@ export function CustomOrderForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -143,18 +149,20 @@ export function CustomOrderForm() {
                 <Label htmlFor="budget" className="text-muted-foreground text-[9px] font-premium-sans">
                   Budget Range
                 </Label>
-                <Select value={formData.budget} onValueChange={handleBudgetChange}>
-                  <SelectTrigger className="bg-background/40 border-border text-muted-foreground h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest">
-                    <SelectValue placeholder="Select budget range" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border text-popover-foreground rounded-none">
-                    <SelectItem value="under-50" className="focus:bg-accent focus:text-accent-foreground py-3">Under ₹50,000</SelectItem>
-                    <SelectItem value="50-100" className="focus:bg-accent focus:text-accent-foreground py-3">₹50,000 - ₹100,000</SelectItem>
-                    <SelectItem value="100-250" className="focus:bg-accent focus:text-accent-foreground py-3">₹100,000 - ₹250,000</SelectItem>
-                    <SelectItem value="250-500" className="focus:bg-accent focus:text-accent-foreground py-3">₹250,000 - ₹500,000</SelectItem>
-                    <SelectItem value="500-plus" className="focus:bg-accent focus:text-accent-foreground py-3">₹500,000+</SelectItem>
-                  </SelectContent>
-                </Select>
+                {mounted && (
+                  <Select value={formData.budget} onValueChange={handleBudgetChange}>
+                    <SelectTrigger className="bg-background/40 border-border text-muted-foreground h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest">
+                      <SelectValue placeholder="Select budget range" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border text-popover-foreground rounded-none">
+                      <SelectItem value="under-50" className="focus:bg-accent focus:text-accent-foreground py-3">Under ₹50,000</SelectItem>
+                      <SelectItem value="50-100" className="focus:bg-accent focus:text-accent-foreground py-3">₹50,000 - ₹100,000</SelectItem>
+                      <SelectItem value="100-250" className="focus:bg-accent focus:text-accent-foreground py-3">₹100,000 - ₹250,000</SelectItem>
+                      <SelectItem value="250-500" className="focus:bg-accent focus:text-accent-foreground py-3">₹250,000 - ₹500,000</SelectItem>
+                      <SelectItem value="500-plus" className="focus:bg-accent focus:text-accent-foreground py-3">₹500,000+</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
 

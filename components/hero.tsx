@@ -104,7 +104,7 @@ export function Hero() {
           >
             <button className="group relative px-12 py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl">
               <span className="relative z-10">Discover Collection</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[1.5s] ease-in-out" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[1500ms] ease-in-out" />
             </button>
           </motion.div>
         </motion.div>
