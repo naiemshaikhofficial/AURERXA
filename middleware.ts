@@ -29,18 +29,26 @@ export async function middleware(request: NextRequest) {
         }
     )
 
+    const isProtectedRoute = request.nextUrl.pathname.startsWith('/account') ||
+        request.nextUrl.pathname.startsWith('/admin') ||
+        request.nextUrl.pathname.startsWith('/checkout')
+
+    if (!isProtectedRoute) {
+        // Early return for public routes - keep headers for security
+        response.headers.set('X-Frame-Options', 'DENY')
+        response.headers.set('X-Content-Type-Options', 'nosniff')
+        return response
+    }
+
     const { data: { user } } = await supabase.auth.getUser()
 
     // 1. Protected Routes: Unauthenticated users
     if (!user) {
-        if (request.nextUrl.pathname.startsWith('/account') ||
-            request.nextUrl.pathname.startsWith('/admin')) {
-            return NextResponse.redirect(new URL('/login', request.url))
-        }
+        return NextResponse.redirect(new URL('/login', request.url))
     }
 
     // 2. Admin Route Protection: Check admin_users table
-    if (user && request.nextUrl.pathname.startsWith('/admin')) {
+    if (request.nextUrl.pathname.startsWith('/admin')) {
         const { data: adminData, error: adminError } = await supabase
             .from('admin_users')
             .select('role')

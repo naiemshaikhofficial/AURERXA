@@ -63,9 +63,12 @@ export function Hero() {
             transition={{ duration: 1, ease: PREMIUM_EASE }}
             className="mb-6 relative inline-block"
           >
-            <img
+            <Image
               src="/logo.png"
               alt="Aurerxa Logo"
+              width={112}
+              height={112}
+              priority
               className="w-20 md:w-28 h-auto relative z-10 opacity-90 drop-shadow-xl dark:invert-0 invert"
             />
           </motion.div>
