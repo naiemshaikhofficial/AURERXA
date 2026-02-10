@@ -36,6 +36,8 @@ export function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false)
 
   useEffect(() => {
+    let authListener: { subscription: { unsubscribe: () => void } } | null = null
+
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
@@ -48,27 +50,32 @@ export function Navbar() {
           .single()
         if (data) setProfile(data)
       }
+
+      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        setUser(session?.user ?? null)
+        if (session?.user) {
+          const { data } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          if (data) setProfile(data)
+          else {
+            setProfile({ full_name: session.user.user_metadata.full_name || session.user.email })
+          }
+        } else {
+          setProfile(null)
+        }
+      })
+      authListener = data
     }
     getUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-        if (data) setProfile(data)
-        else {
-          setProfile({ full_name: session.user.user_metadata.full_name || session.user.email })
-        }
-      } else {
-        setProfile(null)
+    return () => {
+      if (authListener) {
+        authListener.subscription.unsubscribe()
       }
-    })
-
-    return () => subscription.unsubscribe()
+    }
   }, [])
 
   // Keyboard shortcut for search

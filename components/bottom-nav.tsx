@@ -13,17 +13,24 @@ export function BottomNav() {
     const [user, setUser] = useState<any>(null)
 
     useEffect(() => {
+        let authListener: { subscription: { unsubscribe: () => void } } | null = null
+
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             setUser(user)
         }
         getUser()
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null)
         })
+        authListener = data
 
-        return () => subscription.unsubscribe()
+        return () => {
+            if (authListener) {
+                authListener.subscription.unsubscribe()
+            }
+        }
     }, [])
 
     const links = [

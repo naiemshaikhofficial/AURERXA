@@ -46,19 +46,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const closeCart = () => setIsCartOpen(false)
 
     useEffect(() => {
+        let authListener: { subscription: { unsubscribe: () => void } } | null = null
+
         const checkUser = async () => {
             const { data: { session } } = await supabase.auth.getSession()
             setUser(session?.user || null)
 
-            const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+            const { data } = supabase.auth.onAuthStateChange((_event, session) => {
                 setUser(session?.user || null)
             })
-
-            return () => {
-                authListener?.subscription.unsubscribe()
-            }
+            authListener = data
         }
         checkUser()
+
+        return () => {
+            if (authListener) {
+                authListener.subscription.unsubscribe()
+            }
+        }
     }, [])
 
     useEffect(() => {
