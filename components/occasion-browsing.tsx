@@ -9,19 +9,19 @@ const occasions = [
     {
         name: 'Wedding',
         slug: 'wedding',
-        image: 'https://images.unsplash.com/photo-1595910326110-2e0f2151be90?q=80&w=800&auto=format&fit=crop',
+        image: '/pexels-vikashkr50-27155546.jpg',
         title: 'Grandeur for the Big Day'
     },
     {
         name: 'Daily Wear',
         slug: 'daily',
-        image: 'https://images.unsplash.com/photo-1515562141207-7a88fb0ce33e?q=80&w=800&auto=format&fit=crop',
+        image: '/sama-hosseini-mSaYvzTy4-0-unsplash.jpg',
         title: 'Everyday Luxury'
     },
     {
         name: 'Special Gift',
         slug: 'gift',
-        image: 'https://images.unsplash.com/photo-1576426863848-c21f53c60b19?q=80&w=800&auto=format&fit=crop',
+        image: '/valentines-day-still-life-design_23-2149246309.avif',
         title: 'Celebrate Every Moment'
     }
 ]

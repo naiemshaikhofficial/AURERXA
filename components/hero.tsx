@@ -47,8 +47,7 @@ export function Hero() {
 
       {/* 2. Atmospheric Effects - Subtle & Clean */}
       <div className="absolute inset-0 z-[5] pointer-events-none">
-        {/* Subtle Grain instead of Scanlines for analog luxury feel */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] mix-blend-overlay" />
+
       </div>
 
       {/* 3. Main Content - Refined Typography */}

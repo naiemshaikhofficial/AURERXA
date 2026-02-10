@@ -75,7 +75,7 @@ function CollectionsContent() {
       <div className="relative pt-10 pb-20 px-6 overflow-hidden">
         {/* Removed Image Background for PURE MATTE feel or kept very subtle */}
         <div className="absolute inset-0 bg-background z-0" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] dark:opacity-20 bg-repeat pointer-events-none mix-blend-overlay" />
+
 
         <div className="relative z-10 max-w-7xl mx-auto text-center space-y-10">
           <motion.div

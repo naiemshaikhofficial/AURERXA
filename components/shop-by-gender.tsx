@@ -9,19 +9,19 @@ const genderCategories = [
     {
         name: 'Women',
         slug: 'women',
-        image: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=800&auto=format&fit=crop',
+        image: '/ardy-arjun-fQtnMrW1NAQ-unsplash.jpg',
         description: 'Timeless elegance for the modern queen.'
     },
     {
         name: 'Men',
         slug: 'men',
-        image: 'https://images.unsplash.com/photo-1539109132313-3fe1e4cf203f?q=80&w=800&auto=format&fit=crop',
+        image: '/alberto-rodriguez-santana-EU-KuIDEbKU-unsplash.jpg',
         description: 'Refined craftsmanship for the classic gentleman.'
     },
     {
-        name: 'Kids',
-        slug: 'kids',
-        image: 'https://images.unsplash.com/photo-1503919919749-646dfc16d179?q=80&w=800&auto=format&fit=crop',
+        name: 'Unisex',
+        slug: 'unisex',
+        image: '/Untitled_design_70.webp',
         description: 'Dainty treasures for our precious little ones.'
     }
 ]

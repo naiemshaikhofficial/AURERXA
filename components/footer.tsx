@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer className="hidden md:block py-24 px-6 lg:px-12 bg-background text-foreground relative border-t border-border overflow-hidden">
       {/* Black Edition Background Effect - Subtle Noise */}
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] pointer-events-none mix-blend-overlay" />
+
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       <div className="max-w-7xl mx-auto relative z-10">

@@ -18,7 +18,6 @@ export function NewReleases({ products }: { products: any[] }) {
         <section className="py-24 bg-background relative overflow-hidden">
             {/* Background Elements */}
             <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-            <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
 
             <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
                 <motion.div

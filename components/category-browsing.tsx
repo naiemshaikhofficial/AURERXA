@@ -24,7 +24,7 @@ const categories = [
     {
         name: 'Mangalsutra',
         slug: 'Mangalsutra',
-        image: 'https://images.unsplash.com/photo-1615655406736-b37c4fabf923?q=80&w=800&auto=format&fit=crop',
+        image: '/mangalsutra-golden-necklace-worn-by-married-hindu-women-arranged-with-traditional-saree-with-huldi-kumkum-mogra-flowers-gajra-selective-focus_466689-60648 (2).avif',
     },
     {
         name: 'Bracelets',
@@ -34,7 +34,7 @@ const categories = [
     {
         name: 'Necklaces',
         slug: 'Necklaces',
-        image: 'https://images.unsplash.com/photo-1515562141207-7a88fb0ce33e?q=80&w=800&auto=format&fit=crop',
+        image: '/kateryna-hliznitsova-ceSCZzjTReg-unsplash.jpg',
     },
 ]
 
