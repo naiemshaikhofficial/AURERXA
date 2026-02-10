@@ -39,9 +39,7 @@ export default function TermsPage() {
                         <section>
                             <h2 className="text-xl font-serif font-medium text-primary mb-4">3. Orders and Payment</h2>
                             <p className="text-muted-foreground leading-relaxed">
-                                By placing an order, you are making an offer to purchase. We reserve the right to
-                                accept or decline any order. Payment must be received in full before order processing.
-                                We accept major credit cards, debit cards, UPI, and Cash on Delivery.
+                                We accept major credit cards, debit cards, and UPI. Payment must be received in full before order processing.
                             </p>
                         </section>
 

@@ -60,6 +60,7 @@ export default function CheckoutPage() {
     // Script loading state
     const [razorpayLoaded, setRazorpayLoaded] = useState(false)
     const [cashfreeLoaded, setCashfreeLoaded] = useState(false)
+    const [enableCod, setEnableCod] = useState(false)
 
     const [newAddress, setNewAddress] = useState({
         label: 'Home',
@@ -104,8 +105,13 @@ export default function CheckoutPage() {
 
     async function loadData() {
         setLoading(true)
-        const addressData = await getAddresses()
+        const [addressData, config] = await Promise.all([
+            getAddresses(),
+            import('@/app/actions').then(m => m.getPaymentGatewayConfig())
+        ])
         setAddresses(addressData)
+        setEnableCod(config.enableCod)
+
         if (addressData.length > 0) {
             const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0]
             setSelectedAddress(defaultAddr.id)
@@ -676,8 +682,19 @@ export default function CheckoutPage() {
                                             <div className="flex-1">
                                                 <div className="flex items-center justify-between">
                                                     <span className={`font-medium ${paymentMethod === 'online' ? 'text-primary' : 'text-foreground'}`}>Secure Online Payment</span>
-                                                    <div className="relative w-10 h-4 grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
-                                                        <Image src="/upi-icon.svg" alt="UPI" fill className="object-contain dark:invert invert-0" />
+                                                    <div className="flex items-center gap-2 grayscale-0 group-hover:opacity-100 transition-all">
+                                                        <div className="relative w-8 h-4">
+                                                            <Image src="/upi-icon.svg" alt="UPI" fill className="object-contain dark:invert invert-0" />
+                                                        </div>
+                                                        <div className="relative w-8 h-4">
+                                                            <Image src="/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" />
+                                                        </div>
+                                                        <div className="relative w-8 h-4">
+                                                            <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-full object-contain invert dark:invert-0" />
+                                                        </div>
+                                                        <div className="relative w-8 h-4">
+                                                            <img src="https://logowik.com/content/uploads/images/rupay6734.jpg" alt="RuPay" className="h-full object-contain" />
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <p className="text-xs text-muted-foreground">UPI, Credit/Debit Card, Net Banking</p>
@@ -685,25 +702,27 @@ export default function CheckoutPage() {
                                         </div>
                                     </label>
 
-                                    <label
-                                        onClick={() => setPaymentMethod('cod')}
-                                        className={`block p-4 border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-primary bg-primary/5' : 'border-border hover:border-foreground/20'}`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <input
-                                                type="radio"
-                                                name="payment"
-                                                checked={paymentMethod === 'cod'}
-                                                onChange={() => setPaymentMethod('cod')}
-                                                className="accent-primary"
-                                            />
-                                            <Banknote className="w-5 h-5 text-primary" />
-                                            <div>
-                                                <span className={`font-medium ${paymentMethod === 'cod' ? 'text-primary' : 'text-foreground'}`}>Cash on Delivery</span>
-                                                <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
+                                    {enableCod && (
+                                        <label
+                                            onClick={() => setPaymentMethod('cod')}
+                                            className={`block p-4 border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-primary bg-primary/5' : 'border-border hover:border-foreground/20'}`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="radio"
+                                                    name="payment"
+                                                    checked={paymentMethod === 'cod'}
+                                                    onChange={() => setPaymentMethod('cod')}
+                                                    className="accent-primary"
+                                                />
+                                                <Banknote className="w-5 h-5 text-primary" />
+                                                <div>
+                                                    <span className={`font-medium ${paymentMethod === 'cod' ? 'text-primary' : 'text-foreground'}`}>Cash on Delivery</span>
+                                                    <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </label>
+                                        </label>
+                                    )}
 
                                     <div className="bg-background/50 p-4 border border-destructive/10 rounded">
                                         <label className="flex items-start gap-3 cursor-pointer">

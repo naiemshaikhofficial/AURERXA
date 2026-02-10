@@ -165,8 +165,9 @@ export default function CartPage() {
 
                                     <div className="mt-8 pt-6 border-t border-border flex items-center justify-center gap-4 opacity-30 grayscale hover:grayscale-0 hover:opacity-60 transition-all duration-500">
                                         <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-6 invert dark:invert-0" />
-                                        <img src="https://img.icons8.com/?size=100&id=13608&format=png&color=FFFFFF" alt="Mastercard" className="h-6 invert dark:invert-0" />
-                                        <img src="https://img.icons8.com/?size=100&id=r1iO8o8370Pj&format=png&color=FFFFFF" alt="UPI" className="h-6 invert dark:invert-0" />
+                                        <img src="/Mastercard-logo.svg" alt="Mastercard" className="h-6 invert dark:invert-0" />
+                                        <img src="/upi-icon.svg" alt="UPI" className="h-6 invert dark:invert-0" />
+                                        <img src="/Rupay-Logo.png" alt="RuPay" className="h-6" />
                                     </div>
                                 </div>
                             </div>

@@ -1880,7 +1880,8 @@ export async function getPaymentGatewayConfig() {
   return {
     gateway: (process.env.PAYMENT_GATEWAY as 'cashfree' | 'razorpay') || 'cashfree',
     mode: process.env.CASHFREE_MODE || 'sandbox',
-    razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+    enableCod: process.env.ENABLE_COD === 'true'
   }
 }
 

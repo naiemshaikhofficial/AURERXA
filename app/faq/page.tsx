@@ -70,7 +70,7 @@ const faqs = [
         questions: [
             {
                 q: 'What payment methods do you accept?',
-                a: 'We accept all major credit/debit cards, UPI, net banking, and Cash on Delivery (COD) for orders up to ₹1,00,000.'
+                a: 'We accept all major credit/debit cards, UPI, and net banking for a secure transaction experience.'
             },
             {
                 q: 'Is my payment information secure?',
