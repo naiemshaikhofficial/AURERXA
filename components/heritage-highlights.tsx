@@ -77,12 +77,13 @@ export function HeritageHighlights() {
                         transition={{ duration: 1.2 }}
                         className="order-1 lg:order-2 space-y-8 md:space-y-12"
                     >
-                        <div className="space-y-4 md:space-y-6">
-                            <span className="text-primary text-xs tracking-[0.5em] font-bold uppercase">The Scale of Respect</span>
-                            <h2 className="text-4xl md:text-7xl font-serif font-black italic text-foreground tracking-tighter leading-[0.9]">
+                        <div className="space-y-8">
+                            <span className="text-primary/60 text-[10px] tracking-[0.8em] font-bold uppercase block">The Scale of Respect</span>
+                            <h2 className="text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none">
                                 Millions of <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/60 to-primary">Masterpieces.</span>
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Masterpieces.</span>
                             </h2>
+                            <div className="w-16 h-[0.5px] bg-primary/20" />
                         </div>
 
                         <div className="space-y-6 md:space-y-8 text-lg md:text-xl text-muted-foreground font-light leading-relaxed italic">

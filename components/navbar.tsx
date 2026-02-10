@@ -131,8 +131,8 @@ export function Navbar() {
 
   const { scrollY } = useScroll()
   const [hidden, setHidden] = useState(false)
-  const navHeight = useTransform(scrollY, [0, 100], ['6rem', '5rem'])
-  const navBg = useTransform(scrollY, [0, 100], ['rgba(var(--background), 0)', 'rgba(var(--background), 0.85)'])
+  const navHeight = useTransform(scrollY, [0, 100], ['6rem', '4.5rem'])
+  const navBg = useTransform(scrollY, [0, 100], ['rgba(var(--background), 0)', 'rgba(8, 8, 8, 0.95)'])
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0

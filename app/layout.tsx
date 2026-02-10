@@ -2,6 +2,8 @@ import React from "react"
 import type { Metadata, Viewport } from 'next'
 import { Geist } from 'next/font/google'
 import { SmoothScroll } from '@/components/smooth-scroll'
+import { Toaster } from "@/components/ui/sonner"
+import Script from 'next/script'
 
 import './globals.css'
 import { BottomNav } from '@/components/bottom-nav'
@@ -57,12 +59,15 @@ export default function RootLayout({
           <CartProvider>
             <SmoothScroll>
               <Navbar />
+              {/* Cinematic Grain Overlay */}
+              <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150" />
               <div className="pt-20 md:pt-24">
                 <CategoryNav />
                 <main>
                   {children}
                 </main>
               </div>
+              <Toaster />
               <CartSheet />
               <BottomNav />
               <MobileInstallPrompt />
@@ -71,6 +76,14 @@ export default function RootLayout({
             </SmoothScroll>
           </CartProvider>
         </ThemeProvider>
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
+        <Script
+          src="https://sdk.cashfree.com/js/v3/cashfree.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   )

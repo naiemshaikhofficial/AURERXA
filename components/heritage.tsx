@@ -52,15 +52,14 @@ export function Heritage() {
                         </span>
                     </motion.div>
 
-                    {/* Main Title - SINCE 1989 - BOLD */}
                     <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 1, delay: 0.2, ease: PREMIUM_EASE }}
-                        className="text-6xl md:text-[12rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 italic drop-shadow-2xl"
+                        transition={{ duration: 1.5, ease: PREMIUM_EASE }}
+                        className="text-7xl md:text-[14rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white/40 to-white/5 italic select-none"
                     >
-                        LEGACY
+                        HERITAGE
                     </motion.h2>
 
                     {/* Description */}

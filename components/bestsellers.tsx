@@ -38,15 +38,15 @@ export function Bestsellers() {
           viewport={{ once: true, margin: "-100px" }}
         >
           {/* Section Header */}
-          <motion.div variants={fadeInUp} className="text-center mb-12 md:mb-24">
-            <p className="text-primary/80 text-[10px] uppercase mb-4 md:mb-6 font-premium-sans">
-              Timeless Selection
-            </p>
-            <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-6 md:mb-8 text-foreground tracking-widest italic">
-              Curated <span className="text-primary">Bestsellers</span>
-            </h2>
-            <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-6 md:mb-8" />
-            <p className="text-sm md:text-base text-muted-foreground/60 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+          <motion.div variants={fadeInUp} className="text-center mb-24 md:mb-40 space-y-8">
+            <motion.div className="space-y-6">
+              <span className="text-primary/60 text-[10px] tracking-[0.8em] font-bold uppercase block">Timeless Selection</span>
+              <h2 className="text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none mb-6">
+                Curated <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Bestsellers.</span>
+              </h2>
+              <div className="w-16 h-[0.5px] mx-auto bg-primary/20" />
+            </motion.div>
+            <p className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic max-w-2xl mx-auto leading-relaxed">
               Our most esteemed pieces, celebrated for their exceptional design and unparalleled quality.
             </p>
           </motion.div>

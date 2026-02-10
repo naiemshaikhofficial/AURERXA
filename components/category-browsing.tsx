@@ -43,18 +43,18 @@ export function CategoryBrowsing() {
         <section className="py-24 md:py-48 bg-background text-foreground overflow-hidden border-y border-border">
             <div className="max-w-7xl mx-auto px-6">
                 {/* Section Header */}
-                <div className="text-center mb-16 md:mb-32 space-y-6">
+                <div className="text-center mb-24 md:mb-40 space-y-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="space-y-4"
+                        className="space-y-6"
                     >
-                        <span className="text-primary text-xs tracking-[0.5em] font-bold uppercase block">Curated Selection</span>
-                        <h2 className="text-4xl md:text-8xl font-serif font-black italic text-foreground tracking-tighter leading-none mb-4">
-                            Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/60 to-primary">Perfect Match.</span>
+                        <span className="text-primary/60 text-[10px] tracking-[0.8em] font-bold uppercase block">Curated Selection</span>
+                        <h2 className="text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none mb-6">
+                            Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Perfect Match.</span>
                         </h2>
-                        <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+                        <div className="w-16 h-[0.5px] mx-auto bg-primary/20" />
                     </motion.div>
 
                     <motion.p
@@ -62,7 +62,7 @@ export function CategoryBrowsing() {
                         whileInView={{ opacity: 1 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="text-muted-foreground text-sm md:text-base font-light tracking-widest uppercase italic"
+                        className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic"
                     >
                         Shop by Categories
                     </motion.p>

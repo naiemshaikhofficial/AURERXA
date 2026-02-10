@@ -57,6 +57,10 @@ export default function CheckoutPage() {
     // Delivery time slot state
     const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('anytime')
 
+    // Script loading state
+    const [razorpayLoaded, setRazorpayLoaded] = useState(true)
+    const [cashfreeLoaded, setCashfreeLoaded] = useState(true)
+
     const [newAddress, setNewAddress] = useState({
         label: 'Home',
         full_name: '',
@@ -71,7 +75,31 @@ export default function CheckoutPage() {
     useEffect(() => {
         refreshCart()
         loadData()
-    }, [])
+
+        console.log('CheckoutPage: Checking for payment scripts...');
+
+        // Check for scripts periodically as a fallback
+        const checkScripts = () => {
+            // @ts-ignore
+            if (window.Razorpay) {
+                if (!razorpayLoaded) {
+                    console.log('Razorpay detected on window');
+                    setRazorpayLoaded(true);
+                }
+            }
+            // @ts-ignore
+            if (window.Cashfree) {
+                if (!cashfreeLoaded) {
+                    console.log('Cashfree detected on window');
+                    setCashfreeLoaded(true);
+                }
+            }
+        };
+
+        checkScripts();
+        const interval = setInterval(checkScripts, 1000);
+        return () => clearInterval(interval);
+    }, [razorpayLoaded, cashfreeLoaded])
 
     async function loadData() {
         setLoading(true)
@@ -188,112 +216,119 @@ export default function CheckoutPage() {
 
     const handlePlaceOrder = async () => {
         if (!selectedAddress) {
-            setError('Please select a delivery address')
-            return
+            setError('Please select a delivery address');
+            return;
         }
 
-        setPlacing(true)
-        setError(null)
+        setPlacing(true);
+        setError(null);
 
-        const result = await createOrder(selectedAddress, paymentMethod, {
-            giftWrap,
-            giftMessage: giftWrap ? giftMessage : undefined,
-            deliveryTimeSlot,
-            couponCode: couponApplied?.code,
-            couponDiscount: couponApplied?.discount
-        })
+        try {
+            const result = await createOrder(selectedAddress, paymentMethod, {
+                giftWrap,
+                giftMessage: giftWrap ? giftMessage : undefined,
+                deliveryTimeSlot,
+                couponCode: couponApplied?.code,
+                couponDiscount: couponApplied?.discount
+            });
 
-        if (result.success) {
-            if (paymentMethod === 'online') {
-                try {
-                    const paymentResult = await initiatePayment(result.orderId)
-
-                    if (paymentResult.success) {
-                        if (paymentResult.gateway === 'razorpay') {
-                            const rp = paymentResult as any;
-
-                            // Check if Razorpay is loaded
-                            // @ts-ignore
-                            if (!window.Razorpay) {
-                                setError('Payment system still loading. Please wait a moment...')
-                                setPlacing(false)
-                                return
-                            }
-
-                            // @ts-ignore
-                            const options = {
-                                key: rp.keyId,
-                                amount: rp.amount,
-                                currency: rp.currency,
-                                name: "AURERXA",
-                                description: rp.productName,
-                                order_id: rp.razorpayOrderId,
-                                handler: async function (response: any) {
-                                    setPlacing(true)
-                                    const verifyResult = await verifyPayment(result.orderId, response)
-                                    if (verifyResult.success) {
-                                        router.push(`/account/orders/${result.orderId}?success=true`)
-                                    } else {
-                                        setError(verifyResult.error || 'Verification failed')
-                                        setPlacing(false)
-                                    }
-                                },
-                                prefill: {
-                                    name: rp.customer.name,
-                                    email: rp.customer.email,
-                                    contact: rp.customer.contact
-                                },
-                                themes: {
-                                    color: "hsl(var(--primary))"
-                                },
-                                modal: {
-                                    ondismiss: function () {
-                                        setPlacing(false)
-                                    }
-                                }
-                            };
-                            // @ts-ignore
-                            const rzp = new window.Razorpay(options);
-                            rzp.open();
-                        } else if (paymentResult.gateway === 'cashfree') {
-                            const cf = paymentResult as any;
-
-                            // Check if Cashfree is loaded
-                            // @ts-ignore
-                            if (!window.Cashfree) {
-                                setError('Payment system still loading. Please wait a moment...')
-                                setPlacing(false)
-                                return
-                            }
-
-                            // Cashfree Flow
-                            // @ts-ignore
-                            const cashfree = window.Cashfree({
-                                mode: cf.mode || "sandbox"
-                            });
-
-                            cashfree.checkout({
-                                paymentSessionId: cf.paymentSessionId,
-                                redirectTarget: "_self",
-                            });
-                        }
-                    } else {
-                        setError(paymentResult.error || 'Failed to initiate payment')
-                        setPlacing(false)
-                    }
-                } catch (err: any) {
-                    console.error('Payment Error:', err)
-                    setError('Payment gateway error. Please try again.')
-                    setPlacing(false)
-                }
-            } else {
-                router.push(`/account/orders/${result.orderId}?success=true`)
+            if (!result.success) {
+                setError(result.error || 'Failed to place order');
+                setPlacing(false);
+                return;
             }
-        } else {
-            setError(result.error || 'Failed to place order')
-            setPlacing(false)
+
+            if (paymentMethod === 'cod') {
+                router.push(`/account/orders/${result.orderId}?success=true`);
+                return;
+            }
+
+            // Online Payment Flow
+            const paymentResult = await initiatePayment(result.orderId);
+
+            if (!paymentResult.success) {
+                setError(paymentResult.error || 'Failed to initiate payment');
+                setPlacing(false);
+                return;
+            }
+
+            if (paymentResult.gateway === 'razorpay') {
+                const rp = paymentResult as any;
+
+                // Check if Razorpay is loaded with retry
+                let isRPReady = typeof window !== 'undefined' && (window as any).Razorpay;
+                if (!isRPReady) {
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    isRPReady = typeof window !== 'undefined' && (window as any).Razorpay;
+                }
+
+                if (!isRPReady) {
+                    setError('Payment connection is slow. Please click again in 2 seconds...');
+                    setPlacing(false);
+                    return;
+                }
+
+                const options = {
+                    key: rp.keyId,
+                    amount: rp.amount,
+                    currency: rp.currency,
+                    name: "AURERXA",
+                    description: rp.productName,
+                    order_id: rp.razorpayOrderId,
+                    handler: async function (response: any) {
+                        setPlacing(true);
+                        const verifyResult = await verifyPayment(result.orderId, response);
+                        if (verifyResult.success) {
+                            router.push(`/account/orders/${result.orderId}?success=true`);
+                        } else {
+                            setError(verifyResult.error || 'Verification failed');
+                            setPlacing(false);
+                        }
+                    },
+                    prefill: {
+                        name: rp.customer.name,
+                        email: rp.customer.email,
+                        contact: rp.customer.contact
+                    },
+                    theme: {
+                        color: "#D4AF37"
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            setPlacing(false);
+                        }
+                    }
+                };
+
+                // @ts-ignore
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            } else if (paymentResult.gateway === 'cashfree') {
+                const cf = paymentResult as any;
+
+                const isCFReady = typeof window !== 'undefined' && (window as any).Cashfree;
+                if (!isCFReady) {
+                    setError('Payment system still loading. Please wait a moment...');
+                    setPlacing(false);
+                    return;
+                }
+
+                // @ts-ignore
+                const cashfree = (window as any).Cashfree({
+                    mode: cf.mode || "sandbox"
+                });
+
+                cashfree.checkout({
+                    paymentSessionId: cf.paymentSessionId,
+                    redirectTarget: "_self",
+                });
+            }
+        } catch (err: any) {
+            console.error('Payment Error:', err);
+            setError('Payment gateway error. Please try again.');
+            setPlacing(false);
         }
-    }
+    };
 
     const subtotal = cart.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0)
     const shipping = subtotal >= 50000 ? 0 : shippingCharge
@@ -625,20 +660,46 @@ export default function CheckoutPage() {
 
                                 <div className="space-y-4">
                                     <label
-                                        className={`block p-4 border cursor-pointer transition-all border-primary bg-primary/5`}
+                                        onClick={() => setPaymentMethod('online')}
+                                        className={`block p-4 border cursor-pointer transition-all ${paymentMethod === 'online' ? 'border-primary bg-primary/5' : 'border-border hover:border-foreground/20'}`}
                                     >
                                         <div className="flex items-center gap-3">
                                             <input
                                                 type="radio"
                                                 name="payment"
-                                                checked={true}
-                                                readOnly
+                                                checked={paymentMethod === 'online'}
+                                                onChange={() => setPaymentMethod('online')}
                                                 className="accent-primary"
                                             />
                                             <CreditCard className="w-5 h-5 text-primary" />
-                                            <div>
-                                                <span className="font-medium text-primary">Secure Online Payment</span>
+                                            <div className="flex-1">
+                                                <div className="flex items-center justify-between">
+                                                    <span className={`font-medium ${paymentMethod === 'online' ? 'text-primary' : 'text-foreground'}`}>Secure Online Payment</span>
+                                                    <div className="relative w-10 h-4 grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                                                        <Image src="/upi-icon.svg" alt="UPI" fill className="object-contain dark:invert invert-0" />
+                                                    </div>
+                                                </div>
                                                 <p className="text-xs text-muted-foreground">UPI, Credit/Debit Card, Net Banking</p>
+                                            </div>
+                                        </div>
+                                    </label>
+
+                                    <label
+                                        onClick={() => setPaymentMethod('cod')}
+                                        className={`block p-4 border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-primary bg-primary/5' : 'border-border hover:border-foreground/20'}`}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                                type="radio"
+                                                name="payment"
+                                                checked={paymentMethod === 'cod'}
+                                                onChange={() => setPaymentMethod('cod')}
+                                                className="accent-primary"
+                                            />
+                                            <Banknote className="w-5 h-5 text-primary" />
+                                            <div>
+                                                <span className={`font-medium ${paymentMethod === 'cod' ? 'text-primary' : 'text-foreground'}`}>Cash on Delivery</span>
+                                                <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
                                             </div>
                                         </div>
                                     </label>
@@ -790,18 +851,36 @@ export default function CheckoutPage() {
 
                                 <Button
                                     onClick={handlePlaceOrder}
-                                    disabled={placing || !selectedAddress || !termsAccepted}
+                                    disabled={placing || !selectedAddress || !termsAccepted || (paymentMethod === 'online' && !razorpayLoaded && !cashfreeLoaded && !(typeof window !== 'undefined' && ((window as any).Razorpay || (window as any).Cashfree)))}
                                     className="w-full mt-8 bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-[0.25em] h-14 rounded-none disabled:opacity-50 disabled:cursor-not-allowed group transition-all"
                                 >
                                     {placing ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
+                                    ) : (paymentMethod === 'online' && !razorpayLoaded && !cashfreeLoaded && !(typeof window !== 'undefined' && ((window as any).Razorpay || (window as any).Cashfree))) ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            <span>Initializing...</span>
+                                        </div>
                                     ) : (
                                         <>
-                                            Secure Payment
+                                            {paymentMethod === 'cod' ? 'Place Order' : 'Secure Payment'}
                                             <ChevronRight className="w-4 h-4 ml-2 opacity-50 group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}
                                 </Button>
+
+                                <div className="mt-4 space-y-2">
+                                    {!selectedAddress && (
+                                        <p className="text-[10px] text-destructive text-center animate-pulse uppercase tracking-[0.2em] font-medium">
+                                            Please select a delivery address
+                                        </p>
+                                    )}
+                                    {selectedAddress && !termsAccepted && (
+                                        <p className="text-[10px] text-destructive text-center animate-pulse uppercase tracking-[0.2em] font-medium">
+                                            Please accept Policy Agreements below
+                                        </p>
+                                    )}
+                                </div>
 
                                 <p className="text-xs text-muted-foreground/40 text-center mt-4">
                                     By placing this order, you agree to our Terms & Conditions
@@ -812,14 +891,7 @@ export default function CheckoutPage() {
                 </div>
             </main>
 
-            <Script
-                src="https://checkout.razorpay.com/v1/checkout.js"
-                strategy="afterInteractive"
-            />
-            <Script
-                src="https://sdk.cashfree.com/js/v3/cashfree.js"
-                strategy="afterInteractive"
-            />
+
             <Footer />
         </div>
     )

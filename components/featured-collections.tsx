@@ -85,17 +85,20 @@ function CollectionCard({ category }: { category: any }) {
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 opacity-90" />
         </div>
 
-        {/* Content - Centered */}
+        {/* Content - Bottom Left Editorial Style */}
         <div
-          className="absolute inset-0 z-10 p-8 flex flex-col items-center justify-center text-center"
+          className="absolute inset-0 z-10 p-10 flex flex-col justify-end"
         >
-          <h3 className="text-3xl md:text-4xl font-serif font-bold text-white uppercase tracking-tighter leading-none mb-6 group-hover:text-primary transition-colors duration-300 drop-shadow-lg">
-            {category.name}
-          </h3>
+          <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-700 ease-[0.16,1,0.3,1]">
+            <p className="text-primary/80 text-[9px] uppercase tracking-[0.4em] font-bold mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-700">Explore</p>
+            <h3 className="text-2xl md:text-3xl font-serif font-bold text-white italic tracking-tighter leading-none mb-8 group-hover:text-primary transition-colors duration-300">
+              {category.name}
+            </h3>
+          </div>
 
-          {/* Button-like CTA that slides in */}
-          <div className="overflow-hidden h-0 group-hover:h-auto transition-all duration-300 ease-out">
-            <span className="inline-block px-4 py-2 bg-white text-black text-[10px] font-bold uppercase tracking-widest hover:bg-neutral-200 transition-colors">
+          {/* Minimalist CTA */}
+          <div className="overflow-hidden h-0 group-hover:h-auto transition-all duration-700 ease-out">
+            <span className="inline-block border-b border-white/20 pb-1 text-[10px] text-white/60 uppercase tracking-[0.3em] font-light hover:text-white transition-colors">
               View Collection
             </span>
           </div>
@@ -128,15 +131,15 @@ export function FeaturedCollections() {
           viewport={{ once: true, margin: "-100px" }}
         >
           {/* Section Header */}
-          <motion.div variants={fadeInUp} className="text-center mb-12 md:mb-24">
-            <p className="text-primary/80 text-[10px] uppercase mb-4 md:mb-6 font-premium-sans">
-              Crafted Excellence
-            </p>
-            <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-6 md:mb-8 text-foreground tracking-widest italic">
-              Discovery by <span className="text-primary">Material</span>
-            </h2>
-            <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-6 md:mb-8" />
-            <p className="text-sm md:text-base text-muted-foreground/50 max-w-2xl mx-auto font-light leading-relaxed tracking-wide">
+          <motion.div variants={fadeInUp} className="text-center mb-24 md:mb-40 space-y-8">
+            <motion.div className="space-y-6">
+              <span className="text-primary/60 text-[10px] tracking-[0.8em] font-bold uppercase block">Crafted Excellence</span>
+              <h2 className="text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none mb-6">
+                Discovery by <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Material.</span>
+              </h2>
+              <div className="w-16 h-[0.5px] mx-auto bg-primary/20" />
+            </motion.div>
+            <p className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic max-w-2xl mx-auto leading-relaxed">
               Each piece is a testament to our legacy of precision, crafted from the world's most precious elements.
             </p>
           </motion.div>

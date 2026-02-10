@@ -55,7 +55,7 @@ export async function addNewProduct(productData: any) {
   // Trigger push notification
   await notifyNewProduct(data.name, data.slug, data.image_url || '/logo.png')
 
-  revalidateTag('products')
+  revalidateTag('products', '')
   return { success: true, data }
 }
 
@@ -1939,7 +1939,7 @@ export async function initiateRazorpayPayment(orderId: string) {
       productName: 'AURERXA Masterpiece',
       customer: {
         name: order.shipping_address?.full_name || 'Customer',
-        email: order.user_email || order.shipping_address?.email || '',
+        email: user.email || order.shipping_address?.email || '',
         contact: order.shipping_address?.phone || ''
       }
     }

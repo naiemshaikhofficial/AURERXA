@@ -100,7 +100,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                     </div>
 
                     <Link href={`/products/${product.slug}`} onClick={onClose}>
-                        <h3 className="text-base font-serif text-foreground/90 font-medium group-hover:text-primary transition-colors duration-500 leading-snug">
+                        <h3 className="text-sm md:text-base font-serif text-foreground/90 font-medium group-hover:text-primary transition-colors duration-500 leading-snug tracking-tight">
                             {product.name}
                         </h3>
                     </Link>
@@ -117,31 +117,33 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                     </div>
                 </div>
 
-                {/* Buttons - Revealed on Hover with Matte Style */}
-                <div className="hidden md:grid grid-cols-2 gap-px bg-border opacity-0 group-hover:opacity-100 transition-all duration-500 mt-auto pt-4">
-                    <Button
-                        onClick={handleAddToCart}
-                        disabled={isAdding}
-                        className="w-full bg-background text-foreground hover:bg-foreground hover:text-background transition-colors duration-300 h-9 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-t border-r border-border"
-                    >
-                        {isAdding ? 'Adding...' : 'Add to Cart'}
-                    </Button>
-                    <Button
-                        onClick={handleBuyNow}
-                        disabled={isBuying}
-                        className="w-full bg-muted text-foreground hover:bg-primary hover:text-primary-foreground transition-colors duration-300 h-9 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-t border-border"
-                    >
-                        {isBuying ? 'Processing...' : 'Buy Now'}
-                    </Button>
+                {/* Modern Slide-up Buttons */}
+                <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[0.16,1,0.3,1] z-20">
+                    <div className="grid grid-cols-2 gap-px bg-white/5 backdrop-blur-md border-t border-white/10">
+                        <Button
+                            onClick={handleAddToCart}
+                            disabled={isAdding}
+                            className="bg-transparent text-foreground hover:bg-white/10 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0"
+                        >
+                            {isAdding ? 'Adding' : 'Add to Cart'}
+                        </Button>
+                        <Button
+                            onClick={handleBuyNow}
+                            disabled={isBuying}
+                            className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 border-l border-white/10"
+                        >
+                            {isBuying ? 'Wait' : 'Buy Now'}
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Mobile Button (Always Visible) */}
-                <div className="md:hidden mt-auto pt-3">
+                <div className="md:hidden mt-auto pt-4">
                     <Button
                         onClick={handleBuyNow}
-                        className="w-full bg-muted border border-border text-foreground hover:bg-foreground hover:text-background transition-all h-10 text-[10px] uppercase font-premium-sans tracking-widest"
+                        className="w-full bg-secondary/50 backdrop-blur-sm border border-border text-foreground hover:bg-foreground hover:text-background transition-all h-10 text-[10px] uppercase font-premium-sans tracking-widest rounded-none"
                     >
-                        View Details
+                        View Selection
                     </Button>
                 </div>
             </div>
