@@ -15,6 +15,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 const _geist = Geist({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: 'AURERXA - Premium Luxury Jewelry',
   description: 'Timeless Luxury Crafted to Perfection. Explore our exquisite collection of premium jewelry.',
   openGraph: {

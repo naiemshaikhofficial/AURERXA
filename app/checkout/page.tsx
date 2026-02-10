@@ -693,7 +693,7 @@ export default function CheckoutPage() {
                                                             <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-full object-contain invert dark:invert-0" />
                                                         </div>
                                                         <div className="relative w-8 h-4">
-                                                            <img src="https://logowik.com/content/uploads/images/rupay6734.jpg" alt="RuPay" className="h-full object-contain" />
+                                                            <img src="/Rupay-Logo.png" alt="RuPay" className="h-full object-contain" />
                                                         </div>
                                                     </div>
                                                 </div>
