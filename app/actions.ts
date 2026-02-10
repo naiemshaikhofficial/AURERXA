@@ -460,6 +460,7 @@ export async function addAddress(addressData: {
   street_address: string
   city: string
   state: string
+  country: string
   pincode: string
   is_default?: boolean
 }) {
@@ -506,6 +507,7 @@ export async function updateAddress(addressId: string, addressData: {
   street_address?: string
   city?: string
   state?: string
+  country?: string
   pincode?: string
   is_default?: boolean
 }) {

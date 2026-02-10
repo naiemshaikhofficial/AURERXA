@@ -13,6 +13,7 @@ import { getAddresses, addAddress, createOrder, validateCoupon, initiatePayment,
 import { useCart } from '@/context/cart-context'
 import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle, Clock, Pencil, ShoppingBag } from 'lucide-react'
 import { DeliveryEstimate } from '@/components/delivery-checker'
+import { AddressForm } from '@/components/checkout/address-form'
 
 
 import { supabase } from '@/lib/supabase'
@@ -145,48 +146,27 @@ export default function CheckoutPage() {
         }
     }, [selectedAddress, paymentMethod])
 
-    const handleSaveAddress = async (e: React.FormEvent) => {
-        e.preventDefault()
+    const handleSaveAddress = async (formData: any) => {
         setError(null)
 
         let result
         if (editingAddressId) {
             const { updateAddress } = await import('@/app/actions')
-            result = await updateAddress(editingAddressId, newAddress)
+            result = await updateAddress(editingAddressId, formData)
         } else {
-            result = await addAddress(newAddress)
+            result = await addAddress(formData)
         }
 
         if (result.success) {
             await loadData()
             setShowAddressForm(false)
             setEditingAddressId(null)
-            setNewAddress({
-                label: 'Home',
-                full_name: '',
-                phone: '',
-                street_address: '',
-                city: '',
-                state: '',
-                pincode: '',
-                is_default: false
-            })
         } else {
             setError(result.error || 'Failed to save address')
         }
     }
 
     const handleEditAddress = (addr: any) => {
-        setNewAddress({
-            label: addr.label,
-            full_name: addr.full_name,
-            phone: addr.phone,
-            street_address: addr.street_address,
-            city: addr.city,
-            state: addr.state,
-            pincode: addr.pincode,
-            is_default: addr.is_default
-        })
         setEditingAddressId(addr.id)
         setShowAddressForm(true)
         window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -427,108 +407,39 @@ export default function CheckoutPage() {
                                 </div>
 
                                 {showAddressForm && (
-                                    <form onSubmit={handleSaveAddress} className="mb-8 p-6 border border-primary/20 bg-primary/5 space-y-6 rounded-sm">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h3 className="text-xs font-bold text-primary uppercase tracking-widest">
-                                                {editingAddressId ? 'Edit Address' : 'New Address'}
-                                            </h3>
+                                    <div className="mb-12 p-8 border border-primary/10 bg-card/30 backdrop-blur-md rounded-none shadow-2xl relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-30" />
+                                        <div className="flex items-center justify-between mb-10">
+                                            <div>
+                                                <h3 className="text-xl font-serif font-light text-foreground/90 italic">
+                                                    {editingAddressId ? 'Refine Address' : 'New Destination'}
+                                                </h3>
+                                                <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] mt-1">
+                                                    AURERXA Concierge Service
+                                                </p>
+                                            </div>
                                             <button
                                                 type="button"
                                                 onClick={() => {
                                                     setShowAddressForm(false)
                                                     setEditingAddressId(null)
                                                 }}
-                                                className="text-muted-foreground hover:text-foreground transition-colors"
+                                                className="w-10 h-10 flex items-center justify-center border border-border/50 rounded-full text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all group"
                                             >
-                                                <X size={16} />
+                                                <X size={18} className="group-hover:rotate-90 transition-transform duration-300" />
                                             </button>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Label</Label>
-                                                <Input
-                                                    value={newAddress.label}
-                                                    onChange={(e) => setNewAddress({ ...newAddress, label: e.target.value })}
-                                                    placeholder="Home, Office..."
-                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors placeholder:text-muted-foreground/50"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Full Name</Label>
-                                                <Input
-                                                    value={newAddress.full_name}
-                                                    onChange={(e) => setNewAddress({ ...newAddress, full_name: e.target.value })}
-                                                    required
-                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Phone</Label>
-                                                <Input
-                                                    value={newAddress.phone}
-                                                    onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-                                                    required
-                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Pincode</Label>
-                                                <Input
-                                                    value={newAddress.pincode}
-                                                    onChange={(e) => setNewAddress({ ...newAddress, pincode: e.target.value })}
-                                                    required
-                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">Street Address</Label>
-                                            <Input
-                                                value={newAddress.street_address}
-                                                onChange={(e) => setNewAddress({ ...newAddress, street_address: e.target.value })}
-                                                required
-                                                className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">City</Label>
-                                                <Input
-                                                    value={newAddress.city}
-                                                    onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                                                    required
-                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label className="text-muted-foreground/60 text-[10px] uppercase tracking-widest">State</Label>
-                                                <Input
-                                                    value={newAddress.state}
-                                                    onChange={(e) => setNewAddress({ ...newAddress, state: e.target.value })}
-                                                    required
-                                                    className="bg-background border-input text-foreground h-12 rounded-none focus:border-primary/50 transition-colors"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex gap-4 pt-2">
-                                            <Button type="submit" className="bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-[0.2em] px-8 rounded-none transition-all">
-                                                {editingAddressId ? 'Update' : 'Save'}
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                onClick={() => {
-                                                    setShowAddressForm(false)
-                                                    setEditingAddressId(null)
-                                                }}
-                                                className="text-muted-foreground hover:text-foreground hover:bg-foreground/5 uppercase tracking-[0.2em] rounded-none"
-                                            >
-                                                Cancel
-                                            </Button>
-                                        </div>
-                                    </form>
+
+                                        <AddressForm
+                                            initialData={editingAddressId ? addresses.find(a => a.id === editingAddressId) : null}
+                                            onSave={handleSaveAddress}
+                                            onCancel={() => {
+                                                setShowAddressForm(false)
+                                                setEditingAddressId(null)
+                                            }}
+                                            loading={placing}
+                                        />
+                                    </div>
                                 )}
 
                                 {addresses.length === 0 && !showAddressForm ? (
