@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings } from 'lucide-react'
+import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield } from 'lucide-react'
 import { useCart } from '@/context/cart-context'
 import {
   DropdownMenu,
@@ -34,6 +34,7 @@ export function Navbar() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     let authListener: { subscription: { unsubscribe: () => void } } | null = null
@@ -49,6 +50,14 @@ export function Navbar() {
           .eq('id', user.id)
           .single()
         if (data) setProfile(data)
+
+        // Check admin status
+        const { data: adminData } = await supabase
+          .from('admin_users')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        if (adminData) setIsAdmin(true)
       }
 
       const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -249,6 +258,15 @@ export function Navbar() {
                               <LogOut className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-destructive/60 transition-colors stroke-1" />
                               <span className="text-[9px] uppercase tracking-widest text-muted-foreground group-hover:text-destructive/80">Sign Out</span>
                             </button>
+                            {isAdmin && (
+                              <Link
+                                href="/admin"
+                                className="flex flex-col items-center justify-center p-4 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2"
+                              >
+                                <Shield className="w-5 h-5 mb-2 text-[#D4AF37] transition-colors stroke-1" />
+                                <span className="text-[9px] uppercase tracking-widest text-[#D4AF37]">Admin Panel</span>
+                              </Link>
+                            )}
                           </div>
                         </>
                       ) : (
@@ -331,6 +349,14 @@ export function Navbar() {
                         <span className="text-[10px] tracking-widest uppercase text-muted-foreground group-hover:text-primary">Orders</span>
                       </Link>
                     </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem asChild className="focus:bg-muted focus:text-primary cursor-pointer group p-3 rounded-sm">
+                        <Link href="/admin" className="flex items-center">
+                          <Shield className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />
+                          <span className="text-[10px] tracking-widest uppercase text-[#D4AF37] group-hover:text-[#D4AF37]">Admin Panel</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator className="bg-border my-2" />
                     <DropdownMenuItem className="focus:bg-destructive/10 focus:text-destructive cursor-pointer group p-3 rounded-sm" onClick={handleSignOut}>
                       <LogOut className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />

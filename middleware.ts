@@ -31,7 +31,7 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    // 1. Protected Routes Security
+    // 1. Protected Routes: Unauthenticated users
     if (!user) {
         if (request.nextUrl.pathname.startsWith('/account') ||
             request.nextUrl.pathname.startsWith('/admin')) {
@@ -39,7 +39,21 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 2. Extra Security Headers (Redundancy)
+    // 2. Admin Route Protection: Check admin_users table
+    if (user && request.nextUrl.pathname.startsWith('/admin')) {
+        const { data: adminData } = await supabase
+            .from('admin_users')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (!adminData) {
+            // Not an admin — redirect to homepage
+            return NextResponse.redirect(new URL('/', request.url))
+        }
+    }
+
+    // 3. Extra Security Headers (Redundancy)
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('X-Content-Type-Options', 'nosniff')
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')

@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { getAdminProducts, updateProductDetails, addNewProduct } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -111,10 +109,8 @@ export default function AdminProductsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white selection:bg-amber-500/30">
-            <Navbar />
-
-            <main className="max-w-7xl mx-auto px-6 py-32">
+        <div className="selection:bg-amber-500/30">
+            <main>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
                     <div>
                         <h1 className="text-4xl font-serif font-bold text-gradient-gold mb-2 italic">Product Management</h1>
@@ -361,7 +357,6 @@ export default function AdminProductsPage() {
                     </div>
                 </div>
             </main>
-            <Footer />
         </div>
     )
 }
