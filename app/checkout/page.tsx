@@ -9,14 +9,89 @@ import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { getAddresses, addAddress, createOrder, validateCoupon, initiatePayment, verifyPayment } from '@/app/actions'
+import { getAddresses, addAddress, createOrder, validateCoupon, initiatePayment, verifyPayment, calculateShippingRate } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
-import { Loader2, Plus, MapPin, Check, CreditCard, Banknote, ChevronRight, Tag, Gift, X, AlertCircle, Clock, Pencil, ShoppingBag } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+    Loader2, Plus, MapPin, Check, CreditCard, Banknote,
+    ChevronRight, Tag, Gift, X, AlertCircle, Clock,
+    Pencil, ShoppingBag, ShieldCheck, Truck, Trophy,
+    Briefcase, Building2, Sparkles, User, Home
+} from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { DeliveryEstimate } from '@/components/delivery-checker'
 import { AddressForm } from '@/components/checkout/address-form'
 
 
 import { supabase } from '@/lib/supabase'
+
+// --- Luxury UI Components ---
+
+const CheckoutSteps = ({ currentStep = 2 }: { currentStep?: number }) => {
+    const steps = [
+        { id: 1, label: 'Collection', status: 'completed' },
+        { id: 2, label: 'Delivery', status: 'active' },
+        { id: 3, label: 'Payment', status: 'pending' },
+    ]
+
+    return (
+        <div className="flex items-center justify-center mb-16 px-4">
+            <div className="flex items-center gap-4 md:gap-12">
+                {steps.map((step, idx) => (
+                    <div key={step.id} className="flex items-center gap-4 group">
+                        <div className="flex flex-col items-center gap-2">
+                            <div className={cn(
+                                "w-10 h-10 rounded-full flex items-center justify-center border transition-all duration-500",
+                                step.id < currentStep ? "bg-primary border-primary text-background" :
+                                    step.id === currentStep ? "border-primary text-primary shadow-[0_0_15px_rgba(191,155,101,0.3)]" :
+                                        "border-border text-muted-foreground/40"
+                            )}>
+                                {step.id < currentStep ? <Check size={18} strokeWidth={3} /> : <span className="text-xs font-serif italic">{step.id}</span>}
+                            </div>
+                            <span className={cn(
+                                "text-[10px] uppercase tracking-[0.3em] font-medium transition-colors duration-300",
+                                step.id === currentStep ? "text-primary" : "text-muted-foreground/40"
+                            )}>
+                                {step.label}
+                            </span>
+                        </div>
+                        {idx !== steps.length - 1 && (
+                            <div className="h-px w-8 md:w-20 bg-gradient-to-r from-border/50 via-primary/20 to-border/50 mt-[-20px]" />
+                        )}
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+const TrustSeals = () => (
+    <div className="grid grid-cols-1 gap-4 mt-8">
+        {[
+            { icon: <ShieldCheck className="w-4 h-4" />, title: "Secure Checkout", desc: "Heritage Encrypted" },
+            { icon: <Truck className="w-4 h-4" />, title: "White-Glove Delivery", desc: "Insured & Tracked" },
+            { icon: <Trophy className="w-4 h-4" />, title: "Authentic Heritage", desc: "Certified Quality" }
+        ].map((seal, i) => (
+            <div key={i} className="flex items-center gap-4 p-4 border border-white/5 bg-white/[0.02] backdrop-blur-sm group hover:border-primary/20 transition-all duration-500">
+                <div className="w-10 h-10 rounded-full border border-primary/10 flex items-center justify-center text-primary/60 group-hover:text-primary group-hover:bg-primary/5 transition-all duration-500">
+                    {seal.icon}
+                </div>
+                <div>
+                    <h4 className="text-[10px] uppercase tracking-[0.2em] text-foreground/80 font-medium">{seal.title}</h4>
+                    <p className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.1em]">{seal.desc}</p>
+                </div>
+            </div>
+        ))}
+    </div>
+)
+
+const AddressIcon = ({ label }: { label: string }) => {
+    const l = label.toLowerCase()
+    if (l.includes('home')) return <Home className="w-4 h-4" />
+    if (l.includes('office') || l.includes('work')) return <Briefcase className="w-4 h-4" />
+    if (l.includes('studio') || l.includes('hq')) return <Building2 className="w-4 h-4" />
+    return <MapPin className="w-4 h-4" />
+}
 
 export default function CheckoutPage() {
     const router = useRouter()
@@ -62,6 +137,7 @@ export default function CheckoutPage() {
     const [razorpayLoaded, setRazorpayLoaded] = useState(false)
     const [cashfreeLoaded, setCashfreeLoaded] = useState(false)
     const [enableCod, setEnableCod] = useState(false)
+
 
     const [newAddress, setNewAddress] = useState({
         label: 'Home',
@@ -360,12 +436,13 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
-            <main className="pb-24">
+            <main className="pt-32 pb-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-center mb-12">
-                        <h1 className="text-3xl md:text-5xl font-serif text-foreground tracking-tight">
+                    <div className="flex flex-col items-center justify-center mb-12">
+                        <h1 className="text-3xl md:text-5xl font-serif text-foreground tracking-tight mb-8">
                             Secure <span className="text-primary italic">Checkout</span>
                         </h1>
+                        <CheckoutSteps currentStep={2} />
                     </div>
 
                     {error && (
@@ -379,7 +456,12 @@ export default function CheckoutPage() {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left: Address & Payment */}
-                        <div className="lg:col-span-2 space-y-8">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className="lg:col-span-2 space-y-8"
+                        >
                             {/* Delivery Address */}
                             <div className="bg-card/30 border border-border p-8 backdrop-blur-sm">
                                 <div className="flex items-center justify-between mb-8">
@@ -472,6 +554,7 @@ export default function CheckoutPage() {
                                                     />
                                                     <div className="flex-1 cursor-pointer" onClick={() => setSelectedAddress(addr.id)}>
                                                         <div className="flex items-center gap-2 mb-1">
+                                                            <AddressIcon label={addr.label} />
                                                             <span className="font-medium text-foreground">{addr.full_name}</span>
                                                             <span className="text-[10px] bg-muted px-2 py-0.5 text-muted-foreground uppercase tracking-widest">{addr.label}</span>
                                                             {addr.is_default && (
@@ -547,16 +630,16 @@ export default function CheckoutPage() {
                                 </h2>
                                 <p className="text-muted-foreground text-xs mb-4">Select a preferred time slot for your delivery. We will try our best to accommodate your request.</p>
 
-                                <div className="space-y-3">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {[
-                                        { id: 'anytime', label: 'Anytime', time: '9:00 AM - 9:00 PM' },
-                                        { id: 'morning', label: 'Morning Slot', time: '9:00 AM - 12:00 PM' },
-                                        { id: 'afternoon', label: 'Afternoon Slot', time: '12:00 PM - 5:00 PM' },
-                                        { id: 'evening', label: 'Evening Slot', time: '5:00 PM - 9:00 PM' }
+                                        { id: 'anytime', label: 'Anytime', time: '9-9 PM' },
+                                        { id: 'morning', label: 'Morning', time: '9-12 PM' },
+                                        { id: 'afternoon', label: 'Afternoon', time: '12-5 PM' },
+                                        { id: 'evening', label: 'Evening', time: '5-9 PM' }
                                     ].map((slot) => (
                                         <label
                                             key={slot.id}
-                                            className={`flex items-center gap-3 p-4 border cursor-pointer transition-all ${deliveryTimeSlot === slot.id
+                                            className={`flex flex-col items-center justify-center text-center gap-3 p-4 border cursor-pointer transition-all ${deliveryTimeSlot === slot.id
                                                 ? 'border-primary bg-primary/5'
                                                 : 'border-border hover:border-foreground/20'
                                                 }`}
@@ -568,9 +651,9 @@ export default function CheckoutPage() {
                                                 onChange={() => setDeliveryTimeSlot(slot.id)}
                                                 className="accent-primary"
                                             />
-                                            <div className="flex-1 flex justify-between items-center">
-                                                <span className="font-medium text-sm text-foreground">{slot.label}</span>
-                                                <span className="text-xs text-muted-foreground">{slot.time}</span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-medium text-[10px] uppercase tracking-wider text-foreground">{slot.label}</span>
+                                                <span className="text-[9px] text-muted-foreground whitespace-nowrap">{slot.time}</span>
                                             </div>
                                         </label>
                                     ))}
@@ -661,10 +744,15 @@ export default function CheckoutPage() {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Right: Order Summary */}
-                        <div className="lg:col-span-1">
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                            className="lg:col-span-1"
+                        >
                             <div className="bg-card/30 border border-border p-8 sticky top-24 backdrop-blur-sm">
                                 <div className="font-serif text-2xl font-light mb-8 flex items-center justify-between italic text-foreground/90">
                                     <span>Order Summary</span>
@@ -824,8 +912,10 @@ export default function CheckoutPage() {
                                 <p className="text-xs text-muted-foreground/40 text-center mt-4">
                                     By placing this order, you agree to our Terms & Conditions
                                 </p>
+
+                                <TrustSeals />
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </main>

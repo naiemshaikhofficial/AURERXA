@@ -5,7 +5,7 @@ import { Country, State, City } from 'country-state-city'
 import PhoneInput from 'react-phone-number-input'
 import flags from 'react-phone-number-input/flags'
 import 'react-phone-number-input/style.css'
-import { Check, ChevronsUpDown, Search, MapPin, Phone, User, Home, Tag, Sparkles, X, Loader2 } from 'lucide-react'
+import { Check, ChevronsUpDown, MapPin, Phone, User, Home, Tag, Sparkles, Loader2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import { Button } from '@/components/ui/button'
@@ -27,7 +27,8 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover'
 
-import { getPincodeDetails } from '@/app/actions'
+import { getPincodeDetails, checkDeliveryAvailability, calculateShippingRate } from '@/app/actions'
+import { useCart } from '@/context/cart-context'
 
 interface AddressFormProps {
     initialData?: any
@@ -46,7 +47,6 @@ const formatInitialPhone = (phone: string, country: string = 'IN') => {
     return phone;
 }
 
-// Global styles moved outside to prevent re-injection on every keystroke
 const PhoneInputStyles = () => (
     <style jsx global>{`
         .phone-input-wrapper .PhoneInput {
@@ -118,10 +118,13 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
         is_default: initialData?.is_default || false,
     })
 
+    const { items: cartItems } = useCart()
+    const [estimates, setEstimates] = useState<any>(null)
+    const [pincodeLoading, setPincodeLoading] = useState(false)
+
     const [countryOpen, setCountryOpen] = useState(false)
     const [stateOpen, setStateOpen] = useState(false)
     const [cityOpen, setCityOpen] = useState(false)
-    const [pincodeLoading, setPincodeLoading] = useState(false)
 
     const countries = useMemo(() => Country.getAllCountries(), [])
     const states = useMemo(() =>
@@ -134,21 +137,23 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
     const currentCountry = useMemo(() => countries.find(c => c.isoCode === formData.country), [countries, formData.country])
     const currentState = useMemo(() => states.find(s => s.isoCode === formData.state), [states, formData.state])
 
-    // Pincode auto-detection
+    // Pincode auto-detection and estimates
     useEffect(() => {
+        let isCancelled = false;
+
         const detectAddress = async () => {
-            // Only trigger for India and 6 digits
             if (formData.country === 'IN' && formData.pincode.length === 6) {
                 setPincodeLoading(true)
                 try {
+                    // 1. Get City/State
                     const data = await getPincodeDetails(formData.pincode)
+                    if (isCancelled) return;
 
                     if (data && data[0] && data[0].Status === 'Success') {
                         const postOffice = data[0].PostOffice[0]
                         const cityName = postOffice.District
                         const stateName = postOffice.State
 
-                        // Find state code from our library
                         const stateObj = states.find(s =>
                             s.name.toLowerCase() === stateName.toLowerCase() ||
                             s.name.toLowerCase().includes(stateName.toLowerCase())
@@ -160,24 +165,44 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             state: stateObj ? stateObj.isoCode : prev.state
                         }))
                     }
+
+                    // 2. Get Shipping & Delivery Estimates
+                    const [avail, rate] = await Promise.all([
+                        checkDeliveryAvailability(formData.pincode),
+                        calculateShippingRate(formData.pincode, cartItems, false)
+                    ])
+                    if (isCancelled) return;
+
+                    if (avail.success && rate.success) {
+                        setEstimates({
+                            shipping: rate.rate,
+                            delivery: avail.estimatedDelivery,
+                            message: avail.message
+                        })
+                    } else {
+                        setEstimates(null)
+                    }
                 } catch (err) {
                     console.error('Pincode detection error:', err)
                 } finally {
-                    setPincodeLoading(false)
+                    if (!isCancelled) setPincodeLoading(false)
                 }
+            } else {
+                setEstimates(null)
             }
         }
 
         detectAddress()
-    }, [formData.pincode, formData.country, states])
+
+        return () => {
+            isCancelled = true;
+        }
+    }, [formData.pincode, formData.country, states, cartItems])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-
         const stateName = currentState?.name || formData.state
         const countryName = currentCountry?.name || formData.country
-
-        // Format: Address 1, Address 2, City, State, Country, Pincode
         const combinedAddress = [
             formData.address_line1,
             formData.address_line2,
@@ -198,10 +223,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
         visible: {
             opacity: 1,
             y: 0,
-            transition: {
-                duration: 0.6,
-                staggerChildren: 0.1
-            }
+            transition: { duration: 0.6, staggerChildren: 0.1 }
         }
     }
 
@@ -220,10 +242,10 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-10"
+            className="space-y-10 font-sans"
         >
             <PhoneInputStyles />
-            {/* Form Section Header */}
+
             <div className="relative pb-4 flex items-center justify-between">
                 <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-primary/30 via-primary/5 to-transparent" />
                 <h4 className="font-serif italic text-lg text-primary/80 flex items-center gap-2">
@@ -233,7 +255,6 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {/* Label & Full Name */}
                 <motion.div variants={itemVariants} className="space-y-8">
                     <div className="space-y-3 group">
                         <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
@@ -263,7 +284,6 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                     </div>
                 </motion.div>
 
-                {/* Phone & Pincode */}
                 <motion.div variants={itemVariants} className="space-y-8">
                     <div className="space-y-3 group">
                         <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
@@ -297,11 +317,37 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             maxLength={6}
                             className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
                         />
+
+                        <AnimatePresence>
+                            {estimates && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="overflow-hidden"
+                                >
+                                    <div className="mt-4 p-4 border border-primary/20 bg-primary/5 space-y-2">
+                                        <div className="flex justify-between items-center text-[10px] uppercase tracking-widest">
+                                            <span className="text-muted-foreground">Shipping</span>
+                                            <span className="text-primary font-bold">₹{estimates.shipping}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px] uppercase tracking-widest">
+                                            <span className="text-muted-foreground">Est. Delivery</span>
+                                            <span className="text-foreground">{estimates.delivery?.from} - {estimates.delivery?.to}</span>
+                                        </div>
+                                        {estimates.message && (
+                                            <p className="text-[8px] text-primary/60 text-right uppercase tracking-tighter italic">
+                                                {estimates.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </motion.div>
             </div>
 
-            {/* Location Section */}
             <motion.div variants={itemVariants} className="space-y-10 pt-4">
                 <div className="relative pb-4 flex items-center justify-between">
                     <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-primary/30 via-primary/5 to-transparent" />
@@ -330,7 +376,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                         <div className="space-y-3 group">
                             <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
                                 <MapPin className="w-3.5 h-3.5" />
-                                Address Line 2 (Optional)
+                                Address Line 2
                             </Label>
                             <Input
                                 value={formData.address_line2}
