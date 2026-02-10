@@ -492,3 +492,117 @@ insert into gold_rates (purity, rate) values
   ('Silver', 285),
   ('Platinum', 5666)
 on conflict (purity) do update set rate = excluded.rate, updated_at = now();
+
+-- ============================================
+-- 21. ADMIN USERS TABLE
+-- ============================================
+create table if not exists admin_users (
+  id uuid references auth.users(id) on delete cascade primary key,
+  role text not null default 'staff' check (role in ('main_admin', 'support_admin', 'staff')),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table admin_users enable row level security;
+
+drop policy if exists "Admins can view admin_users" on admin_users;
+create policy "Admins can view admin_users" on admin_users for select
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+drop policy if exists "Main admin can manage admin_users" on admin_users;
+create policy "Main admin can manage admin_users" on admin_users for all
+  using (exists (select 1 from admin_users au where au.id = auth.uid() and au.role = 'main_admin'));
+
+-- ============================================
+-- 22. ADMIN ACTIVITY LOGS TABLE
+-- ============================================
+create table if not exists admin_activity_logs (
+  id uuid default gen_random_uuid() primary key,
+  admin_id uuid references auth.users(id) on delete set null,
+  action text not null,
+  entity_type text not null,
+  entity_id text,
+  details jsonb default '{}'::jsonb,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table admin_activity_logs enable row level security;
+
+drop policy if exists "Admins can view activity logs" on admin_activity_logs;
+create policy "Admins can view activity logs" on admin_activity_logs for select
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+drop policy if exists "Admins can insert activity logs" on admin_activity_logs;
+create policy "Admins can insert activity logs" on admin_activity_logs for insert
+  with check (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+-- Admin-level policies for orders (admins can view/update ALL orders)
+drop policy if exists "Admins can view all orders" on orders;
+create policy "Admins can view all orders" on orders for select
+  using (auth.uid() = user_id or exists (select 1 from admin_users au where au.id = auth.uid()));
+
+drop policy if exists "Admins can update all orders" on orders;
+create policy "Admins can update all orders" on orders for update
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+-- Admin-level policies for order_items
+drop policy if exists "Admins can view all order items" on order_items;
+create policy "Admins can view all order items" on order_items for select
+  using (exists (select 1 from admin_users au where au.id = auth.uid())
+    or exists (select 1 from orders where orders.id = order_items.order_id and orders.user_id = auth.uid()));
+
+-- Admin product management
+drop policy if exists "Admins can manage products" on products;
+create policy "Admins can manage products" on products for all
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+-- Admin coupon management
+drop policy if exists "Admins can manage coupons" on coupons;
+create policy "Admins can manage coupons" on coupons for all
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+-- Admin gold rate management
+drop policy if exists "Admins can manage gold rates" on gold_rates;
+create policy "Admins can manage gold rates" on gold_rates for all
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+-- Admin tickets management
+drop policy if exists "Admins can view all tickets" on tickets;
+create policy "Admins can view all tickets" on tickets for select
+  using (auth.uid() = user_id or exists (select 1 from admin_users au where au.id = auth.uid()));
+
+drop policy if exists "Admins can update all tickets" on tickets;
+create policy "Admins can update all tickets" on tickets for update
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+-- Admin repairs management
+drop policy if exists "Admins can view all repairs" on repairs;
+create policy "Admins can view all repairs" on repairs for select
+  using (auth.uid() = user_id or exists (select 1 from admin_users au where au.id = auth.uid()));
+
+drop policy if exists "Admins can update all repairs" on repairs;
+create policy "Admins can update all repairs" on repairs for update
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+-- Admin can view all profiles
+drop policy if exists "Admins can view all profiles" on profiles;
+create policy "Admins can view all profiles" on profiles for select
+  using (true);
+
+-- Admin can view newsletter subscribers
+drop policy if exists "Admins can view all subscribers" on newsletter_subscribers;
+create policy "Admins can view all subscribers" on newsletter_subscribers for select
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+-- Admin can view custom orders
+drop policy if exists "Admins can view all custom orders" on custom_orders;
+create policy "Admins can view all custom orders" on custom_orders for select
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+drop policy if exists "Admins can update custom orders" on custom_orders;
+create policy "Admins can update custom orders" on custom_orders for update
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
+
+-- Admin can view contact messages
+drop policy if exists "Admins can view all contact messages" on contact_messages;
+create policy "Admins can view all contact messages" on contact_messages for select
+  using (exists (select 1 from admin_users au where au.id = auth.uid()));
