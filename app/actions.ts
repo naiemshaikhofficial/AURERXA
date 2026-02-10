@@ -6,6 +6,7 @@ import { createServerClient } from '@supabase/ssr'
 import { notifyNewProduct } from './push-actions'
 import { createCashfreeOrder, getCashfreePayments } from '@/lib/cashfree'
 import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib } from '@/lib/razorpay'
+import { unstable_cache, revalidateTag } from 'next/cache'
 
 // Helper to get authenticated supabase client
 async function getAuthClient() {
@@ -48,6 +49,7 @@ export async function addNewProduct(productData: any) {
   // Trigger push notification
   await notifyNewProduct(data.name, data.slug, data.image_url || '/logo.png')
 
+  revalidateTag('products')
   return { success: true, data }
 }
 
@@ -55,91 +57,111 @@ export async function addNewProduct(productData: any) {
 // CATEGORIES
 // ============================================
 
-export async function getCategories() {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .order('name')
+export const getCategories = unstable_cache(
+  async () => {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name')
 
-  if (error) {
-    console.error('Error fetching categories:', error)
-    return []
-  }
-  return data
-}
+    if (error) {
+      console.error('Error fetching categories:', error)
+      return []
+    }
+    return data
+  },
+  ['categories'],
+  { tags: ['categories'] }
+)
 
 // ============================================
 // PRODUCTS
 // ============================================
 
-export async function getBestsellers() {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, categories(*)')
-    .eq('bestseller', true)
-    .limit(4)
+export const getBestsellers = unstable_cache(
+  async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, categories(*)')
+      .eq('bestseller', true)
+      .limit(4)
 
-  if (error) {
-    console.error('Error fetching bestsellers:', error)
-    return []
-  }
-  return data
-}
+    if (error) {
+      console.error('Error fetching bestsellers:', error)
+      return []
+    }
+    return data
+  },
+  ['bestsellers'],
+  { tags: ['products', 'bestsellers'] }
+)
 
-export async function getNewReleases(limit: number = 8) {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, categories(*)')
-    .order('created_at', { ascending: false })
-    .limit(limit)
+export const getNewReleases = unstable_cache(
+  async (limit: number = 8) => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, categories(*)')
+      .order('created_at', { ascending: false })
+      .limit(limit)
 
-  if (error) {
-    console.error('Error fetching new releases:', error)
-    return []
-  }
-  return data
-}
+    if (error) {
+      console.error('Error fetching new releases:', error)
+      return []
+    }
+    return data
+  },
+  ['new-releases'],
+  { tags: ['products', 'new-releases'] }
+)
 
-export async function getProducts(categorySlug?: string, sortBy?: string) {
-  let query = supabase
-    .from('products')
-    .select('*, categories!inner(*)')
+export const getProducts = unstable_cache(
+  async (categorySlug?: string, sortBy?: string) => {
+    let query = supabase
+      .from('products')
+      .select('*, categories!inner(*)')
 
-  if (categorySlug) {
-    query = query.eq('categories.slug', categorySlug)
-  }
+    if (categorySlug) {
+      query = query.eq('categories.slug', categorySlug)
+    }
 
-  // Sorting
-  if (sortBy === 'price-low') {
-    query = query.order('price', { ascending: true })
-  } else if (sortBy === 'price-high') {
-    query = query.order('price', { ascending: false })
-  } else if (sortBy === 'newest') {
-    query = query.order('created_at', { ascending: false })
-  } else {
-    query = query.order('created_at', { ascending: false })
-  }
+    // Sorting
+    if (sortBy === 'price-low') {
+      query = query.order('price', { ascending: true })
+    } else if (sortBy === 'price-high') {
+      query = query.order('price', { ascending: false })
+    } else if (sortBy === 'newest') {
+      query = query.order('created_at', { ascending: false })
+    } else {
+      query = query.order('created_at', { ascending: false })
+    }
 
-  const { data, error } = await query
+    const { data, error } = await query
 
-  if (error) {
-    console.error('Error fetching products:', error)
-    return []
-  }
-  return data
-}
+    if (error) {
+      console.error('Error fetching products:', error)
+      return []
+    }
+    return data
+  },
+  ['products-list'],
+  { tags: ['products'] }
+)
 
 // Product Actions
-export async function getProductBySlug(slug: string) {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*, categories(slug, name)')
-    .eq('slug', slug)
-    .single()
+export const getProductBySlug = unstable_cache(
+  async (slug: string) => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*, categories(slug, name)')
+      .eq('slug', slug)
+      .single()
 
-  if (error) return null
-  return data
-}
+    if (error) return null
+    return data
+  },
+  ['product-detail'],
+  { tags: ['products'] }
+)
 
 export async function getAdminProducts() {
   const { data, error } = await supabase
