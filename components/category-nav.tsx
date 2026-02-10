@@ -13,10 +13,10 @@ const categories = [
     { label: 'Diamond', href: '/collections?material=diamond', iconId: '82738' }, // Diamond
     { label: 'Earrings', href: '/collections?type=Earring', iconId: 'ksXSIChGyK69' }, // Earring
     { label: 'Rings', href: '/collections?type=Ring', iconId: '5z5Rvj2F4jZB' }, // Ring
-    { label: 'Daily Wear', href: '/collections?occasion=daily', iconId: '82725' }, // Sparkle/Daily
+    { label: 'Daily Wear', href: '/collections?occasion=daily', iconId: '9960' }, // Sparkle/Daily
     { label: 'Collections', href: '/collections', iconId: '121367' }, // Shop/Box
-    { label: 'Wedding', href: '/collections?occasion=wedding', iconId: 'HLkJG1mxr6Xj' }, // Heart
-    { label: 'Gifting', href: '/collections?occasion=gift', iconId: '82731' }, // Star/Gift
+    { label: 'Wedding', href: '/collections?occasion=wedding', iconId: 'GUr9QmddhC6I' }, // Heart
+    { label: 'Gifting', href: '/collections?occasion=gift', iconId: '337' }, // Star/Gift
 ]
 
 export function CategoryNav() {
