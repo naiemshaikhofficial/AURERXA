@@ -7,6 +7,7 @@ import './globals.css'
 import { BottomNav } from '@/components/bottom-nav'
 import { MobileInstallPrompt } from '@/components/mobile-install-prompt'
 import { NotificationManager } from '@/components/notification-manager'
+import { CartSheet } from '@/components/cart-sheet'
 
 const _geist = Geist({ subsets: ['latin'] })
 
@@ -61,6 +62,7 @@ export default function RootLayout({
                   {children}
                 </main>
               </div>
+              <CartSheet />
               <BottomNav />
               <MobileInstallPrompt />
               <NotificationManager />

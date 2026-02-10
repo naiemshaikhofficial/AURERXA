@@ -30,7 +30,7 @@ import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-consta
 
 export function Navbar() {
   const router = useRouter()
-  const { cartCount } = useCart()
+  const { cartCount, openCart } = useCart()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [searchOpen, setSearchOpen] = useState(false)

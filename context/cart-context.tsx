@@ -29,6 +29,9 @@ interface CartContextType {
     removeItem: (cartId: string) => Promise<void>
     refreshCart: (silent?: boolean) => Promise<void>
     cartCount: number
+    isCartOpen: boolean
+    openCart: () => void
+    closeCart: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -37,6 +40,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([])
     const [loading, setLoading] = useState(true)
     const [user, setUser] = useState<any>(null)
+    const [isCartOpen, setIsCartOpen] = useState(false)
+
+    const openCart = () => setIsCartOpen(true)
+    const closeCart = () => setIsCartOpen(false)
 
     useEffect(() => {
         const checkUser = async () => {
@@ -99,6 +106,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         setItems(currentCart)
         localStorage.setItem('aurerxa_cart', JSON.stringify(currentCart))
         setLoading(false)
+        openCart() // Auto-open cart
     }
 
     const refreshCart = async (silent: boolean = true) => {
@@ -135,6 +143,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 const result = await addToCartAction(productId, size, quantity)
                 if (result.success) {
                     await refreshCart()
+                    openCart() // Auto-open cart
                 } else if (result.error?.includes('Please login')) {
                     // Fallback to guest logic if server session is missing/expired
                     await handleGuestAdd(productId, size, quantity, productData)
@@ -203,7 +212,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
     return (
-        <CartContext.Provider value={{ items, loading, addItem, updateQuantity, removeItem, refreshCart, cartCount }}>
+        <CartContext.Provider value={{ items, loading, addItem, updateQuantity, removeItem, refreshCart, cartCount, isCartOpen, openCart, closeCart }}>
             {children}
         </CartContext.Provider>
     )
