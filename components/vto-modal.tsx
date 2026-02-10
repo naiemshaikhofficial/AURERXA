@@ -164,6 +164,7 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
 
         let camera: any = null
         let faceMesh: any = null
+        let isActive = true
 
         const initAR = async () => {
             try {
@@ -175,6 +176,8 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
                     await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js')
                     await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js')
                 }
+
+                if (!isActive) return
 
                 // 2. Initialize FaceMesh
                 setDebugMsg('Starting Camera...')
@@ -193,6 +196,7 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
                 });
 
                 faceMesh.onResults((results: any) => {
+                    if (!isActive) return
                     if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                         setFaceLandmarks(results.multiFaceLandmarks[0])
                         setLoading(false)
@@ -205,8 +209,12 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
                     const Camera = (window as any).Camera
                     camera = new Camera(videoRef.current, {
                         onFrame: async () => {
-                            if (videoRef.current) {
-                                await faceMesh.send({ image: videoRef.current });
+                            if (videoRef.current && isActive && faceMesh) {
+                                try {
+                                    await faceMesh.send({ image: videoRef.current });
+                                } catch (err) {
+                                    console.warn('FaceMesh send error (ignored):', err)
+                                }
                             }
                         },
                         width: 1280,
@@ -217,13 +225,14 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
 
             } catch (error) {
                 console.error('AR Init Error:', error)
-                setDebugMsg('Failed to create AR session. Please check permissions.')
+                if (isActive) setDebugMsg('Failed to create AR session. Please check permissions.')
             }
         }
 
         initAR()
 
         return () => {
+            isActive = false
             if (camera) camera.stop()
             if (faceMesh) faceMesh.close()
             stopCamera()
