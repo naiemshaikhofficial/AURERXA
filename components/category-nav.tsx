@@ -8,9 +8,9 @@ import { ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const categories = [
-    { label: 'All Jewellery', href: '/collections', iconId: '82711' }, // All
-    { label: 'Gold', href: '/collections?material=gold', iconId: '7880' }, // Gold bar
-    { label: 'Diamond', href: '/collections?material=diamond', iconId: '82738' }, // Diamond
+    { label: 'All Jewellery', href: '/collections', iconId: 'aCPWW0PJ102K' }, // All
+    { label: 'Gold', href: '/collections?material=gold', iconId: '16356' }, // Gold bar
+    { label: 'Diamond', href: '/collections?material=diamond', iconId: 'FrcEOQDge9Hy' }, // Diamond
     { label: 'Earrings', href: '/collections?type=Earring', iconId: 'ksXSIChGyK69' }, // Earring
     { label: 'Rings', href: '/collections?type=Ring', iconId: '5z5Rvj2F4jZB' }, // Ring
     { label: 'Daily Wear', href: '/collections?occasion=daily', iconId: '9960' }, // Sparkle/Daily
