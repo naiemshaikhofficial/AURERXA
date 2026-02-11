@@ -506,7 +506,9 @@ export async function addAddress(addressData: {
 
   if (error) {
     console.error('Add address error:', error)
-    return { success: false, error: 'Failed to add address' }
+    if (error.message?.includes('pincode')) return { success: false, error: 'Invalid Pincode: Please enter a valid 6-digit delivery code' }
+    if (error.code === '23505') return { success: false, error: 'This address is already in your concierge registry' }
+    return { success: false, error: `Concierge Error: ${error.message || 'Verification failed'}` }
   }
   return { success: true, message: 'Address added' }
 }
@@ -540,7 +542,12 @@ export async function updateAddress(addressId: string, addressData: {
     .eq('id', addressId)
     .eq('user_id', user.id)
 
-  if (error) return { success: false, error: 'Failed to update' }
+  if (error) {
+    console.error('Update address error:', error)
+    if (error.code === '23505') return { success: false, error: 'A destination with this name already exists' }
+    if (error.message?.includes('violates check constraint')) return { success: false, error: 'Please check all required fields are filled correctly' }
+    return { success: false, error: `Refinement Error: ${error.message || 'System busy'}` }
+  }
   return { success: true }
 }
 
@@ -709,7 +716,8 @@ export async function createOrder(
 
   if (orderError || !order) {
     console.error('Create order error:', orderError)
-    return { success: false, error: 'Failed to create order' }
+    const errDetail = orderError?.message || 'Transaction limit or inventory sync issue'
+    return { success: false, error: `Heritage Acquisition Error: ${errDetail}` }
   }
 
   // Create order items

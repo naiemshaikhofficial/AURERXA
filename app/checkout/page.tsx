@@ -445,14 +445,22 @@ export default function CheckoutPage() {
                         <CheckoutSteps currentStep={2} />
                     </div>
 
-                    {error && (
-                        <div className="alert-luxury-error mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-500">
-                            <div className="flex items-center justify-center gap-3">
-                                <AlertCircle size={14} className="text-destructive" />
-                                <p>{error}</p>
-                            </div>
-                        </div>
-                    )}
+                    <AnimatePresence mode="wait">
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                                className="alert-luxury-error mb-12 text-center"
+                            >
+                                <div className="flex items-center justify-center gap-3">
+                                    <AlertCircle size={14} className="text-[#ff4d4d]" />
+                                    <p className="font-premium-sans font-medium">{error}</p>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left: Address & Payment */}
