@@ -103,7 +103,6 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                     </div>
                 ) : (
                     <motion.div
-                        layout
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         className={`grid gap-4 md:gap-px bg-card/5 border border-border p-px ${viewMode === 'grid'

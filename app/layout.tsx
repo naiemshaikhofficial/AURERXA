@@ -13,7 +13,8 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const geist = Geist({
   subsets: ['latin'],
-  variable: '--font-geist'
+  variable: '--font-geist',
+  display: 'swap',
 })
 
 const playfair = Playfair_Display({

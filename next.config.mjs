@@ -9,6 +9,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    optimizeCss: true, // Attempt to inline critical CSS
+  },
   async headers() {
     return [
       {
