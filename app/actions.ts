@@ -719,8 +719,7 @@ export async function createOrder(
   let cart = await getCart()
 
   if (!cart || cart.length === 0) {
-    console.log('createOrder: Cart empty, retrying in 500ms...')
-    await new Promise(resolve => setTimeout(resolve, 500))
+    console.log('createOrder: Cart empty, immediate retry...')
     cart = await getCart()
   }
 

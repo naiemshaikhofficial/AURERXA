@@ -1,9 +1,8 @@
 import React from "react"
 import type { Metadata, Viewport } from 'next'
-import { Geist } from 'next/font/google'
+import { Geist, Playfair_Display } from 'next/font/google'
 import { SmoothScroll } from '@/components/smooth-scroll'
 import { Toaster } from "@/components/ui/sonner"
-import Script from 'next/script'
 
 import './globals.css'
 import { BottomNav } from '@/components/bottom-nav'
@@ -12,7 +11,16 @@ import { NotificationManager } from '@/components/notification-manager'
 import { CartSheet } from '@/components/cart-sheet'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const _geist = Geist({ subsets: ['latin'] })
+const geist = Geist({
+  subsets: ['latin'],
+  variable: '--font-geist'
+})
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap'
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
@@ -50,13 +58,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${playfair.variable}`}>
       <head>
-        <link rel="preconnect" href="https://checkout.razorpay.com" />
-        <link rel="preconnect" href="https://sdk.cashfree.com" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://grainy-gradients.vercel.app" />
         <link rel="preconnect" href="https://xquczexikijzbzcuvmqh.supabase.co" />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
@@ -72,7 +75,7 @@ export default function RootLayout({
                 <Navbar />
               </AdminRouteGuard>
               {/* Cinematic Grain Overlay */}
-              <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150" />
+              <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('/noise.svg')] brightness-100 contrast-150" />
               <AdminRouteGuard>
                 <div className="pt-20 md:pt-24">
                   <CategoryNav />
@@ -95,14 +98,6 @@ export default function RootLayout({
             </SmoothScroll>
           </CartProvider>
         </ThemeProvider>
-        <Script
-          src="https://checkout.razorpay.com/v1/checkout.js"
-          strategy="afterInteractive"
-        />
-        <Script
-          src="https://sdk.cashfree.com/js/v3/cashfree.js"
-          strategy="afterInteractive"
-        />
       </body>
     </html>
   )
