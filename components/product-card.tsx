@@ -102,12 +102,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
             }
         }
 
-        const final = Array.from(new Set(result))
-        console.log(`✅ FINAL ARRAY [${product.name.slice(0, 10)}]:`, {
-            total: final.length,
-            urls: final
-        })
-        return final
+        return Array.from(new Set(result))
     }, [product])
 
     // Scroll Parallax Logic

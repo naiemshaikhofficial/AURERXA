@@ -64,7 +64,7 @@ export function Hero() {
             className="mb-6 relative inline-block"
           >
             <Image
-              src="/Favicon.ico"
+              src="/logo.png"
               alt="Aurerxa Logo"
               width={112}
               height={112}
@@ -102,7 +102,7 @@ export function Hero() {
             transition={{ duration: 1.2, delay: 0.8, ease: PREMIUM_EASE }}
             className="pt-16"
           >
-            <button className="group relative px-12 py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl">
+            <button className="group relative px-12 py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl" aria-label="Discover the Collection">
               <span className="relative z-10">Discover Collection</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[1500ms] ease-in-out" />
             </button>

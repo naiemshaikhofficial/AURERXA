@@ -179,7 +179,7 @@ export function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
-            <Link href="/" className="flex-shrink-0 group relative z-50">
+            <Link href="/" className="flex-shrink-0 group relative z-50" aria-label="AURERXA Home">
               <img
                 src="/logo.png"
                 alt="AURERXA Logo"
@@ -189,7 +189,7 @@ export function Navbar() {
 
             {/* Mobile Cart & Search Actions (Visible only on mobile) */}
             <div className="flex gap-4 items-center md:hidden relative z-50 pt-1">
-              <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-background/50 rounded-full backdrop-blur-sm border border-border group">
+              <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-background/50 rounded-full backdrop-blur-sm border border-border group" aria-label={`Cart with ${cartCount} items`}>
                 <img
                   src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=BF9B65"
                   alt="Cart"
@@ -205,7 +205,7 @@ export function Navbar() {
               {mounted && (
                 <Sheet>
                   <SheetTrigger asChild>
-                    <button className="text-foreground/80 hover:text-primary transition-colors p-2">
+                    <button className="text-foreground/80 hover:text-primary transition-colors p-2" aria-label="Open navigation menu">
                       <Menu className="w-6 h-6 stroke-1" />
                     </button>
                   </SheetTrigger>
@@ -315,18 +315,19 @@ export function Navbar() {
               <button
                 onClick={() => setSearchOpen(true)}
                 className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 group"
+                aria-label="Search products"
               >
                 <Search className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
                 <span className="text-[10px] font-premium-sans text-muted-foreground/80 group-hover:text-primary/70 hidden lg:block tracking-widest">SEARCH</span>
               </button>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group">
+              <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group" aria-label="Wishlist">
                 <Heart className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
               </Link>
 
               {/* Cart */}
-              <Link href="/cart" className="relative text-muted-foreground hover:text-primary transition-colors group">
+              <Link href="/cart" className="relative text-muted-foreground hover:text-primary transition-colors group" aria-label={`Shopping Cart with ${cartCount} items`}>
                 <ShoppingBag className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
                 {cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-medium rounded-full flex items-center justify-center">
