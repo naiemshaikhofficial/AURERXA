@@ -1,9 +1,8 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import supabaseLoader from '@/lib/supabase-loader'
+import { SupabaseImage as Image } from '@/components/supabase-image'
 import { getBlogPost, getBlogPosts } from '@/app/actions'
 import { Calendar, User, ArrowLeft, Tag } from 'lucide-react'
 
@@ -71,7 +70,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                                 fill
                                 className="object-cover"
                                 priority
-                                loader={supabaseLoader}
                             />
                         </div>
                     )}

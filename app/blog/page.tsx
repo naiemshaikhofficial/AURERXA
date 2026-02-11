@@ -1,8 +1,7 @@
 import Link from 'next/link'
-import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import supabaseLoader from '@/lib/supabase-loader'
+import { SupabaseImage as Image } from '@/components/supabase-image'
 import { getBlogPosts } from '@/app/actions'
 import { BookOpen, Calendar, ArrowRight, Sparkles } from 'lucide-react'
 
@@ -74,8 +73,7 @@ export default async function BlogPage() {
                                             src={post.cover_image || '/placeholder-blog.jpg'}
                                             alt={post.title}
                                             fill
-                                            className="object-cover transition-transform duration-1000 ease-out group-hover:scale-110 opacity-70 group-hover:opacity-100"
-                                            loader={supabaseLoader}
+                                            className="object-cover group-hover:scale-110 transition-transform duration-700"
                                         />
                                         <div className="absolute bottom-4 left-4">
                                             <span className="px-3 py-1 bg-neutral-950/80 backdrop-blur-md border border-amber-500/20 text-amber-500 text-[9px] font-bold uppercase tracking-widest">
