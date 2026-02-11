@@ -256,30 +256,51 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     // Memoize image array to prevent re-calculations on every render
     const allImages = React.useMemo(() => {
         if (!product) return []
-        const imgs = product.images
-        let additional: string[] = []
 
+        const mainImage = product.image_url
+        const result: string[] = []
+
+        if (mainImage) result.push(mainImage)
+
+        // Robust parsing for 'images' field which could be JSONB array or string
+        const imgs = product.images
         if (Array.isArray(imgs)) {
-            additional = imgs
-        } else if (typeof imgs === 'string') {
-            // Handle Postgres Array format {img1,img2}
-            if (imgs.startsWith('{')) {
-                additional = imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
-            }
-            // Handle JSON String format ["img1","img2"]
-            else if (imgs.startsWith('[')) {
+            imgs.forEach(img => {
+                if (typeof img === 'string' && img.trim()) result.push(img.trim())
+            })
+        } else if (typeof imgs === 'string' && imgs.trim()) {
+            const trimmed = imgs.trim()
+            if (trimmed.startsWith('[')) {
                 try {
-                    const parsed = JSON.parse(imgs)
-                    if (Array.isArray(parsed)) additional = parsed
+                    const parsed = JSON.parse(trimmed)
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(img => {
+                            if (typeof img === 'string' && img.trim()) result.push(img.trim())
+                        })
+                    }
                 } catch (e) {
-                    console.error('Failed to parse images JSON', e)
+                    console.error('Failed to parse images JSON string', e)
                 }
+            } else if (trimmed.startsWith('{')) {
+                // Postgres array format {url1,url2}
+                const parts = trimmed.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+                result.push(...parts)
+            } else {
+                // Fallback: splitting by comma
+                const parts = trimmed.split(',').map(s => s.trim()).filter(Boolean)
+                result.push(...parts)
             }
         }
 
         // Deduplicate and filter valid images
-        const uniqueImages = Array.from(new Set([product.image_url, ...additional].filter(Boolean)))
-        return uniqueImages
+        const final = Array.from(new Set(result))
+        console.log('🔹 Product Images DEBUG:', {
+            id: product.id,
+            name: product.name,
+            totalImages: final.length,
+            allUrls: final
+        })
+        return final
     }, [product])
 
     // Add to recently viewed on mount

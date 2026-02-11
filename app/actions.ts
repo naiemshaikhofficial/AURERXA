@@ -211,20 +211,21 @@ export const getProducts = unstable_cache(
 )
 
 // Product Actions
-export const getProductBySlug = unstable_cache(
-  async (slug: string) => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*, categories(slug, name)')
-      .eq('slug', slug)
-      .single()
-
-    if (error) return null
-    return data
-  },
-  ['product-detail'],
-  { revalidate: 3600, tags: ['products'] }
-)
+export async function getProductBySlug(slug: string) {
+  return unstable_cache(
+    async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, categories(slug, name)')
+        .eq('slug', slug)
+        .single()
+      if (error) return null
+      return data
+    },
+    ['product-detail', slug],
+    { revalidate: 3600, tags: ['products'] }
+  )()
+}
 
 export async function getAdminProducts() {
   const { data, error } = await supabase
