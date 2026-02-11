@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
@@ -57,7 +57,6 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
         router.push('/checkout')
     }
 
-    // Carousel Logic
     const allImages = useMemo(() => {
         const imgs = product.images
         let additional: string[] = []
@@ -66,28 +65,39 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
         } else if (typeof imgs === 'string' && imgs.startsWith('{')) {
             additional = imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
         }
-        return [product.image_url, ...additional]
+
+        // Deduplicate to ensure we don't show the same image twice in the carousel
+        const unique = Array.from(new Set([product.image_url, ...additional].filter(Boolean)))
+        return unique
     }, [product])
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+    // Scroll Parallax Logic
+    const containerRef = useRef<HTMLDivElement>(null)
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ['start end', 'end start']
+    })
+    const yParallax = useTransform(scrollYProgress, [0, 1], [-15, 15])
 
     useEffect(() => {
         if (allImages.length <= 1) return
 
         const interval = setInterval(() => {
             setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
-        }, 3000 + (index * 200)) // Staggered start based on index for natural feel
+        }, 4000 + (index * 300)) // Slower, more deliberate luxury timing
 
         return () => clearInterval(interval)
     }, [allImages, index])
 
     return (
         <motion.div
+            ref={containerRef}
             initial="initial"
             whileInView="animate"
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: true }}
             variants={fadeInUp}
-            transition={{ duration: 0.8, delay: index * 0.05, ease: PREMIUM_EASE }}
             className={cn(
                 "group relative bg-card border border-border overflow-hidden flex flex-col hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-700 will-change-transform",
                 viewMode === 'list' ? 'md:flex-row md:items-center' : '',
@@ -98,32 +108,40 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 "relative overflow-hidden group/img bg-muted",
                 viewMode === 'grid' ? 'aspect-[4/5] w-full' : 'aspect-square md:aspect-[3/4] md:w-1/3' // Portfolio aspect ratio
             )}>
-                <Link href={`/products/${product.slug}`} className="absolute inset-0 z-10 block" onClick={onClose} />
-                <AnimatePresence mode="wait">
+                <Link href={`/products/${product.slug}`} className="absolute inset-0 z-30 block" onClick={onClose} />
+                <AnimatePresence initial={false}>
                     <motion.div
                         key={allImages[currentImageIndex]}
-                        initial={{ opacity: 0, scale: 1.05, y: 10 }}
-                        animate={{ opacity: 1, scale: 1.1, y: 0 }}
-                        exit={{ opacity: 0, scale: 1.15, y: -10 }}
+                        initial={{ x: '100%', rotateY: 10, scale: 0.95, opacity: 0 }}
+                        animate={{ x: 0, rotateY: 0, scale: 1, opacity: 1 }}
+                        exit={{ x: '-100%', rotateY: -10, scale: 1.05, opacity: 0 }}
                         transition={{
-                            duration: 2,
-                            ease: [0.22, 1, 0.36, 1] // Custom refined ease for luxury feel
+                            duration: 1.4,
+                            ease: [0.16, 1, 0.3, 1]
                         }}
-                        className="absolute inset-0"
+                        className="absolute inset-0 overflow-hidden"
+                        style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
                     >
-                        <Image
-                            src={sanitizeImagePath(allImages[currentImageIndex])}
-                            alt={product.name}
-                            fill
-                            className="object-cover opacity-90 group-hover:opacity-100"
-                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                            priority={priority || index < 2}
-                            unoptimized
-                        />
+                        <motion.div
+                            initial={{ x: '-20%' }}
+                            animate={{ x: '0%' }}
+                            exit={{ x: '20%' }}
+                            style={{ y: yParallax }}
+                            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                            className="absolute inset-[-8%] will-change-transform"
+                        >
+                            <Image
+                                src={sanitizeImagePath(allImages[currentImageIndex])}
+                                alt={product.name}
+                                fill
+                                className="object-cover opacity-90 group-hover:opacity-100 scale-110 transition-opacity duration-700"
+                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                                priority={priority || index < 2}
+                                unoptimized
+                            />
+                        </motion.div>
                     </motion.div>
                 </AnimatePresence>
-                {/* Matte overlay instead of gradient */}
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-700 pointer-events-none" />
             </div>
 
             {/* Product Info - Minimalist Editorial Style */}
