@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
+import supabaseLoader from '@/lib/supabase-loader'
 import { getOrderById, getOrderTracking, verifyPayment } from '@/app/actions'
 import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw } from 'lucide-react'
 
@@ -260,7 +261,7 @@ export default function OrderDetailPage() {
                                                         alt={item.product_name}
                                                         fill
                                                         className="object-cover"
-                                                        unoptimized
+                                                        loader={supabaseLoader}
                                                     />
                                                 )}
                                             </div>

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import supabaseLoader from '@/lib/supabase-loader'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { checkAdminRole } from './actions'
