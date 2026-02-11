@@ -42,13 +42,21 @@ export async function middleware(request: NextRequest) {
 
     const { data: { user } } = await supabase.auth.getUser()
 
-    // 1. Protected Routes: Unauthenticated users
-    if (!user) {
+    // 1. Auth Page Redirection: Authenticated users visiting /login or /signup
+    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/signup')
+
+    if (user && isAuthRoute) {
+        return NextResponse.redirect(new URL('/', request.url))
+    }
+
+    // 2. Protected Routes: Unauthenticated users
+    if (!user && isProtectedRoute) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // 2. Admin Route Protection: Check admin_users table
-    if (request.nextUrl.pathname.startsWith('/admin')) {
+    // 3. Admin Route Protection: Check admin_users table
+    if (user && request.nextUrl.pathname.startsWith('/admin')) {
         const { data: adminData, error: adminError } = await supabase
             .from('admin_users')
             .select('role')
@@ -65,7 +73,7 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 3. User Ban Check
+    // 4. User Ban Check
     if (user && !request.nextUrl.pathname.startsWith('/banned')) {
         const { data: profile } = await supabase
             .from('profiles')
@@ -78,7 +86,7 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 4. Extra Security Headers (Redundancy)
+    // 5. Extra Security Headers (Redundancy)
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('X-Content-Type-Options', 'nosniff')
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')

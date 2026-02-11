@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import { toast } from 'sonner'
 
 function SignupForm() {
     const router = useRouter()
@@ -66,7 +67,10 @@ function SignupForm() {
                     .eq('id', data.user.id)
             }
 
-            setIsSubmitted(true)
+            toast.success("Account created successfully! Check your email to verify.")
+            router.push('/')
+            router.refresh()
+            // setIsSubmitted(true)
         } catch (err: any) {
             setError(err.message || 'Failed to sign up')
         } finally {
