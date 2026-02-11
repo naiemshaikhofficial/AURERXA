@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { checkAdminRole } from './actions'
 import {
@@ -68,12 +69,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {/* Logo */}
                 <div className="h-16 flex items-center justify-between px-4 border-b border-white/5">
                     {!collapsed && (
-                        <Link href="/admin" className="flex items-center gap-2">
-                            <Shield className="w-6 h-6 text-[#D4AF37]" />
+                        <Link href="/admin" className="flex items-center gap-2.5">
+                            <Image src="/logo.png" alt="AURERXA" width={28} height={28} className="rounded" unoptimized />
                             <span className="text-lg font-semibold tracking-wider text-[#D4AF37]">AURERXA</span>
                         </Link>
                     )}
-                    {collapsed && <Shield className="w-6 h-6 text-[#D4AF37] mx-auto" />}
+                    {collapsed && (
+                        <Link href="/admin" className="mx-auto">
+                            <Image src="/logo.png" alt="AURERXA" width={24} height={24} className="rounded" unoptimized />
+                        </Link>
+                    )}
                     <button onClick={() => setCollapsed(!collapsed)} className="text-white/40 hover:text-white/80 transition hidden md:block">
                         {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
                     </button>
@@ -120,7 +125,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Menu className="w-6 h-6" />
                 </button>
                 <Link href="/admin" className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-[#D4AF37]" />
+                    <Image src="/logo.png" alt="AURERXA" width={22} height={22} className="rounded" unoptimized />
                     <span className="text-sm font-semibold tracking-wider text-[#D4AF37]">ADMIN</span>
                 </Link>
                 <button onClick={handleLogout} className="text-white/40 hover:text-red-400">
@@ -134,8 +139,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
                     <aside className="absolute left-0 top-0 h-full w-72 bg-[#111111] border-r border-white/5 p-4 flex flex-col">
                         <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-2">
-                                <Shield className="w-6 h-6 text-[#D4AF37]" />
+                            <div className="flex items-center gap-2.5">
+                                <Image src="/logo.png" alt="AURERXA" width={28} height={28} className="rounded" unoptimized />
                                 <span className="text-lg font-semibold tracking-wider text-[#D4AF37]">AURERXA</span>
                             </div>
                             <button onClick={() => setMobileOpen(false)} className="text-white/40">

@@ -42,6 +42,7 @@ import { CartProvider } from '@/context/cart-context'
 import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from '@/components/navbar'
 import { CategoryNav } from '@/components/category-nav'
+import { AdminRouteGuard, AdminOnlyWrapper } from '@/components/admin-route-guard'
 
 export default function RootLayout({
   children,
@@ -59,20 +60,29 @@ export default function RootLayout({
         >
           <CartProvider>
             <SmoothScroll>
-              <Navbar />
+              <AdminRouteGuard>
+                <Navbar />
+              </AdminRouteGuard>
               {/* Cinematic Grain Overlay */}
               <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100 contrast-150" />
-              <div className="pt-20 md:pt-24">
-                <CategoryNav />
-                <main>
-                  {children}
-                </main>
-              </div>
+              <AdminRouteGuard>
+                <div className="pt-20 md:pt-24">
+                  <CategoryNav />
+                  <main>
+                    {children}
+                  </main>
+                </div>
+              </AdminRouteGuard>
+              <AdminOnlyWrapper>
+                {children}
+              </AdminOnlyWrapper>
               <Toaster />
-              <CartSheet />
-              <BottomNav />
-              <MobileInstallPrompt />
-              <NotificationManager />
+              <AdminRouteGuard>
+                <CartSheet />
+                <BottomNav />
+                <MobileInstallPrompt />
+                <NotificationManager />
+              </AdminRouteGuard>
               <SpeedInsights />
             </SmoothScroll>
           </CartProvider>
@@ -89,3 +99,4 @@ export default function RootLayout({
     </html>
   )
 }
+
