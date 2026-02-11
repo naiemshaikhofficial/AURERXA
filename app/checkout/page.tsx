@@ -307,7 +307,7 @@ export default function CheckoutPage() {
                 const rp = paymentResult as any;
 
                 // Ensure Razorpay is actually available before proceeding
-                if (!window.Razorpay) {
+                if (!(window as any).Razorpay) {
                     setError('Payment connection is slow. Please wait a moment and try again.');
                     setPlacing(false);
                     return;

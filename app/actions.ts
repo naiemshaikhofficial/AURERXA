@@ -84,11 +84,56 @@ export const getCategories = unstable_cache(
 // PRODUCTS
 // ============================================
 
+export const getGoldRates = unstable_cache(
+  async () => {
+    const { data, error } = await supabase
+      .from('gold_rates')
+      .select('purity, rate, updated_at')
+      .order('purity', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching gold rates:', error)
+      return null
+    }
+
+    const ratesObj: Record<string, number> = {}
+    let lastUpdatedValue: number = 0
+
+    if (data) {
+      data.forEach((item: any) => {
+        ratesObj[item.purity] = item.rate
+        if (item.updated_at) {
+          const updatedTime = new Date(item.updated_at).getTime()
+          if (updatedTime > lastUpdatedValue) {
+            lastUpdatedValue = updatedTime
+          }
+        }
+      })
+    }
+
+    // Lazy Background Sync: If no rates or rates are older than 8 hours
+    const eightHoursAgo = Date.now() - (8 * 3600000)
+    const isStale = !data || data.length === 0 || lastUpdatedValue < eightHoursAgo
+
+    if (isStale) {
+      console.log('DEBUG: Gold rates stale, triggering background sync')
+      // FIRE AND FORGET - Don't await in the main flow to keep TTFB low
+      syncLiveGoldRates().then(result => {
+        if (result.success) revalidateTag('gold-rates', 'page')
+      }).catch(err => console.error('Background sync failed:', err))
+    }
+
+    return ratesObj
+  },
+  ['gold-rates'],
+  { revalidate: 3600, tags: ['gold-rates'] } // Reduced cache time for safer sync checks
+)
+
 export const getBestsellers = unstable_cache(
   async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(*)')
+      .select('*, categories(*)') // Reverted to fetch all
       .eq('bestseller', true)
       .limit(4)
 
@@ -96,6 +141,7 @@ export const getBestsellers = unstable_cache(
       console.error('Error fetching bestsellers:', error)
       return []
     }
+    console.log('Bestsellers fetch result:', data?.length)
     return data || []
   },
   ['bestsellers'],
@@ -106,7 +152,7 @@ export const getNewReleases = unstable_cache(
   async (limit: number = 8) => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(*)')
+      .select('*, categories(*)') // Reverted to fetch all
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -114,6 +160,7 @@ export const getNewReleases = unstable_cache(
       console.error('Error fetching new releases:', error)
       return []
     }
+    console.log('New releases fetch result:', data?.length)
     return data || []
   },
   ['new-releases'],
@@ -857,50 +904,7 @@ export async function submitContact(formData: any) {
 // SEARCH
 // ============================================
 
-export const getGoldRates = unstable_cache(
-  async () => {
-    const { data, error } = await supabase
-      .from('gold_rates')
-      .select('*')
-      .order('purity', { ascending: false }) // 24K, 22K, 18K
 
-    if (error) {
-      console.error('Error fetching gold rates:', error)
-      return null
-    }
-
-    // Convert to object
-    const ratesObj: Record<string, number> = {}
-    let lastUpdated: any = null
-
-    data.forEach((item: any) => {
-      ratesObj[item.purity] = item.rate
-      if (item.updated_at) {
-        const updated = new Date(item.updated_at)
-        if (!lastUpdated || updated.getTime() < lastUpdated.getTime()) {
-          lastUpdated = updated
-        }
-      }
-    });
-
-    // Lazy Sync: If no rates or rates are older than 8 hours, trigger a sync in the background
-    // Note: Since this is inside unstable_cache, it only runs once per revalidation period (8h)
-    const eightHoursAgo = Date.now() - (8 * 3600000)
-    if (data.length === 0 || (lastUpdated && new Date(lastUpdated).getTime() < eightHoursAgo)) {
-      console.log('DEBUG: Gold rates stale or missing, triggering lazy sync')
-      // We call syncLiveGoldRates but don't strictly await it if we already have some data
-      // to keep response fast, but for the first time we should wait.
-      const syncResult = await syncLiveGoldRates();
-      if (syncResult.success && syncResult.rates) {
-        return { ...ratesObj, ...syncResult.rates };
-      }
-    }
-
-    return ratesObj
-  },
-  ['gold-rates'],
-  { revalidate: 28800, tags: ['gold-rates'] }
-)
 
 export async function forceSyncGoldRates() {
   const result = await syncLiveGoldRates();

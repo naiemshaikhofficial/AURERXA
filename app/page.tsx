@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
 import { Navbar } from '@/components/navbar'
 import { Hero } from '@/components/hero'
 import { Heritage } from '@/components/heritage'
@@ -19,9 +20,12 @@ const HeritageHighlights = dynamic(() => import('@/components/heritage-highlight
 const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
 const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
 
-export default async function HomePage() {
+async function NewReleasesSection() {
   const newReleases = await getNewReleases()
+  return <NewReleases products={newReleases} />
+}
 
+export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <Hero />
@@ -31,11 +35,19 @@ export default async function HomePage() {
       <ShopByGender />
       <OccasionBrowsing />
       <ConciergeServices />
-      <NewReleases products={newReleases} />
+
+      <Suspense fallback={<div className="h-96 w-full animate-pulse bg-muted/20" />}>
+        <NewReleasesSection />
+      </Suspense>
+
       <GoldRateCard />
       <FeaturedCollections />
       <Bestsellers />
-      <HeritageHighlights />
+
+      <Suspense fallback={<div className="h-96 w-full animate-pulse bg-muted/20" />}>
+        <HeritageHighlights />
+      </Suspense>
+
       <div className="hidden md:block">
         <CustomOrderForm />
         <Newsletter />
