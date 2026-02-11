@@ -1033,10 +1033,14 @@ export async function searchProducts(query: string) {
   try {
     if (!query || query.length < 2) return []
 
+    // Convert search query to FTS format (using 'plain' to handle spaces as AND)
     const { data, error } = await supabase
       .from('products')
       .select('id, name, price, image_url, slug, categories:category_id(name, slug)')
-      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+      .textSearch('fts_vector', query, {
+        type: 'plain',
+        config: 'english'
+      })
       .limit(10)
 
     if (error) throw error

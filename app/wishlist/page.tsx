@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
+import supabaseLoader from '@/lib/supabase-loader'
 import { Button } from '@/components/ui/button'
 import { getWishlist, removeFromWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
@@ -77,8 +79,9 @@ export default function WishlistPage() {
                                             src={item.products?.image_url || '/placeholder.jpg'}
                                             alt={item.products?.name || 'Product'}
                                             fill
-                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                            unoptimized
+                                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                            sizes="(max-width: 768px) 150px, 200px"
+                                            loader={supabaseLoader}
                                         />
                                     </Link>
 

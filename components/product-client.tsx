@@ -12,6 +12,8 @@ import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
 import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
+import { cn, sanitizeImagePath } from '@/lib/utils'
+import supabaseLoader from '@/lib/supabase-loader'
 import { motion, AnimatePresence } from 'framer-motion'
 import { VTOModal } from '@/components/vto-modal'
 import { ProductCard } from '@/components/product-card'
@@ -216,9 +218,9 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
                     fill
                     className="object-contain p-8 lg:p-16 pointer-events-none select-none"
                     priority
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    sizes="(max-width: 768px) 100vw, 800px"
                     draggable={false}
-                    unoptimized
+                    loader={supabaseLoader}
                 />
             </motion.div>
 
@@ -448,8 +450,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                         alt={`${product.name} view ${i + 1}`}
                                         fill
                                         className="object-cover"
-                                        sizes="(max-width: 768px) 80px, 96px"
-                                        unoptimized
+                                        sizes="96px"
+                                        loader={supabaseLoader}
                                     />
                                 </button>
                             ))}

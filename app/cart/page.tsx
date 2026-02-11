@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
+import supabaseLoader from '@/lib/supabase-loader'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight } from 'lucide-react'
@@ -33,7 +35,8 @@ export default function CartPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
-            <main className="pb-24 min-h-[70vh]">
+            <Navbar />
+            <main className="pb-24 pt-32 min-h-[70vh]">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between mb-12">
                         <h1 className="text-3xl md:text-5xl font-serif text-foreground tracking-tight">
@@ -71,7 +74,8 @@ export default function CartPage() {
                                                 alt={item.products?.name || 'Product'}
                                                 fill
                                                 className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
-                                                unoptimized
+                                                sizes="(max-width: 768px) 150px, 200px"
+                                                loader={supabaseLoader}
                                             />
                                         </Link>
 

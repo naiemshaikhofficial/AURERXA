@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label'
 import { getAddresses, addAddress, createOrder, validateCoupon, initiatePayment, verifyPayment, calculateShippingRate } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { motion, AnimatePresence } from 'framer-motion'
+import supabaseLoader from '@/lib/supabase-loader'
 import {
     Loader2, Plus, MapPin, Check, CreditCard, Banknote,
     ChevronRight, Tag, Gift, X, AlertCircle, Clock,
@@ -687,10 +688,10 @@ export default function CheckoutPage() {
                                                     <span className={`font-medium ${paymentMethod === 'online' ? 'text-primary' : 'text-foreground'}`}>Secure Online Payment</span>
                                                     <div className="flex items-center gap-2 grayscale-0 group-hover:opacity-100 transition-all">
                                                         <div className="relative w-8 h-4">
-                                                            <Image src="/upi-icon.svg" alt="UPI" fill className="object-contain dark:invert invert-0" />
+                                                            <Image src="/upi-icon.svg" alt="UPI" fill className="object-contain dark:invert invert-0" unoptimized />
                                                         </div>
                                                         <div className="relative w-8 h-4">
-                                                            <Image src="/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" />
+                                                            <Image src="/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" sizes="32px" unoptimized />
                                                         </div>
                                                         <div className="relative w-8 h-4">
                                                             <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-full object-contain invert dark:invert-0" />
@@ -774,7 +775,8 @@ export default function CheckoutPage() {
                                                     alt={item.products?.name || 'Product'}
                                                     fill
                                                     className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                                    unoptimized
+                                                    sizes="64px"
+                                                    loader={supabaseLoader}
                                                 />
                                             </div>
                                             <div className="flex-1 min-w-0 flex flex-col justify-center">

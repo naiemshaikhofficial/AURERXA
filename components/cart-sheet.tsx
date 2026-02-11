@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ShieldCheck, Truck, Lock, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import supabaseLoader from '@/lib/supabase-loader'
 
 export function CartSheet() {
     const { items, isCartOpen, closeCart, updateQuantity, removeItem, cartCount } = useCart()
@@ -82,12 +83,12 @@ export function CartSheet() {
                                         >
                                             <Link href={`/products/${item.products?.slug}`} onClick={closeCart} className="relative w-20 h-24 bg-muted flex-shrink-0 overflow-hidden rounded-sm border border-border/50">
                                                 <Image
-                                                    src={item.products?.image_url || '/placeholder.jpg'}
-                                                    alt={item.products?.name || 'Product'}
+                                                    src={item.image_url}
+                                                    alt={item.name}
                                                     fill
-                                                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    className="object-cover"
                                                     sizes="80px"
-                                                    unoptimized
+                                                    loader={supabaseLoader}
                                                 />
                                             </Link>
                                             <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">

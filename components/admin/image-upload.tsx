@@ -7,6 +7,7 @@ import { uploadToSupabase } from '@/lib/storage'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import Image from 'next/image'
+import supabaseLoader from '@/lib/supabase-loader'
 
 interface ImageUploadProps {
     onUploadComplete: (url: string) => void
@@ -95,7 +96,8 @@ export function ImageUpload({ onUploadComplete, initialUrl, label = "Upload Imag
                             alt="Preview"
                             fill
                             className="object-cover transition-transform group-hover:scale-105"
-                            unoptimized
+                            sizes="(max-width: 768px) 100vw, 800px"
+                            loader={supabaseLoader}
                         />
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                             <Button

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
 import { cn, sanitizeImagePath } from '@/lib/utils'
+import supabaseLoader from '@/lib/supabase-loader'
 import { fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export interface Product {
@@ -197,10 +198,13 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                                 src={sanitizeImagePath(allImages[currentImageIndex])}
                                 alt={product.name}
                                 fill
-                                className="object-cover opacity-90 group-hover:opacity-100 scale-110 transition-opacity duration-700"
-                                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                                priority={priority || index < 2}
-                                unoptimized
+                                className={cn(
+                                    "object-cover transition-all duration-700",
+                                    isHovered ? "scale-110" : "scale-100"
+                                )}
+                                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                priority={index < 4}
+                                loader={supabaseLoader}
                             />
                         </motion.div>
                     </motion.div>

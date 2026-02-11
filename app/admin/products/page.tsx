@@ -8,6 +8,7 @@ import { Loader2, Plus, Trash2, Save, Image as ImageIcon, ExternalLink, Search, 
 import Image from 'next/image'
 import Link from 'next/link'
 import { ImageUpload } from '@/components/admin/image-upload'
+import supabaseLoader from '@/lib/supabase-loader'
 
 export default function AdminProductsPage() {
     const [products, setProducts] = useState<any[]>([])
@@ -200,7 +201,7 @@ export default function AdminProductsPage() {
                                 <div key={product.id} className={`bg-[#111111] border rounded-xl p-4 flex items-center gap-4 hover:border-[#D4AF37]/20 transition group ${deleting === product.id ? 'opacity-50' : 'border-white/5'}`}>
                                     {/* Image */}
                                     <div className="relative w-14 h-14 bg-black rounded-lg border border-white/5 flex-shrink-0 overflow-hidden">
-                                        <Image src={product.image_url} alt={product.name} fill className="object-cover p-1" sizes="56px" unoptimized />
+                                        <Image src={product.image_url} alt={product.name} fill className="object-cover p-1" sizes="56px" loader={supabaseLoader} />
                                     </div>
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
