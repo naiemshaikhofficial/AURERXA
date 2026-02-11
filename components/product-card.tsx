@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
@@ -16,6 +16,7 @@ export interface Product {
     description: string
     price: number
     image_url: string
+    images?: string | string[]
     slug: string
     categories?: { name: string; slug: string }
     purity?: string
@@ -56,6 +57,30 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
         router.push('/checkout')
     }
 
+    // Carousel Logic
+    const allImages = useMemo(() => {
+        const imgs = product.images
+        let additional: string[] = []
+        if (Array.isArray(imgs)) {
+            additional = imgs
+        } else if (typeof imgs === 'string' && imgs.startsWith('{')) {
+            additional = imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+        }
+        return [product.image_url, ...additional]
+    }, [product])
+
+    const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+    useEffect(() => {
+        if (allImages.length <= 1) return
+
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
+        }, 3000 + (index * 200)) // Staggered start based on index for natural feel
+
+        return () => clearInterval(interval)
+    }, [allImages, index])
+
     return (
         <motion.div
             initial="initial"
@@ -74,15 +99,26 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 viewMode === 'grid' ? 'aspect-[4/5] w-full' : 'aspect-square md:aspect-[3/4] md:w-1/3' // Portfolio aspect ratio
             )}>
                 <Link href={`/products/${product.slug}`} className="absolute inset-0 z-10 block" onClick={onClose} />
-                <Image
-                    src={sanitizeImagePath(product.image_url)}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    priority={priority || index < 2}
-                    unoptimized
-                />
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={allImages[currentImageIndex]}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1, ease: "easeInOut" }}
+                        className="absolute inset-0"
+                    >
+                        <Image
+                            src={sanitizeImagePath(allImages[currentImageIndex])}
+                            alt={product.name}
+                            fill
+                            className="object-cover transition-transform duration-[2000ms] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                            priority={priority || index < 2}
+                            unoptimized
+                        />
+                    </motion.div>
+                </AnimatePresence>
                 {/* Matte overlay instead of gradient */}
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-700 pointer-events-none" />
             </div>
