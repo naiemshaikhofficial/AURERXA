@@ -38,7 +38,7 @@ export function Hero() {
             alt="Black Edition Background"
             fill
             priority
-            quality={90}
+            quality={85}
             className="object-cover object-center scale-105 dark:opacity-70 opacity-30"
             sizes="100vw"
           />

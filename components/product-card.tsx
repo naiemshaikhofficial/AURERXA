@@ -7,7 +7,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import { cn, sanitizeImagePath } from '@/lib/utils'
 import { fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export interface Product {
@@ -75,12 +75,12 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
             )}>
                 <Link href={`/products/${product.slug}`} className="absolute inset-0 z-10 block" onClick={onClose} />
                 <Image
-                    src={product.image_url}
+                    src={sanitizeImagePath(product.image_url)}
                     alt={product.name}
                     fill
                     className="object-cover transition-transform duration-[1500ms] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                    priority={priority || index < 4}
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    priority={priority || index < 2}
                     unoptimized
                 />
                 {/* Matte overlay instead of gradient */}

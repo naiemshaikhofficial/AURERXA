@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { sanitizeImagePath } from '@/lib/utils'
 
 const occasions = [
     {
@@ -51,14 +52,14 @@ export function OccasionBrowsing() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
-                            transition={{ delay: idx * 0.2, duration: 1 }}
+                            transition={{ delay: idx * 0.1, duration: 0.6 }}
                             className="relative group aspect-[16/10] md:aspect-[4/5] overflow-hidden border border-border bg-card shadow-2xl"
                         >
                             <Image
-                                src={occ.image}
+                                src={sanitizeImagePath(occ.image)}
                                 alt={occ.name}
                                 fill
-                                className="object-cover transition-all duration-1000 scale-100 group-hover:scale-110"
+                                className="object-cover transition-transform duration-700 scale-100 group-hover:scale-110"
                                 sizes="(max-width: 768px) 100vw, 33vw"
                             />
                             <div className="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-500" />

@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { sanitizeImagePath } from '@/lib/utils'
 
 const genderCategories = [
     {
@@ -60,20 +61,19 @@ export function ShopByGender() {
                             initial={{ opacity: 0, y: 40 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ delay: idx * 0.2, duration: 1 }}
+                            transition={{ delay: idx * 0.1, duration: 0.6 }}
                         >
                             <Link
                                 href={`/collections?gender=${gender.slug}`}
                                 className="group block relative"
                             >
-                                <div className="relative aspect-[3/4] overflow-hidden border border-border bg-card group-hover:border-primary/30 transition-all duration-1000">
+                                <div className="relative aspect-[3/4] overflow-hidden border border-border bg-card group-hover:border-primary/30 transition-colors duration-500">
                                     <Image
-                                        src={gender.image}
+                                        src={sanitizeImagePath(gender.image)}
                                         alt={gender.name}
                                         fill
-                                        className="object-cover transition-all duration-1000 scale-105 group-hover:scale-110"
+                                        className="object-cover transition-transform duration-700 scale-105 group-hover:scale-110"
                                         sizes="(max-width: 768px) 100vw, 33vw"
-                                        unoptimized
                                     />
 
                                     {/* Luxury Overlays */}

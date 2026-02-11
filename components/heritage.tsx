@@ -27,7 +27,6 @@ export function Heritage() {
                     alt="Heritage Background"
                     fill
                     className="object-cover brightness-[0.4]"
-                    priority
                     sizes="100vw"
                 />
             </motion.div>

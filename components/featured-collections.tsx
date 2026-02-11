@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion'
 import { getCategories } from '@/app/actions'
 import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
+import { sanitizeImagePath } from '@/lib/utils'
 
 function CollectionCard({ category }: { category: any }) {
   const cardRef = useRef<HTMLAnchorElement>(null)
@@ -68,13 +69,12 @@ function CollectionCard({ category }: { category: any }) {
         <div className="absolute inset-0 z-0 h-[120%] -top-[10%]">
           <motion.div style={{ y: yImage }} className="relative h-full w-full">
             <Image
-              src={category.image_url}
+              src={sanitizeImagePath(category.image_url)}
               alt={category.name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
               className="object-cover transition-all duration-300 group-hover:scale-110 will-change-transform"
               loading="eager"
-              unoptimized
             />
           </motion.div>
 

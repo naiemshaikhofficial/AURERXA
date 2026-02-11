@@ -88,8 +88,7 @@ export function CategoryBrowsing() {
                                         alt={cat.name}
                                         fill
                                         className="object-cover transition-all duration-1000 scale-105 group-hover:scale-110"
-                                        sizes="(max-width: 768px) 50vw, 25vw"
-                                        unoptimized
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                     />
 
                                     {/* Luxury Overlays */}

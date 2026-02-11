@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
+import { sanitizeImagePath } from '@/lib/utils'
 
 // This would typically be a server component, but we need client-side animation
 // We'll accept data as props or fetch in a wrapper
@@ -59,12 +60,12 @@ export function NewReleases({ products }: { products: any[] }) {
                                     <div className="aspect-[4/5] relative overflow-hidden bg-card border border-border group-hover:border-primary/30 transition-colors duration-500">
                                         {/* Image */}
                                         <Image
-                                            src={product.image_url || '/placeholder.jpg'}
+                                            src={sanitizeImagePath(product.image_url)}
                                             alt={product.name}
                                             fill
                                             className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                                            sizes="(max-width: 768px) 280px, 320px"
-                                            priority={i < 4}
+                                            sizes="(max-width: 640px) 280px, 320px"
+                                            priority={i < 2}
                                             unoptimized
                                         />
 
