@@ -282,7 +282,7 @@ export async function getAdminAllProducts(search?: string, page: number = 1, lim
 
     let query = client
         .from('products')
-        .select('*, categories(name)', { count: 'exact' })
+        .select('id, name, price, stock, slug, created_at, categories(name)', { count: 'exact' })
 
     if (search) query = query.ilike('name', `%${search}%`)
 
@@ -322,7 +322,7 @@ export async function getAdminAllUsers(search?: string, page: number = 1, limit:
 
     let query = client
         .from('profiles')
-        .select('*', { count: 'exact' })
+        .select('id, full_name, email, phone_number, created_at, is_banned', { count: 'exact' })
 
     if (search) query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`)
 
@@ -367,12 +367,12 @@ export async function getUserDetails(userId: string) {
     const admin = await checkAdminRole()
     if (!admin) return null
 
-    const { data: profile } = await client.from('profiles').select('*').eq('id', userId).single()
+    const { data: profile } = await client.from('profiles').select('id, full_name, email, phone_number, avatar_url, is_banned, created_at').eq('id', userId).single()
     if (!profile) return null
 
     const { data: orders } = await client
         .from('orders')
-        .select('*')
+        .select('id, order_number, status, total, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
 
@@ -441,7 +441,7 @@ export async function getAdminList() {
 
     const { data } = await client
         .from('admin_users')
-        .select('*, profiles(full_name, email)')
+        .select('id, role, created_at, profiles(full_name, email)')
         .order('created_at', { ascending: false })
 
     return data || []
@@ -582,7 +582,7 @@ export async function getAdminCoupons() {
     const admin = await checkAdminRole()
     if (!admin) return []
 
-    const { data } = await client.from('coupons').select('*').order('created_at', { ascending: false })
+    const { data } = await client.from('coupons').select('id, code, discount_type, discount_value, used_count, usage_limit, is_active, created_at').order('created_at', { ascending: false })
     return data || []
 }
 
@@ -616,7 +616,7 @@ export async function getActivityLogs(page: number = 1, entityType?: string, sea
 
     let query = client
         .from('admin_activity_logs')
-        .select('*, profiles(full_name, email)', { count: 'exact' })
+        .select('id, admin_id, action, entity_type, entity_id, created_at, profiles(full_name, email)', { count: 'exact' })
 
     if (entityType && entityType !== 'all') query = query.eq('entity_type', entityType)
     if (search) query = query.ilike('action', `%${search}%`)

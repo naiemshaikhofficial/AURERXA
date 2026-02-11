@@ -131,7 +131,7 @@ export const getBestsellers = unstable_cache(
   async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(*)') // Reverted to fetch all
+      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
       .eq('bestseller', true)
       .limit(4)
 
@@ -150,7 +150,7 @@ export const getNewReleases = unstable_cache(
   async (limit: number = 8) => {
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories(*)') // Reverted to fetch all
+      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -169,7 +169,7 @@ export const getProducts = unstable_cache(
   async (categorySlug?: string, sortBy?: string) => {
     let query = supabase
       .from('products')
-      .select('*, categories(*)')
+      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
 
     if (categorySlug) {
       // Since it's a join, we filter by the related table's field
@@ -230,7 +230,7 @@ export async function getProductBySlug(slug: string) {
 export async function getAdminProducts() {
   const { data, error } = await supabase
     .from('products')
-    .select('*, categories(name)')
+    .select('id, name, price, stock, slug, created_at, categories(name)')
     .order('created_at', { ascending: false })
 
   if (error) return []
@@ -309,7 +309,7 @@ export async function getProductById(id: string) {
 export async function getRelatedProducts(categoryId: string, excludeId: string) {
   const { data, error } = await supabase
     .from('products')
-    .select('*, categories(*)')
+    .select('id, name, price, image_url, slug, categories(id, name, slug)')
     .eq('category_id', categoryId)
     .neq('id', excludeId)
     .limit(4)
@@ -332,7 +332,7 @@ export async function getCart() {
 
   const { data, error } = await client
     .from('cart')
-    .select('*, products(*, categories(*))')
+    .select('id, product_id, quantity, size, products(id, name, price, slug, image_url, categories(id, name, slug))')
     .eq('user_id', user.id)
 
   if (error) {
@@ -449,7 +449,7 @@ export async function getWishlist() {
 
   const { data, error } = await client
     .from('wishlist')
-    .select('*, products(*, categories(*))')
+    .select('id, product_id, products(id, name, price, slug, image_url, categories(id, name, slug))')
     .eq('user_id', user.id)
 
   if (error) return []
@@ -529,7 +529,7 @@ export async function getAddresses() {
 
   const { data, error } = await client
     .from('addresses')
-    .select('*')
+    .select('id, label, full_name, phone, street_address, city, state, country, pincode, is_default')
     .eq('user_id', user.id)
     .order('is_default', { ascending: false })
     .order('created_at', { ascending: false })
@@ -673,7 +673,7 @@ export async function getOrders() {
 
   const { data, error } = await client
     .from('orders')
-    .select('*')
+    .select('id, order_number, status, total, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -833,7 +833,7 @@ export async function getProfile() {
 
   const { data, error } = await client
     .from('profiles')
-    .select('*')
+    .select('id, full_name, phone_number, avatar_url')
     .eq('id', user.id)
     .single()
 
@@ -1035,7 +1035,7 @@ export async function searchProducts(query: string) {
 
     const { data, error } = await supabase
       .from('products')
-      .select('*, categories:category_id(*)')
+      .select('id, name, price, image_url, slug, categories:category_id(name, slug)')
       .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
       .limit(10)
 
@@ -1188,7 +1188,7 @@ export async function getFilteredProducts(options: {
   try {
     let query = supabase
       .from('products')
-      .select('*, categories(*)')
+      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
 
     // Category filter
     if (options.category) {

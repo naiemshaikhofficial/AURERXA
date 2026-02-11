@@ -33,7 +33,10 @@ export async function middleware(request: NextRequest) {
         request.nextUrl.pathname.startsWith('/admin') ||
         request.nextUrl.pathname.startsWith('/checkout')
 
-    if (!isProtectedRoute) {
+    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
+        request.nextUrl.pathname.startsWith('/signup')
+
+    if (!isProtectedRoute && !isAuthRoute) {
         // Early return for public routes - keep headers for security
         response.headers.set('X-Frame-Options', 'DENY')
         response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -43,9 +46,6 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // 1. Auth Page Redirection: Authenticated users visiting /login or /signup
-    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
-        request.nextUrl.pathname.startsWith('/signup')
-
     if (user && isAuthRoute) {
         return NextResponse.redirect(new URL('/', request.url))
     }
@@ -55,38 +55,64 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
-    // 3. Admin Route Protection: Check admin_users table
-    if (user && request.nextUrl.pathname.startsWith('/admin')) {
-        const { data: adminData, error: adminError } = await supabase
-            .from('admin_users')
-            .select('role')
-            .eq('id', user.id)
-            .single()
+    // Optimization: Cache user status (admin/ban) in a secure cookie for 10 minutes
+    // to avoid hitting the database on every page navigation.
+    const statusCache = request.cookies.get('ua-status-cache')?.value
+    let isBanned = false
+    let isAdmin = false
+    let cacheFound = false
 
-        if (adminError || !adminData) {
-            console.error('Middleware: Admin check failed or not an admin', {
-                userId: user.id,
-                error: adminError?.message || 'No record found'
-            })
-            // Not an admin — redirect to homepage
+    if (statusCache && user) {
+        try {
+            const data = JSON.parse(statusCache)
+            if (data.userId === user.id && Date.now() < data.expires) {
+                isBanned = data.isBanned
+                isAdmin = data.isAdmin
+                cacheFound = true
+            }
+        } catch (e) {
+            console.error('Middleware: Status cache parse error')
+        }
+    }
+
+    if (user && !cacheFound) {
+        // Fetch fresh status from database
+        const [{ data: adminData }, { data: profile }] = await Promise.all([
+            supabase.from('admin_users').select('role').eq('id', user.id).single(),
+            supabase.from('profiles').select('is_banned').eq('id', user.id).single()
+        ])
+
+        isAdmin = !!adminData
+        isBanned = !!profile?.is_banned
+
+        // Set cache cookie (10 minutes)
+        const expires = Date.now() + 10 * 60 * 1000
+        response.cookies.set('ua-status-cache', JSON.stringify({
+            userId: user.id,
+            isAdmin,
+            isBanned,
+            expires
+        }), {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            maxAge: 600
+        })
+    }
+
+    // 3. Admin Route Protection
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+        if (!isAdmin) {
             return NextResponse.redirect(new URL('/', request.url))
         }
     }
 
     // 4. User Ban Check
-    if (user && !request.nextUrl.pathname.startsWith('/banned')) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('is_banned')
-            .eq('id', user.id)
-            .single()
-
-        if (profile?.is_banned) {
-            return NextResponse.redirect(new URL('/banned', request.url))
-        }
+    if (isBanned && !request.nextUrl.pathname.startsWith('/banned')) {
+        return NextResponse.redirect(new URL('/banned', request.url))
     }
 
-    // 5. Extra Security Headers (Redundancy)
+    // 5. Extra Security Headers
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('X-Content-Type-Options', 'nosniff')
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
@@ -102,7 +128,7 @@ export const config = {
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
-         * Feel free to modify this pattern to include more paths.
+         * - Public static assets
          */
         '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
