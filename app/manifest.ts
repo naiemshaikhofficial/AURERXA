@@ -14,21 +14,21 @@ export default function manifest(): MetadataRoute.Manifest {
         categories: ['jewelry', 'fashion', 'luxury'],
         icons: [
             {
-                src: '/Favicon.ico',
+                src: '/favicon%2030x30.ico',
                 sizes: 'any',
                 type: 'image/x-icon',
                 purpose: 'any'
             },
             {
-                src: '/logo.png',
+                src: '/favicon%2030x30.ico',
                 sizes: '192x192',
-                type: 'image/png',
+                type: 'image/x-icon',
                 purpose: 'maskable'
             },
             {
-                src: '/logo.png',
+                src: '/favicon%2030x30.ico',
                 sizes: '512x512',
-                type: 'image/png',
+                type: 'image/x-icon',
                 purpose: 'any'
             },
         ],

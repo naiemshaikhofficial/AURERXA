@@ -64,7 +64,7 @@ export function Hero() {
             className="mb-6 relative inline-block"
           >
             <Image
-              src="/logo.png"
+              src="/Favicon.ico"
               alt="Aurerxa Logo"
               width={112}
               height={112}

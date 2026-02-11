@@ -24,9 +24,9 @@ export const metadata: Metadata = {
     images: ['/logo.png'],
   },
   icons: {
-    icon: '/Favicon.ico',
-    shortcut: '/Favicon.ico',
-    apple: '/logo.png',
+    icon: '/favicon%2030x30.ico',
+    shortcut: '/favicon%2030x30.ico',
+    apple: '/favicon%2030x30.ico',
   },
 }
 

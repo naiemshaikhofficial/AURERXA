@@ -182,25 +182,7 @@ export default function CheckoutPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    useEffect(() => {
-        console.log('CheckoutPage: Checking for payment scripts...');
-
-        const checkScripts = () => {
-            const isRPReady = typeof window !== 'undefined' && (window as any).Razorpay;
-            const isCFReady = typeof window !== 'undefined' && (window as any).Cashfree;
-
-            if (isRPReady && !razorpayLoaded) {
-                setRazorpayLoaded(true);
-            }
-            if (isCFReady && !cashfreeLoaded) {
-                setCashfreeLoaded(true);
-            }
-        };
-
-        checkScripts();
-        const interval = setInterval(checkScripts, 1000);
-        return () => clearInterval(interval);
-    }, [razorpayLoaded, cashfreeLoaded])
+    // Script state is now handled by Script component onLoad callbacks
 
     const updateShippingRate = useCallback(async (pincode: string, isCod: boolean) => {
         if (!pincode || cart.length === 0) return
@@ -324,15 +306,9 @@ export default function CheckoutPage() {
             if (paymentResult.gateway === 'razorpay') {
                 const rp = paymentResult as any;
 
-                // Check if Razorpay is loaded with retry
-                let isRPReady = typeof window !== 'undefined' && (window as any).Razorpay;
-                if (!isRPReady) {
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                    isRPReady = typeof window !== 'undefined' && (window as any).Razorpay;
-                }
-
-                if (!isRPReady) {
-                    setError('Payment connection is slow. Please click again in 2 seconds...');
+                // Ensure Razorpay is actually available before proceeding
+                if (!window.Razorpay) {
+                    setError('Payment connection is slow. Please wait a moment and try again.');
                     setPlacing(false);
                     return;
                 }
@@ -343,6 +319,7 @@ export default function CheckoutPage() {
                     currency: rp.currency,
                     name: "AURERXA",
                     description: rp.productName,
+                    image: typeof window !== 'undefined' ? `${window.location.origin}/favicon%2030x30.ico` : '/favicon%2030x30.ico',
                     order_id: rp.razorpayOrderId,
                     handler: async function (response: any) {
                         setPlacing(true);
@@ -439,6 +416,22 @@ export default function CheckoutPage() {
             <main className="pt-32 pb-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center mb-12">
+                        <Script
+                            src="https://checkout.razorpay.com/v1/checkout.js"
+                            strategy="afterInteractive"
+                            onLoad={() => {
+                                console.log('Razorpay script loaded successfully');
+                                setRazorpayLoaded(true);
+                            }}
+                        />
+                        <Script
+                            src="https://sdk.cashfree.com/js/v3/cashfree.js"
+                            strategy="afterInteractive"
+                            onLoad={() => {
+                                console.log('Cashfree script loaded successfully');
+                                setCashfreeLoaded(true);
+                            }}
+                        />
                         <h1 className="text-3xl md:text-5xl font-serif text-foreground tracking-tight mb-8">
                             Secure <span className="text-primary italic">Checkout</span>
                         </h1>
