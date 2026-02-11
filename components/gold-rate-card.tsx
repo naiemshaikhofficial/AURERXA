@@ -3,9 +3,8 @@
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TrendingUp, Info, RefreshCw, Loader2 } from 'lucide-react'
-import { getGoldRates, syncLiveGoldRates } from '@/app/actions'
+import { getGoldRates, forceSyncGoldRates } from '@/app/actions'
 import { toast } from 'sonner'
-
 export function GoldRateCard() {
     const [rates, setRates] = useState<Record<string, number>>({
         '24K': 15660,
@@ -17,18 +16,19 @@ export function GoldRateCard() {
     const [activeTab, setActiveTab] = useState<'Gold' | 'Silver' | 'Platinum'>('Gold')
     const [loading, setLoading] = useState(true)
 
-    const fetchRates = async () => {
+    const fetchRates = async (isManual = false) => {
         setLoading(true)
         try {
-            const syncResult = await syncLiveGoldRates()
-
-            if (syncResult.success && syncResult.rates) {
-                setRates(prev => ({ ...prev, ...syncResult.rates }))
-                toast.success('Market rates synchronized live')
+            if (isManual) {
+                const syncResult = await forceSyncGoldRates()
+                if (syncResult.success && syncResult.rates) {
+                    setRates(prev => ({ ...prev, ...syncResult.rates }))
+                    toast.success('Market rates synchronized live')
+                }
             } else {
                 const data = await getGoldRates()
                 if (data) {
-                    setRates(data)
+                    setRates(data as Record<string, number>)
                 }
             }
         } catch (err) {
@@ -39,8 +39,12 @@ export function GoldRateCard() {
     }
 
     useEffect(() => {
-        fetchRates()
+        fetchRates(false)
     }, [])
+
+    const handleSync = () => {
+        fetchRates(true)
+    }
 
     const tabs = [
         { id: 'Gold', label: 'Gold', sub: '24K, 22K, 18K' },
@@ -77,10 +81,10 @@ export function GoldRateCard() {
                         <div className="hidden md:block h-12 w-[1px] bg-border mx-8" />
                         <div className="flex flex-col items-center md:items-end gap-4 mx-auto md:mx-0">
                             <p className="text-muted-foreground text-[11px] font-light tracking-widest uppercase leading-relaxed text-center md:text-right">
-                                Rates updated via Global Bullion Market
+                                Rates updated every 8 hours via Global Bullion Market
                             </p>
                             <button
-                                onClick={fetchRates}
+                                onClick={handleSync}
                                 disabled={loading}
                                 className="flex items-center gap-3 text-[10px] text-primary/40 hover:text-primary uppercase tracking-[0.2em] transition-all duration-500 hover:tracking-[0.25em] disabled:opacity-30"
                             >

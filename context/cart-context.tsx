@@ -90,29 +90,39 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
-    const handleGuestAdd = async (productId: string, size?: string, quantity: number = 1, productData?: any) => {
-        const currentCart = [...items]
-        const existingItemIndex = currentCart.findIndex(
-            item => item.product_id === productId && item.size === size
-        )
+    const handleGuestAdd = (productId: string, size?: string, quantity: number = 1, productData?: any) => {
+        setItems(prev => {
+            const currentCart = [...prev]
+            const existingItemIndex = currentCart.findIndex(
+                item => item.product_id === productId && item.size === size
+            )
 
-        if (existingItemIndex > -1) {
-            currentCart[existingItemIndex].quantity += quantity
-        } else {
-            currentCart.push({
-                id: `guest_${Math.random().toString(36).substr(2, 9)}`,
-                product_id: productId,
-                quantity,
-                size,
-                products: productData
-            })
-        }
-
-        setItems(currentCart)
-        localStorage.setItem('aurerxa_cart', JSON.stringify(currentCart))
-        setLoading(false)
-        openCart() // Auto-open cart
+            if (existingItemIndex > -1) {
+                const updatedItem = { ...currentCart[existingItemIndex] }
+                updatedItem.quantity += quantity
+                currentCart[existingItemIndex] = updatedItem
+            } else {
+                currentCart.push({
+                    id: `guest_${Math.random().toString(36).substr(2, 9)}`,
+                    product_id: productId,
+                    quantity,
+                    size,
+                    products: productData
+                })
+            }
+            return currentCart
+        })
+        openCart()
     }
+
+    // Single source of truth for Guest Persistence
+    useEffect(() => {
+        if (!user && items.length > 0) {
+            localStorage.setItem('aurerxa_cart', JSON.stringify(items.filter(item => item.id.startsWith('guest_'))))
+        } else if (!user && items.length === 0) {
+            localStorage.removeItem('aurerxa_cart')
+        }
+    }, [items, user])
 
     const refreshCart = async (silent: boolean = true) => {
         if (!silent) setLoading(true)
@@ -142,75 +152,75 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     const addItem = async (productId: string, size?: string, quantity: number = 1, productData?: any) => {
-        setLoading(true)
-        try {
-            if (user) {
-                const result = await addToCartAction(productId, size, quantity)
-                if (result.success) {
-                    await refreshCart()
-                    openCart() // Auto-open cart
-                } else if (result.error?.includes('Please login')) {
-                    // Fallback to guest logic if server session is missing/expired
-                    await handleGuestAdd(productId, size, quantity, productData)
-                } else {
-                    console.error('Failed to add to cart:', result.error)
+        if (!user) {
+            handleGuestAdd(productId, size, quantity, productData)
+            return
+        }
+
+        // Optimistic add if we have product data
+        if (productData) {
+            setItems(prev => {
+                const existing = prev.find(item => item.product_id === productId && item.size === size)
+                if (existing) {
+                    return prev.map(item => item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item)
                 }
+                return [...prev, {
+                    id: `temp_${Date.now()}`,
+                    product_id: productId,
+                    quantity,
+                    size,
+                    products: productData
+                }]
+            })
+        }
+
+        try {
+            const result = await addToCartAction(productId, size, quantity)
+            if (result.success) {
+                await refreshCart(true)
+                openCart()
             } else {
-                await handleGuestAdd(productId, size, quantity, productData)
+                console.error('Failed to add to cart:', result.error)
+                // If it failed, refresh to get actual state
+                await refreshCart(true)
             }
         } catch (error) {
             console.error('Error adding item:', error)
-            setLoading(false)
+            await refreshCart(true)
         }
     }
 
     const updateQuantity = async (cartId: string, quantity: number) => {
         const newQuantity = Math.max(1, quantity)
 
-        // Optimistic update
-        const previousItems = [...items]
-        setItems(items.map(item =>
+        setItems(prev => prev.map(item =>
             item.id === cartId ? { ...item, quantity: newQuantity } : item
         ))
 
-        if (user && !cartId.startsWith('guest_')) {
+        if (user && !cartId.startsWith('guest_') && !cartId.startsWith('temp_')) {
             try {
                 const result = await updateCartItemAction(cartId, newQuantity)
                 if (!result.success) {
-                    setItems(previousItems) // Rollback
-                } else {
-                    await refreshCart(true) // Silent refresh
+                    await refreshCart(true) // Revert by refreshing
                 }
             } catch (error) {
-                setItems(previousItems) // Rollback
+                await refreshCart(true)
             }
-        } else {
-            localStorage.setItem('aurerxa_cart', JSON.stringify(
-                items.map(item => item.id === cartId ? { ...item, quantity: newQuantity } : item)
-            ))
         }
     }
 
     const removeItem = async (cartId: string) => {
-        // Optimistic update
-        const previousItems = [...items]
-        setItems(items.filter(item => item.id !== cartId))
+        setItems(prev => prev.filter(item => item.id !== cartId))
 
-        if (user && !cartId.startsWith('guest_')) {
+        if (user && !cartId.startsWith('guest_') && !cartId.startsWith('temp_')) {
             try {
                 const result = await removeFromCartAction(cartId)
                 if (!result.success) {
-                    setItems(previousItems) // Rollback
-                } else {
-                    await refreshCart(true) // Silent refresh
+                    await refreshCart(true)
                 }
             } catch (error) {
-                setItems(previousItems) // Rollback
+                await refreshCart(true)
             }
-        } else {
-            localStorage.setItem('aurerxa_cart', JSON.stringify(
-                items.filter(item => item.id !== cartId)
-            ))
         }
     }
 

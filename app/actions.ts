@@ -849,24 +849,58 @@ export async function submitContact(formData: any) {
 // SEARCH
 // ============================================
 
-export async function getGoldRates() {
-  const { data, error } = await supabase
-    .from('gold_rates')
-    .select('*')
-    .order('purity', { ascending: false }) // 24K, 22K, 18K
+export const getGoldRates = unstable_cache(
+  async () => {
+    const { data, error } = await supabase
+      .from('gold_rates')
+      .select('*')
+      .order('purity', { ascending: false }) // 24K, 22K, 18K
 
-  if (error) {
-    console.error('Error fetching gold rates:', error)
-    return null
+    if (error) {
+      console.error('Error fetching gold rates:', error)
+      return null
+    }
+
+    // Convert to object
+    const ratesObj: Record<string, number> = {}
+    let lastUpdated: any = null
+
+    data.forEach((item: any) => {
+      ratesObj[item.purity] = item.rate
+      if (item.updated_at) {
+        const updated = new Date(item.updated_at)
+        if (!lastUpdated || updated.getTime() < lastUpdated.getTime()) {
+          lastUpdated = updated
+        }
+      }
+    });
+
+    // Lazy Sync: If no rates or rates are older than 8 hours, trigger a sync in the background
+    // Note: Since this is inside unstable_cache, it only runs once per revalidation period (8h)
+    const eightHoursAgo = Date.now() - (8 * 3600000)
+    if (data.length === 0 || (lastUpdated && new Date(lastUpdated).getTime() < eightHoursAgo)) {
+      console.log('DEBUG: Gold rates stale or missing, triggering lazy sync')
+      // We call syncLiveGoldRates but don't strictly await it if we already have some data
+      // to keep response fast, but for the first time we should wait.
+      const syncResult = await syncLiveGoldRates();
+      if (syncResult.success && syncResult.rates) {
+        return { ...ratesObj, ...syncResult.rates };
+      }
+    }
+
+    return ratesObj
+  },
+  ['gold-rates'],
+  { revalidate: 28800, tags: ['gold-rates'] }
+)
+
+export async function forceSyncGoldRates() {
+  const result = await syncLiveGoldRates();
+  if (result.success) {
+    // @ts-ignore - Handle varying revalidateTag signatures in newer Next.js versions
+    revalidateTag('gold-rates');
   }
-
-  // Convert to object for easier use
-  const ratesObj: Record<string, number> = {}
-  data.forEach((item: any) => {
-    ratesObj[item.purity] = item.rate
-  })
-
-  return ratesObj
+  return result;
 }
 
 export async function updateGoldRate(purity: string, rate: number) {
