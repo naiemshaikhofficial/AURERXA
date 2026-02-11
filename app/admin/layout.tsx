@@ -70,13 +70,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <div className="h-16 flex items-center justify-between px-4 border-b border-white/5">
                     {!collapsed && (
                         <Link href="/admin" className="flex items-center gap-2.5">
-                            <Image src="/logo.png" alt="AURERXA" width={28} height={28} className="rounded" unoptimized />
-                            <span className="text-lg font-semibold tracking-wider text-[#D4AF37]">AURERXA</span>
+                            <Image src="/logo.png" alt="AURERXA" width={40} height={40} className="rounded" unoptimized />
+
                         </Link>
                     )}
                     {collapsed && (
                         <Link href="/admin" className="mx-auto">
-                            <Image src="/logo.png" alt="AURERXA" width={24} height={24} className="rounded" unoptimized />
+                            <Image src="/favicon.ico" alt="AURERXA" width={80} height={40} className="rounded" unoptimized />
                         </Link>
                     )}
                     <button onClick={() => setCollapsed(!collapsed)} className="text-white/40 hover:text-white/80 transition hidden md:block">

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Loader2, Plus, Trash2, Save, Image as ImageIcon, ExternalLink, Search, Package, DollarSign } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { ImageUpload } from '@/components/admin/image-upload'
 
 export default function AdminProductsPage() {
     const [products, setProducts] = useState<any[]>([])
@@ -288,14 +289,21 @@ export default function AdminProductsPage() {
                                     </div>
 
                                     {/* Main Image */}
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] text-white/40 uppercase tracking-wider">Main Image URL</label>
-                                        <Input
-                                            value={editingProduct.image_url}
-                                            onChange={(e) => setEditingProduct({ ...editingProduct, image_url: e.target.value })}
-                                            className="bg-white/5 border-white/10 rounded-xl h-10 text-sm focus:border-[#D4AF37]/30"
-                                            placeholder="/image.jpg"
+                                    <div className="space-y-4">
+                                        <ImageUpload
+                                            label="Main Image"
+                                            initialUrl={editingProduct.image_url}
+                                            onUploadComplete={(url) => setEditingProduct({ ...editingProduct, image_url: url })}
                                         />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] text-white/40 uppercase tracking-wider">Or Main Image URL</label>
+                                            <Input
+                                                value={editingProduct.image_url}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, image_url: e.target.value })}
+                                                className="bg-white/5 border-white/10 rounded-xl h-10 text-sm focus:border-[#D4AF37]/30"
+                                                placeholder="/image.jpg"
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* Video URL */}
@@ -341,28 +349,48 @@ export default function AdminProductsPage() {
                                     </div>
 
                                     {/* Additional Images */}
-                                    <div className="space-y-3">
+                                    <div className="space-y-4">
                                         <div className="flex justify-between items-center">
                                             <label className="text-[10px] text-white/40 uppercase tracking-wider">Gallery Images</label>
                                             <button onClick={addImageField} className="text-xs text-[#D4AF37] hover:text-[#D4AF37]/80 transition flex items-center gap-1">
-                                                <Plus className="w-3 h-3" /> Add
+                                                <Plus className="w-3 h-3" /> Add Image
                                             </button>
                                         </div>
-                                        <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+
+                                        <div className="grid grid-cols-1 gap-6">
                                             {editingProduct.images.map((url: string, index: number) => (
-                                                <div key={index} className="flex gap-2">
-                                                    <Input
-                                                        value={url}
-                                                        onChange={(e) => updateImageValue(index, e.target.value)}
-                                                        className="bg-white/5 border-white/10 rounded-xl h-9 text-xs focus:border-[#D4AF37]/30"
-                                                        placeholder="Image URL..."
+                                                <div key={index} className="space-y-3 p-4 bg-white/5 border border-white/5 rounded-2xl relative">
+                                                    <ImageUpload
+                                                        initialUrl={url}
+                                                        onUploadComplete={(newUrl) => {
+                                                            const newImages = [...editingProduct.images]
+                                                            newImages[index] = newUrl
+                                                            setEditingProduct({ ...editingProduct, images: newImages })
+                                                        }}
                                                     />
-                                                    <button
-                                                        onClick={() => removeImageField(index)}
-                                                        className="w-9 h-9 flex items-center justify-center bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition flex-shrink-0"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] text-white/40 uppercase tracking-wider">Image URL</label>
+                                                        <div className="flex gap-2">
+                                                            <Input
+                                                                value={url}
+                                                                onChange={(e) => {
+                                                                    const newImages = [...editingProduct.images]
+                                                                    newImages[index] = e.target.value
+                                                                    setEditingProduct({ ...editingProduct, images: newImages })
+                                                                }}
+                                                                className="bg-white/5 border-white/10 rounded-xl h-10 text-sm focus:border-[#D4AF37]/30"
+                                                                placeholder="https://..."
+                                                            />
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="icon"
+                                                                onClick={() => removeImageField(index)}
+                                                                className="h-10 w-10 flex-shrink-0"
+                                                            >
+                                                                <Trash2 className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             ))}
                                             {editingProduct.images.length === 0 && (
