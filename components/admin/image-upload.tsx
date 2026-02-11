@@ -36,7 +36,7 @@ export function ImageUpload({ onUploadComplete, initialUrl, label = "Upload Imag
 
             // 1. Compression
             const options = {
-                maxSizeMB: 0.2,         // Max 200KB (Optimized for speed)
+                maxSizeMB: 0.1,         // Max 100KB (Optimized for speed)
                 maxWidthOrHeight: 1920, // Maintain Full HD resolution
                 useWebWorker: false,    // Disable web worker for better stability in some environments
             }
