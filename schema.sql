@@ -135,6 +135,7 @@ create table if not exists products (
   dimensions_height text,
   dimensions_length text,
   dimensions_unit text default 'mm',
+  video_url text,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -288,5 +289,85 @@ create table if not exists contact_messages (
 alter table contact_messages enable row level security;
 drop policy if exists "Admins can view contact messages" on contact_messages;
 create policy "Admins can view contact messages" on contact_messages for select using (is_admin());
+
+-- ============================================
+-- 7. SERVICES (TRY-ON, HARVEST, CARE, VISIT)
+-- ============================================
+
+create table if not exists virtual_try_on_requests (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null,
+  phone text not null,
+  preferred_date date,
+  preferred_time time,
+  status text default 'pending',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table virtual_try_on_requests enable row level security;
+drop policy if exists "Allow public insert try-on" on virtual_try_on_requests;
+create policy "Allow public insert try-on" on virtual_try_on_requests for insert with check (true);
+drop policy if exists "Admins can view try-on" on virtual_try_on_requests;
+create policy "Admins can view try-on" on virtual_try_on_requests for select using (is_admin());
+drop policy if exists "Admins can update try-on" on virtual_try_on_requests;
+create policy "Admins can update try-on" on virtual_try_on_requests for update using (is_admin());
+
+create table if not exists gold_harvest_leads (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null,
+  phone text not null,
+  monthly_amount decimal(10, 2),
+  status text default 'pending',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table gold_harvest_leads enable row level security;
+drop policy if exists "Allow public insert gold harvest" on gold_harvest_leads;
+create policy "Allow public insert gold harvest" on gold_harvest_leads for insert with check (true);
+drop policy if exists "Admins can view gold harvest" on gold_harvest_leads;
+create policy "Admins can view gold harvest" on gold_harvest_leads for select using (is_admin());
+drop policy if exists "Admins can update gold harvest" on gold_harvest_leads;
+create policy "Admins can update gold harvest" on gold_harvest_leads for update using (is_admin());
+
+create table if not exists jewelry_care_appointments (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null,
+  phone text not null,
+  service_type text,
+  preferred_date date,
+  status text default 'pending',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table jewelry_care_appointments enable row level security;
+drop policy if exists "Allow public insert jewelry care" on jewelry_care_appointments;
+create policy "Allow public insert jewelry care" on jewelry_care_appointments for insert with check (true);
+drop policy if exists "Admins can view jewelry care" on jewelry_care_appointments;
+create policy "Admins can view jewelry care" on jewelry_care_appointments for select using (is_admin());
+drop policy if exists "Admins can update jewelry care" on jewelry_care_appointments;
+create policy "Admins can update jewelry care" on jewelry_care_appointments for update using (is_admin());
+
+create table if not exists boutique_appointments (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  email text not null,
+  phone text not null,
+  preferred_date date,
+  preferred_time time,
+  visit_reason text,
+  status text default 'pending',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table boutique_appointments enable row level security;
+drop policy if exists "Allow public insert boutique" on boutique_appointments;
+create policy "Allow public insert boutique" on boutique_appointments for insert with check (true);
+drop policy if exists "Admins can view boutique" on boutique_appointments;
+create policy "Admins can view boutique" on boutique_appointments for select using (is_admin());
+drop policy if exists "Admins can update boutique" on boutique_appointments;
+create policy "Admins can update boutique" on boutique_appointments for update using (is_admin());
 
 -- End of standardized schema

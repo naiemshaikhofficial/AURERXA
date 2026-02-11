@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { getAdminOrders, updateOrderStatus, exportOrdersCsv } from '../actions'
+import { getAdminOrders, updateOrderStatus, exportOrdersCsv, deleteOrder, checkAdminRole } from '../actions'
 import {
     Search, Filter, ChevronDown, Package, MapPin, CreditCard,
-    Truck, Clock, CheckCircle, XCircle, X, Download
+    Truck, Clock, CheckCircle, XCircle, X, Download, User as UserIcon, Trash2, ShieldAlert
 } from 'lucide-react'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -28,6 +28,12 @@ export default function OrdersPage() {
     const [selectedOrder, setSelectedOrder] = useState<any>(null)
     const [updatingStatus, setUpdatingStatus] = useState(false)
     const [trackingInput, setTrackingInput] = useState('')
+    const [adminRole, setAdminRole] = useState<string | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
+
+    useEffect(() => {
+        checkAdminRole().then(res => setAdminRole(res?.role || null))
+    }, [])
 
     const loadOrders = useCallback(async () => {
         setLoading(true)
@@ -48,6 +54,19 @@ export default function OrdersPage() {
         }
         setUpdatingStatus(false)
         setTrackingInput('')
+    }
+
+    const handleDelete = async () => {
+        if (!selectedOrder || !confirm('Are you sure you want to PERMANENTLY delete this order? This action cannot be undone.')) return
+        setIsDeleting(true)
+        const res = await deleteOrder(selectedOrder.id)
+        setIsDeleting(false)
+        if (res.success) {
+            setSelectedOrder(null)
+            loadOrders()
+        } else {
+            alert('Failed to delete: ' + res.error)
+        }
     }
 
     const handleExport = async () => {
@@ -71,10 +90,12 @@ export default function OrdersPage() {
                     <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Orders</h1>
                     <p className="text-white/40 text-sm mt-1">{total} total orders</p>
                 </div>
-                <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 text-[#D4AF37] rounded-xl text-sm hover:bg-[#D4AF37]/20 transition">
-                    <Download className="w-4 h-4" />
-                    Export CSV
-                </button>
+                <div className="flex gap-2">
+                    <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 text-[#D4AF37] rounded-xl text-sm hover:bg-[#D4AF37]/20 transition">
+                        <Download className="w-4 h-4" />
+                        Export CSV
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -118,6 +139,7 @@ export default function OrdersPage() {
                             <thead>
                                 <tr className="border-b border-white/5">
                                     <th className="text-left text-xs text-white/40 font-medium px-4 py-3">Order</th>
+                                    <th className="text-left text-xs text-white/40 font-medium px-4 py-3">User</th>
                                     <th className="text-left text-xs text-white/40 font-medium px-4 py-3">Items</th>
                                     <th className="text-left text-xs text-white/40 font-medium px-4 py-3">Amount</th>
                                     <th className="text-left text-xs text-white/40 font-medium px-4 py-3">Status</th>
@@ -131,6 +153,16 @@ export default function OrdersPage() {
                                         <td className="px-4 py-3">
                                             <p className="text-sm font-medium text-[#D4AF37]">#{order.order_number}</p>
                                             <p className="text-xs text-white/30">{order.payment_method || 'N/A'}</p>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            {order.user ? (
+                                                <>
+                                                    <p className="text-sm text-white/80">{order.user.full_name}</p>
+                                                    <p className="text-xs text-white/30">{order.user.email}</p>
+                                                </>
+                                            ) : (
+                                                <span className="text-xs text-white/20">Guest / Unknown</span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-white/60">{order.order_items?.length || 0} items</td>
                                         <td className="px-4 py-3 text-sm font-medium">₹{Number(order.total).toLocaleString('en-IN')}</td>
@@ -180,6 +212,11 @@ export default function OrdersPage() {
                                     <p className="text-sm font-bold">₹{Number(order.total).toLocaleString('en-IN')}</p>
                                     <p className="text-[11px] text-white/30">{new Date(order.created_at).toLocaleDateString('en-IN')}</p>
                                 </div>
+                                {order.user && (
+                                    <div className="mt-2 pt-2 border-t border-white/5 text-xs text-white/40">
+                                        {order.user.email}
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -206,7 +243,7 @@ export default function OrdersPage() {
             {selectedOrder && (
                 <div className="fixed inset-0 z-50">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
-                    <div className="absolute right-0 top-0 h-full w-full max-w-lg bg-[#111111] border-l border-white/5 overflow-y-auto">
+                    <div className="absolute right-0 top-0 h-full w-full max-w-lg bg-[#111111] border-l border-white/5 overflow-y-auto animate-in slide-in-from-right-full duration-300">
                         <div className="sticky top-0 bg-[#111111]/95 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between z-10">
                             <h3 className="text-lg font-semibold text-[#D4AF37]">#{selectedOrder.order_number}</h3>
                             <button onClick={() => setSelectedOrder(null)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
@@ -254,6 +291,18 @@ export default function OrdersPage() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* User Details (NEW) */}
+                            {selectedOrder.user && (
+                                <div className="bg-white/5 rounded-xl p-4">
+                                    <p className="text-xs text-white/40 mb-2 flex items-center gap-1"><UserIcon className="w-3 h-3" /> Customer Profile</p>
+                                    <div className="text-sm text-white/80 space-y-1">
+                                        <p className="font-medium text-[#D4AF37]">{selectedOrder.user.full_name || 'No Name'}</p>
+                                        <p>{selectedOrder.user.email}</p>
+                                        {selectedOrder.user.phone_number && <p className="text-white/50">{selectedOrder.user.phone_number}</p>}
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Address */}
                             {selectedOrder.shipping_address && (
@@ -303,9 +352,23 @@ export default function OrdersPage() {
                             </div>
 
                             {/* Date */}
-                            <div className="text-center text-xs text-white/20 pt-2">
+                            <div className="text-center text-xs text-white/20 pt-2 pb-6">
                                 Order placed: {new Date(selectedOrder.created_at).toLocaleString('en-IN')}
                             </div>
+
+                            {/* Danger Zone */}
+                            {adminRole === 'main_admin' && (
+                                <div className="pt-6 border-t border-white/5">
+                                    <button
+                                        onClick={handleDelete}
+                                        disabled={isDeleting}
+                                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl transition text-sm font-medium"
+                                    >
+                                        {isDeleting ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                        Delete Order
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

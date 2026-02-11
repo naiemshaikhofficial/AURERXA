@@ -118,9 +118,7 @@ export const getGoldRates = unstable_cache(
     if (isStale) {
       console.log('DEBUG: Gold rates stale, triggering background sync')
       // FIRE AND FORGET - Don't await in the main flow to keep TTFB low
-      syncLiveGoldRates().then(result => {
-        if (result.success) revalidateTag('gold-rates', 'page')
-      }).catch(err => console.error('Background sync failed:', err))
+      syncLiveGoldRates().catch(err => console.error('Background sync failed:', err))
     }
 
     return ratesObj

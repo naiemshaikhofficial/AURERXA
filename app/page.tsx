@@ -8,6 +8,7 @@ import { CategoryBrowsing } from '@/components/category-browsing'
 import { ShopByGender } from '@/components/shop-by-gender'
 import { OccasionBrowsing } from '@/components/occasion-browsing'
 import { ConciergeServices, FloatingConcierge } from '@/components/concierge'
+import { ServicesSection } from '@/components/services-section'
 import { getNewReleases } from './actions'
 
 // Lazy load below-the-fold components
@@ -35,6 +36,7 @@ export default function HomePage() {
       <ShopByGender />
       <OccasionBrowsing />
       <ConciergeServices />
+      <ServicesSection />
 
       <Suspense fallback={<div className="h-96 w-full animate-pulse bg-muted/20" />}>
         <NewReleasesSection />

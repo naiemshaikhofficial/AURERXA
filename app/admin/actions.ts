@@ -201,7 +201,29 @@ export async function getAdminOrders(
 
     const { data, count, error } = await query
     if (error) { console.error('Admin orders error:', error); return { orders: [], total: 0 } }
-    return { orders: data || [], total: count || 0 }
+
+    // Manually join profiles to avoid complex FK constraints
+    const orders = data || []
+    const userIds = Array.from(new Set(orders.map((o: any) => o.user_id).filter(Boolean)))
+
+    let profilesMap: Record<string, any> = {}
+    if (userIds.length > 0) {
+        const { data: profiles } = await client
+            .from('profiles')
+            .select('id, full_name, email, phone_number')
+            .in('id', userIds)
+
+        if (profiles) {
+            profiles.forEach((p: any) => { profilesMap[p.id] = p })
+        }
+    }
+
+    const ordersWithProfiles = orders.map((o: any) => ({
+        ...o,
+        user: o.user_id ? profilesMap[o.user_id] : null
+    }))
+
+    return { orders: ordersWithProfiles, total: count || 0 }
 }
 
 export async function updateOrderStatus(orderId: string, status: string, trackingNumber?: string) {
@@ -225,6 +247,25 @@ export async function updateOrderStatus(orderId: string, status: string, trackin
         entity_type: 'order',
         entity_id: orderId,
         details: { status, trackingNumber },
+    })
+
+    return { success: true }
+}
+
+export async function deleteOrder(orderId: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin || admin.role !== 'main_admin') return { success: false, error: 'Unauthorized. Only Main Admins can delete orders.' }
+
+    const { error } = await client.from('orders').delete().eq('id', orderId)
+    if (error) return { success: false, error: error.message }
+
+    // Log activity
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: 'Deleted order',
+        entity_type: 'order',
+        entity_id: orderId,
     })
 
     return { success: true }

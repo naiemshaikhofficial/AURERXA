@@ -404,6 +404,26 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 </button>
                             </div>
 
+                            {/* Video Embed */}
+                            {product.video_url && (
+                                <div className="mt-10 space-y-4">
+                                    <p className="text-[10px] text-amber-500/60 font-bold uppercase tracking-[0.3em] font-premium-sans">Visual Experience</p>
+                                    <div className="relative w-full aspect-video bg-neutral-900 border border-white/5 overflow-hidden">
+                                        <iframe
+                                            src={`https://www.youtube.com/embed/${(() => {
+                                                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+                                                const match = product.video_url.match(regExp);
+                                                return (match && match[2].length === 11) ? match[2] : null;
+                                            })()}?modestbranding=1&rel=0`}
+                                            title={product.name}
+                                            className="absolute inset-0 w-full h-full"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 py-8 border-t border-b border-white/5">
                                 <div className="flex flex-col items-center text-center gap-3 group">
                                     <Shield className="w-6 h-6 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />

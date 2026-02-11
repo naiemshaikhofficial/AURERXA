@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { checkAdminRole } from './actions'
 import {
     LayoutDashboard, ShoppingCart, Package, Users, HeadphonesIcon,
-    Settings, ChevronLeft, ChevronRight, Shield, Menu, X, LogOut, Activity
+    Settings, ChevronLeft, ChevronRight, Shield, Menu, X, LogOut, Activity, Sparkles
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -18,6 +18,7 @@ const NAV_ITEMS = [
     { label: 'Support', href: '/admin/support', icon: HeadphonesIcon, roles: ['main_admin', 'support_admin'] },
     { label: 'Settings', href: '/admin/settings', icon: Settings, roles: ['main_admin'] },
     { label: 'Activity', href: '/admin/activity', icon: Activity, roles: ['main_admin'] },
+    { label: 'Services', href: '/admin/services', icon: Sparkles, roles: ['main_admin', 'support_admin'] },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -87,8 +88,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 key={item.href}
                                 href={item.href}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${isActive
-                                        ? 'bg-[#D4AF37]/10 text-[#D4AF37] shadow-lg shadow-[#D4AF37]/5'
-                                        : 'text-white/50 hover:text-white/80 hover:bg-white/5'
+                                    ? 'bg-[#D4AF37]/10 text-[#D4AF37] shadow-lg shadow-[#D4AF37]/5'
+                                    : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                                     }`}
                             >
                                 <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-[#D4AF37]' : ''}`} />

@@ -82,7 +82,8 @@ export default function AdminProductsPage() {
                 images: cleanedImages,
                 dimensions_width: editingProduct.dimensions_width,
                 dimensions_height: editingProduct.dimensions_height,
-                dimensions_length: editingProduct.dimensions_length
+                dimensions_length: editingProduct.dimensions_length,
+                video_url: editingProduct.video_url
             })
         } else {
             // New product
@@ -93,7 +94,8 @@ export default function AdminProductsPage() {
                 images: cleanedImages,
                 category_id: editingProduct.category_id,
                 description: editingProduct.description || 'New artisanal release.',
-                slug: editingProduct.name.toLowerCase().replace(/ /g, '-')
+                slug: editingProduct.name.toLowerCase().replace(/ /g, '-'),
+                video_url: editingProduct.video_url
             })
         }
 
@@ -256,6 +258,17 @@ export default function AdminProductsPage() {
                                             />
                                             <ImageIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/10" />
                                         </div>
+                                    </div>
+
+                                    {/* Video URL */}
+                                    <div className="space-y-3 font-premium-sans">
+                                        <label className="text-[9px] text-amber-500/60 tracking-[0.2em] uppercase">Video URL (YouTube)</label>
+                                        <Input
+                                            value={editingProduct.video_url || ''}
+                                            onChange={(e) => setEditingProduct({ ...editingProduct, video_url: e.target.value })}
+                                            className="bg-black border-white/10 rounded-none h-12 text-xs focus:border-amber-500 transition-all font-sans"
+                                            placeholder="e.g., https://youtu.be/..."
+                                        />
                                     </div>
 
                                     {/* Dimensions */}
