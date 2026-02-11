@@ -19,143 +19,105 @@ export default function ReturnsPage() {
                     <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-12" />
 
                     <div className="space-y-12">
-                        {/* Cancellation Policy */}
+                        {/* Important Note */}
+                        <section className="bg-destructive/10 border border-destructive/20 p-6 text-center">
+                            <p className="text-destructive font-bold uppercase tracking-widest text-sm">
+                                NOTE: DO NOT ACCEPT PARCELS IF THE SEAL IS BROKEN.
+                            </p>
+                        </section>
+
+                        {/* Intro */}
+                        <section className="prose prose-invert max-w-none text-muted-foreground">
+                            <p>
+                                At AURERXA, we are dedicated to offering our customers the best products. Each item is thoroughly inspected, checked for defects, and packaged with utmost care to ensure you love our products. However, there may be times when we do not have the product(s) you choose in stock or face inventory and quality check issues. In such cases, we may have to cancel your order. You will be notified in advance to avoid any inconvenience. If you have purchased via online payment (not Cash on Delivery), you will be refunded once our team confirms your request.
+                            </p>
+                        </section>
+
+                        {/* Order Cancellation */}
                         <section className="bg-card border border-border p-8">
-                            <div className="flex items-start gap-4">
-                                <AlertCircle className="w-8 h-8 text-primary flex-shrink-0" />
-                                <div>
-                                    <h2 className="text-xl font-serif font-medium mb-3">Cancellation Policy</h2>
-                                    <p className="text-muted-foreground leading-relaxed">
-                                        You can cancel your order <span className="text-primary font-medium">only before it has been shipped</span>. Once the order is marked as 'Shipped', it cannot be cancelled.
-                                    </p>
-                                    <p className="text-muted-foreground leading-relaxed mt-2">
-                                        To cancel, visit your <Link href="/account/orders" className="text-primary hover:text-primary/80 underline">Order History</Link> and select "Cancel Order" if eligible.
-                                    </p>
-                                </div>
+                            <h2 className="text-xl font-serif font-medium mb-4">Order Cancellation</h2>
+                            <div className="space-y-4">
+                                <h3 className="font-medium text-foreground">Physical Products</h3>
+                                <ul className="list-disc pl-5 text-muted-foreground space-y-2">
+                                    <li>Orders can be cancelled only before the item is shipped</li>
+                                    <li>Orders already shipped cannot be cancelled</li>
+                                </ul>
                             </div>
+                        </section>
+
+                        {/* Refund Policy */}
+                        <section className="bg-card border border-border p-8">
+                            <h2 className="text-xl font-serif font-medium mb-4">Refund Policy</h2>
+
+                            <div className="mb-6">
+                                <h3 className="font-medium text-foreground mb-2">No-Refund Policy</h3>
+                                <p className="text-muted-foreground mb-4">
+                                    We maintain a strict no-refund policy for all products. However, we may make exceptions in the following cases:
+                                </p>
+                                <ul className="list-disc pl-5 text-muted-foreground space-y-2">
+                                    <li>Product Not Received</li>
+                                    <li>If the product is lost in transit</li>
+                                    <li>If the wrong product is delivered (Unboxing Video Required)</li>
+                                    <li>If the product is damaged during shipping (Unboxing Video Required)</li>
+                                </ul>
+                            </div>
+
+                            <div>
+                                <h3 className="font-medium text-foreground mb-2">Refund Process (When Applicable)</h3>
+                                <p className="text-muted-foreground">
+                                    If any refund is approved, the amount will be credited back in the form of Credit Note within 7-14 business days.
+                                </p>
+                            </div>
+                        </section>
+
+                        {/* Refund/Return Not Applicable */}
+                        <section className="bg-card border border-border p-8">
+                            <h2 className="text-xl font-serif font-medium mb-4">Refund/Return Not Applicable</h2>
+                            <p className="text-muted-foreground">
+                                Refund and Returns are not applicable on silver Coins and Rakhis.
+                            </p>
                         </section>
 
                         {/* Return Policy */}
                         <section className="bg-card border border-border p-8">
-                            <div className="flex items-start gap-4">
-                                <RefreshCw className="w-8 h-8 text-primary flex-shrink-0" />
-                                <div>
-                                    <h2 className="text-xl font-serif font-medium mb-3">15-Day Returns</h2>
-                                    <p className="text-muted-foreground leading-relaxed">
-                                        We offer a <span className="text-primary font-medium">15-day return policy</span> on all purchases.
-                                        If you're not completely satisfied with your purchase, you may return it within 15 days
-                                        of delivery for a full refund or exchange.
-                                    </p>
-                                </div>
-                            </div>
-                        </section>
+                            <h2 className="text-xl font-serif font-medium mb-4">Return Policy</h2>
+                            <p className="text-muted-foreground mb-6">
+                                We are committed to ensuring customer satisfaction and stand by the quality of our products. Below is our return policy to guide you through the return and replacement process:
+                            </p>
 
-                        {/* Conditions */}
-                        <section className="bg-card border border-border p-8">
-                            <div className="flex items-start gap-4">
-                                <CheckCircle className="w-8 h-8 text-primary flex-shrink-0" />
+                            <div className="space-y-6">
                                 <div>
-                                    <h2 className="text-xl font-serif font-medium mb-3">Return Conditions</h2>
-                                    <ul className="text-muted-foreground space-y-2">
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-primary">•</span>
-                                            Item must be unused and in original condition
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-primary">•</span>
-                                            Original packaging, tags, and certificates must be intact
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-primary">•</span>
-                                            Authenticity certificate and invoice must be included
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-primary">•</span>
-                                            Customized or personalized items cannot be returned
-                                        </li>
+                                    <h3 className="font-medium text-foreground mb-2">Eligibility for Return</h3>
+                                    <ul className="list-disc pl-5 text-muted-foreground space-y-2">
+                                        <li>Returns are accepted only for defective, damaged, or incorrect products received.</li>
+                                        <li>The return request must be initiated within 24 hours of receiving the product.</li>
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <h3 className="font-medium text-foreground mb-2">Return Process</h3>
+                                    <ul className="list-disc pl-5 text-muted-foreground space-y-2">
+                                        <li>If your return request is approved, the replacement process will be initiated within 2-3 business days.</li>
+                                        <li>Once the replacement is dispatched, it is expected to be delivered within 4-7 business days.</li>
                                     </ul>
                                 </div>
                             </div>
                         </section>
 
-                        {/* Refund Timeline */}
+                        {/* Important Notes */}
                         <section className="bg-card border border-border p-8">
-                            <div className="flex items-start gap-4">
-                                <Clock className="w-8 h-8 text-primary flex-shrink-0" />
-                                <div>
-                                    <h2 className="text-xl font-serif font-medium mb-3">Refund Timeline</h2>
-                                    <ul className="text-muted-foreground space-y-3">
-                                        <li className="flex justify-between border-b border-border pb-2">
-                                            <span>Quality Check</span>
-                                            <span className="text-foreground">2-3 business days</span>
-                                        </li>
-                                        <li className="flex justify-between border-b border-border pb-2">
-                                            <span>Refund Processing</span>
-                                            <span className="text-foreground">3-5 business days</span>
-                                        </li>
-                                        <li className="flex justify-between">
-                                            <span>Bank Credit (varies by bank)</span>
-                                            <span className="text-foreground">5-7 business days</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+                            <h2 className="text-xl font-serif font-medium mb-4">Important Notes</h2>
+                            <ul className="list-disc pl-5 text-muted-foreground space-y-2">
+                                <li>Delivery timelines may be affected by delays from the transport company, adverse weather conditions, or other unforeseen circumstances.</li>
+                                <li>We are not responsible for delays caused by external factors beyond our control.</li>
+                            </ul>
                         </section>
 
-                        {/* Anti-Fraud & Weight Verification */}
-                        <section className="bg-card border border-destructive/30 p-8 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10">
-                                <AlertCircle className="w-24 h-24 text-destructive" />
-                            </div>
-                            <div className="flex items-start gap-4 relative z-10">
-                                <AlertCircle className="w-8 h-8 text-destructive flex-shrink-0" />
-                                <div>
-                                    <h2 className="text-xl font-serif font-medium mb-3 text-destructive">Anti-Fraud & Weight Verification</h2>
-                                    <div className="space-y-4 text-muted-foreground leading-relaxed text-sm">
-                                        <p>
-                                            <strong className="text-foreground">High Value Item Protection:</strong> To prevent fraudulent claims and "loss in weight" scams, all our shipments are video-recorded during packing.
-                                        </p>
-                                        <p>
-                                            <strong className="text-foreground">Delivery Protocol:</strong> You strictly must verify the package weight and temper-proof seal <strong>before accepting delivery</strong>. Open delivery is recommended where available.
-                                        </p>
-                                        <p>
-                                            <strong className="text-foreground">No Post-Delivery Weight Claims:</strong> Once the package is accepted and signed for, we <strong>do not accept</strong> any claims regarding missing items, empty boxes, or weight discrepancies (loss in weight).
-                                        </p>
-                                        <p className="text-xs text-muted-foreground/80 italic border-t border-border pt-2 mt-2">
-                                            * Any attempt to return counterfeit items or tampered products will result in immediate legal action under applicable fraud laws.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
+                        <section className="text-center pt-8 border-t border-border">
+                            <p className="text-muted-foreground">
+                                We aim to make the return and replacement process as seamless as possible.
+                            </p>
                         </section>
-
-                        {/* Non-Returnable */}
-                        <section className="bg-card border border-border p-8">
-                            <div className="flex items-start gap-4">
-                                <AlertCircle className="w-8 h-8 text-primary flex-shrink-0" />
-                                <div>
-                                    <h2 className="text-xl font-serif font-medium mb-3">Non-Returnable Items</h2>
-                                    <ul className="text-muted-foreground space-y-2">
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-primary">•</span>
-                                            Custom-made or personalized jewelry
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-primary">•</span>
-                                            Items with engraving or special modifications
-                                        </li>
-                                        <li className="flex items-start gap-2">
-                                            <span className="text-primary">•</span>
-                                            Items showing signs of wear or damage
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </section>
-
-                        <p className="text-center text-muted-foreground text-sm">
-                            To initiate a return, please contact us at <a href="mailto:returns@aurerxa.com" className="text-primary hover:text-primary/80">returns@aurerxa.com</a>
-                        </p>
                     </div>
                 </div>
             </main>
