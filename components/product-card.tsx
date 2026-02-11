@@ -102,17 +102,20 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={allImages[currentImageIndex]}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1, ease: "easeInOut" }}
+                        initial={{ opacity: 0, scale: 1.05, y: 10 }}
+                        animate={{ opacity: 1, scale: 1.1, y: 0 }}
+                        exit={{ opacity: 0, scale: 1.15, y: -10 }}
+                        transition={{
+                            duration: 2,
+                            ease: [0.22, 1, 0.36, 1] // Custom refined ease for luxury feel
+                        }}
                         className="absolute inset-0"
                     >
                         <Image
                             src={sanitizeImagePath(allImages[currentImageIndex])}
                             alt={product.name}
                             fill
-                            className="object-cover transition-transform duration-[2000ms] ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+                            className="object-cover opacity-90 group-hover:opacity-100"
                             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                             priority={priority || index < 2}
                             unoptimized
