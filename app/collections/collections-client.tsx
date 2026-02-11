@@ -21,16 +21,7 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
     const [loading, setLoading] = useState(false)
     const [products, setProducts] = useState<Product[]>(initialProducts)
 
-    // Fetch Products when filters change (skip initial render as we have data)
-    useEffect(() => {
-        // Skip if filters match initial filters (avoids double fetch on mount)
-        // Simple check: if we are just mounting, we might not need to fetch.
-        // However, if the user changes filters, we fetch.
-
-        // We can use a ref to track if it's the first render or compare objects
-        // For now, let's just fetch if filters !== initialFilters or strictly on change?
-        // Actually, handling this is easier if we just don't fetch on mount.
-    }, [])
+    // Filters are initialized from props, no need for effect on mount
 
     const handleFilterChange = async (newFilters: FilterState) => {
         setFilters(newFilters)
@@ -60,25 +51,20 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                 <div className="absolute inset-0 bg-background z-0" />
 
                 <div className="relative z-10 max-w-7xl mx-auto text-center space-y-10">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                    >
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
                         <div className="inline-flex items-center gap-6 mb-8 opacity-60">
                             <div className="h-[1px] w-16 bg-foreground/20" />
                             <span className="text-foreground font-premium-sans text-[10px] tracking-[0.4em] uppercase">The Archive</span>
                             <div className="h-[1px] w-16 bg-foreground/20" />
                         </div>
                         {/* H1 is critical LCP element, remove animation or use CSS */}
-                        <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                        <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4">
                             COLLECTIONS
                         </h1>
                         <p className="max-w-xl mx-auto text-muted-foreground font-light text-sm tracking-widest uppercase leading-loose">
                             Curated masterpieces for the modern connoisseur.
                         </p>
-                    </motion.div>
+                    </div>
                 </div>
             </div>
 
@@ -102,12 +88,12 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                         <span className="text-6xl text-muted-foreground/5 font-serif">Empty</span>
                         <p className="text-xs text-muted-foreground/30 font-premium-sans tracking-widest uppercase">No artifacts found in this specific curation.</p>
                         <button
-                            // Reset to initial state or just clear filters
+                            // Reset to default state
                             onClick={() => handleFilterChange({
                                 category: 'all',
                                 type: 'all',
                                 gender: 'all',
-                                priceRange: PRICE_RANGES[0],
+                                priceRange: { label: 'All Prices', min: 0, max: null },
                                 sortBy: 'newest'
                             })}
                             className="text-muted-foreground/40 underline underline-offset-8 hover:text-foreground transition-colors text-xs uppercase tracking-widest"
