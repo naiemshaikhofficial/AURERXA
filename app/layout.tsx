@@ -51,6 +51,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://checkout.razorpay.com" />
+        <link rel="preconnect" href="https://sdk.cashfree.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://grainy-gradients.vercel.app" />
+        <link rel="preconnect" href="https://xquczexikijzbzcuvmqh.supabase.co" />
+      </head>
       <body className="font-sans antialiased bg-background text-foreground">
         <ThemeProvider
           attribute="class"

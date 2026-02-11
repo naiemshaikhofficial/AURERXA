@@ -22,6 +22,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import Image from 'next/image'
 import { Menu } from "lucide-react"
 import { SearchModal } from './search-modal'
 import { ModeToggle } from './mode-toggle'
@@ -179,12 +180,17 @@ export function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
-            <Link href="/" className="flex-shrink-0 group relative z-50" aria-label="AURERXA Home">
-              <img
-                src="/logo.png"
-                alt="AURERXA Logo"
-                className="h-10 md:h-20 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
-              />
+            <Link href="/" className="flex-shrink-0 group relative z-50 transition-transform active:scale-95" aria-label="AURERXA Home">
+              <div className="relative h-10 md:h-20 w-32 md:w-56">
+                <Image
+                  src="/logo.png"
+                  alt="AURERXA Logo"
+                  fill
+                  priority
+                  className="object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
+                  sizes="(max-width: 768px) 128px, 224px"
+                />
+              </div>
             </Link>
 
             {/* Mobile Cart & Search Actions (Visible only on mobile) */}

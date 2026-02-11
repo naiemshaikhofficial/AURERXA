@@ -147,7 +147,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 "relative overflow-hidden group/img bg-muted",
                 viewMode === 'grid' ? 'aspect-[4/5] w-full' : 'aspect-square md:aspect-[3/4] md:w-1/3' // Portfolio aspect ratio
             )}>
-                <Link href={`/products/${product.slug}`} className="absolute inset-0 z-30 block" onClick={onClose} />
+                <Link href={`/products/${product.slug}`} className="absolute inset-0 z-30 block" onClick={onClose} aria-label={`View details for ${product.name}`} />
 
                 {/* Progress Segments */}
                 {allImages.length > 1 && (
@@ -198,7 +198,8 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                                     isHovered ? "scale-110" : "scale-100"
                                 )}
                                 sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                                priority={index < 4}
+                                priority={priority || index < 4}
+                                fetchPriority={priority || index < 4 ? "high" : "auto"}
                                 loader={supabaseLoader}
                             />
                         </motion.div>
@@ -237,7 +238,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 </div>
 
                 {/* Modern Slide-up Buttons */}
-                <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] z-20">
+                <div className="hidden md:block absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] z-20">
                     <div className="grid grid-cols-2 gap-px bg-white/5 backdrop-blur-md border-t border-white/10">
                         <Button
                             onClick={handleAddToCart}

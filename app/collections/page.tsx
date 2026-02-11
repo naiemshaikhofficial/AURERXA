@@ -47,8 +47,7 @@ function CollectionsContent() {
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true)
-      // Simulate "Heavy" Luxurious Loading delay
-      await new Promise(r => setTimeout(r, 600))
+      // LUXURY LOAD: Optimized for instant feedback
 
       try {
         const data = await getFilteredProducts({
@@ -99,6 +98,7 @@ function CollectionsContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 pb-32 relative z-10">
+        <h2 className="sr-only">Product Catalog</h2>
         {/* Cinematic Filter Integration */}
         <CinematicFilter
           categories={categories}
