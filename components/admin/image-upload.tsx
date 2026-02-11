@@ -131,7 +131,7 @@ export function ImageUpload({ onUploadComplete, initialUrl, label = "Upload Imag
                         </div>
                         <div className="text-center">
                             <p className="text-sm font-medium text-white/80">Click to upload</p>
-                            <p className="text-xs text-white/40 mt-1">PNG, JPG or WEBP (Max 1MB compressed)</p>
+                            <p className="text-xs text-white/40 mt-1">PNG, JPG or WEBP (Max 300KB compressed)</p>
                         </div>
                     </button>
                 )}
