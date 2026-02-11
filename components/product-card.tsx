@@ -197,7 +197,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                                     "object-cover transition-all duration-700",
                                     isHovered ? "scale-110" : "scale-100"
                                 )}
-                                sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                sizes="(max-width: 480px) 50vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                                 priority={priority || index < 4}
                                 fetchPriority={priority || index < 4 ? "high" : "auto"}
                                 loader={supabaseLoader}
