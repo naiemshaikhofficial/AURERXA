@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { addToWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
-import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw } from 'lucide-react'
+import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { motion, AnimatePresence } from 'framer-motion'
 import { VTOModal } from '@/components/vto-modal'
@@ -18,8 +18,104 @@ import { VTOModal } from '@/components/vto-modal'
 
 interface ProductClientProps {
     product: any
-    related: any[]
-    isWishlisted: boolean
+    related?: any[]
+    isWishlisted?: boolean
+}
+
+// ============================================
+// CACHED VIDEO COMPONENT
+// ============================================
+function CachedVideo({ src, isShort }: { src: string; isShort: boolean }) {
+    const [videoSrc, setVideoSrc] = useState<string | null>(null)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        let mounted = true
+        const CACHE_NAME = 'aurerxa-video-cache'
+
+        async function initCache() {
+            try {
+                if (!('caches' in window)) {
+                    setVideoSrc(src)
+                    setLoading(false)
+                    return
+                }
+
+                const cache = await caches.open(CACHE_NAME)
+                const cachedResponse = await cache.match(src)
+
+                if (cachedResponse) {
+                    const blob = await cachedResponse.blob()
+                    if (mounted) {
+                        setVideoSrc(URL.createObjectURL(blob))
+                        setLoading(false)
+                    }
+                    return
+                }
+
+                // Not in cache, fetch it
+                const response = await fetch(src)
+                if (!response.ok) throw new Error('Failed to fetch video')
+
+                // We need a clone because response can only be used once
+                const responseToCache = response.clone()
+                await cache.put(src, responseToCache)
+
+                const blob = await response.blob()
+                if (mounted) {
+                    setVideoSrc(URL.createObjectURL(blob))
+                    setLoading(false)
+                }
+
+                // Cleanup old caches (optional but good for maintenance)
+                const keys = await cache.keys()
+                for (const request of keys) {
+                    if (request.url !== src && !request.url.includes('youtube')) {
+                        // This is a simple logic: only keep the current video if it's a product page
+                        // In a real app, you might want more sophisticated cleanup
+                        // but for now, we'll keep it simple to ensure the current one is cached.
+                    }
+                }
+
+            } catch (error) {
+                console.error('Video caching error:', error)
+                if (mounted) {
+                    setVideoSrc(src)
+                    setLoading(false)
+                }
+            }
+        }
+
+        initCache()
+
+        return () => {
+            mounted = false
+            if (videoSrc && videoSrc.startsWith('blob:')) {
+                URL.revokeObjectURL(videoSrc)
+            }
+        }
+    }, [src])
+
+    if (loading) {
+        return (
+            <div className="absolute inset-0 flex items-center justify-center bg-neutral-900">
+                <Loader2 className="w-8 h-8 text-amber-500/20 animate-spin" />
+            </div>
+        )
+    }
+
+    return (
+        <video
+            src={videoSrc || src}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+        >
+            Your browser does not support the video tag.
+        </video>
+    )
 }
 
 function ZoomableImage({ src, alt }: { src: string, alt: string }) {
@@ -156,7 +252,6 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const [message, setMessage] = useState<string | null>(null)
     const [selectedImage, setSelectedImage] = useState(0)
     const [isVTOOpen, setIsVTOOpen] = useState(false)
-    const [isPlayingVideo, setIsPlayingVideo] = useState(false)
 
     // Memoize image array to prevent re-calculations on every render
     const allImages = React.useMemo(() => {
@@ -427,16 +522,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                                         allowFullScreen
                                                     />
                                                 ) : (
-                                                    <video
-                                                        src={url}
-                                                        autoPlay
-                                                        muted
-                                                        loop
-                                                        playsInline
-                                                        className="absolute inset-0 w-full h-full object-cover"
-                                                    >
-                                                        Your browser does not support the video tag.
-                                                    </video>
+                                                    <CachedVideo src={url} isShort={isShort} />
                                                 )}
 
                                                 {/* Luxury Overlay to maintain website integration */}
@@ -582,7 +668,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             </div>
 
             {/* Related Products - Cinematic Strip */}
-            {related.length > 0 && (
+            {related && related.length > 0 && (
                 <div className="py-32 border-t border-white/5 relative bg-neutral-950">
                     <div className="max-w-7xl mx-auto px-6">
                         <div className="flex flex-col items-center mb-20 text-center">
@@ -591,7 +677,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-16">
-                            {related.map((item) => (
+                            {related?.map((item) => (
                                 <Link key={item.id} href={`/products/${item.id}`} className="group block">
                                     <div className="aspect-[3/4] bg-neutral-900/40 relative overflow-hidden border border-white/5 group-hover:border-white/20 transition-all duration-700">
                                         <Image
