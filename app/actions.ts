@@ -266,6 +266,34 @@ export async function updateProductDetails(productId: string, updates: any) {
   }
 }
 
+export async function deleteProduct(productId: string) {
+  try {
+    const client = await getAuthClient()
+
+    // Get product name for logging
+    const { data: product } = await client.from('products').select('name').eq('id', productId).single()
+
+    const { error } = await client.from('products').delete().eq('id', productId)
+    if (error) return { success: false, error: error.message }
+
+    // Log activity
+    const { data: { user } } = await client.auth.getUser()
+    if (user) {
+      await client.from('admin_activity_logs').insert({
+        admin_id: user.id,
+        action: `Deleted product: ${product?.name || productId}`,
+        entity_type: 'product',
+        entity_id: productId,
+      })
+    }
+
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to delete product' }
+  }
+}
+
+
 export async function getProductById(id: string) {
   const { data, error } = await supabase
     .from('products')

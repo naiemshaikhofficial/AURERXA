@@ -606,21 +606,119 @@ export async function deleteCoupon(couponId: string) {
 }
 
 // ============================================
-// ACTIVITY LOGS
+// ACTIVITY LOGS (Enhanced with filters)
 // ============================================
 
-export async function getActivityLogs(page: number = 1) {
+export async function getActivityLogs(page: number = 1, entityType?: string, search?: string, dateFrom?: string, dateTo?: string) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return { logs: [], total: 0 }
 
-    const { data, count } = await client
+    let query = client
         .from('admin_activity_logs')
         .select('*, profiles(full_name, email)', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range((page - 1) * 50, page * 50 - 1)
 
+    if (entityType && entityType !== 'all') query = query.eq('entity_type', entityType)
+    if (search) query = query.ilike('action', `%${search}%`)
+    if (dateFrom) query = query.gte('created_at', dateFrom)
+    if (dateTo) query = query.lte('created_at', dateTo)
+
+    query = query.order('created_at', { ascending: false }).range((page - 1) * 50, page * 50 - 1)
+
+    const { data, count } = await query
     return { logs: data || [], total: count || 0 }
+}
+
+// ============================================
+// SUPPORT: DELETE & STATUS UPDATES
+// ============================================
+
+export async function deleteSupportItem(table: string, id: string) {
+    const allowedTables = ['tickets', 'repairs', 'contact_messages', 'custom_orders']
+    if (!allowedTables.includes(table)) return { success: false, error: 'Invalid table' }
+
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    const { error } = await client.from(table).delete().eq('id', id)
+    if (error) return { success: false, error: error.message }
+
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: `Deleted ${table.replace('_', ' ')} item`,
+        entity_type: table,
+        entity_id: id,
+    })
+
+    return { success: true }
+}
+
+export async function updateSupportItemStatus(table: string, id: string, status: string) {
+    const allowedTables = ['tickets', 'repairs', 'contact_messages', 'custom_orders']
+    if (!allowedTables.includes(table)) return { success: false, error: 'Invalid table' }
+
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    const { error } = await client.from(table).update({ status, updated_at: new Date().toISOString() }).eq('id', id)
+    if (error) return { success: false, error: error.message }
+
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: `Updated ${table.replace('_', ' ')} status to ${status}`,
+        entity_type: table,
+        entity_id: id,
+    })
+
+    return { success: true }
+}
+
+// ============================================
+// SERVICES: STATUS & DELETE
+// ============================================
+
+export async function updateServiceStatus(table: string, id: string, status: string) {
+    const allowedTables = ['virtual_try_on_requests', 'gold_harvest_leads', 'jewelry_care_appointments', 'boutique_appointments']
+    if (!allowedTables.includes(table)) return { success: false, error: 'Invalid table' }
+
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    const { error } = await client.from(table).update({ status, updated_at: new Date().toISOString() }).eq('id', id)
+    if (error) return { success: false, error: error.message }
+
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: `Updated ${table.replace(/_/g, ' ')} status to ${status}`,
+        entity_type: 'service',
+        entity_id: id,
+    })
+
+    return { success: true }
+}
+
+export async function deleteServiceRequest(table: string, id: string) {
+    const allowedTables = ['virtual_try_on_requests', 'gold_harvest_leads', 'jewelry_care_appointments', 'boutique_appointments']
+    if (!allowedTables.includes(table)) return { success: false, error: 'Invalid table' }
+
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    const { error } = await client.from(table).delete().eq('id', id)
+    if (error) return { success: false, error: error.message }
+
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: `Deleted ${table.replace(/_/g, ' ')} request`,
+        entity_type: 'service',
+        entity_id: id,
+    })
+
+    return { success: true }
 }
 
 // ============================================

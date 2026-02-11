@@ -52,6 +52,7 @@ export default function SettingsPage() {
     const handleRateUpdate = async (id: string) => {
         const value = editingRates[id]
         if (!value) return
+        if (!confirm(`Are you sure you want to update this rate to ₹${value}?`)) return
         await updateGoldRate(id, parseFloat(value))
         loadData()
     }
@@ -78,6 +79,7 @@ export default function SettingsPage() {
     }
 
     const handleRoleChange = async (userId: string, role: string) => {
+        if (!confirm(`Are you sure you want to change this admin's role to ${role.toUpperCase().replace('_', ' ')}?`)) return
         await updateAdminRole(userId, role)
         loadData()
     }
