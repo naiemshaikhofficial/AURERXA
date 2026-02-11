@@ -303,12 +303,12 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
                     {/* Thumbnails */}
                     {allImages.length > 1 && (
-                        <div className="hidden lg:flex gap-4 overflow-x-auto pb-2 no-scrollbar px-6 lg:px-0">
+                        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar px-6 lg:px-0 scroll-smooth snap-x">
                             {allImages.map((img: string, i: number) => (
                                 <button
                                     key={i}
                                     onClick={() => setSelectedImage(i)}
-                                    className={`relative w-24 h-24 flex-shrink-0 border transition-all duration-300 ${selectedImage === i ? 'border-amber-200/40 opacity-100' : 'border-white/5 opacity-40 hover:opacity-100'
+                                    className={`relative w-20 h-20 md:w-24 md:h-24 flex-shrink-0 border transition-all duration-300 snap-center ${selectedImage === i ? 'border-amber-200/40 opacity-100' : 'border-white/5 opacity-40 hover:opacity-100'
                                         }`}
                                 >
                                     <Image
@@ -316,7 +316,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                         alt={`${product.name} view ${i + 1}`}
                                         fill
                                         className="object-cover"
-                                        sizes="96px"
+                                        sizes="(max-width: 768px) 80px, 96px"
                                         unoptimized
                                     />
                                 </button>

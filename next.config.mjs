@@ -14,10 +14,7 @@ const nextConfig = {
       {
         source: '/(.*)',
         headers: [
-          {
-            key: 'X-Forwarded-Proto',
-            value: 'https',
-          },
+          // Removed X-Forwarded-Proto: https to allow local network testing
           {
             key: 'X-Frame-Options',
             value: 'DENY',
@@ -48,7 +45,7 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://checkout.razorpay.com https://*.cashfree.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' blob: data: https://*.supabase.co https://img.icons8.com https://images.pexels.com https://images.unsplash.com https://encrypted-tbn0.gstatic.com https://encrypted-tbn1.gstatic.com https://encrypted-tbn2.gstatic.com https://encrypted-tbn3.gstatic.com https://m.media-amazon.com https://*.razorpay.com",
+              "img-src 'self' blob: data: https://*.supabase.co https://img.icons8.com https://images.pexels.com https://images.unsplash.com https://encrypted-tbn0.gstatic.com https://encrypted-tbn1.gstatic.com https://encrypted-tbn2.gstatic.com https://encrypted-tbn3.gstatic.com https://m.media-amazon.com https://*.razorpay.com *",
               "font-src 'self' https://fonts.gstatic.com",
               "connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net https://*.razorpay.com https://*.cashfree.com",
               "media-src 'self' blob: data: https://*.supabase.co",
