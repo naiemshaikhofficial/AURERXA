@@ -83,8 +83,8 @@ export function CartSheet() {
                                         >
                                             <Link href={`/products/${item.products?.slug}`} onClick={closeCart} className="relative w-20 h-24 bg-muted flex-shrink-0 overflow-hidden rounded-sm border border-border/50">
                                                 <Image
-                                                    src={item.image_url}
-                                                    alt={item.name}
+                                                    src={item.products?.image_url || '/placeholder.jpg'}
+                                                    alt={item.products?.name || 'Product'}
                                                     fill
                                                     className="object-cover"
                                                     sizes="80px"

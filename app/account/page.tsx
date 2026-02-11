@@ -30,6 +30,7 @@ export default function AccountPage() {
         street_address: '',
         city: '',
         state: '',
+        country: 'India',
         pincode: '',
         is_default: false
     })
@@ -114,6 +115,7 @@ export default function AccountPage() {
             street_address: addr.street_address,
             city: addr.city,
             state: addr.state,
+            country: addr.country || 'India',
             pincode: addr.pincode,
             is_default: addr.is_default
         })
@@ -128,6 +130,7 @@ export default function AccountPage() {
             street_address: '',
             city: '',
             state: '',
+            country: 'India',
             pincode: '',
             is_default: false
         })
@@ -313,6 +316,15 @@ export default function AccountPage() {
                                         />
                                     </div>
                                 </div>
+                                <div>
+                                    <Label className="text-muted-foreground text-xs">Country</Label>
+                                    <Input
+                                        value={addressForm.country}
+                                        onChange={(e) => setAddressForm({ ...addressForm, country: e.target.value })}
+                                        required
+                                        className="bg-background border-input text-foreground h-10"
+                                    />
+                                </div>
                                 <div className="flex gap-2">
                                     <Button type="submit" disabled={saving} size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : editingAddressId ? 'Update' : 'Save'}
@@ -346,7 +358,7 @@ export default function AccountPage() {
                                                     )}
                                                 </div>
                                                 <p className="text-sm text-muted-foreground">{addr.street_address}</p>
-                                                <p className="text-sm text-muted-foreground">{addr.city}, {addr.state} - {addr.pincode}</p>
+                                                <p className="text-sm text-muted-foreground">{addr.city}, {addr.state}, {addr.country} - {addr.pincode}</p>
                                                 <p className="text-sm text-muted-foreground mt-1">Phone: {addr.phone}</p>
                                             </div>
                                             <div className="flex items-center gap-2">

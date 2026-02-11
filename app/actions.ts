@@ -131,7 +131,7 @@ export const getBestsellers = unstable_cache(
   async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
       .eq('bestseller', true)
       .limit(4)
 
@@ -150,7 +150,7 @@ export const getNewReleases = unstable_cache(
   async (limit: number = 8) => {
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -169,7 +169,7 @@ export const getProducts = unstable_cache(
   async (categorySlug?: string, sortBy?: string) => {
     let query = supabase
       .from('products')
-      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
 
     if (categorySlug) {
       // Since it's a join, we filter by the related table's field
@@ -745,7 +745,8 @@ export async function createOrder(
 
   // Calculate totals
   const subtotal = cart.reduce((sum, item) => {
-    const price = item.products?.price || 0
+    const product = Array.isArray(item.products) ? item.products[0] : item.products
+    const price = product?.price || 0
     return sum + (price * item.quantity)
   }, 0)
 
@@ -795,15 +796,18 @@ export async function createOrder(
   }
 
   // Create order items
-  const orderItems = cart.map(item => ({
-    order_id: order.id,
-    product_id: item.product_id,
-    product_name: item.products.name,
-    product_image: item.products.image_url,
-    quantity: item.quantity,
-    size: item.size,
-    price: item.products.price
-  }))
+  const orderItems = cart.map(item => {
+    const product = Array.isArray(item.products) ? item.products[0] : item.products
+    return {
+      order_id: order.id,
+      product_id: item.product_id,
+      product_name: product?.name || 'Unknown Product',
+      product_image: product?.image_url || '',
+      quantity: item.quantity,
+      size: item.size,
+      price: product?.price || 0
+    }
+  })
 
   const { error: itemsError } = await client
     .from('order_items')
@@ -1192,7 +1196,7 @@ export async function getFilteredProducts(options: {
   try {
     let query = supabase
       .from('products')
-      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
 
     // Category filter
     if (options.category) {

@@ -59,6 +59,7 @@ const nextConfig = {
     ]
   },
   images: {
+    qualities: [75, 85],
     formats: ['image/webp'],
     dangerouslyAllowSVG: true,
     minimumCacheTTL: 31536000, // Cache optimized images for 1 year
