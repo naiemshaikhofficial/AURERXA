@@ -89,5 +89,11 @@
     "onlyBuiltDependencies": [
       "sharp"
     ]
+  },
+  "overrides": {
+    "react-day-picker": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }
