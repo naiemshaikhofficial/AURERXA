@@ -62,8 +62,17 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
         let additional: string[] = []
         if (Array.isArray(imgs)) {
             additional = imgs
-        } else if (typeof imgs === 'string' && imgs.startsWith('{')) {
-            additional = imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+        } else if (typeof imgs === 'string') {
+            if (imgs.startsWith('{')) {
+                additional = imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+            } else if (imgs.startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(imgs)
+                    if (Array.isArray(parsed)) additional = parsed
+                } catch (e) {
+                    console.error('Failed to parse images JSON', e)
+                }
+            }
         }
 
         // Deduplicate to ensure we don't show the same image twice in the carousel

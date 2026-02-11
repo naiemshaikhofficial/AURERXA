@@ -165,11 +165,25 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
         if (Array.isArray(imgs)) {
             additional = imgs
-        } else if (typeof imgs === 'string' && imgs.startsWith('{')) {
-            additional = imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+        } else if (typeof imgs === 'string') {
+            // Handle Postgres Array format {img1,img2}
+            if (imgs.startsWith('{')) {
+                additional = imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+            }
+            // Handle JSON String format ["img1","img2"]
+            else if (imgs.startsWith('[')) {
+                try {
+                    const parsed = JSON.parse(imgs)
+                    if (Array.isArray(parsed)) additional = parsed
+                } catch (e) {
+                    console.error('Failed to parse images JSON', e)
+                }
+            }
         }
 
-        return [product.image_url, ...additional]
+        // Deduplicate and filter valid images
+        const uniqueImages = Array.from(new Set([product.image_url, ...additional].filter(Boolean)))
+        return uniqueImages
     }, [product])
 
     // Add to recently viewed on mount
