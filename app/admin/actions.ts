@@ -329,8 +329,105 @@ export async function getAdminAllUsers(search?: string, page: number = 1, limit:
     const offset = (page - 1) * limit
     query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
 
-    const { data, count } = await query
-    return { users: data || [], total: count || 0 }
+    const { data: profiles, count } = await query
+
+    if (!profiles) return { users: [], total: 0 }
+
+    // Fetch stats for these users
+    const userIds = profiles.map((p: any) => p.id)
+    const { data: orders } = await client
+        .from('orders')
+        .select('user_id, total, created_at')
+        .in('user_id', userIds)
+        .neq('status', 'cancelled') // Exclude cancelled orders from valid stats
+
+    const statsMap: Record<string, { totalOrders: number, totalSpent: number, lastOrderDate: string | null }> = {}
+
+    if (orders) {
+        orders.forEach((o: any) => {
+            if (!statsMap[o.user_id]) statsMap[o.user_id] = { totalOrders: 0, totalSpent: 0, lastOrderDate: null }
+            statsMap[o.user_id].totalOrders++
+            statsMap[o.user_id].totalSpent += Number(o.total || 0)
+            if (!statsMap[o.user_id].lastOrderDate || new Date(o.created_at) > new Date(statsMap[o.user_id].lastOrderDate!)) {
+                statsMap[o.user_id].lastOrderDate = o.created_at
+            }
+        })
+    }
+
+    const usersWithStats = profiles.map((p: any) => ({
+        ...p,
+        stats: statsMap[p.id] || { totalOrders: 0, totalSpent: 0, lastOrderDate: null }
+    }))
+
+    return { users: usersWithStats, total: count || 0 }
+}
+
+export async function getUserDetails(userId: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return null
+
+    const { data: profile } = await client.from('profiles').select('*').eq('id', userId).single()
+    if (!profile) return null
+
+    const { data: orders } = await client
+        .from('orders')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+
+    const validOrders = orders?.filter((o: any) => o.status !== 'cancelled') || []
+    const totalSpent = validOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
+
+    return {
+        profile,
+        orders: orders || [],
+        stats: {
+            totalOrders: validOrders.length,
+            totalSpent
+        }
+    }
+}
+
+export async function toggleUserBan(userId: string, banStatus: boolean) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin || admin.role !== 'main_admin') return { success: false, error: 'Unauthorized. Only Main Admins can ban users.' }
+
+    const { error } = await client.from('profiles').update({ is_banned: banStatus }).eq('id', userId)
+    if (error) return { success: false, error: error.message }
+
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: banStatus ? 'Banned user' : 'Unbanned user',
+        entity_type: 'user',
+        entity_id: userId,
+    })
+
+    return { success: true }
+}
+
+export async function deleteUser(userId: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin || admin.role !== 'main_admin') return { success: false, error: 'Unauthorized. Only Main Admins can delete users.' }
+
+    // Auth delete is restricted, so we delete profile (which should handle app data)
+    // Note: Deleting from auth.users requires Service Role, which we don't expose here for safety.
+    // Instead we delete the profile which cascades to orders etc if configured, or just removes app access.
+    // For this implementation, we'll try to delete the profile.
+
+    const { error } = await client.from('profiles').delete().eq('id', userId)
+    if (error) return { success: false, error: error.message }
+
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: 'Deleted user',
+        entity_type: 'user',
+        entity_id: userId,
+    })
+
+    return { success: true }
 }
 
 // ============================================

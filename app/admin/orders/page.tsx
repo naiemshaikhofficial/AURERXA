@@ -46,6 +46,7 @@ export default function OrdersPage() {
     useEffect(() => { loadOrders() }, [loadOrders])
 
     const handleStatusUpdate = async (orderId: string, newStatus: string) => {
+        if (!confirm(`Are you sure you want to change the status to ${newStatus.toUpperCase()}?`)) return
         setUpdatingStatus(true)
         await updateOrderStatus(orderId, newStatus, trackingInput || undefined)
         await loadOrders()

@@ -65,7 +65,20 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 3. Extra Security Headers (Redundancy)
+    // 3. User Ban Check
+    if (user && !request.nextUrl.pathname.startsWith('/banned')) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_banned')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.is_banned) {
+            return NextResponse.redirect(new URL('/banned', request.url))
+        }
+    }
+
+    // 4. Extra Security Headers (Redundancy)
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('X-Content-Type-Options', 'nosniff')
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
