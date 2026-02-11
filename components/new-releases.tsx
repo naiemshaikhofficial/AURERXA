@@ -1,12 +1,11 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import Image from 'next/image'
-import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
-import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
-import { sanitizeImagePath } from '@/lib/utils'
+import Link from 'next/link'
+import { fadeInUp, staggerContainer } from '@/lib/animation-constants'
+import { ProductCard } from '@/components/product-card'
 
 // This would typically be a server component, but we need client-side animation
 // We'll accept data as props or fetch in a wrapper
@@ -47,53 +46,17 @@ export function NewReleases({ products }: { products: any[] }) {
                     </div>
 
                     {/* Horizontal Scroll Carousel */}
-                    <motion.div
-                        variants={staggerContainer}
-                        className="flex overflow-x-auto pb-8 gap-8 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0"
-                    >
+                    <div className="flex overflow-x-auto pb-8 gap-6 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0">
                         {products.map((product, i) => (
-                            <motion.div key={product.id} variants={fadeInUp} className="flex-shrink-0">
-                                <Link
-                                    href={`/products/${product.slug}`}
-                                    className="block w-[280px] md:w-[320px] snap-center group relative cursor-pointer"
-                                >
-                                    <div className="aspect-[4/5] relative overflow-hidden bg-card border border-border group-hover:border-primary/30 transition-colors duration-500">
-                                        {/* Image */}
-                                        <Image
-                                            src={sanitizeImagePath(product.image_url)}
-                                            alt={product.name}
-                                            fill
-                                            className="object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-110"
-                                            sizes="(max-width: 640px) 280px, 320px"
-                                            priority={i < 2}
-                                            unoptimized
-                                        />
-
-                                        {/* Overlay Gradient */}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-
-                                        {/* Badge */}
-                                        <div className="absolute top-4 left-4 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 uppercase tracking-wider">
-                                            New
-                                        </div>
-
-                                        {/* Content */}
-                                        <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
-                                            <p className="text-primary text-xs uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
-                                                {product.categories?.name}
-                                            </p>
-                                            <h3 className="text-xl text-white font-serif italic mb-2 leading-none">
-                                                {product.name}
-                                            </h3>
-                                            <p className="text-white/60 text-sm font-premium-sans">
-                                                ₹{product.price.toLocaleString('en-IN')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </Link>
-                            </motion.div>
+                            <div key={product.id} className="flex-shrink-0 w-[280px] md:w-[320px] snap-center">
+                                <ProductCard
+                                    product={product}
+                                    index={i}
+                                    className="h-full border-white/5 bg-neutral-900/40"
+                                />
+                            </div>
                         ))}
-                    </motion.div>
+                    </div>
                 </motion.div>
             </div>
         </section>

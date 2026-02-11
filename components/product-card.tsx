@@ -57,30 +57,57 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
         router.push('/checkout')
     }
 
+    const [isHovered, setIsHovered] = useState(false)
+    const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
     const allImages = useMemo(() => {
+        if (!product) return []
+
+        const mainImage = product.image_url
+        const result: string[] = []
+
+        if (mainImage) result.push(mainImage)
+
         const imgs = product.images
-        let additional: string[] = []
+        console.log(`🖼️ RAW IMAGES [${product.name.slice(0, 10)}]:`, {
+            type: typeof imgs,
+            value: imgs,
+            image_url: product.image_url
+        })
+
         if (Array.isArray(imgs)) {
-            additional = imgs
-        } else if (typeof imgs === 'string') {
-            if (imgs.startsWith('{')) {
-                additional = imgs.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
-            } else if (imgs.startsWith('[')) {
+            imgs.forEach(img => {
+                if (typeof img === 'string' && img.trim()) result.push(img.trim())
+            })
+        } else if (typeof imgs === 'string' && imgs.trim()) {
+            const trimmed = imgs.trim()
+            if (trimmed.startsWith('[')) {
                 try {
-                    const parsed = JSON.parse(imgs)
-                    if (Array.isArray(parsed)) additional = parsed
+                    const parsed = JSON.parse(trimmed)
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(img => {
+                            if (typeof img === 'string' && img.trim()) result.push(img.trim())
+                        })
+                    }
                 } catch (e) {
-                    console.error('Failed to parse images JSON', e)
+                    console.error('Failed to parse images JSON string', e)
                 }
+            } else if (trimmed.startsWith('{')) {
+                const parts = trimmed.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean)
+                result.push(...parts)
+            } else {
+                const parts = trimmed.split(',').map(s => s.trim()).filter(Boolean)
+                result.push(...parts)
             }
         }
 
-        // Deduplicate to ensure we don't show the same image twice in the carousel
-        const unique = Array.from(new Set([product.image_url, ...additional].filter(Boolean)))
-        return unique
+        const final = Array.from(new Set(result))
+        console.log(`✅ FINAL ARRAY [${product.name.slice(0, 10)}]:`, {
+            total: final.length,
+            urls: final
+        })
+        return final
     }, [product])
-
-    const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
     // Scroll Parallax Logic
     const containerRef = useRef<HTMLDivElement>(null)
@@ -90,15 +117,17 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
     })
     const yParallax = useTransform(scrollYProgress, [0, 1], [-15, 15])
 
+    // Auto-Cycle Logic (Faster on hover)
     useEffect(() => {
         if (allImages.length <= 1) return
 
+        const intervalTime = isHovered ? 1500 : 4000
         const interval = setInterval(() => {
             setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
-        }, 4000 + (index * 300)) // Slower, more deliberate luxury timing
+        }, intervalTime + (index * 100))
 
         return () => clearInterval(interval)
-    }, [allImages, index])
+    }, [allImages.length, index, isHovered])
 
     return (
         <motion.div
@@ -107,6 +136,11 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
             whileInView="animate"
             viewport={{ once: true }}
             variants={fadeInUp}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => {
+                setIsHovered(false)
+                setCurrentImageIndex(0) // Optional: reset to main image on leave
+            }}
             className={cn(
                 "group relative bg-card border border-border overflow-hidden flex flex-col hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-700 will-change-transform",
                 viewMode === 'list' ? 'md:flex-row md:items-center' : '',
@@ -118,6 +152,26 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 viewMode === 'grid' ? 'aspect-[4/5] w-full' : 'aspect-square md:aspect-[3/4] md:w-1/3' // Portfolio aspect ratio
             )}>
                 <Link href={`/products/${product.slug}`} className="absolute inset-0 z-30 block" onClick={onClose} />
+
+                {/* Progress Segments */}
+                {allImages.length > 1 && (
+                    <div className="absolute top-4 inset-x-4 z-40 flex gap-1 group-hover/img:opacity-100 opacity-0 transition-opacity duration-500">
+                        {allImages.map((_, i) => (
+                            <div key={i} className="h-[2px] flex-1 bg-white/10 overflow-hidden rounded-full">
+                                <motion.div
+                                    className="h-full bg-white/60"
+                                    initial={false}
+                                    animate={{
+                                        width: currentImageIndex === i ? '100%' : '0%',
+                                        opacity: currentImageIndex === i ? 1 : 0
+                                    }}
+                                    transition={{ duration: 0.3 }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
+
                 <AnimatePresence initial={false}>
                     <motion.div
                         key={allImages[currentImageIndex]}

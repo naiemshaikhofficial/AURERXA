@@ -14,6 +14,7 @@ import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { motion, AnimatePresence } from 'framer-motion'
 import { VTOModal } from '@/components/vto-modal'
+import { ProductCard } from '@/components/product-card'
 
 
 interface ProductClientProps {
@@ -697,26 +698,13 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             <h2 className="text-4xl md:text-5xl font-serif text-white/90 italic">Curated Pairings</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-16">
-                            {related?.map((item) => (
-                                <Link key={item.id} href={`/products/${item.id}`} className="group block">
-                                    <div className="aspect-[3/4] bg-neutral-900/40 relative overflow-hidden border border-white/5 group-hover:border-white/20 transition-all duration-700">
-                                        <Image
-                                            src={item.image_url}
-                                            alt={item.name}
-                                            fill
-                                            className="object-cover transition-transform duration-1000 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                                            sizes="(max-width: 768px) 100vw, 33vw"
-                                            unoptimized
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
-
-                                        <div className="absolute bottom-8 left-8 right-8 text-center transform translate-y-4 group-hover:translate-y-0 opacity-80 group-hover:opacity-100 transition-all duration-700">
-                                            <p className="text-white font-serif text-xl italic mb-2">{item.name}</p>
-                                            <p className="text-white/60 text-xs tracking-widest uppercase">View Artifact</p>
-                                        </div>
-                                    </div>
-                                </Link>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 md:gap-x-8 gap-y-12 md:gap-y-16">
+                            {related?.map((item, idx) => (
+                                <ProductCard
+                                    key={item.id}
+                                    product={item}
+                                    index={idx}
+                                />
                             ))}
                         </div>
                     </div>

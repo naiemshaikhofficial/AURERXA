@@ -37,7 +37,8 @@ export function addToRecentlyViewed(product: any) {
             slug: product.slug,
             purity: product.purity,
             weight_grams: product.weight_grams,
-            categories: product.categories
+            categories: product.categories,
+            images: product.images
         }
 
         // Add to beginning

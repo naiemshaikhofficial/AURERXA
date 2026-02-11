@@ -143,7 +143,7 @@ export const getBestsellers = unstable_cache(
     return data || []
   },
   ['bestsellers'],
-  { revalidate: 3600, tags: ['products', 'bestsellers'] }
+  { revalidate: 60, tags: ['products', 'bestsellers'] }
 )
 
 export const getNewReleases = unstable_cache(
@@ -162,7 +162,7 @@ export const getNewReleases = unstable_cache(
     return data || []
   },
   ['new-releases'],
-  { revalidate: 3600, tags: ['products', 'new-releases'] }
+  { revalidate: 60, tags: ['products', 'new-releases'] }
 )
 
 export const getProducts = unstable_cache(
@@ -207,7 +207,7 @@ export const getProducts = unstable_cache(
     return data || []
   },
   ['products-list'],
-  { revalidate: 3600, tags: ['products'] }
+  { revalidate: 60, tags: ['products'] }
 )
 
 // Product Actions
