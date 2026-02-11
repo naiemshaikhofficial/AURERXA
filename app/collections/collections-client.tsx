@@ -62,7 +62,8 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                 <div className="relative z-10 max-w-7xl mx-auto text-center space-y-10">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
                         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                     >
                         <div className="inline-flex items-center gap-6 mb-8 opacity-60">
@@ -70,7 +71,8 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                             <span className="text-foreground font-premium-sans text-[10px] tracking-[0.4em] uppercase">The Archive</span>
                             <div className="h-[1px] w-16 bg-foreground/20" />
                         </div>
-                        <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4">
+                        {/* H1 is critical LCP element, remove animation or use CSS */}
+                        <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                             COLLECTIONS
                         </h1>
                         <p className="max-w-xl mx-auto text-muted-foreground font-light text-sm tracking-widest uppercase leading-loose">
