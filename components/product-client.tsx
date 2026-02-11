@@ -156,6 +156,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const [message, setMessage] = useState<string | null>(null)
     const [selectedImage, setSelectedImage] = useState(0)
     const [isVTOOpen, setIsVTOOpen] = useState(false)
+    const [isPlayingVideo, setIsPlayingVideo] = useState(false)
 
     // Memoize image array to prevent re-calculations on every render
     const allImages = React.useMemo(() => {
@@ -408,19 +409,44 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             {product.video_url && (
                                 <div className="mt-10 space-y-4">
                                     <p className="text-[10px] text-amber-500/60 font-bold uppercase tracking-[0.3em] font-premium-sans">Visual Experience</p>
-                                    <div className="relative w-full aspect-video bg-neutral-900 border border-white/5 overflow-hidden">
-                                        <iframe
-                                            src={`https://www.youtube.com/embed/${(() => {
-                                                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-                                                const match = product.video_url.match(regExp);
-                                                return (match && match[2].length === 11) ? match[2] : null;
-                                            })()}?modestbranding=1&rel=0`}
-                                            title={product.name}
-                                            className="absolute inset-0 w-full h-full"
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
-                                        />
-                                    </div>
+                                    {(() => {
+                                        const url = product.video_url;
+                                        const isShort = url.includes('/shorts/');
+                                        const youtubeRegExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?v=)|(\/shorts\/)|(&v=))([^#&?]*).*/;
+                                        const ytMatch = url.match(youtubeRegExp);
+                                        const youtubeId = (ytMatch && ytMatch[9].length === 11) ? ytMatch[9] : null;
+
+                                        return (
+                                            <div className={`relative w-full ${isShort ? 'aspect-[9/16] max-w-[340px] mx-auto' : 'aspect-video'} bg-neutral-900 border border-white/5 overflow-hidden group`}>
+                                                {youtubeId ? (
+                                                    <iframe
+                                                        src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&controls=0&showinfo=0`}
+                                                        title={product.name}
+                                                        className="absolute inset-0 w-full h-full pointer-events-none scale-105" // Slightly scale up to hide black bars/info if any
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                        allowFullScreen
+                                                    />
+                                                ) : (
+                                                    <video
+                                                        src={url}
+                                                        autoPlay
+                                                        muted
+                                                        loop
+                                                        playsInline
+                                                        className="absolute inset-0 w-full h-full object-cover"
+                                                    >
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                )}
+
+                                                {/* Luxury Overlay to maintain website integration */}
+                                                <div className="absolute inset-0 bg-black/10 pointer-events-none" />
+                                                <div className="absolute top-4 left-4 z-10 pointer-events-none">
+                                                    <span className="text-[8px] text-white/30 uppercase tracking-[0.3em] font-medium drop-shadow-md">AURERXA Cinema</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             )}
 
