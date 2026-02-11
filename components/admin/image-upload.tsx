@@ -31,31 +31,39 @@ export function ImageUpload({ onUploadComplete, initialUrl, label = "Upload Imag
 
         try {
             setUploading(true)
+            console.log("ImageUpload: Starting process for file:", file.name, file.size)
 
             // 1. Compression
             const options = {
-                maxSizeMB: 1,           // Max 1MB
+                maxSizeMB: 0.2,         // Max 200KB (Optimized for speed)
                 maxWidthOrHeight: 1920, // Maintain Full HD resolution
-                useWebWorker: true,
+                useWebWorker: false,    // Disable web worker for better stability in some environments
             }
 
-            toast.info("Compressing image...")
+            toast.info("Refining image quality...")
+            console.log("ImageUpload: Compressing with options:", options)
             const compressedFile = await imageCompression(file, options)
+            console.log("ImageUpload: Compression complete. New size:", (compressedFile.size / 1024).toFixed(2), "KB")
 
             // 2. Upload to Supabase
-            toast.info("Uploading to storage...")
+            toast.info("Connecting to secure storage...")
+            console.log("ImageUpload: Uploading to Supabase...")
             const { success, url, error } = await uploadToSupabase(compressedFile)
 
             if (success && url) {
+                console.log("ImageUpload: Success! URL:", url)
                 setPreview(url)
                 onUploadComplete(url)
                 toast.success("Image uploaded successfully!")
             } else {
-                toast.error(error || "Upload failed")
+                console.error("ImageUpload: Upload failed with error:", error)
+                toast.error(error || "Upload failed. Please check your connection.")
+                if (fileInputRef.current) fileInputRef.current.value = ''
             }
         } catch (error: any) {
-            console.error("Upload error:", error)
-            toast.error("Failed to process image")
+            console.error("ImageUpload: Unexpected error during processing:", error)
+            toast.error("Failed to process image: " + (error.message || "Unknown error"))
+            if (fileInputRef.current) fileInputRef.current.value = ''
         } finally {
             setUploading(false)
         }

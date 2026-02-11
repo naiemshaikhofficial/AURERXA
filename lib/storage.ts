@@ -13,11 +13,13 @@ export async function uploadToSupabase(
     path?: string
 ) {
     try {
+        console.log(`Storage: Attempting upload to bucket "${bucket}"...`)
         const fileExt = file.name.split('.').pop()
         const fileName = path || `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`
         const filePath = fileName
 
         // Upload the file
+        console.log(`Storage: Uploading path "${filePath}" with size ${file.size} bytes...`)
         const { error: uploadError, data } = await supabase.storage
             .from(bucket)
             .upload(filePath, file, {
@@ -26,19 +28,20 @@ export async function uploadToSupabase(
             })
 
         if (uploadError) {
-            // If the error is "Bucket not found", we might need the user to create it, 
-            // but for now we'll throw the error.
+            console.error('Storage: Supabase upload error:', uploadError)
             throw uploadError
         }
 
+        console.log('Storage: Upload successful, getting public URL...')
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
             .from(bucket)
             .getPublicUrl(filePath)
 
+        console.log('Storage: Public URL generated:', publicUrl)
         return { success: true, url: publicUrl }
     } catch (error: any) {
-        console.error('Storage Upload Error:', error)
+        console.error('Storage: Caught error:', error)
         return { success: false, error: error.message || 'Failed to upload image' }
     }
 }
