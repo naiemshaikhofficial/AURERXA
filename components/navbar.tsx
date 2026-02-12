@@ -26,15 +26,16 @@ import Image from 'next/image'
 import { Menu } from "lucide-react"
 import { SearchModal } from './search-modal'
 import { ModeToggle } from './mode-toggle'
+import { useSearch } from '@/context/search-context'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export function Navbar() {
   const router = useRouter()
   const { cartCount, openCart } = useCart()
+  const { openSearch } = useSearch()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
-  const [searchOpen, setSearchOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -108,7 +109,7 @@ export function Navbar() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
-        setSearchOpen(true)
+        openSearch()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -319,7 +320,7 @@ export function Navbar() {
 
               {/* Search */}
               <button
-                onClick={() => setSearchOpen(true)}
+                onClick={openSearch}
                 className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 group"
                 aria-label="Search products"
               >
@@ -400,7 +401,7 @@ export function Navbar() {
         </div>
       </motion.nav>
 
-      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal />
     </>
   )
 }

@@ -1121,18 +1121,34 @@ export async function searchProducts(query: string) {
   try {
     if (!query || query.length < 2) return []
 
-    // Convert search query to FTS format (using 'plain' to handle spaces as AND)
-    const { data, error } = await supabase
+    // 1. Try ILIKE search first for better reliability on name/description
+    const { data: ilikeResults, error: ilikeError } = await supabase
       .from('products')
-      .select('id, name, price, image_url, slug, categories:category_id(name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+      .limit(10)
+
+    if (!ilikeError && ilikeResults && ilikeResults.length > 0) {
+      return ilikeResults
+    }
+
+    // 2. Fallback to FTS if ILIKE yields no results (handles more complex term matching)
+    const { data: ftsResults, error: ftsError } = await supabase
+      .from('products')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .textSearch('fts_vector', query, {
         type: 'plain',
         config: 'english'
       })
       .limit(10)
 
-    if (error) throw error
-    return data || []
+    if (ftsError) {
+      // If FTS fails (e.g. column missing), just log it and return empty or ILIKE results
+      console.warn('FTS Search fallback failed (likely missing index):', ftsError.message)
+      return ilikeResults || []
+    }
+
+    return ftsResults || []
   } catch (err) {
     console.error('Search error:', err)
     return []

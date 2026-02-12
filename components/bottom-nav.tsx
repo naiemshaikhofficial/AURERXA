@@ -6,10 +6,13 @@ import { usePathname } from 'next/navigation'
 import { useCart } from '@/context/cart-context'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
+import { useSearch } from '@/context/search-context'
+import { SearchModal } from './search-modal'
 
 export function BottomNav() {
     const pathname = usePathname()
     const { cartCount } = useCart()
+    const { openSearch } = useSearch()
     const [user, setUser] = useState<any>(null)
 
     useEffect(() => {
@@ -55,22 +58,28 @@ export function BottomNav() {
             iconId: '3225',
         },
         {
-            href: '/custom-jewelry',
-            label: 'Custom',
-            iconId: '7687',
+            href: '#search',
+            label: 'Search',
+            iconId: 'VNGluvySmxmA',
+            onClick: (e: React.MouseEvent) => {
+                e.preventDefault()
+                openSearch()
+            }
         },
     ]
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-950/90 backdrop-blur-lg border-t border-neutral-800 md:hidden safe-area-pb">
             <nav className="flex items-center justify-around h-14">
-                {links.map(({ href, label, iconId }) => {
+                {links.map((link) => {
+                    const { href, label, iconId, onClick } = link
                     const isActive = pathname === href || (href === '/collections' && pathname.startsWith('/collections')) || (href === '/account' && pathname.startsWith('/account'))
                     const isShop = href === '/collections'
                     return (
                         <Link
                             key={label}
                             href={href}
+                            onClick={onClick}
                             className={cn(
                                 "flex flex-col items-center justify-center w-full h-full space-y-0.5 transition-colors duration-200 relative",
                                 isActive ? "text-amber-500" : "text-white/50 hover:text-white"
@@ -95,6 +104,7 @@ export function BottomNav() {
                     )
                 })}
             </nav>
+            <SearchModal />
         </div>
     )
 }

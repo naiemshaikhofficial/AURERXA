@@ -8,10 +8,12 @@ import { searchProducts } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
+import { useSearch } from '@/context/search-context'
 
 import { ProductCard } from '@/components/product-card'
 
-export function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export function SearchModal() {
+    const { isSearchOpen: isOpen, closeSearch: onClose } = useSearch()
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<any[]>([])
     const [loading, setLoading] = useState(false)

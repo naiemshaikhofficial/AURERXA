@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Search } from 'lucide-react'
 import { Footer } from '@/components/footer'
+import { useSearch } from '@/context/search-context'
 import { getFilteredProducts } from '@/app/actions'
 import { HeritageHighlights } from '@/components/heritage-highlights'
 import { CinematicFilter, FilterState, PRICE_RANGES } from '@/components/cinematic-filter'
@@ -16,6 +17,7 @@ interface CollectionsClientProps {
 }
 
 export function CollectionsClient({ initialProducts, categories, initialFilters }: CollectionsClientProps) {
+    const { openSearch } = useSearch()
     const [viewMode] = useState<'grid' | 'list'>('grid')
     const [filters, setFilters] = useState<FilterState>(initialFilters)
     const [loading, setLoading] = useState(false)
@@ -100,6 +102,15 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                         >
                             Clear Filters
                         </button>
+                        <div className="pt-4">
+                            <button
+                                onClick={openSearch}
+                                className="flex items-center gap-3 px-6 py-3 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all group"
+                            >
+                                <Search className="w-3.5 h-3.5 text-primary/60" />
+                                <span className="text-[10px] font-premium-sans tracking-[0.2em] uppercase">Search All Heritage</span>
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     <motion.div

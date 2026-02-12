@@ -8,10 +8,12 @@ import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
-import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight } from 'lucide-react'
+import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight, Search } from 'lucide-react'
+import { useSearch } from '@/context/search-context'
 
 export default function CartPage() {
     const { items: cart, loading, updateQuantity, removeItem } = useCart()
+    const { openSearch } = useSearch()
 
     const handleUpdateQuantity = async (cartId: string, newQuantity: number) => {
         await updateQuantity(cartId, newQuantity)
@@ -53,11 +55,21 @@ export default function CartPage() {
                                 <ShoppingBag className="w-8 h-8 text-muted-foreground/20" />
                             </div>
                             <h2 className="text-2xl font-serif text-muted-foreground mb-6 italic">Your collection is currently empty</h2>
-                            <Link href="/collections">
-                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-[0.2em] px-8 py-6 rounded-none transition-all">
-                                    Explore Collections
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+                                <Link href="/collections">
+                                    <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-[0.2em] px-8 py-6 rounded-none transition-all">
+                                        Explore Collections
+                                    </Button>
+                                </Link>
+                                <Button
+                                    onClick={openSearch}
+                                    variant="outline"
+                                    className="w-full sm:w-auto border-border hover:bg-muted font-bold uppercase tracking-[0.2em] px-8 py-6 rounded-none transition-all flex items-center gap-3"
+                                >
+                                    <Search className="w-4 h-4 opacity-50" />
+                                    Search Artifacts
                                 </Button>
-                            </Link>
+                            </div>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">

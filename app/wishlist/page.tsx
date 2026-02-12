@@ -9,10 +9,12 @@ import supabaseLoader from '@/lib/supabase-loader'
 import { Button } from '@/components/ui/button'
 import { getWishlist, removeFromWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
-import { Heart, ShoppingBag, Trash2, Loader2 } from 'lucide-react'
+import { Heart, ShoppingBag, Trash2, Loader2, Search } from 'lucide-react'
+import { useSearch } from '@/context/search-context'
 
 export default function WishlistPage() {
     const { addItem } = useCart()
+    const { openSearch } = useSearch()
     const [wishlist, setWishlist] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [actionId, setActionId] = useState<string | null>(null)
@@ -61,11 +63,21 @@ export default function WishlistPage() {
                         <div className="text-center py-16">
                             <Heart className="w-16 h-16 mx-auto mb-6 text-muted-foreground/30" />
                             <p className="text-xl text-muted-foreground mb-8">Your wishlist is empty</p>
-                            <Link href="/collections">
-                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest">
-                                    Explore Collections
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                <Link href="/collections">
+                                    <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest h-12 px-8 rounded-none">
+                                        Explore Collections
+                                    </Button>
+                                </Link>
+                                <Button
+                                    onClick={openSearch}
+                                    variant="outline"
+                                    className="w-full sm:w-auto border-border hover:bg-muted font-bold uppercase tracking-widest h-12 px-8 rounded-none flex items-center gap-3"
+                                >
+                                    <Search className="w-4 h-4 opacity-50" />
+                                    Search
                                 </Button>
-                            </Link>
+                            </div>
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

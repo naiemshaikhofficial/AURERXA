@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { useSearch } from '@/context/search-context'
 
 export function Footer() {
+  const { openSearch } = useSearch()
   return (
     <footer className="hidden md:block py-24 px-6 lg:px-12 bg-background text-foreground relative border-t border-border overflow-hidden">
       {/* Black Edition Background Effect - Subtle Noise */}
@@ -93,6 +95,14 @@ export function Footer() {
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
                 <a href="mailto:care@aurerxa.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Email us at care@aurerxa.com">care@aurerxa.com</a>
+              </div>
+              <div className="flex items-center gap-4 group cursor-pointer" onClick={openSearch}>
+                <img
+                  src="https://img.icons8.com/?size=100&id=132&format=png&color=BF9B65"
+                  alt="Search"
+                  className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
+                />
+                <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase">Search Our Heritage</span>
               </div>
             </div>
           </div>

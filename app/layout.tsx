@@ -48,6 +48,7 @@ export const viewport: Viewport = {
 }
 
 import { CartProvider } from '@/context/cart-context'
+import { SearchProvider } from '@/context/search-context'
 import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from '@/components/navbar'
 import { CategoryNav } from '@/components/category-nav'
@@ -71,32 +72,34 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <CartProvider>
-            <SmoothScroll>
-              <AdminRouteGuard>
-                <Navbar />
-              </AdminRouteGuard>
-              {/* Cinematic Grain Overlay */}
-              <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('/noise.svg')] brightness-100 contrast-150" />
-              <AdminRouteGuard>
-                <div className="pt-20 md:pt-24">
-                  <CategoryNav />
-                  <main>
-                    {children}
-                  </main>
-                </div>
-              </AdminRouteGuard>
-              <AdminOnlyWrapper>
-                {children}
-              </AdminOnlyWrapper>
-              <Toaster />
-              <AdminRouteGuard>
-                <CartSheet />
-                <BottomNav />
-                <MobileInstallPrompt />
-                <NotificationManager />
-              </AdminRouteGuard>
-              <SpeedInsights />
-            </SmoothScroll>
+            <SearchProvider>
+              <SmoothScroll>
+                <AdminRouteGuard>
+                  <Navbar />
+                </AdminRouteGuard>
+                {/* Cinematic Grain Overlay */}
+                <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('/noise.svg')] brightness-100 contrast-150" />
+                <AdminRouteGuard>
+                  <div className="pt-20 md:pt-24">
+                    <CategoryNav />
+                    <main>
+                      {children}
+                    </main>
+                  </div>
+                </AdminRouteGuard>
+                <AdminOnlyWrapper>
+                  {children}
+                </AdminOnlyWrapper>
+                <Toaster />
+                <AdminRouteGuard>
+                  <CartSheet />
+                  <BottomNav />
+                  <MobileInstallPrompt />
+                  <NotificationManager />
+                </AdminRouteGuard>
+                <SpeedInsights />
+              </SmoothScroll>
+            </SearchProvider>
           </CartProvider>
         </ThemeProvider>
       </body>
