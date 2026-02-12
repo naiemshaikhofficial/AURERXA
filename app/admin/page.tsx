@@ -1,8 +1,17 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { getDashboardStats, getRevenueChart, getOrdersChart, getRecentOrders, getTopProducts, getActivityLogs, getCancelledOrderDetails, checkAdminRole, getAnalyticsSummary } from './actions'
 import { DashboardClient } from './dashboard-client'
+import { DashboardSkeleton } from './dashboard-skeleton'
 
 export default async function AdminDashboardPage() {
+    return (
+        <Suspense fallback={<DashboardSkeleton />}>
+            <DashboardContent />
+        </Suspense>
+    )
+}
+
+async function DashboardContent() {
     // 1. Calculate default date range (Month) on server
     const now = new Date()
     const from = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
