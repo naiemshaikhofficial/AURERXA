@@ -91,7 +91,7 @@ export function NotificationManager() {
                         <div className="w-10 h-10 bg-amber-500/10 rounded-full flex items-center justify-center text-amber-500">
                             <Bell className="w-5 h-5" />
                         </div>
-                        <button onClick={handleDismiss} className="text-white/20 hover:text-white"><X size={18} /></button>
+                        <button onClick={handleDismiss} className="text-white/20 hover:text-white" aria-label="Dismiss notification prompt"><X size={18} /></button>
                     </div>
 
                     <h4 className="text-white font-serif text-lg mb-2 italic">Stay Informed</h4>

@@ -57,7 +57,7 @@ export function Hero() {
           <div className="mb-6 relative inline-block">
             <Image
               src="/logo.png"
-              alt="AURERXA Logo - Timeless Luxury"
+              alt=""
               width={112}
               height={112}
               priority

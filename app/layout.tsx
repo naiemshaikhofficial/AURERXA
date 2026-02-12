@@ -3,13 +3,16 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Playfair_Display } from 'next/font/google'
 import { SmoothScroll } from '@/components/smooth-scroll'
 import { Toaster } from "@/components/ui/sonner"
+import dynamic from 'next/dynamic'
 
 import './globals.css'
-import { BottomNav } from '@/components/bottom-nav'
-import { MobileInstallPrompt } from '@/components/mobile-install-prompt'
-import { NotificationManager } from '@/components/notification-manager'
-import { CartSheet } from '@/components/cart-sheet'
 import { SpeedInsights } from "@vercel/speed-insights/next"
+
+// Defer non-critical interactive overlays
+const BottomNav = dynamic(() => import('@/components/bottom-nav').then(mod => mod.BottomNav), { ssr: false })
+const MobileInstallPrompt = dynamic(() => import('@/components/mobile-install-prompt').then(mod => mod.MobileInstallPrompt), { ssr: false })
+const NotificationManager = dynamic(() => import('@/components/notification-manager').then(mod => mod.NotificationManager), { ssr: false })
+const CartSheet = dynamic(() => import('@/components/cart-sheet').then(mod => mod.CartSheet), { ssr: false })
 
 const geist = Geist({
   subsets: ['latin'],
@@ -64,6 +67,14 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://xquczexikijzbzcuvmqh.supabase.co" crossOrigin="" />
         <link rel="dns-prefetch" href="https://xquczexikijzbzcuvmqh.supabase.co" />
+        {/* Preload critical fonts for smooth FCP/LCP */}
+        <link
+          rel="preload"
+          href="/_next/static/media/c9a5bc6a7c948912-s.p.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
         <ThemeProvider
@@ -79,7 +90,10 @@ export default function RootLayout({
                   <Navbar />
                 </AdminRouteGuard>
                 {/* Cinematic Grain Overlay - Optimized for TBT */}
-                <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.02] bg-[url('/noise.svg')] repeat" />
+                <div
+                  className="fixed inset-0 z-[100] pointer-events-none opacity-[0.015] bg-[url('/noise.svg')] repeat will-change-transform"
+                  style={{ transform: 'translateZ(0)' }}
+                />
                 <AdminRouteGuard>
                   <div className="pt-20 md:pt-24">
                     <CategoryNav />

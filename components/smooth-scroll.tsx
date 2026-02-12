@@ -5,26 +5,42 @@ import Lenis from 'lenis'
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
     useEffect(() => {
-        const lenis = new Lenis({
-            duration: 1.2, // Slightly faster for better responsiveness
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            orientation: 'vertical',
-            gestureOrientation: 'vertical',
-            smoothWheel: true,
-            wheelMultiplier: 1, // Standard multiplier for unified feel
-            touchMultiplier: 2,
-            infinite: false,
-        })
+        // Defer smooth scroll initialization until after first paint
+        // to avoid contributing to TBT during initial load
+        const initTimeout = setTimeout(() => {
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                orientation: 'vertical',
+                gestureOrientation: 'vertical',
+                smoothWheel: true,
+                wheelMultiplier: 1,
+                touchMultiplier: 2,
+                infinite: false,
+            })
 
-        function raf(time: number) {
-            lenis.raf(time)
-            requestAnimationFrame(raf)
-        }
+            let rafId: number
 
-        requestAnimationFrame(raf)
+            function raf(time: number) {
+                lenis.raf(time)
+                rafId = requestAnimationFrame(raf)
+            }
+
+            rafId = requestAnimationFrame(raf)
+
+                // Store cleanup reference
+                ; (window as any).__lenisCleanup = () => {
+                    cancelAnimationFrame(rafId)
+                    lenis.destroy()
+                }
+        }, 100) // Short delay to let critical paint finish
 
         return () => {
-            lenis.destroy()
+            clearTimeout(initTimeout)
+            if ((window as any).__lenisCleanup) {
+                (window as any).__lenisCleanup()
+                delete (window as any).__lenisCleanup
+            }
         }
     }, [])
 

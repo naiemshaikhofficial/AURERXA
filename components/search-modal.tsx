@@ -64,10 +64,11 @@ export function SearchModal() {
                 <button
                     onClick={onClose}
                     className="absolute -top-12 right-4 md:right-0 p-2 text-white/40 hover:text-amber-500 transition-colors"
+                    aria-label="Close search"
                 >
                     <img
                         src="https://img.icons8.com/?size=100&id=82732&format=png&color=999999"
-                        alt="Close"
+                        alt=""
                         className="w-5 h-5"
                     />
                 </button>

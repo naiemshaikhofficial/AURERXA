@@ -117,6 +117,7 @@ export function CartSheet() {
                                                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                                             className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-30"
                                                             disabled={item.quantity <= 1}
+                                                            aria-label="Decrease quantity"
                                                         >
                                                             <Minus className="w-3 h-3" />
                                                         </button>
@@ -124,6 +125,7 @@ export function CartSheet() {
                                                         <button
                                                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                                             className="w-7 h-7 flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                                            aria-label="Increase quantity"
                                                         >
                                                             <Plus className="w-3 h-3" />
                                                         </button>

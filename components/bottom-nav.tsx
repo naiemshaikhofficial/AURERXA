@@ -89,7 +89,7 @@ export function BottomNav() {
                             <div className="relative">
                                 <img
                                     src={`https://img.icons8.com/?size=100&id=${iconId}&format=png&color=${isActive ? 'F59E0B' : '999999'}`}
-                                    alt={label}
+                                    alt=""
                                     className={cn("w-5 h-5 transition-transform duration-300", isActive && "scale-110")}
                                 />
                                 {isShop && cartCount > 0 && (

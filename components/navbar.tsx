@@ -137,38 +137,16 @@ export function Navbar() {
   }
 
   const { scrollY } = useScroll()
-  const [hidden, setHidden] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious() ?? 0
-    // Scrolled state for height/background toggle
-    setIsScrolled(latest > 50)
-
-    // Hidden state for hide-on-scroll
-    if (latest > previous && latest > 150) {
-      setHidden(true)
-    } else {
-      setHidden(false)
+    // Only update state if threshold is crossed to minimize re-renders
+    const threshold = 50
+    if (latest > threshold !== isScrolled) {
+      setIsScrolled(latest > threshold)
     }
   })
 
-  // Reveal navbar when scrolling stops
-  useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout
-    const handleScroll = () => {
-      clearTimeout(scrollTimeout)
-      scrollTimeout = setTimeout(() => {
-        setHidden(false)
-      }, 100)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      clearTimeout(scrollTimeout)
-    }
-  }, [])
 
   return (
     <>
@@ -187,7 +165,7 @@ export function Navbar() {
               <div className="relative h-10 md:h-20 w-32 md:w-56">
                 <Image
                   src="/logo.png"
-                  alt="AURERXA Logo"
+                  alt=""
                   fill
                   priority
                   className="object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
@@ -211,7 +189,7 @@ export function Navbar() {
               <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-background/50 rounded-full backdrop-blur-sm border border-border group" aria-label={`Cart with ${cartCount} items`}>
                 <img
                   src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=BF9B65"
-                  alt="Cart"
+                  alt=""
                   className="w-5 h-5 transition-transform duration-300 group-hover:scale-105"
                 />
                 {cartCount > 0 && (

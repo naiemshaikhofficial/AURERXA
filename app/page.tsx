@@ -1,17 +1,17 @@
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
-import { Navbar } from '@/components/navbar'
 import { Hero } from '@/components/hero'
-import { Heritage } from '@/components/heritage'
-import { TrustBar } from '@/components/trust-bar'
-import { CategoryBrowsing } from '@/components/category-browsing'
-import { ShopByGender } from '@/components/shop-by-gender'
-import { OccasionBrowsing } from '@/components/occasion-browsing'
-import { ConciergeServices, FloatingConcierge } from '@/components/concierge'
-import { ServicesSection } from '@/components/services-section'
 import { getNewReleases } from './actions'
 
-// Lazy load below-the-fold components
+// Lazy load ALL below-hero components to reduce initial JS bundle and TBT
+const Heritage = dynamic(() => import('@/components/heritage').then(mod => mod.Heritage))
+const TrustBar = dynamic(() => import('@/components/trust-bar').then(mod => mod.TrustBar))
+const CategoryBrowsing = dynamic(() => import('@/components/category-browsing').then(mod => mod.CategoryBrowsing))
+const ShopByGender = dynamic(() => import('@/components/shop-by-gender').then(mod => mod.ShopByGender))
+const OccasionBrowsing = dynamic(() => import('@/components/occasion-browsing').then(mod => mod.OccasionBrowsing))
+const ConciergeServices = dynamic(() => import('@/components/concierge').then(mod => mod.ConciergeServices))
+const FloatingConcierge = dynamic(() => import('@/components/concierge').then(mod => mod.FloatingConcierge))
+const ServicesSection = dynamic(() => import('@/components/services-section').then(mod => mod.ServicesSection))
 const FeaturedCollections = dynamic(() => import('@/components/featured-collections').then(mod => mod.FeaturedCollections))
 const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod => mod.Bestsellers))
 const CustomOrderForm = dynamic(() => import('@/components/custom-order-form').then(mod => mod.CustomOrderForm))

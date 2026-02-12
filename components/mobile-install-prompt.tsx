@@ -90,6 +90,7 @@ export function MobileInstallPrompt() {
                                 <button
                                     onClick={handleDismiss}
                                     className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                                    aria-label="Dismiss install prompt"
                                 >
                                     <X size={20} />
                                 </button>
@@ -103,7 +104,7 @@ export function MobileInstallPrompt() {
                         >
                             <div className="flex justify-between items-start">
                                 <h4 className="text-foreground font-serif italic text-xl">How to Install</h4>
-                                <button onClick={() => setShowDetails(false)} className="text-muted-foreground"><X size={18} /></button>
+                                <button onClick={() => setShowDetails(false)} className="text-muted-foreground" aria-label="Close install instructions"><X size={18} /></button>
                             </div>
 
                             <div className="space-y-4">
