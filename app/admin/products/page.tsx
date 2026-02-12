@@ -378,10 +378,11 @@ export default function AdminProductsPage() {
                                             </button>
                                         </div>
 
-                                        <div className="grid grid-cols-1 gap-6">
+                                        <div className="grid grid-cols-2 gap-4">
                                             {editingProduct.images.map((url: string, index: number) => (
-                                                <div key={index} className="space-y-3 p-4 bg-white/5 border border-white/5 rounded-2xl relative">
+                                                <div key={index} className="space-y-2 p-3 bg-white/5 border border-white/5 rounded-2xl relative">
                                                     <ImageUpload
+                                                        className="aspect-square"
                                                         initialUrl={url}
                                                         onUploadComplete={(newUrl) => {
                                                             const newImages = [...editingProduct.images]
@@ -390,7 +391,6 @@ export default function AdminProductsPage() {
                                                         }}
                                                     />
                                                     <div className="space-y-2">
-                                                        <label className="text-[10px] text-white/40 uppercase tracking-wider">Image URL</label>
                                                         <div className="flex gap-2">
                                                             <Input
                                                                 value={url}
@@ -399,14 +399,14 @@ export default function AdminProductsPage() {
                                                                     newImages[index] = e.target.value
                                                                     setEditingProduct({ ...editingProduct, images: newImages })
                                                                 }}
-                                                                className="bg-white/5 border-white/10 rounded-xl h-10 text-sm focus:border-[#D4AF37]/30"
+                                                                className="bg-white/5 border-white/10 rounded-xl h-9 text-xs focus:border-[#D4AF37]/30"
                                                                 placeholder="https://..."
                                                             />
                                                             <Button
                                                                 variant="destructive"
                                                                 size="icon"
                                                                 onClick={() => removeImageField(index)}
-                                                                className="h-10 w-10 flex-shrink-0"
+                                                                className="h-9 w-9 flex-shrink-0"
                                                             >
                                                                 <Trash2 className="w-4 h-4" />
                                                             </Button>
@@ -415,14 +415,14 @@ export default function AdminProductsPage() {
                                                 </div>
                                             ))}
                                             {editingProduct.images.length === 0 && (
-                                                <p className="text-xs text-white/20 text-center py-4 border border-dashed border-white/5 rounded-xl">No gallery images</p>
+                                                <p className="text-xs text-white/20 text-center py-4 border border-dashed border-white/5 rounded-xl col-span-2">No gallery images</p>
                                             )}
 
                                             <Button
                                                 type="button"
                                                 variant="outline"
                                                 onClick={addImageField}
-                                                className="w-full border-dashed border-white/10 hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/5 text-white/40 hover:text-[#D4AF37] h-12 rounded-xl flex items-center justify-center gap-2 transition"
+                                                className="w-full border-dashed border-white/10 hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/5 text-white/40 hover:text-[#D4AF37] h-12 rounded-xl flex items-center justify-center gap-2 transition col-span-2"
                                             >
                                                 <Plus className="w-4 h-4" /> Add Another Image
                                             </Button>

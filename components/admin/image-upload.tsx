@@ -13,9 +13,10 @@ interface ImageUploadProps {
     onUploadComplete: (url: string) => void
     initialUrl?: string
     label?: string
+    className?: string
 }
 
-export function ImageUpload({ onUploadComplete, initialUrl, label = "Upload Image" }: ImageUploadProps) {
+export function ImageUpload({ onUploadComplete, initialUrl, label, className }: ImageUploadProps) {
     const [uploading, setUploading] = useState(false)
     const [preview, setPreview] = useState<string | null>(initialUrl || null)
     const [copied, setCopied] = useState(false)
@@ -88,7 +89,7 @@ export function ImageUpload({ onUploadComplete, initialUrl, label = "Upload Imag
         <div className="space-y-2">
             {label && <label className="text-xs font-medium text-white/40 uppercase tracking-wider">{label}</label>}
 
-            <div className="relative group overflow-hidden rounded-xl border border-white/10 bg-white/5 aspect-video flex flex-col items-center justify-center transition-all hover:border-[#D4AF37]/50">
+            <div className={`relative group overflow-hidden rounded-xl border border-white/10 bg-white/5 flex flex-col items-center justify-center transition-all hover:border-[#D4AF37]/50 ${className || 'aspect-video'}`}>
                 {preview ? (
                     <>
                         <Image
@@ -99,7 +100,17 @@ export function ImageUpload({ onUploadComplete, initialUrl, label = "Upload Imag
                             sizes="(max-width: 768px) 100vw, 800px"
                             loader={supabaseLoader}
                         />
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                                onClick={clearImage}
+                            >
+                                <X className="w-4 h-4" />
+                            </Button>
+
                             <Button
                                 type="button"
                                 variant="outline"
@@ -109,15 +120,6 @@ export function ImageUpload({ onUploadComplete, initialUrl, label = "Upload Imag
                             >
                                 {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
                                 {copied ? "Copied" : "Copy Link"}
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                className="h-9 w-9"
-                                onClick={clearImage}
-                            >
-                                <X className="w-4 h-4" />
                             </Button>
                         </div>
                     </>
