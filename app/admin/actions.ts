@@ -52,30 +52,41 @@ export async function getDashboardStats(dateFrom?: string, dateTo?: string) {
     const from = dateFrom || new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
     const to = dateTo || new Date().toISOString()
 
-    // Total Revenue & Orders
+    // Calculate previous period for growth comparison
+    const fromDate = new Date(from)
+    const toDate = new Date(to)
+    const periodMs = toDate.getTime() - fromDate.getTime()
+    const prevFrom = new Date(fromDate.getTime() - periodMs).toISOString()
+    const prevTo = fromDate.toISOString()
+
     // Parallel Fetching for performance
-    const [ordersRes, todayOrdersRes, productsRes, usersRes] = await Promise.all([
+    const [ordersRes, filteredOrdersRes, prevOrdersRes, productsRes, usersRes] = await Promise.all([
         client.from('orders').select('id, total, status, created_at'),
         client.from('orders').select('id, total, status').gte('created_at', from).lte('created_at', to),
+        client.from('orders').select('id, total, status').gte('created_at', prevFrom).lte('created_at', prevTo),
         client.from('products').select('id, stock, name, image_url'),
         client.from('profiles').select('id')
     ])
 
-    const orders = ordersRes.data
-    const todayOrders = todayOrdersRes.data
-    const products = productsRes.data
-    const users = usersRes.data
+    const allOrders = ordersRes.data || []
+    const filteredOrders = filteredOrdersRes.data || []
+    const prevOrders = prevOrdersRes.data || []
+    const allProducts = productsRes.data || []
 
-    const allOrders = orders || []
-    const filteredOrders = todayOrders || []
-    const allProducts = products || []
-
-    // Revenue: Only count confirmed orders (delivered + shipped)
+    // Revenue: Only count confirmed orders (delivered + shipped + packed)
     const confirmedStatuses = ['delivered', 'shipped', 'packed']
     const confirmedOrders = allOrders.filter(o => confirmedStatuses.includes(o.status))
     const confirmedRevenue = confirmedOrders.reduce((sum, o) => sum + Number(o.total || 0), 0)
     const filteredConfirmedOrders = filteredOrders.filter(o => confirmedStatuses.includes(o.status))
     const filteredRevenue = filteredConfirmedOrders.reduce((sum, o) => sum + Number(o.total || 0), 0)
+
+    // Previous period confirmed revenue for growth %
+    const prevConfirmed = prevOrders.filter(o => confirmedStatuses.includes(o.status))
+    const prevRevenue = prevConfirmed.reduce((sum, o) => sum + Number(o.total || 0), 0)
+
+    // Growth percentages
+    const revenueGrowth = prevRevenue > 0 ? ((filteredRevenue - prevRevenue) / prevRevenue) * 100 : (filteredRevenue > 0 ? 100 : 0)
+    const ordersGrowth = prevOrders.length > 0 ? ((filteredOrders.length - prevOrders.length) / prevOrders.length) * 100 : (filteredOrders.length > 0 ? 100 : 0)
 
     // Pending revenue (not yet confirmed)
     const pendingOrdersList = allOrders.filter(o => o.status === 'pending')
@@ -85,6 +96,7 @@ export async function getDashboardStats(dateFrom?: string, dateTo?: string) {
     const cancelledOrdersList = allOrders.filter(o => o.status === 'cancelled')
     const cancelledRevenue = cancelledOrdersList.reduce((sum, o) => sum + Number(o.total || 0), 0)
 
+    const packedOrders = allOrders.filter(o => o.status === 'packed').length
     const shippedOrders = allOrders.filter(o => o.status === 'shipped').length
     const deliveredOrders = allOrders.filter(o => o.status === 'delivered').length
     const lowStockProducts = allProducts.filter(p => (p.stock || 0) <= 5)
@@ -94,14 +106,18 @@ export async function getDashboardStats(dateFrom?: string, dateTo?: string) {
         filteredRevenue,
         pendingRevenue,
         cancelledRevenue,
+        revenueGrowth: Math.round(revenueGrowth * 10) / 10,
+        ordersGrowth: Math.round(ordersGrowth * 10) / 10,
+        prevRevenue,
         totalOrders: allOrders.length,
         filteredOrders: filteredOrders.length,
         pendingOrders: pendingOrdersList.length,
+        packedOrders,
         shippedOrders,
         deliveredOrders,
         cancelledOrders: cancelledOrdersList.length,
         totalProducts: allProducts.length,
-        totalUsers: (users || []).length,
+        totalUsers: (usersRes.data || []).length,
         lowStockProducts: lowStockProducts.map(p => ({ id: p.id, name: p.name, stock: p.stock, image_url: p.image_url })),
     }
 }
@@ -178,6 +194,70 @@ export async function getOrdersChart(period: 'daily' | 'weekly' | 'monthly' = 'm
     })
 
     return Object.entries(grouped).map(([label, data]) => ({ label, ...data }))
+}
+
+export async function getAnalyticsSummary(dateFrom?: string, dateTo?: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return null
+
+    const from = dateFrom || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
+    const to = dateTo || new Date().toISOString()
+
+    // Fetch orders with items for the period
+    const { data: orders } = await client
+        .from('orders')
+        .select('id, total, status, user_id, payment_method, order_items(quantity)')
+        .gte('created_at', from)
+        .lte('created_at', to)
+
+    const allOrders = orders || []
+    const confirmedStatuses = ['delivered', 'shipped', 'packed']
+    const confirmed = allOrders.filter(o => confirmedStatuses.includes(o.status))
+    const delivered = allOrders.filter(o => o.status === 'delivered')
+
+    // AOV - Average Order Value (confirmed orders only)
+    const confirmedRevenue = confirmed.reduce((sum, o) => sum + Number(o.total || 0), 0)
+    const aov = confirmed.length > 0 ? Math.round(confirmedRevenue / confirmed.length) : 0
+
+    // Conversion Rate - Delivered / Total orders %
+    const conversionRate = allOrders.length > 0 ? Math.round((delivered.length / allOrders.length) * 1000) / 10 : 0
+
+    // Repeat Customer Rate - users with 2+ orders / total ordering users
+    const userOrderCounts: Record<string, number> = {}
+    allOrders.forEach(o => {
+        if (o.user_id) {
+            userOrderCounts[o.user_id] = (userOrderCounts[o.user_id] || 0) + 1
+        }
+    })
+    const totalOrderingUsers = Object.keys(userOrderCounts).length
+    const repeatUsers = Object.values(userOrderCounts).filter(c => c >= 2).length
+    const repeatCustomerRate = totalOrderingUsers > 0 ? Math.round((repeatUsers / totalOrderingUsers) * 1000) / 10 : 0
+
+    // Avg items per order
+    let totalItems = 0
+    allOrders.forEach((o: any) => {
+        if (o.order_items) {
+            totalItems += o.order_items.reduce((s: number, i: any) => s + (i.quantity || 0), 0)
+        }
+    })
+    const avgItemsPerOrder = allOrders.length > 0 ? Math.round((totalItems / allOrders.length) * 10) / 10 : 0
+
+    // Top payment method
+    const methodCounts: Record<string, number> = {}
+    allOrders.forEach(o => {
+        const m = (o as any).payment_method || 'unknown'
+        methodCounts[m] = (methodCounts[m] || 0) + 1
+    })
+    const topPaymentMethod = Object.entries(methodCounts).sort(([, a], [, b]) => b - a)[0]?.[0] || 'N/A'
+
+    return {
+        aov,
+        conversionRate,
+        repeatCustomerRate,
+        avgItemsPerOrder,
+        topPaymentMethod,
+    }
 }
 
 // ============================================

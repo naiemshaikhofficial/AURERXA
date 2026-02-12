@@ -1,16 +1,17 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { getDashboardStats, getRevenueChart, getOrdersChart, getRecentOrders, getTopProducts, getActivityLogs, getCancelledOrderDetails, checkAdminRole, deleteOrder, getOrdersByStatus, updateOrderStatus } from './actions'
+import { getDashboardStats, getRevenueChart, getOrdersChart, getRecentOrders, getTopProducts, getActivityLogs, getCancelledOrderDetails, checkAdminRole, deleteOrder, getOrdersByStatus, updateOrderStatus, getAnalyticsSummary } from './actions'
 import {
     DollarSign, ShoppingCart, Package, Users, AlertTriangle,
-    TrendingUp, Clock, Truck, XCircle, CheckCircle, Calendar, ChevronDown,
-    ChevronUp, Eye, Trash2, Edit3, X, ArrowRight
+    TrendingUp, TrendingDown, Clock, Truck, XCircle, CheckCircle, Calendar, ChevronDown,
+    ChevronUp, Eye, Trash2, Edit3, X, ArrowRight, BarChart3, Target, Repeat, Layers
 } from 'lucide-react'
 import Image from 'next/image'
 
 type DatePreset = 'today' | 'yesterday' | 'week' | 'month' | 'year' | 'custom'
 type PanelType = 'confirmed' | 'pending' | 'cancelled' | 'orders' | 'products' | 'users' | 'shipped' | 'delivered' | null
+type ChartPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly'
 
 const STATUS_COLORS: Record<string, string> = {
     pending: 'text-amber-400 bg-amber-400/10',
@@ -25,8 +26,12 @@ const STATUS_OPTIONS = ['pending', 'packed', 'shipped', 'delivered', 'cancelled'
 export default function AdminDashboard() {
     const [stats, setStats] = useState<any>({
         confirmedRevenue: 0, filteredRevenue: 0, pendingRevenue: 0, cancelledRevenue: 0,
-        totalOrders: 0, filteredOrders: 0, pendingOrders: 0, shippedOrders: 0,
-        deliveredOrders: 0, cancelledOrders: 0, totalProducts: 0, totalUsers: 0, lowStockProducts: []
+        totalOrders: 0, filteredOrders: 0, pendingOrders: 0, packedOrders: 0, shippedOrders: 0,
+        deliveredOrders: 0, cancelledOrders: 0, totalProducts: 0, totalUsers: 0, lowStockProducts: [],
+        revenueGrowth: 0, ordersGrowth: 0, prevRevenue: 0
+    })
+    const [analytics, setAnalytics] = useState<any>({
+        aov: 0, conversionRate: 0, repeatCustomerRate: 0, avgItemsPerOrder: 0, topPaymentMethod: 'N/A'
     })
     const [revenueData, setRevenueData] = useState<any[]>([])
     const [ordersData, setOrdersData] = useState<any[]>([])
@@ -40,6 +45,10 @@ export default function AdminDashboard() {
     const [customFrom, setCustomFrom] = useState('')
     const [customTo, setCustomTo] = useState('')
     const [showDatePicker, setShowDatePicker] = useState(false)
+
+    // Chart period state
+    const [revenuePeriod, setRevenuePeriod] = useState<ChartPeriod>('monthly')
+    const [ordersPeriod, setOrdersPeriod] = useState<ChartPeriod>('monthly')
 
     // Panel state
     const [activePanel, setActivePanel] = useState<PanelType>(null)
@@ -68,18 +77,28 @@ export default function AdminDashboard() {
 
     useEffect(() => { loadData() }, [datePreset, customFrom, customTo])
 
+    // Reload charts when period changes
+    useEffect(() => {
+        getRevenueChart(revenuePeriod).then(r => { if (r) setRevenueData(r) })
+    }, [revenuePeriod])
+
+    useEffect(() => {
+        getOrdersChart(ordersPeriod as any).then(o => { if (o) setOrdersData(o) })
+    }, [ordersPeriod])
+
     const loadData = async () => {
         setLoading(true)
         const { from, to } = getDateRange(datePreset)
-        const [s, r, o, recent, top, activity, cancelled, role] = await Promise.all([
+        const [s, r, o, recent, top, activity, cancelled, role, analyticsSummary] = await Promise.all([
             getDashboardStats(from, to),
-            getRevenueChart('monthly'),
-            getOrdersChart('monthly'),
+            getRevenueChart(revenuePeriod),
+            getOrdersChart(ordersPeriod as any),
             getRecentOrders(),
             getTopProducts(),
             getActivityLogs(1, 'all', '', '', ''),
             getCancelledOrderDetails(),
-            checkAdminRole()
+            checkAdminRole(),
+            getAnalyticsSummary(from, to)
         ])
         if (s) setStats(s)
         if (r) setRevenueData(r)
@@ -89,6 +108,7 @@ export default function AdminDashboard() {
         if ((activity as any)?.logs) setActivityLogs((activity as any).logs)
         if (cancelled) setCancelledDetails(cancelled as any[])
         if (role) setAdminRole((role as any).role || '')
+        if (analyticsSummary) setAnalytics(analyticsSummary)
         setLoading(false)
     }
 
@@ -142,6 +162,13 @@ export default function AdminDashboard() {
         { value: 'today', label: 'Today' }, { value: 'yesterday', label: 'Yesterday' },
         { value: 'week', label: 'This Week' }, { value: 'month', label: 'This Month' },
         { value: 'year', label: 'This Year' }, { value: 'custom', label: 'Custom Range' },
+    ]
+
+    const chartPeriods: { value: ChartPeriod; label: string }[] = [
+        { value: 'daily', label: 'Daily' },
+        { value: 'weekly', label: 'Weekly' },
+        { value: 'monthly', label: 'Monthly' },
+        { value: 'yearly', label: 'Yearly' },
     ]
 
     // Panel title mapping
@@ -207,6 +234,7 @@ export default function AdminDashboard() {
                     label="Confirmed Revenue" value={formatCurrency(stats?.confirmedRevenue || 0)}
                     sub={`${formatCurrency(stats?.filteredRevenue || 0)} this period`}
                     color="text-[#D4AF37]" bg="bg-[#D4AF37]/10" activeBorder="border-[#D4AF37]/50"
+                    growth={stats?.revenueGrowth}
                 />
                 <ClickableStatCard
                     active={activePanel === 'pending'}
@@ -231,6 +259,7 @@ export default function AdminDashboard() {
                     label="Total Orders" value={stats?.totalOrders || 0}
                     sub={`${stats?.filteredOrders || 0} this period`}
                     color="text-emerald-400" bg="bg-emerald-400/10" activeBorder="border-emerald-400/50"
+                    growth={stats?.ordersGrowth}
                 />
             </div>
 
@@ -246,7 +275,7 @@ export default function AdminDashboard() {
                     isMainAdmin={isMainAdmin}
                     editingOrderId={editingOrderId}
                     editStatus={editStatus}
-                    onEditStart={(id, status) => { setEditingOrderId(id); setEditStatus(status) }}
+                    onEditStart={(id: string, status: string) => { setEditingOrderId(id); setEditStatus(status) }}
                     onEditCancel={() => setEditingOrderId(null)}
                     onStatusUpdate={handleStatusUpdate}
                     onDelete={handleDelete}
@@ -254,6 +283,47 @@ export default function AdminDashboard() {
                     panelType={activePanel}
                 />
             )}
+
+            {/* KPI Analytics Row */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+                <KPICard
+                    icon={<DollarSign className="w-4 h-4" />}
+                    label="Average Order Value"
+                    value={formatCurrency(analytics?.aov || 0)}
+                    color="text-[#D4AF37]"
+                    bg="bg-[#D4AF37]/10"
+                />
+                <KPICard
+                    icon={<Target className="w-4 h-4" />}
+                    label="Conversion Rate"
+                    value={`${analytics?.conversionRate || 0}%`}
+                    color="text-emerald-400"
+                    bg="bg-emerald-400/10"
+                    donut={analytics?.conversionRate || 0}
+                />
+                <KPICard
+                    icon={<Repeat className="w-4 h-4" />}
+                    label="Repeat Customers"
+                    value={`${analytics?.repeatCustomerRate || 0}%`}
+                    color="text-purple-400"
+                    bg="bg-purple-400/10"
+                    donut={analytics?.repeatCustomerRate || 0}
+                />
+                <KPICard
+                    icon={<Layers className="w-4 h-4" />}
+                    label="Avg Items / Order"
+                    value={`${analytics?.avgItemsPerOrder || 0}`}
+                    color="text-blue-400"
+                    bg="bg-blue-400/10"
+                />
+                <KPICard
+                    icon={<BarChart3 className="w-4 h-4" />}
+                    label="Top Payment"
+                    value={analytics?.topPaymentMethod || 'N/A'}
+                    color="text-amber-400"
+                    bg="bg-amber-400/10"
+                />
+            </div>
 
             {/* Secondary Stats - Row 2 */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -304,7 +374,7 @@ export default function AdminDashboard() {
                     isMainAdmin={isMainAdmin}
                     editingOrderId={editingOrderId}
                     editStatus={editStatus}
-                    onEditStart={(id, status) => { setEditingOrderId(id); setEditStatus(status) }}
+                    onEditStart={(id: string, status: string) => { setEditingOrderId(id); setEditStatus(status) }}
                     onEditCancel={() => setEditingOrderId(null)}
                     onStatusUpdate={handleStatusUpdate}
                     onDelete={handleDelete}
@@ -324,6 +394,17 @@ export default function AdminDashboard() {
                             </div>
                             Revenue Trend (Confirmed Only)
                         </h3>
+                        <div className="flex gap-1">
+                            {chartPeriods.map(p => (
+                                <button
+                                    key={p.value}
+                                    onClick={() => setRevenuePeriod(p.value)}
+                                    className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${revenuePeriod === p.value ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'text-white/30 hover:text-white/50'}`}
+                                >
+                                    {p.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     <div className="h-48 flex items-end gap-1">
                         {revenueData.length > 0 ? revenueData.map((d, i) => (
@@ -331,7 +412,7 @@ export default function AdminDashboard() {
                                 <div className="w-full relative group">
                                     <div className="w-full bg-gradient-to-t from-[#D4AF37]/20 to-[#D4AF37]/60 rounded-t-md transition-all hover:from-[#D4AF37]/30 hover:to-[#D4AF37]/80"
                                         style={{ height: `${Math.max((d.value / maxRevenue) * 160, 4)}px` }} />
-                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#1a1a1a] border border-white/10 px-2 py-1 rounded text-[10px] text-white/70 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#1a1a1a] border border-white/10 px-2 py-1 rounded text-[10px] text-white/70 opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
                                         {formatCurrency(d.value)}
                                     </div>
                                 </div>
@@ -343,7 +424,7 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* Orders Chart */}
+                {/* Orders Chart - Stacked */}
                 <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
@@ -352,20 +433,53 @@ export default function AdminDashboard() {
                             </div>
                             Order Volume
                         </h3>
+                        <div className="flex gap-1">
+                            {chartPeriods.filter(p => p.value !== 'yearly').map(p => (
+                                <button
+                                    key={p.value}
+                                    onClick={() => setOrdersPeriod(p.value)}
+                                    className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${ordersPeriod === p.value ? 'bg-emerald-400/20 text-emerald-400' : 'text-white/30 hover:text-white/50'}`}
+                                >
+                                    {p.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    <div className="h-48 flex items-end gap-1">
-                        {ordersData.length > 0 ? ordersData.map((d, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                <div className="w-full relative group">
-                                    <div className="w-full bg-gradient-to-t from-emerald-500/20 to-emerald-400/60 rounded-t-md transition-all hover:from-emerald-500/30 hover:to-emerald-400/80"
-                                        style={{ height: `${Math.max((d.total / maxOrders) * 160, 4)}px` }} />
-                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#1a1a1a] border border-white/10 px-2 py-1 rounded text-[10px] text-white/70 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                                        {d.total} orders
+                    {/* Stacked Bar Legend */}
+                    <div className="flex gap-3 mb-3 flex-wrap">
+                        <span className="flex items-center gap-1 text-[10px] text-white/40"><span className="w-2 h-2 rounded-sm bg-emerald-400/70" /> Delivered</span>
+                        <span className="flex items-center gap-1 text-[10px] text-white/40"><span className="w-2 h-2 rounded-sm bg-blue-400/70" /> Shipped</span>
+                        <span className="flex items-center gap-1 text-[10px] text-white/40"><span className="w-2 h-2 rounded-sm bg-amber-400/70" /> Pending</span>
+                        <span className="flex items-center gap-1 text-[10px] text-white/40"><span className="w-2 h-2 rounded-sm bg-red-400/70" /> Cancelled</span>
+                    </div>
+                    <div className="h-44 flex items-end gap-1">
+                        {ordersData.length > 0 ? ordersData.map((d, i) => {
+                            const segments = [
+                                { count: d.delivered || 0, color: 'bg-emerald-400/70' },
+                                { count: d.shipped || 0, color: 'bg-blue-400/70' },
+                                { count: d.pending || 0, color: 'bg-amber-400/70' },
+                                { count: d.cancelled || 0, color: 'bg-red-400/70' },
+                            ]
+                            return (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                    <div className="w-full relative group flex flex-col-reverse">
+                                        {segments.map((seg, si) => (
+                                            seg.count > 0 ? (
+                                                <div
+                                                    key={si}
+                                                    className={`w-full ${seg.color} ${si === segments.length - 1 ? 'rounded-t-md' : ''} transition-all`}
+                                                    style={{ height: `${Math.max((seg.count / maxOrders) * 140, 2)}px` }}
+                                                />
+                                            ) : null
+                                        ))}
+                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#1a1a1a] border border-white/10 px-2 py-1 rounded text-[10px] text-white/70 opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
+                                            {d.total} orders
+                                        </div>
                                     </div>
+                                    <span className="text-[10px] text-white/30 truncate w-full text-center">{d.label}</span>
                                 </div>
-                                <span className="text-[10px] text-white/30 truncate w-full text-center">{d.label}</span>
-                            </div>
-                        )) : (
+                            )
+                        }) : (
                             <div className="flex-1 flex items-center justify-center text-white/20 text-sm">No data</div>
                         )}
                     </div>
@@ -472,8 +586,37 @@ export default function AdminDashboard() {
     )
 }
 
+// =============== KPI CARD ===============
+function KPICard({ icon, label, value, color, bg, donut }: { icon: React.ReactNode; label: string; value: string; color: string; bg: string; donut?: number }) {
+    return (
+        <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 relative overflow-hidden group hover:border-white/10 transition">
+            <div className="flex items-center justify-between mb-2">
+                <div className={`w-8 h-8 ${bg} rounded-xl flex items-center justify-center ${color}`}>
+                    {icon}
+                </div>
+                {donut !== undefined && (
+                    <svg className="w-10 h-10" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="3" className="text-white/5" />
+                        <circle
+                            cx="18" cy="18" r="14" fill="none" stroke="currentColor" strokeWidth="3"
+                            className={color}
+                            strokeDasharray={`${donut * 0.88} 88`}
+                            strokeDashoffset="22"
+                            strokeLinecap="round"
+                            style={{ transition: 'stroke-dasharray 0.6s ease' }}
+                        />
+                        <text x="18" y="19" textAnchor="middle" className="fill-white/60" style={{ fontSize: '7px', fontWeight: 600 }}>{donut}%</text>
+                    </svg>
+                )}
+            </div>
+            <p className="text-lg font-bold tracking-tight">{value}</p>
+            <p className="text-[11px] text-white/40 mt-0.5">{label}</p>
+        </div>
+    )
+}
+
 // =============== CLICKABLE STAT CARD ===============
-function ClickableStatCard({ active, onClick, imgSrc, label, value, sub, color, bg, activeBorder, linkHint, mini }: any) {
+function ClickableStatCard({ active, onClick, imgSrc, label, value, sub, color, bg, activeBorder, linkHint, mini, growth }: any) {
     return (
         <button
             onClick={onClick}
@@ -492,7 +635,15 @@ function ClickableStatCard({ active, onClick, imgSrc, label, value, sub, color, 
                         </div>
                     )}
                 </div>
-                <ChevronDown className={`w-3.5 h-3.5 text-white/20 transition-transform duration-200 ${active ? 'rotate-180 text-white/50' : 'group-hover:text-white/40'}`} />
+                <div className="flex items-center gap-1.5">
+                    {growth !== undefined && growth !== 0 && (
+                        <span className={`flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${growth > 0 ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'}`}>
+                            {growth > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                            {growth > 0 ? '+' : ''}{growth}%
+                        </span>
+                    )}
+                    <ChevronDown className={`w-3.5 h-3.5 text-white/20 transition-transform duration-200 ${active ? 'rotate-180 text-white/50' : 'group-hover:text-white/40'}`} />
+                </div>
             </div>
 
             <p className={`${mini ? 'text-lg' : 'text-xl md:text-2xl'} font-bold tracking-tight`}>{value}</p>
