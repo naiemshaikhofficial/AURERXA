@@ -80,6 +80,84 @@ export const getCategories = unstable_cache(
   { tags: ['categories'] }
 )
 
+export const getSubCategories = unstable_cache(
+  async (categoryId?: string) => {
+    let query = supabase
+      .from('sub_categories')
+      .select('*')
+      .order('name')
+
+    if (categoryId) {
+      query = query.eq('category_id', categoryId)
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching sub-categories:', error)
+      return []
+    }
+    return data
+  },
+  ['sub-categories'],
+  { tags: ['sub-categories'] }
+)
+
+export async function addSubCategory(subCategoryData: any) {
+  const client = await getAuthClient()
+
+  const { data, error } = await client
+    .from('sub_categories')
+    .insert({
+      ...subCategoryData,
+      created_at: new Date().toISOString()
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Add sub-category error:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidateTag('sub-categories', '')
+  return { success: true, data }
+}
+
+export async function updateSubCategory(id: string, updates: any) {
+  const client = await getAuthClient()
+
+  const { error } = await client
+    .from('sub_categories')
+    .update(updates)
+    .eq('id', id)
+
+  if (error) {
+    console.error('Update sub-category error:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidateTag('sub-categories', '')
+  return { success: true }
+}
+
+export async function deleteSubCategory(id: string) {
+  const client = await getAuthClient()
+
+  const { error } = await client
+    .from('sub_categories')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('Delete sub-category error:', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidateTag('sub-categories', '')
+  return { success: true }
+}
+
 // ============================================
 // PRODUCTS
 // ============================================
@@ -131,7 +209,7 @@ export const getBestsellers = unstable_cache(
   async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .eq('bestseller', true)
       .limit(4)
 
@@ -150,7 +228,7 @@ export const getNewReleases = unstable_cache(
   async (limit: number = 8) => {
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -169,7 +247,7 @@ export const getProducts = unstable_cache(
   async (categorySlug?: string, sortBy?: string) => {
     let query = supabase
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
 
     if (categorySlug) {
       // Since it's a join, we filter by the related table's field
@@ -216,7 +294,7 @@ export async function getProductBySlug(slug: string) {
     async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*, categories(slug, name)')
+        .select('*, categories(slug, name), sub_categories(slug, name)')
         .eq('slug', slug)
         .single()
       if (error) return null
@@ -230,7 +308,7 @@ export async function getProductBySlug(slug: string) {
 export async function getAdminProducts() {
   const { data, error } = await supabase
     .from('products')
-    .select('*, categories(name)')
+    .select('*, categories(name), sub_categories(name)')
     .order('created_at', { ascending: false })
 
   if (error) return []

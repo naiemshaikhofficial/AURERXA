@@ -6,21 +6,31 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Loader2, Plus, Trash2, Save, Image as ImageIcon, ExternalLink, Search } from 'lucide-react'
+import { Loader2, Plus, Trash2, Save, Image as ImageIcon, ExternalLink, Search, Package as PackageIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ImageUpload } from '@/components/admin/image-upload'
 import supabaseLoader from '@/lib/supabase-loader'
+import { getSubCategories } from '@/app/actions'
 import { useRouter } from 'next/navigation'
 
 export function ProductsClient({ initialProducts, initialCategories = [], adminRole }: { initialProducts: any[], initialCategories?: any[], adminRole?: string }) {
     const [products, setProducts] = useState(initialProducts)
+    const [subCategories, setSubCategories] = useState<any[]>([])
     const [editingProduct, setEditingProduct] = useState<any>(null)
     const [saving, setSaving] = useState(false)
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
     const [search, setSearch] = useState('')
     const [deleting, setDeleting] = useState<string | null>(null)
     const router = useRouter()
+
+    useEffect(() => {
+        const loadSubCategories = async () => {
+            const subs = await getSubCategories()
+            setSubCategories(subs)
+        }
+        loadSubCategories()
+    }, [])
 
     useEffect(() => { setProducts(initialProducts) }, [initialProducts])
 
@@ -40,6 +50,7 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
             weight_grams: product.weight_grams || 0,
             purity: product.purity || '',
             slug: product.slug || product.name.toLowerCase().replace(/ /g, '-'),
+            sub_category_id: product.sub_category_id || null,
         })
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -78,6 +89,7 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                 gender: editingProduct.gender,
                 sizes: editingProduct.sizes,
                 slug: editingProduct.slug,
+                sub_category_id: editingProduct.sub_category_id,
             })
         } else {
             result = await addNewProduct({
@@ -100,6 +112,7 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                 purity: editingProduct.purity || '',
                 gender: editingProduct.gender || 'Unisex',
                 sizes: editingProduct.sizes || [],
+                sub_category_id: editingProduct.sub_category_id || null,
             })
         }
 
@@ -171,7 +184,8 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                 sizes: [],
                                 weight_grams: 0,
                                 purity: '',
-                                slug: ''
+                                slug: '',
+                                sub_category_id: null
                             })}
                             className="bg-[#D4AF37] text-black hover:bg-[#D4AF37]/80 text-xs px-4 h-10 rounded-xl"
                         >
@@ -217,6 +231,9 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                         <div className="flex items-center gap-3 mt-1">
                                             <span className="text-xs text-[#D4AF37] font-medium">{formatCurrency(product.price || 0)}</span>
                                             <span className={`text-[10px] px-1.5 py-0.5 rounded ${(product.stock || 0) <= 5 ? 'bg-red-500/10 text-red-400' : 'bg-white/5 text-white/40'}`}>Stock: {product.stock ?? 'N/A'}</span>
+                                            {product.sub_categories?.name && (
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#D4AF37]/10 text-[#D4AF37]">{product.sub_categories.name}</span>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 flex-shrink-0">
@@ -261,6 +278,24 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                                 {initialCategories.map((cat: any) => (
                                                     <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                                                 ))}
+                                            </SelectContent>
+                                        </Select>
+
+                                        <Select
+                                            value={editingProduct.sub_category_id || 'none'}
+                                            onValueChange={(val) => setEditingProduct({ ...editingProduct, sub_category_id: val === 'none' ? null : val })}
+                                        >
+                                            <SelectTrigger className="bg-white/5 border-white/10 rounded-xl text-xs md:text-sm">
+                                                <SelectValue placeholder="Sub-category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">No Sub-category</SelectItem>
+                                                {subCategories
+                                                    .filter(sub => sub.category_id === editingProduct.category_id)
+                                                    .map((sub: any) => (
+                                                        <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>
+                                                    ))
+                                                }
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -493,7 +528,7 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                         ) : (
                             <div className="bg-[#111111] border border-white/5 rounded-2xl p-12 text-center space-y-4">
                                 <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto">
-                                    <Package className="w-8 h-8 text-white/20" />
+                                    <PackageIcon className="w-8 h-8 text-white/20" />
                                 </div>
                                 <div className="space-y-1">
                                     <h3 className="text-lg font-medium">Select a product to edit</h3>
@@ -515,7 +550,8 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                         sizes: [],
                                         weight_grams: 0,
                                         purity: '',
-                                        slug: ''
+                                        slug: '',
+                                        sub_category_id: null
                                     })}
                                     className="bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/10"
                                 >
