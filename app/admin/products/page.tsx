@@ -200,8 +200,19 @@ export default function AdminProductsPage() {
                             filteredProducts.map((product) => (
                                 <div key={product.id} className={`bg-[#111111] border rounded-xl p-4 flex items-center gap-4 hover:border-[#D4AF37]/20 transition group ${deleting === product.id ? 'opacity-50' : 'border-white/5'}`}>
                                     {/* Image */}
-                                    <div className="relative w-14 h-14 bg-black rounded-lg border border-white/5 flex-shrink-0 overflow-hidden">
-                                        <Image src={product.image_url} alt={product.name} fill className="object-cover p-1" sizes="56px" loader={supabaseLoader} />
+                                    <div className="relative w-14 h-14 bg-black rounded-lg border border-white/5 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                        {(product.image_url || (product.images && product.images[0])) ? (
+                                            <Image
+                                                src={product.image_url || product.images[0]}
+                                                alt={product.name}
+                                                fill
+                                                className="object-cover p-1"
+                                                sizes="56px"
+                                                loader={supabaseLoader}
+                                            />
+                                        ) : (
+                                            <ImageIcon className="w-6 h-6 text-white/20" />
+                                        )}
                                     </div>
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
@@ -220,7 +231,16 @@ export default function AdminProductsPage() {
                                             onClick={() => startEditing(product)}
                                             className="px-3 py-1.5 text-xs text-[#D4AF37] bg-[#D4AF37]/10 rounded-lg hover:bg-[#D4AF37]/20 transition"
                                         >
-                                            Edit
+                                            <div className="w-4 h-4 relative">
+                                                <Image
+                                                    src="https://img.icons8.com/?size=100&id=6697&format=png&color=000000"
+                                                    alt="Edit"
+                                                    fill
+                                                    className="object-contain"
+                                                    style={{ filter: 'invert(1)' }}
+                                                    unoptimized
+                                                />
+                                            </div>
                                         </button>
                                         <Link
                                             href={`/products/${product.slug}`}
@@ -397,6 +417,15 @@ export default function AdminProductsPage() {
                                             {editingProduct.images.length === 0 && (
                                                 <p className="text-xs text-white/20 text-center py-4 border border-dashed border-white/5 rounded-xl">No gallery images</p>
                                             )}
+
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={addImageField}
+                                                className="w-full border-dashed border-white/10 hover:border-[#D4AF37]/50 hover:bg-[#D4AF37]/5 text-white/40 hover:text-[#D4AF37] h-12 rounded-xl flex items-center justify-center gap-2 transition"
+                                            >
+                                                <Plus className="w-4 h-4" /> Add Another Image
+                                            </Button>
                                         </div>
                                     </div>
                                 </div>

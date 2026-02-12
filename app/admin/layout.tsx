@@ -13,14 +13,14 @@ import {
 import { supabase } from '@/lib/supabase'
 
 const NAV_ITEMS = [
-    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['main_admin', 'support_admin', 'staff'] },
-    { label: 'Orders', href: '/admin/orders', icon: ShoppingCart, roles: ['main_admin', 'support_admin', 'staff'] },
-    { label: 'Products', href: '/admin/products', icon: Package, roles: ['main_admin', 'support_admin'] },
-    { label: 'Users', href: '/admin/users', icon: Users, roles: ['main_admin', 'support_admin'] },
+    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, imgSrc: 'https://img.icons8.com/?size=100&id=ZQ9axxszRfad&format=png&color=000000', roles: ['main_admin', 'support_admin', 'staff'] },
+    { label: 'Orders', href: '/admin/orders', icon: ShoppingCart, imgSrc: 'https://img.icons8.com/?size=100&id=nmdLxlZq4cQi&format=png&color=000000', roles: ['main_admin', 'support_admin', 'staff'] },
+    { label: 'Products', href: '/admin/products', icon: Package, imgSrc: 'https://img.icons8.com/?size=100&id=12091&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Users', href: '/admin/users', icon: Users, imgSrc: 'https://img.icons8.com/?size=100&id=IbG1lmsRkQI2&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
     { label: 'Support', href: '/admin/support', icon: HeadphonesIcon, roles: ['main_admin', 'support_admin'] },
     { label: 'Settings', href: '/admin/settings', icon: Settings, roles: ['main_admin'] },
     { label: 'Activity', href: '/admin/activity', icon: Activity, roles: ['main_admin'] },
-    { label: 'Services', href: '/admin/services', icon: Sparkles, roles: ['main_admin', 'support_admin'] },
+    { label: 'Services', href: '/admin/services', icon: Sparkles, imgSrc: 'https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -98,7 +98,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                                     }`}
                             >
-                                <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-[#D4AF37]' : ''}`} />
+                                {item.imgSrc ? (
+                                    <div className={`w-5 h-5 flex-shrink-0 relative ${isActive ? '' : 'opacity-50 group-hover:opacity-80'}`}>
+                                        <Image
+                                            src={item.imgSrc}
+                                            alt={item.label}
+                                            fill
+                                            className={`object-contain ${isActive ? '' : 'invert'}`}
+                                            // The provided icons are black.
+                                            // Active state: Gold color is desired but these appear specific.
+                                            // Let's invert them to make them white for inactive, and maybe gold-tint or keep white for active?
+                                            // Actually, 'invert' makes black -> white.
+                                            // If active, we might want them Gold? CSS filter for gold is hard.
+                                            // Let's just make them white (invert) for now to be visible on dark background.
+                                            style={{ filter: isActive ? 'invert(69%) sepia(50%) saturate(666%) hue-rotate(2deg) brightness(93%) contrast(89%)' : 'invert(1)' }}
+                                            // The above filter approximates #D4AF37 (Gold).
+                                            unoptimized
+                                        />
+                                    </div>
+                                ) : (
+                                    <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-[#D4AF37]' : ''}`} />
+                                )}
                                 {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
                             </Link>
                         )
@@ -159,7 +179,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${isActive ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : 'text-white/50 hover:text-white/80 hover:bg-white/5'
                                             }`}
                                     >
-                                        <item.icon className="w-5 h-5" />
+                                        {item.imgSrc ? (
+                                            <div className={`w-5 h-5 flex-shrink-0 relative`}>
+                                                <Image
+                                                    src={item.imgSrc}
+                                                    alt={item.label}
+                                                    fill
+                                                    className="object-contain"
+                                                    style={{ filter: isActive ? 'invert(69%) sepia(50%) saturate(666%) hue-rotate(2deg) brightness(93%) contrast(89%)' : 'invert(1)' }}
+                                                    unoptimized
+                                                />
+                                            </div>
+                                        ) : (
+                                            <item.icon className="w-5 h-5" />
+                                        )}
                                         <span className="text-sm font-medium">{item.label}</span>
                                     </Link>
                                 )

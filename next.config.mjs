@@ -118,6 +118,10 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'xquczexikijzbzcuvmqh.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.icons8.com',
       }
     ],
   },

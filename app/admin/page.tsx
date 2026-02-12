@@ -120,8 +120,8 @@ export default function AdminDashboard() {
                                             if (p.value !== 'custom') setShowDatePicker(false)
                                         }}
                                         className={`px-3 py-2 rounded-lg text-xs font-medium transition ${datePreset === p.value
-                                                ? 'bg-[#D4AF37] text-black'
-                                                : 'bg-white/5 text-white/60 hover:bg-white/10'
+                                            ? 'bg-[#D4AF37] text-black'
+                                            : 'bg-white/5 text-white/60 hover:bg-white/10'
                                             }`}
                                     >
                                         {p.label}
@@ -157,18 +157,18 @@ export default function AdminDashboard() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                <StatCard icon={DollarSign} label="Total Revenue" value={formatCurrency(stats?.totalRevenue || 0)} sub={`${formatCurrency(stats?.filteredRevenue || 0)} this period`} color="text-[#D4AF37]" bg="bg-[#D4AF37]/10" />
-                <StatCard icon={ShoppingCart} label="Total Orders" value={stats?.totalOrders || 0} sub={`${stats?.filteredOrders || 0} this period`} color="text-emerald-400" bg="bg-emerald-400/10" />
-                <StatCard icon={Package} label="Products" value={stats?.totalProducts || 0} sub={`${stats?.lowStockProducts?.length || 0} low stock`} color="text-blue-400" bg="bg-blue-400/10" />
-                <StatCard icon={Users} label="Users" value={stats?.totalUsers || 0} sub="Registered" color="text-purple-400" bg="bg-purple-400/10" />
+                <StatCard icon={DollarSign} imgSrc="https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000" label="Total Revenue" value={formatCurrency(stats?.totalRevenue || 0)} sub={`${formatCurrency(stats?.filteredRevenue || 0)} this period`} color="text-[#D4AF37]" bg="bg-[#D4AF37]/10" />
+                <StatCard icon={ShoppingCart} imgSrc="https://img.icons8.com/?size=100&id=nmdLxlZq4cQi&format=png&color=000000" label="Total Orders" value={stats?.totalOrders || 0} sub={`${stats?.filteredOrders || 0} this period`} color="text-emerald-400" bg="bg-emerald-400/10" />
+                <StatCard icon={Package} imgSrc="https://img.icons8.com/?size=100&id=12091&format=png&color=000000" label="Products" value={stats?.totalProducts || 0} sub={`${stats?.lowStockProducts?.length || 0} low stock`} color="text-blue-400" bg="bg-blue-400/10" />
+                <StatCard icon={Users} imgSrc="https://img.icons8.com/?size=100&id=IbG1lmsRkQI2&format=png&color=000000" label="Users" value={stats?.totalUsers || 0} sub="Registered" color="text-purple-400" bg="bg-purple-400/10" />
             </div>
 
             {/* Order Status Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <MiniCard icon={Clock} label="Pending" value={stats?.pendingOrders || 0} color="text-amber-400" />
-                <MiniCard icon={Truck} label="Shipped" value={stats?.shippedOrders || 0} color="text-blue-400" />
-                <MiniCard icon={CheckCircle} label="Delivered" value={stats?.deliveredOrders || 0} color="text-emerald-400" />
-                <MiniCard icon={XCircle} label="Cancelled" value={stats?.cancelledOrders || 0} color="text-red-400" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <MiniCard icon={Clock} imgSrc="https://img.icons8.com/?size=100&id=102455&format=png&color=000000" label="Pending" value={stats?.pendingOrders || 0} color="text-amber-400" />
+                <MiniCard icon={Truck} imgSrc="https://img.icons8.com/?size=100&id=HG4lwDHJcYg3&format=png&color=000000" label="Shipped" value={stats?.shippedOrders || 0} color="text-blue-400" />
+                <MiniCard icon={CheckCircle} imgSrc="https://img.icons8.com/?size=100&id=urubQ4JdZpyy&format=png&color=000000" label="Delivered" value={stats?.deliveredOrders || 0} color="text-emerald-400" />
+                <MiniCard icon={XCircle} imgSrc="https://img.icons8.com/?size=100&id=ec5nnM2s1CdY&format=png&color=000000" label="Cancelled" value={stats?.cancelledOrders || 0} color="text-red-400" />
             </div>
 
             {/* Charts */}
@@ -177,7 +177,16 @@ export default function AdminDashboard() {
                 <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4 text-[#D4AF37]" />
+                            <div className="w-4 h-4 relative">
+                                <Image
+                                    src="https://img.icons8.com/?size=100&id=7WvHWmLeJRQB&format=png&color=000000"
+                                    alt="Revenue Trend"
+                                    fill
+                                    className="object-contain"
+                                    style={{ filter: 'invert(1)' }}
+                                    unoptimized
+                                />
+                            </div>
                             Revenue Trend
                         </h3>
                     </div>
@@ -205,7 +214,16 @@ export default function AdminDashboard() {
                 <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
-                            <ShoppingCart className="w-4 h-4 text-emerald-400" />
+                            <div className="w-4 h-4 relative">
+                                <Image
+                                    src="https://img.icons8.com/?size=100&id=SBrvJmrbcplL&format=png&color=000000"
+                                    alt="Order Volume"
+                                    fill
+                                    className="object-contain"
+                                    style={{ filter: 'invert(1)' }}
+                                    unoptimized
+                                />
+                            </div>
                             Order Volume
                         </h3>
                     </div>
@@ -260,12 +278,27 @@ export default function AdminDashboard() {
     )
 }
 
-function StatCard({ icon: Icon, label, value, sub, color, bg }: any) {
+import Image from 'next/image'
+
+function StatCard({ icon: Icon, imgSrc, label, value, sub, color, bg }: any) {
     return (
         <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-5 hover:border-white/10 transition group">
             <div className="flex items-center justify-between mb-3">
                 <div className={`w-9 h-9 ${bg} rounded-xl flex items-center justify-center`}>
-                    <Icon className={`w-4 h-4 ${color}`} />
+                    {imgSrc ? (
+                        <div className="w-5 h-5 relative">
+                            <Image
+                                src={imgSrc}
+                                alt={label}
+                                fill
+                                className="object-contain"
+                                style={{ filter: 'invert(1)' }}
+                                unoptimized
+                            />
+                        </div>
+                    ) : (
+                        <Icon className={`w-4 h-4 ${color}`} />
+                    )}
                 </div>
             </div>
             <p className="text-xl md:text-2xl font-bold tracking-tight">{value}</p>
@@ -275,10 +308,23 @@ function StatCard({ icon: Icon, label, value, sub, color, bg }: any) {
     )
 }
 
-function MiniCard({ icon: Icon, label, value, color }: any) {
+function MiniCard({ icon: Icon, imgSrc, label, value, color }: any) {
     return (
         <div className="bg-[#111111] border border-white/5 rounded-xl p-3 flex items-center gap-3">
-            <Icon className={`w-4 h-4 ${color} flex-shrink-0`} />
+            {imgSrc ? (
+                <div className="w-5 h-5 relative flex-shrink-0">
+                    <Image
+                        src={imgSrc}
+                        alt={label}
+                        fill
+                        className="object-contain"
+                        style={{ filter: 'invert(1)' }}
+                        unoptimized
+                    />
+                </div>
+            ) : (
+                <Icon className={`w-4 h-4 ${color} flex-shrink-0`} />
+            )}
             <div>
                 <p className="text-lg font-bold">{value}</p>
                 <p className="text-[11px] text-white/40">{label}</p>
