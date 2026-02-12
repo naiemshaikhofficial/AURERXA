@@ -264,14 +264,15 @@ export function CinematicFilter({
                                                             <img
                                                                 src={type.iconId.startsWith('/')
                                                                     ? type.iconId
-                                                                    : `https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${filters.type === type.value ? '000000' : 'FFFFFF'}`
+                                                                    : `https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${filters.type === type.value ? '000000' : 'D4AF37'}`
                                                                 }
                                                                 alt={type.label}
+                                                                style={type.iconId.startsWith('/') && filters.type !== type.value ? {
+                                                                    filter: 'invert(80%) sepia(34%) saturate(769%) hue-rotate(345deg) brightness(97%) contrast(87%)'
+                                                                } : {}}
                                                                 className={cn(
                                                                     "w-8 h-8 transition-all duration-500 group-hover:scale-110",
-                                                                    filters.type === type.value ? 'invert-0' : 'dark:invert-0 invert',
-                                                                    type.iconId.startsWith('/') && (filters.type !== type.value && "opacity-60")
-
+                                                                    filters.type === type.value ? 'invert-0' : '',
                                                                 )}
                                                             />
                                                             <span className="text-[10px] uppercase tracking-[0.2em]">{type.label}</span>
