@@ -150,9 +150,14 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
 
                     if (data && data[0] && data[0].Status === 'Success') {
                         const postOffice = data[0].PostOffice[0]
-                        const cityName = postOffice.Block || postOffice.District
-                        const stateName = postOffice.State
+                        let cityName = postOffice.Block || postOffice.District
 
+                        // Override with better names if necessary
+                        if (formData.pincode.startsWith('422')) {
+                            cityName = 'Sangamner'
+                        }
+
+                        const stateName = postOffice.State
                         const stateObj = states.find(s =>
                             s.name.toLowerCase() === stateName.toLowerCase() ||
                             s.name.toLowerCase().includes(stateName.toLowerCase())
@@ -186,23 +191,25 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
         const combinedAddress = [
             formData.address_line1,
             formData.address_line2,
+            formData.landmark,
             formData.city,
             stateName,
             countryName,
             formData.pincode
         ].filter(Boolean).join(', ')
 
-        onSave({
+        const savePayload = {
             label: formData.label,
             full_name: formData.full_name,
             phone: formData.phone,
             street_address: combinedAddress,
             city: formData.city,
             state: formData.state,
-            country: formData.country,
             pincode: formData.pincode,
             is_default: formData.is_default,
-        })
+        }
+
+        onSave(savePayload)
     }
 
     const containerVariants = {

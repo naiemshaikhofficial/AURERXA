@@ -614,7 +614,7 @@ export async function getAddresses() {
 
   const { data, error } = await client
     .from('addresses')
-    .select('id, label, full_name, phone, street_address, city, state, country, pincode, is_default')
+    .select('id, label, full_name, phone, street_address, city, state, pincode, is_default')
     .eq('user_id', user.id)
     .order('is_default', { ascending: false })
     .order('created_at', { ascending: false })
@@ -630,7 +630,6 @@ export async function addAddress(addressData: {
   street_address: string
   city: string
   state: string
-  country: string
   pincode: string
   is_default?: boolean
 }) {
@@ -661,7 +660,17 @@ export async function addAddress(addressData: {
 
   const { error } = await client
     .from('addresses')
-    .insert({ ...addressData, user_id: user.id })
+    .insert({
+      label: addressData.label,
+      full_name: addressData.full_name,
+      phone: addressData.phone,
+      street_address: addressData.street_address,
+      city: addressData.city,
+      state: addressData.state,
+      pincode: addressData.pincode,
+      is_default: addressData.is_default,
+      user_id: user.id
+    })
 
   if (error) {
     console.error('Add address error:', error)
@@ -679,7 +688,6 @@ export async function updateAddress(addressId: string, addressData: {
   street_address?: string
   city?: string
   state?: string
-  country?: string
   pincode?: string
   is_default?: boolean
 }) {
@@ -697,7 +705,17 @@ export async function updateAddress(addressId: string, addressData: {
 
   const { error } = await client
     .from('addresses')
-    .update({ ...addressData, updated_at: new Date().toISOString() })
+    .update({
+      label: addressData.label,
+      full_name: addressData.full_name,
+      phone: addressData.phone,
+      street_address: addressData.street_address,
+      city: addressData.city,
+      state: addressData.state,
+      pincode: addressData.pincode,
+      is_default: addressData.is_default,
+      updated_at: new Date().toISOString()
+    })
     .eq('id', addressId)
     .eq('user_id', user.id)
 
@@ -1504,17 +1522,26 @@ export async function checkDeliveryAvailability(pincode: string) {
       }
     }
 
-    // Fallback location mapping
+    // Fallback location mapping with 3-digit precision
     const getRegionName = (pin: string) => {
-      const p = pin.substring(0, 2)
+      const p2 = pin.substring(0, 2)
+      const p3 = pin.substring(0, 3)
       const mappings: Record<string, string> = {
+        '422': 'Sangamner', '411': 'Pune', '400': 'Mumbai', '560': 'Bangalore',
+        '600': 'Chennai', '700': 'Kolkata', '500': 'Hyderabad', '380': 'Ahmedabad',
+        '395': 'Surat', '110': 'Delhi', '122': 'Gurgaon', '201': 'Noida',
+        '302': 'Jaipur', '520': 'Vijayawada', '440': 'Nagpur',
+        '452': 'Indore', '462': 'Bhopal', '641': 'Coimbatore', '682': 'Kochi'
+      }
+
+      if (mappings[p3]) return mappings[p3]
+
+      const p2Mappings: Record<string, string> = {
         '11': 'Delhi', '40': 'Mumbai', '41': 'Pune', '56': 'Bangalore',
         '60': 'Chennai', '70': 'Kolkata', '50': 'Hyderabad', '38': 'Ahmedabad',
-        '39': 'Surat', '42': 'Sangamner/Nashik', '12': 'Gurgaon', '20': 'Noida',
-        '30': 'Jaipur', '52': 'Vijayawada', '80': 'Bangalore', '44': 'Nagpur',
-        '45': 'Indore', '46': 'Bhopal', '64': 'Coimbatore', '68': 'Kochi'
+        '39': 'Surat', '42': 'Nashik/Sangamner', '12': 'Gurgaon', '20': 'Noida'
       }
-      return mappings[p] || ''
+      return p2Mappings[p2] || ''
     }
 
     // Try Delhivery API first
