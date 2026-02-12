@@ -1504,6 +1504,19 @@ export async function checkDeliveryAvailability(pincode: string) {
       }
     }
 
+    // Fallback location mapping
+    const getRegionName = (pin: string) => {
+      const p = pin.substring(0, 2)
+      const mappings: Record<string, string> = {
+        '11': 'Delhi', '40': 'Mumbai', '41': 'Pune', '56': 'Bangalore',
+        '60': 'Chennai', '70': 'Kolkata', '50': 'Hyderabad', '38': 'Ahmedabad',
+        '39': 'Surat', '42': 'Sangamner/Nashik', '12': 'Gurgaon', '20': 'Noida',
+        '30': 'Jaipur', '52': 'Vijayawada', '80': 'Bangalore', '44': 'Nagpur',
+        '45': 'Indore', '46': 'Bhopal', '64': 'Coimbatore', '68': 'Kochi'
+      }
+      return mappings[p] || ''
+    }
+
     // Try Delhivery API first
     let delhiveryData: DelhiveryPincodeResponse | null = null
     let codAvailable = true
@@ -1562,6 +1575,26 @@ export async function checkDeliveryAvailability(pincode: string) {
         console.warn('Delhivery API error, using fallback:', apiError)
         // Continue with fallback logic
       }
+    }
+
+    // Secondary local fallback if no location info yet
+    if (!district || !state) {
+      try {
+        const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, { next: { revalidate: 3600 } })
+        const data = await res.json()
+        if (data && data[0] && data[0].Status === 'Success') {
+          const postOffice = data[0].PostOffice[0]
+          district = postOffice.District
+          state = postOffice.State
+        }
+      } catch (e) {
+        console.warn('Public Pincode API fallback failed')
+      }
+    }
+
+    // Use prefix-based city name as last resort
+    if (!district) {
+      district = getRegionName(pincode)
     }
 
     // Determine delivery zone and time
@@ -1638,7 +1671,7 @@ export async function checkDeliveryAvailability(pincode: string) {
       codAvailable,
       prepaidAvailable,
       isODA,
-      location: district && state ? `${district}, ${state}` : 'India',
+      location: district ? (state ? `${district}, ${state}` : district) : 'India',
       message: isODA
         ? 'Extended Delivery Area (Remote)'
         : zone === 'metro'
