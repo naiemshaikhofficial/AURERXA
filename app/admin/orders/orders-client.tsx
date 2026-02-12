@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { updateOrderStatus, exportOrdersCsv, deleteOrder } from '../actions'
+import { cn } from '@/lib/utils'
+import { updateOrderStatus, exportOrdersCsv, deleteOrder, getShipmentLabel } from '../actions'
+import { getOrderTracking } from '../../actions'
 import {
     Search, Filter, ChevronDown, Package, MapPin, CreditCard,
     Truck, Clock, CheckCircle, XCircle, X, Download, User as UserIcon, Trash2, ShieldAlert, Copy, Check, Phone
@@ -31,12 +33,44 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
     const [trackingInput, setTrackingInput] = useState('')
     const [isDeleting, setIsDeleting] = useState(false)
     const [copied, setCopied] = useState(false)
+    const [trackingData, setTrackingData] = useState<any>(null)
+    const [loadingTracking, setLoadingTracking] = useState(false)
+    const [labelUrl, setLabelUrl] = useState<string | null>(null)
 
     // Sync Props when they change (Server Refetch)
     useEffect(() => {
         setOrders(initialOrders)
+        if (selectedOrder) {
+            const updated = (initialOrders || []).find((o: any) => o.id === selectedOrder.id)
+            if (updated) setSelectedOrder(updated)
+        }
     }, [initialOrders])
 
+    // Fetch tracking and label when order is selected
+    useEffect(() => {
+        if (selectedOrder?.tracking_number) {
+            fetchTracking(selectedOrder.tracking_number)
+            fetchLabel(selectedOrder.tracking_number)
+        } else {
+            setTrackingData(null)
+            setLabelUrl(null)
+        }
+    }, [selectedOrder])
+
+    const fetchTracking = async (awb: string) => {
+        setLoadingTracking(true)
+        try {
+            const res = await getOrderTracking(awb)
+            if (res.success) setTrackingData(res)
+        } finally {
+            setLoadingTracking(false)
+        }
+    }
+
+    const fetchLabel = async (awb: string) => {
+        const url = await getShipmentLabel(awb)
+        setLabelUrl(url)
+    }
     // URL State Helpers
     const currentStatus = searchParams.get('status') || 'all'
     const currentSearch = searchParams.get('search') || ''
@@ -261,8 +295,25 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
                     <div className="absolute right-0 top-0 h-full w-full max-w-lg bg-[#111111] border-l border-white/5 overflow-y-auto animate-in slide-in-from-right-full duration-300">
                         <div className="sticky top-0 bg-[#111111]/95 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between z-10">
-                            <h3 className="text-lg font-semibold text-[#D4AF37]">#{selectedOrder.order_number}</h3>
-                            <button onClick={() => setSelectedOrder(null)} className="text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
+                            <div>
+                                <h3 className="text-lg font-semibold text-[#D4AF37]">#{selectedOrder.order_number}</h3>
+                                <p className="text-[10px] text-white/30 uppercase tracking-widest">{new Date(selectedOrder.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {labelUrl && (
+                                    <a
+                                        href={labelUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="px-3 py-1.5 bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37]/20 border border-[#D4AF37]/20 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
+                                    >
+                                        <Download className="w-3 h-3" /> Label
+                                    </a>
+                                )}
+                                <button onClick={() => setSelectedOrder(null)} className="text-white/40 hover:text-white p-2 hover:bg-white/5 rounded-full transition-colors">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
                         <div className="p-4 space-y-5">
                             {/* Status */}
@@ -283,11 +334,75 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                 </div>
                             </div>
 
-                            {/* Tracking */}
+                            {/* Tracking Timeline (NEW) */}
+                            {selectedOrder.tracking_number && (
+                                <div className="bg-white/5 rounded-xl p-4 space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xs text-white/40 flex items-center gap-1 uppercase tracking-widest px-1">
+                                            <Package className="w-3 h-3 text-[#D4AF37]" /> Tracking Timeline
+                                        </p>
+                                        <span className="text-[10px] font-mono text-[#D4AF37]/60 px-2 py-0.5 bg-[#D4AF37]/5 rounded">{selectedOrder.tracking_number}</span>
+                                    </div>
+
+                                    {loadingTracking ? (
+                                        <div className="flex justify-center py-6"><div className="w-5 h-5 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" /></div>
+                                    ) : trackingData ? (
+                                        <div className="space-y-5">
+                                            <div className="bg-gradient-to-br from-[#D4AF37]/10 to-transparent border border-[#D4AF37]/10 rounded-xl p-4">
+                                                <p className="text-[10px] text-white/40 uppercase mb-1 flex items-center gap-2">
+                                                    <CreditCard className="w-3 h-3 opacity-50" /> Latest Milestone
+                                                </p>
+                                                <p className="text-sm font-bold text-[#D4AF37] uppercase tracking-wide">{trackingData.status}</p>
+                                                {trackingData.estimatedDelivery && (
+                                                    <p className="text-[10px] text-white/30 mt-2 italic flex items-center gap-1">
+                                                        <Clock className="w-3 h-3 opacity-40" /> Est. Arrival: {new Date(trackingData.estimatedDelivery).toLocaleDateString()}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-px before:bg-white/10">
+                                                {trackingData.scans?.slice(0, 5).map((scan: any, i: number) => (
+                                                    <div key={i} className="relative group">
+                                                        <div className={cn(
+                                                            "absolute -left-[23px] top-1 w-2.5 h-2.5 rounded-full border-2 border-[#121212] transition-colors",
+                                                            i === 0 ? "bg-[#D4AF37] ring-4 ring-[#D4AF37]/20" : "bg-white/20"
+                                                        )} />
+                                                        <div className="flex flex-col gap-1">
+                                                            <p className={cn("text-xs font-semibold uppercase tracking-wide transition-colors", i === 0 ? "text-white/90" : "text-white/40 group-hover:text-white/60")}>
+                                                                {scan.status}
+                                                            </p>
+                                                            <div className="flex items-center gap-2 text-[10px] text-white/20">
+                                                                <span className="flex items-center gap-1"><MapPin className="w-2.5 h-2.5 opacity-40" /> {scan.location}</span>
+                                                                <span>•</span>
+                                                                <span className="flex items-center gap-1"><Clock className="w-2.5 h-2.5 opacity-40" /> {new Date(scan.timestamp).toLocaleString()}</span>
+                                                            </div>
+                                                            {scan.instructions && <p className="text-[9px] text-[#D4AF37]/40 italic mt-0.5 line-clamp-1">{scan.instructions}</p>}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-6 bg-white/2 rounded-xl border border-white/5">
+                                            <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] italic">Awaiting carrier updates</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Manual Tracking Link (Fallback/Non-Auto) */}
                             <div className="bg-white/5 rounded-xl p-4">
-                                <p className="text-xs text-white/40 mb-2 flex items-center gap-1"><Truck className="w-3 h-3" /> Tracking</p>
+                                <p className="text-xs text-white/40 mb-2 flex items-center gap-1"><Truck className="w-3 h-3" /> External Tracking</p>
                                 {selectedOrder.tracking_number ? (
-                                    <p className="text-sm text-white/70 font-mono">{selectedOrder.tracking_number}</p>
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm text-white/70 font-mono">{selectedOrder.tracking_number}</p>
+                                        <button
+                                            onClick={() => copyToClipboard(selectedOrder.tracking_number)}
+                                            className="text-[10px] text-[#D4AF37] uppercase font-bold"
+                                        >
+                                            {copied ? 'Copied' : 'Copy'}
+                                        </button>
+                                    </div>
                                 ) : (
                                     <div className="flex gap-2">
                                         <input

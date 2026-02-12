@@ -1948,6 +1948,124 @@ export async function calculateShippingRate(pincode: string, cartItems: any[], i
   }
 }
 
+export async function createDelhiveryShipment(orderId: string) {
+  try {
+    const client = await getAuthClient()
+    const delhiveryToken = process.env.DELHIVERY_API_TOKEN
+    const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
+
+    if (!delhiveryToken) {
+      return { success: false, error: 'Delhivery token not configured' }
+    }
+
+    // 1. Fetch Order and items
+    const { data: order, error: orderError } = await client
+      .from('orders')
+      .select('*, order_items(*)')
+      .eq('id', orderId)
+      .single()
+
+    if (orderError || !order) return { success: false, error: 'Order not found' }
+    if (order.tracking_number) return { success: true, trackingNumber: order.tracking_number, message: 'Shipment already exists' }
+
+    const addr = order.shipping_address
+    const items = order.order_items
+
+    // Prepare Delhivery Payload
+    const payload = {
+      shipments: [
+        {
+          add: addr.street_address,
+          address_type: "home",
+          phone: addr.phone,
+          payment_mode: order.payment_method === 'cod' ? "COD" : "Pre-paid",
+          name: addr.full_name || addr.name,
+          pincode: addr.pincode,
+          order: order.order_number,
+          cod_amount: order.payment_method === 'cod' ? order.total : 0,
+          total_amount: order.total,
+          quantity: items.reduce((s: number, i: any) => s + i.quantity, 0),
+          waybill: "", // Let Delhivery generate
+          client: "AURERXA",
+          seller_name: "AURERXA JEWELS",
+          shipping_mode: "Surface" // Default
+        }
+      ],
+      pickup_location: {
+        name: "AURERXA SANGAMNER",
+        add: "AURERXA JEWELS, Main Road, Sangamner",
+        phone: "9123456789", // Replace with real business phone
+        pincode: "422605"
+      }
+    }
+
+    const response = await fetch(`${delhiveryUrl}/api/cgm/packages/json/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${delhiveryToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const data = await response.json()
+
+    if (data.success && data.packages && data.packages.length > 0) {
+      const pkg = data.packages[0]
+      const waybill = pkg.waybill
+
+      // Update Order with tracking number
+      await client
+        .from('orders')
+        .update({
+          tracking_number: waybill,
+          status: 'packed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId)
+
+      return { success: true, trackingNumber: waybill }
+    }
+
+    return { success: false, error: data.rmk || 'Shipment creation failed' }
+
+  } catch (error: any) {
+    console.error('Delhivery Shipment Error:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function requestDelhiveryPickup(pickupDate?: string) {
+  try {
+    const delhiveryToken = process.env.DELHIVERY_API_TOKEN
+    const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
+
+    if (!delhiveryToken) return { success: false, error: 'Unauthorized' }
+
+    const payload = {
+      pickup_time: "14:00:00",
+      pickup_date: pickupDate || new Date().toISOString().split('T')[0],
+      pickup_location: "AURERXA SANGAMNER",
+      expected_package_count: 1 // Default
+    }
+
+    const response = await fetch(`${delhiveryUrl}/api/fm/request/pickup/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${delhiveryToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const data = await response.json()
+    return { success: data.incoming_pickup_id ? true : false, data }
+
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
 export async function getOrderTracking(trackingNumber: string) {
   try {
     const delhiveryToken = process.env.DELHIVERY_API_TOKEN

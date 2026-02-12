@@ -2,6 +2,7 @@
 
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { createDelhiveryShipment } from '../actions'
 
 async function getAuthClient() {
     const cookieStore = await cookies()
@@ -434,6 +435,17 @@ export async function updateOrderStatus(orderId: string, status: string, trackin
 
     const updates: any = { status, updated_at: new Date().toISOString() }
     if (trackingNumber) updates.tracking_number = trackingNumber
+
+    // Automation: Create Delhivery Shipment when status is 'packed'
+    if (status === 'packed') {
+        const shipment = await createDelhiveryShipment(orderId)
+        if (!shipment.success) {
+            console.error('Auto shipment creation failed:', shipment.error)
+            // We still update the status, but log the error
+        } else if (shipment.trackingNumber) {
+            updates.tracking_number = shipment.trackingNumber
+        }
+    }
 
     const { error } = await client.from('orders').update(updates).eq('id', orderId)
     if (error) return { success: false, error: error.message }
@@ -949,4 +961,21 @@ export async function exportOrdersCsv(dateFrom?: string, dateTo?: string) {
     ).join('\n')
 
     return headers + rows
+}
+
+export async function getShipmentLabel(waybill: string) {
+    const delhiveryToken = process.env.DELHIVERY_API_TOKEN
+    const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
+
+    if (!delhiveryToken) return null
+
+    try {
+        const response = await fetch(`${delhiveryUrl}/api/p/packing_slip?waybills=${waybill}`, {
+            headers: { 'Authorization': `Token ${delhiveryToken}` }
+        })
+        const data = await response.json()
+        return data.packages?.[0]?.pdf_url || null
+    } catch (e) {
+        return null
+    }
 }
