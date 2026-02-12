@@ -1524,6 +1524,7 @@ export async function checkDeliveryAvailability(pincode: string) {
     let isODA = false // Out of Delivery Area
     let district = ''
     let state = ''
+    let locality = ''
 
     const delhiveryToken = process.env.DELHIVERY_API_TOKEN
     const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
@@ -1551,6 +1552,8 @@ export async function checkDeliveryAvailability(pincode: string) {
             isODA = pincodeInfo.is_oda === 'Y'
             district = pincodeInfo.district
             state = pincodeInfo.state_code
+            // Some Delhivery responses might have city or locality in other fields, 
+            // but we'll prioritize the dedicated pincode API for the "exact" name.
 
             // If pincode not serviceable at all
             if (!prepaidAvailable && !codAvailable) {
@@ -1577,13 +1580,14 @@ export async function checkDeliveryAvailability(pincode: string) {
       }
     }
 
-    // Secondary local fallback if no location info yet
-    if (!district || !state) {
+    // Secondary fallback for exact locality name
+    if (!locality || !district) {
       try {
         const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, { next: { revalidate: 3600 } })
         const data = await res.json()
         if (data && data[0] && data[0].Status === 'Success') {
           const postOffice = data[0].PostOffice[0]
+          locality = postOffice.Name
           district = postOffice.District
           state = postOffice.State
         }
@@ -1592,9 +1596,19 @@ export async function checkDeliveryAvailability(pincode: string) {
       }
     }
 
-    // Use prefix-based city name as last resort
-    if (!district) {
-      district = getRegionName(pincode)
+    // Determine the most specific display name
+    let locationDisplay = 'India'
+    if (locality && district) {
+      if (locality.toLowerCase() === district.toLowerCase()) {
+        locationDisplay = district + (state ? `, ${state}` : '')
+      } else {
+        locationDisplay = `${locality}, ${district}`
+      }
+    } else if (district) {
+      locationDisplay = district + (state ? `, ${state}` : '')
+    } else {
+      const fallbackRegion = getRegionName(pincode)
+      locationDisplay = fallbackRegion || 'India'
     }
 
     // Determine delivery zone and time
@@ -1671,7 +1685,7 @@ export async function checkDeliveryAvailability(pincode: string) {
       codAvailable,
       prepaidAvailable,
       isODA,
-      location: district ? (state ? `${district}, ${state}` : district) : 'India',
+      location: locationDisplay.toUpperCase(),
       message: isODA
         ? 'Extended Delivery Area (Remote)'
         : zone === 'metro'
