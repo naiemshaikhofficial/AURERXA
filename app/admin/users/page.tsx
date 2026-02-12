@@ -5,7 +5,8 @@ import { UsersSkeleton } from './users-skeleton'
 
 export const dynamic = 'force-dynamic'
 
-export default function UsersPage({ searchParams }: { searchParams: { search?: string, page?: string } }) {
+export default async function UsersPage(props: { searchParams: Promise<{ search?: string, page?: string }> }) {
+    const searchParams = await props.searchParams
     return (
         <Suspense fallback={<UsersSkeleton />}>
             <UsersContent searchParams={searchParams} />

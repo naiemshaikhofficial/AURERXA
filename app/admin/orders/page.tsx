@@ -5,7 +5,8 @@ import { OrdersSkeleton } from './orders-skeleton'
 
 export const dynamic = 'force-dynamic'
 
-export default function OrdersPage({ searchParams }: { searchParams: { status?: string, page?: string, search?: string } }) {
+export default async function OrdersPage(props: { searchParams: Promise<{ status?: string, page?: string, search?: string }> }) {
+    const searchParams = await props.searchParams
     return (
         <Suspense fallback={<OrdersSkeleton />}>
             <OrdersContent searchParams={searchParams} />

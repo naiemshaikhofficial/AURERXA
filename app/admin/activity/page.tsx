@@ -5,7 +5,8 @@ import { ActivitySkeleton } from './activity-skeleton'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ActivityPage({ searchParams }: { searchParams: { entity_type?: string, search?: string, dateFrom?: string, dateTo?: string, page?: string } }) {
+export default async function ActivityPage(props: { searchParams: Promise<{ entity_type?: string, search?: string, dateFrom?: string, dateTo?: string, page?: string }> }) {
+    const searchParams = await props.searchParams
     const page = Number(searchParams.page) || 1
     const { entity_type, search, dateFrom, dateTo } = searchParams
 

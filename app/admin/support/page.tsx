@@ -5,7 +5,8 @@ import { SupportSkeleton } from './support-skeleton'
 
 export const dynamic = 'force-dynamic'
 
-export default async function SupportPage({ searchParams }: { searchParams: { tab?: string, search?: string } }) {
+export default async function SupportPage(props: { searchParams: Promise<{ tab?: string, search?: string }> }) {
+    const searchParams = await props.searchParams
     return (
         <Suspense fallback={<SupportSkeleton />}>
             <SupportContent searchParams={searchParams} />

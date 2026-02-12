@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { updateProductDetails, addNewProduct, deleteProduct } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Loader2, Plus, Trash2, Save, Image as ImageIcon, ExternalLink, Search } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,7 +13,7 @@ import { ImageUpload } from '@/components/admin/image-upload'
 import supabaseLoader from '@/lib/supabase-loader'
 import { useRouter } from 'next/navigation'
 
-export function ProductsClient({ initialProducts }: { initialProducts: any[] }) {
+export function ProductsClient({ initialProducts, initialCategories = [] }: { initialProducts: any[], initialCategories?: any[] }) {
     const [products, setProducts] = useState(initialProducts)
     const [editingProduct, setEditingProduct] = useState<any>(null)
     const [saving, setSaving] = useState(false)
@@ -188,10 +190,80 @@ export function ProductsClient({ initialProducts }: { initialProducts: any[] }) 
                                     <p className="text-xs text-white/40 mt-0.5">{editingProduct.name || 'Unnamed'}</p>
                                 </div>
                                 <div className="space-y-4">
-                                    <Input value={editingProduct.name} onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })} className="bg-white/5 border-white/10 rounded-xl" placeholder="Name" />
+                                    <Input value={editingProduct.name} onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })} className="bg-white/5 border-white/10 rounded-xl" placeholder="Product Name" />
+
+                                    <Textarea
+                                        value={editingProduct.description || ''}
+                                        onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
+                                        className="bg-white/5 border-white/10 rounded-xl min-h-[100px]"
+                                        placeholder="Product Description"
+                                    />
+
                                     <div className="grid grid-cols-2 gap-3">
-                                        <Input type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) })} className="bg-white/5 border-white/10 rounded-xl" placeholder="Price" />
-                                        <Input type="number" value={editingProduct.stock} onChange={(e) => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) })} className="bg-white/5 border-white/10 rounded-xl" placeholder="Stock" />
+                                        <Select
+                                            value={editingProduct.category_id}
+                                            onValueChange={(val) => setEditingProduct({ ...editingProduct, category_id: val })}
+                                        >
+                                            <SelectTrigger className="bg-white/5 border-white/10 rounded-xl">
+                                                <SelectValue placeholder="Select Category" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {initialCategories.map((cat: any) => (
+                                                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+
+                                        <Input
+                                            type="number"
+                                            value={editingProduct.price}
+                                            onChange={(e) => setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) })}
+                                            className="bg-white/5 border-white/10 rounded-xl"
+                                            placeholder="Price (₹)"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <Input
+                                            type="number"
+                                            value={editingProduct.stock}
+                                            onChange={(e) => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) })}
+                                            className="bg-white/5 border-white/10 rounded-xl"
+                                            placeholder="Stock Quantity"
+                                        />
+                                        <Input
+                                            value={editingProduct.video_url || ''}
+                                            onChange={(e) => setEditingProduct({ ...editingProduct, video_url: e.target.value })}
+                                            className="bg-white/5 border-white/10 rounded-xl"
+                                            placeholder="Video URL (Optional)"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-medium text-white/40 uppercase tracking-wider">Dimensions (cm)</label>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <Input
+                                                type="number"
+                                                value={editingProduct.dimensions_length || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_length: parseFloat(e.target.value) })}
+                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                placeholder="L"
+                                            />
+                                            <Input
+                                                type="number"
+                                                value={editingProduct.dimensions_width || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_width: parseFloat(e.target.value) })}
+                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                placeholder="W"
+                                            />
+                                            <Input
+                                                type="number"
+                                                value={editingProduct.dimensions_height || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_height: parseFloat(e.target.value) })}
+                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                placeholder="H"
+                                            />
+                                        </div>
                                     </div>
                                     <ImageUpload label="Main Image" initialUrl={editingProduct.image_url} onUploadComplete={(url) => setEditingProduct({ ...editingProduct, image_url: url })} />
 
