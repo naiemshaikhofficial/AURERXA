@@ -10,13 +10,14 @@ import { Button } from '@/components/ui/button'
 import { addToWishlist } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
-import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play } from 'lucide-react'
+import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play, Ruler } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 import supabaseLoader from '@/lib/supabase-loader'
 import { motion, AnimatePresence } from 'framer-motion'
 import { VTOModal } from '@/components/vto-modal'
 import { ProductCard } from '@/components/product-card'
+import { SizeGuide } from '@/components/size-guide'
 
 
 interface ProductClientProps {
@@ -255,6 +256,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const [message, setMessage] = useState<string | null>(null)
     const [selectedImage, setSelectedImage] = useState(0)
     const [isVTOOpen, setIsVTOOpen] = useState(false)
+    const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
 
     // Memoize image array to prevent re-calculations on every render
     const allImages = React.useMemo(() => {
@@ -577,32 +579,68 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                         </div>
 
                         {/* Delivery Check */}
-                        {/* Product Specifications Section */}
-                        {(product.dimensions_width || product.dimensions_height || product.dimensions_length) && (
-                            <div className="space-y-6 pt-6">
-                                <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/30">Dimensions</h3>
-                                <div className="grid grid-cols-3 gap-px bg-white/5 border border-white/5">
-                                    {product.dimensions_width && (
-                                        <div className="bg-neutral-950 p-4 text-center">
-                                            <p className="text-[8px] text-white/30 uppercase tracking-widest mb-1">Width</p>
-                                            <p className="text-sm font-serif italic text-white/80">{product.dimensions_width}{product.dimensions_unit || 'mm'}</p>
-                                        </div>
-                                    )}
-                                    {product.dimensions_height && (
-                                        <div className="bg-neutral-950 p-4 text-center">
-                                            <p className="text-[8px] text-white/30 uppercase tracking-widest mb-1">Height</p>
-                                            <p className="text-sm font-serif italic text-white/80">{product.dimensions_height}{product.dimensions_unit || 'mm'}</p>
-                                        </div>
-                                    )}
-                                    {product.dimensions_length && (
-                                        <div className="bg-neutral-950 p-4 text-center">
-                                            <p className="text-[8px] text-white/30 uppercase tracking-widest mb-1">Length</p>
-                                            <p className="text-sm font-serif italic text-white/80">{product.dimensions_length}{product.dimensions_unit || 'mm'}</p>
-                                        </div>
-                                    )}
+                        {/* Specifications Grid */}
+                        <div className="space-y-8 pb-12 pt-12 border-t border-white/5">
+                            <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-amber-500/60">Masterpiece Specifications</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                {product.purity && (
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Purity / Karat</p>
+                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{product.purity}</p>
+                                    </div>
+                                )}
+                                {product.weight_grams && (
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Net Weight</p>
+                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{product.weight_grams}g</p>
+                                    </div>
+                                )}
+                                {(product.dimensions_width || product.dimensions_height || product.dimensions_length) && (
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Dimensions</p>
+                                        <p className="text-xs md:text-sm font-serif italic text-white/80">
+                                            {[product.dimensions_length, product.dimensions_width, product.dimensions_height]
+                                                .filter(Boolean)
+                                                .join(' x ')
+                                            } {product.dimensions_unit || 'mm'}
+                                        </p>
+                                    </div>
+                                )}
+                                {product.gender && (
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Gender</p>
+                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{product.gender}</p>
+                                    </div>
+                                )}
+                                {product.sku && (
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Reference SKU</p>
+                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{product.sku}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Heritage & Craftsmanship */}
+                        <div className="space-y-6 py-12 border-t border-white/5">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="h-px w-8 bg-amber-500/40" />
+                                <span className="text-[9px] uppercase tracking-[0.4em] text-white/40">Heritage & Craftsmanship</span>
+                            </div>
+                            <p className="text-sm font-serif italic text-white/70 leading-relaxed font-light">
+                                Each Aurerxa creation is a testament to the timeless artistry of Indian jewelry making. This {product.name.toLowerCase()} is handcrafted by master artisans, blending ancestral techniques with contemporary luxury.
+                            </p>
+                            <div className="flex flex-wrap gap-8 pt-4">
+                                <div className="space-y-1">
+                                    <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Technique</p>
+                                    <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">Handmade Artisan</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Material</p>
+                                    <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">{product.purity || 'Fine Metals'}</p>
                                 </div>
                             </div>
-                        )}
+                        </div>
 
                         <DeliveryChecker productPrice={product.price} />
 
@@ -612,7 +650,16 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             {/* Sizes */}
                             {product.sizes && product.sizes.length > 0 && (
                                 <div className="space-y-4">
-                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 block mb-3">Select Size</span>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 block">Select Size</span>
+                                        <button
+                                            onClick={() => setIsSizeGuideOpen(true)}
+                                            className="text-[9px] uppercase tracking-widest text-amber-500/60 hover:text-amber-500 transition-colors flex items-center gap-2"
+                                        >
+                                            <Ruler className="w-3 h-3" />
+                                            Indian Size Guide
+                                        </button>
+                                    </div>
                                     <div className="flex flex-wrap gap-2">
                                         {product.sizes.map((size: string) => (
                                             <button
@@ -726,6 +773,17 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                 productImage={product.image_url}
                 productName={product.name}
             />
+
+            <AnimatePresence>
+                {isSizeGuideOpen && (
+                    <SizeGuide
+                        category={product.categories?.name}
+                        subCategory={product.sub_categories?.name}
+                        onClose={() => setIsSizeGuideOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
+
             <Footer />
         </div>
     )
