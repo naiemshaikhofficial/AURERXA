@@ -150,7 +150,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
 
                     if (data && data[0] && data[0].Status === 'Success') {
                         const postOffice = data[0].PostOffice[0]
-                        const cityName = postOffice.District
+                        const cityName = postOffice.Block || postOffice.District
                         const stateName = postOffice.State
 
                         const stateObj = states.find(s =>
