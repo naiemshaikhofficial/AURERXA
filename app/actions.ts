@@ -271,6 +271,13 @@ export async function deleteProduct(productId: string) {
   try {
     const client = await getAuthClient()
 
+    // Check role from admin_users
+    const { data: { user: authUser } } = await client.auth.getUser()
+    if (!authUser) return { success: false, error: 'Unauthorized' }
+
+    const { data: admin } = await client.from('admin_users').select('role').eq('id', authUser.id).single()
+    if (!admin || admin.role === 'staff') return { success: false, error: 'Unauthorized. Staff cannot delete products.' }
+
     // Get product name for logging
     const { data: product } = await client.from('products').select('name').eq('id', productId).single()
 

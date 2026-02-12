@@ -32,7 +32,14 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
         setEditingProduct({
             ...product,
             images: Array.isArray(rawImages) ? rawImages : [],
-            dimensions_unit: product.dimensions_unit || 'mm'
+            dimensions_unit: product.dimensions_unit || 'mm',
+            featured: !!product.featured,
+            bestseller: !!product.bestseller,
+            gender: product.gender || 'Unisex',
+            sizes: Array.isArray(product.sizes) ? product.sizes : [],
+            weight_grams: product.weight_grams || 0,
+            purity: product.purity || '',
+            slug: product.slug || product.name.toLowerCase().replace(/ /g, '-'),
         })
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -52,14 +59,25 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
         let result;
         if (editingProduct.id) {
             result = await updateProductDetails(editingProduct.id, {
+                name: editingProduct.name,
+                description: editingProduct.description,
                 image_url: editingProduct.image_url,
                 images: cleanedImages,
                 dimensions_width: editingProduct.dimensions_width,
                 dimensions_height: editingProduct.dimensions_height,
                 dimensions_length: editingProduct.dimensions_length,
+                dimensions_unit: editingProduct.dimensions_unit,
                 video_url: editingProduct.video_url,
                 price: editingProduct.price,
                 stock: editingProduct.stock,
+                category_id: editingProduct.category_id,
+                featured: editingProduct.featured,
+                bestseller: editingProduct.bestseller,
+                weight_grams: editingProduct.weight_grams,
+                purity: editingProduct.purity,
+                gender: editingProduct.gender,
+                sizes: editingProduct.sizes,
+                slug: editingProduct.slug,
             })
         } else {
             result = await addNewProduct({
@@ -69,9 +87,19 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                 images: cleanedImages,
                 category_id: editingProduct.category_id,
                 description: editingProduct.description || 'New artisanal release.',
-                slug: editingProduct.name.toLowerCase().replace(/ /g, '-'),
+                slug: editingProduct.slug || editingProduct.name.toLowerCase().replace(/ /g, '-'),
                 video_url: editingProduct.video_url,
+                dimensions_width: editingProduct.dimensions_width,
+                dimensions_height: editingProduct.dimensions_height,
+                dimensions_length: editingProduct.dimensions_length,
+                dimensions_unit: editingProduct.dimensions_unit || 'mm',
                 stock: editingProduct.stock || 0,
+                featured: editingProduct.featured || false,
+                bestseller: editingProduct.bestseller || false,
+                weight_grams: editingProduct.weight_grams || 0,
+                purity: editingProduct.purity || '',
+                gender: editingProduct.gender || 'Unisex',
+                sizes: editingProduct.sizes || [],
             })
         }
 
@@ -128,7 +156,23 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                             Test Broadcast
                         </Button>
                         <Button
-                            onClick={() => setEditingProduct({ name: '', price: 0, image_url: '', images: [], category_id: products[0]?.category_id, stock: 0, description: '' })}
+                            onClick={() => setEditingProduct({
+                                name: '',
+                                price: 0,
+                                image_url: '',
+                                images: [],
+                                category_id: products[0]?.category_id,
+                                stock: 0,
+                                description: '',
+                                dimensions_unit: 'mm',
+                                featured: false,
+                                bestseller: false,
+                                gender: 'Unisex',
+                                sizes: [],
+                                weight_grams: 0,
+                                purity: '',
+                                slug: ''
+                            })}
                             className="bg-[#D4AF37] text-black hover:bg-[#D4AF37]/80 text-xs px-4 h-10 rounded-xl"
                         >
                             <Plus className="w-4 h-4 mr-2" /> New Product
@@ -178,7 +222,9 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                     <div className="flex items-center gap-2 flex-shrink-0">
                                         <button onClick={() => startEditing(product)} className="px-3 py-1.5 text-xs text-[#D4AF37] bg-[#D4AF37]/10 rounded-lg hover:bg-[#D4AF37]/20 transition">Edit</button>
                                         <Link href={`/products/${product.slug}`} target="_blank" className="p-1.5 text-white/20 hover:text-white transition"><ExternalLink className="w-4 h-4" /></Link>
-                                        <button onClick={() => handleDelete(product)} disabled={deleting === product.id} className="p-1.5 text-white/20 hover:text-red-400 transition"><Trash2 className="w-4 h-4" /></button>
+                                        {adminRole === 'main_admin' && (
+                                            <button onClick={() => handleDelete(product)} disabled={deleting === product.id} className="p-1.5 text-white/20 hover:text-red-400 transition"><Trash2 className="w-4 h-4" /></button>
+                                        )}
                                     </div>
                                 </div>
                             ))
@@ -208,8 +254,8 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                             value={editingProduct.category_id}
                                             onValueChange={(val) => setEditingProduct({ ...editingProduct, category_id: val })}
                                         >
-                                            <SelectTrigger className="bg-white/5 border-white/10 rounded-xl">
-                                                <SelectValue placeholder="Select Category" />
+                                            <SelectTrigger className="bg-white/5 border-white/10 rounded-xl text-xs md:text-sm">
+                                                <SelectValue placeholder="Category" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {initialCategories.map((cat: any) => (
@@ -217,56 +263,173 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                                 ))}
                                             </SelectContent>
                                         </Select>
-
-                                        <Input
-                                            type="number"
-                                            value={editingProduct.price}
-                                            onChange={(e) => setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) })}
-                                            className="bg-white/5 border-white/10 rounded-xl"
-                                            placeholder="Price (₹)"
-                                        />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] text-white/20 uppercase ml-1">Price (₹)</p>
+                                            <Input
+                                                type="number"
+                                                value={editingProduct.price || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, price: parseFloat(e.target.value) || 0 })}
+                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                placeholder="Price"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] text-white/20 uppercase ml-1">Stock</p>
+                                            <Input
+                                                type="number"
+                                                value={editingProduct.stock || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) || 0 })}
+                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                placeholder="Stock"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] text-white/20 uppercase ml-1">Gender</p>
+                                            <Select
+                                                value={editingProduct.gender || 'Unisex'}
+                                                onValueChange={(val) => setEditingProduct({ ...editingProduct, gender: val })}
+                                            >
+                                                <SelectTrigger className="bg-white/5 border-white/10 rounded-xl text-xs md:text-sm">
+                                                    <SelectValue placeholder="Gender" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Unisex">Unisex</SelectItem>
+                                                    <SelectItem value="Men">Men</SelectItem>
+                                                    <SelectItem value="Women">Women</SelectItem>
+                                                    <SelectItem value="Kids">Kids</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] text-white/20 uppercase ml-1">Weight (g)</p>
+                                            <Input
+                                                type="number"
+                                                value={editingProduct.weight_grams || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, weight_grams: parseFloat(e.target.value) || 0 })}
+                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                placeholder="Weight"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] text-white/20 uppercase ml-1">Purity</p>
+                                            <Input
+                                                value={editingProduct.purity || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, purity: e.target.value })}
+                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                placeholder="e.g. 22K Gold"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] text-white/20 uppercase ml-1">Slug</p>
+                                            <Input
+                                                value={editingProduct.slug || ''}
+                                                onChange={(e) => setEditingProduct({ ...editingProduct, slug: e.target.value })}
+                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                placeholder="slug"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] text-white/20 uppercase ml-1">Available Sizes (Comma separated)</p>
                                         <Input
-                                            type="number"
-                                            value={editingProduct.stock}
-                                            onChange={(e) => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) })}
+                                            value={Array.isArray(editingProduct.sizes) ? editingProduct.sizes.join(', ') : (editingProduct.sizes || '')}
+                                            onChange={(e) => setEditingProduct({ ...editingProduct, sizes: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
                                             className="bg-white/5 border-white/10 rounded-xl"
-                                            placeholder="Stock Quantity"
+                                            placeholder="e.g. S, M, L"
                                         />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] text-white/20 uppercase ml-1">Video (YT URL)</p>
                                         <Input
                                             value={editingProduct.video_url || ''}
                                             onChange={(e) => setEditingProduct({ ...editingProduct, video_url: e.target.value })}
                                             className="bg-white/5 border-white/10 rounded-xl"
-                                            placeholder="Video URL (Optional)"
+                                            placeholder="https://youtube.com/..."
                                         />
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-medium text-white/40 uppercase tracking-wider">Dimensions (cm)</label>
-                                        <div className="grid grid-cols-3 gap-3">
-                                            <Input
-                                                type="number"
-                                                value={editingProduct.dimensions_length || ''}
-                                                onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_length: parseFloat(e.target.value) })}
-                                                className="bg-white/5 border-white/10 rounded-xl"
-                                                placeholder="L"
-                                            />
-                                            <Input
-                                                type="number"
-                                                value={editingProduct.dimensions_width || ''}
-                                                onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_width: parseFloat(e.target.value) })}
-                                                className="bg-white/5 border-white/10 rounded-xl"
-                                                placeholder="W"
-                                            />
-                                            <Input
-                                                type="number"
-                                                value={editingProduct.dimensions_height || ''}
-                                                onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_height: parseFloat(e.target.value) })}
-                                                className="bg-white/5 border-white/10 rounded-xl"
-                                                placeholder="H"
-                                            />
+                                    <div className="flex gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">
+                                        <div className="flex-1 space-y-2">
+                                            <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Visibility</p>
+                                            <div className="flex items-center gap-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditingProduct({ ...editingProduct, featured: !editingProduct.featured })}
+                                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${editingProduct.featured ? 'bg-amber-500/20 text-amber-500 border-amber-500/30' : 'bg-white/5 text-white/30 border-white/5'}`}
+                                                >
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${editingProduct.featured ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-white/10'}`} />
+                                                    Featured
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setEditingProduct({ ...editingProduct, bestseller: !editingProduct.bestseller })}
+                                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${editingProduct.bestseller ? 'bg-emerald-500/20 text-emerald-500 border-emerald-500/30' : 'bg-white/5 text-white/30 border-white/5'}`}
+                                                >
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${editingProduct.bestseller ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-white/10'}`} />
+                                                    Bestseller
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3 p-3 bg-white/5 border border-white/10 rounded-xl">
+                                        <div className="flex items-center justify-between">
+                                            <label className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Dimensions</label>
+                                            <div className="flex bg-black/40 p-1 rounded-lg border border-white/5">
+                                                {['mm', 'cm'].map((u) => (
+                                                    <button
+                                                        key={u}
+                                                        type="button"
+                                                        onClick={() => setEditingProduct({ ...editingProduct, dimensions_unit: u })}
+                                                        className={`px-3 py-1 text-[9px] font-bold rounded-md transition-all ${editingProduct.dimensions_unit === u ? 'bg-[#D4AF37] text-black shadow-lg shadow-[#D4AF37]/20' : 'text-white/40 hover:text-white'}`}
+                                                    >
+                                                        {u.toUpperCase()}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            <div className="space-y-1">
+                                                <p className="text-[9px] text-white/20 text-center uppercase">Length</p>
+                                                <Input
+                                                    type="number"
+                                                    value={editingProduct.dimensions_length || ''}
+                                                    onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_length: parseFloat(e.target.value) || 0 })}
+                                                    className="bg-transparent border-white/5 rounded-lg text-center h-8 text-xs"
+                                                    placeholder="L"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[9px] text-white/20 text-center uppercase">Width</p>
+                                                <Input
+                                                    type="number"
+                                                    value={editingProduct.dimensions_width || ''}
+                                                    onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_width: parseFloat(e.target.value) || 0 })}
+                                                    className="bg-transparent border-white/5 rounded-lg text-center h-8 text-xs"
+                                                    placeholder="W"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[9px] text-white/20 text-center uppercase">Height</p>
+                                                <Input
+                                                    type="number"
+                                                    value={editingProduct.dimensions_height || ''}
+                                                    onChange={(e) => setEditingProduct({ ...editingProduct, dimensions_height: parseFloat(e.target.value) || 0 })}
+                                                    className="bg-transparent border-white/5 rounded-lg text-center h-8 text-xs"
+                                                    placeholder="H"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                     <ImageUpload label="Main Image" initialUrl={editingProduct.image_url} onUploadComplete={(url) => setEditingProduct({ ...editingProduct, image_url: url })} />
@@ -285,13 +448,15 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                                         }}
                                                         className="aspect-square"
                                                     />
-                                                    <button
-                                                        onClick={() => removeImageField(index)}
-                                                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                                                        title="Remove Image"
-                                                    >
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </button>
+                                                    {adminRole === 'main_admin' && (
+                                                        <button
+                                                            onClick={() => removeImageField(index)}
+                                                            className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                                            title="Remove Image"
+                                                        >
+                                                            <Trash2 className="w-3 h-3" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ))}
                                             <button
@@ -303,16 +468,59 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                             </button>
                                         </div>
                                     </div>
-                                    <Button onClick={handleSave} disabled={saving} className="w-full bg-[#D4AF37] text-black">
-                                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
+                                    <Button onClick={handleSave} disabled={saving} className="w-full bg-[#D4AF37] text-black font-bold h-12 rounded-xl">
+                                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                            <div className="flex items-center gap-2">
+                                                <Save className="w-4 h-4" /> Save Master Piece
+                                            </div>
+                                        )}
                                     </Button>
-                                    <Button variant="ghost" onClick={() => setEditingProduct(null)} className="w-full">Cancel</Button>
+
+                                    {editingProduct.id && adminRole === 'main_admin' && (
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => handleDelete(editingProduct)}
+                                            disabled={saving}
+                                            className="w-full text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                        >
+                                            <Trash2 className="w-4 h-4 mr-2" /> Delete Product
+                                        </Button>
+                                    )}
+
+                                    <Button variant="ghost" onClick={() => setEditingProduct(null)} className="w-full text-white/40">Cancel</Button>
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-[#111111] border border-white/5 rounded-2xl p-8 text-center space-y-4">
-                                <div className="mx-auto w-14 h-14 rounded-full border border-white/5 flex items-center justify-center text-white/10"><ImageIcon className="w-7 h-7" /></div>
-                                <div><h3 className="text-lg font-semibold">Product Editor</h3><p className="text-xs text-white/30 mt-1">Select a product to edit</p></div>
+                            <div className="bg-[#111111] border border-white/5 rounded-2xl p-12 text-center space-y-4">
+                                <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto">
+                                    <Package className="w-8 h-8 text-white/20" />
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-medium">Select a product to edit</h3>
+                                    <p className="text-white/40 text-sm max-w-xs mx-auto">Click on any product from the list to update its details or create a new one.</p>
+                                </div>
+                                <Button
+                                    onClick={() => setEditingProduct({
+                                        name: '',
+                                        price: 0,
+                                        image_url: '',
+                                        images: [],
+                                        category_id: products[0]?.category_id,
+                                        stock: 0,
+                                        description: '',
+                                        dimensions_unit: 'mm',
+                                        featured: false,
+                                        bestseller: false,
+                                        gender: 'Unisex',
+                                        sizes: [],
+                                        weight_grams: 0,
+                                        purity: '',
+                                        slug: ''
+                                    })}
+                                    className="bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/10"
+                                >
+                                    Start Fresh Project
+                                </Button>
                             </div>
                         )}
                     </div>
