@@ -5,7 +5,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { updateOrderStatus, exportOrdersCsv, deleteOrder } from '../actions'
 import {
     Search, Filter, ChevronDown, Package, MapPin, CreditCard,
-    Truck, Clock, CheckCircle, XCircle, X, Download, User as UserIcon, Trash2, ShieldAlert
+    Truck, Clock, CheckCircle, XCircle, X, Download, User as UserIcon, Trash2, ShieldAlert, Copy, Check, Phone
 } from 'lucide-react'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -30,6 +30,7 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
     const [updatingStatus, setUpdatingStatus] = useState(false)
     const [trackingInput, setTrackingInput] = useState('')
     const [isDeleting, setIsDeleting] = useState(false)
+    const [copied, setCopied] = useState(false)
 
     // Sync Props when they change (Server Refetch)
     useEffect(() => {
@@ -91,6 +92,12 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
         a.download = `orders-${new Date().toISOString().split('T')[0]}.csv`
         a.click()
         URL.revokeObjectURL(url)
+    }
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
     }
 
     const totalPages = Math.ceil(total / 20)
@@ -316,12 +323,33 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                             {/* Address */}
                             {selectedOrder.shipping_address && (
                                 <div className="bg-white/5 rounded-xl p-4">
-                                    <p className="text-xs text-white/40 mb-2 flex items-center gap-1"><MapPin className="w-3 h-3" /> Shipping Address</p>
-                                    <div className="text-sm text-white/60 space-y-0.5">
-                                        <p className="font-medium text-white/80">{selectedOrder.shipping_address.full_name || selectedOrder.shipping_address.name}</p>
-                                        <p>{selectedOrder.shipping_address.street_address || selectedOrder.shipping_address.address}</p>
-                                        <p>{selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state} {selectedOrder.shipping_address.pincode}</p>
-                                        {selectedOrder.shipping_address.phone && <p className="text-white/40">{selectedOrder.shipping_address.phone}</p>}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-xs text-white/40 flex items-center gap-1"><MapPin className="w-3 h-3" /> Shipping Address</p>
+                                        <button
+                                            onClick={() => {
+                                                const addr = selectedOrder.shipping_address
+                                                const text = `${addr.full_name || addr.name}\n${addr.street_address || addr.address}\n${addr.city}, ${addr.state} ${addr.pincode}\nPhone: ${addr.phone}`
+                                                copyToClipboard(text)
+                                            }}
+                                            className="text-[10px] text-[#D4AF37] hover:text-[#D4AF37]/80 flex items-center gap-1 transition-colors"
+                                        >
+                                            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                            {copied ? 'Copied' : 'Copy'}
+                                        </button>
+                                    </div>
+                                    <div className="text-sm text-white/60 space-y-1">
+                                        <p className="font-semibold text-white/80">{selectedOrder.shipping_address.full_name || selectedOrder.shipping_address.name}</p>
+                                        <p className="leading-relaxed">{selectedOrder.shipping_address.street_address || selectedOrder.shipping_address.address}</p>
+                                        <div className="flex items-center gap-2 pt-1">
+                                            <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/40">{selectedOrder.shipping_address.city}</span>
+                                            <span className="px-2 py-0.5 bg-white/5 rounded text-[10px] text-white/40">{selectedOrder.shipping_address.state}</span>
+                                            <span className="px-2 py-0.5 bg-[#D4AF37]/10 rounded text-[10px] text-[#D4AF37] font-mono">{selectedOrder.shipping_address.pincode}</span>
+                                        </div>
+                                        {selectedOrder.shipping_address.phone && (
+                                            <p className="text-white/40 text-xs pt-1 flex items-center gap-1 overflow-hidden">
+                                                <Phone className="w-2.5 h-2.5 opacity-40" /> {selectedOrder.shipping_address.phone}
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             )}

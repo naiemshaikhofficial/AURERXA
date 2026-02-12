@@ -194,8 +194,8 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
             formData.landmark,
             formData.city,
             stateName,
-            countryName,
-            formData.pincode
+            formData.pincode,
+            countryName
         ].filter(Boolean).join(', ')
 
         const savePayload = {

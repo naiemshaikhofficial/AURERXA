@@ -577,9 +577,16 @@ export async function getUserDetails(userId: string) {
     const validOrders = orders?.filter((o: any) => o.status !== 'cancelled') || []
     const totalSpent = validOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
 
+    const { data: addresses } = await client
+        .from('addresses')
+        .select('*')
+        .eq('user_id', userId)
+        .order('is_default', { ascending: false })
+
     return {
         profile,
         orders: orders || [],
+        addresses: addresses || [],
         stats: {
             totalOrders: validOrders.length,
             totalSpent

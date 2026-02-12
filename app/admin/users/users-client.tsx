@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { getUserDetails, toggleUserBan, deleteUser } from '../actions'
-import { Search, User as UserIcon, Mail, Phone, Calendar, Trash2, ShoppingBag, CreditCard, X, Ban, ShieldCheck, ShieldAlert } from 'lucide-react'
+import { Search, User as UserIcon, Mail, Phone, MapPin, Calendar, Trash2, ShoppingBag, CreditCard, X, Ban, ShieldCheck, ShieldAlert } from 'lucide-react'
 
 export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: any[], total: number, adminRole: string | null }) {
     const router = useRouter()
@@ -190,6 +190,36 @@ export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: 
                                         <p className="text-xs text-white/40 uppercase">Lifetime Value</p>
                                     </div>
                                 </div>
+
+                                {/* Saved Addresses (NEW) */}
+                                {userDetails.addresses && userDetails.addresses.length > 0 && (
+                                    <div className="space-y-3">
+                                        <p className="text-xs text-white/40 flex items-center gap-1 uppercase tracking-widest px-1">
+                                            <MapPin className="w-3 h-3 text-[#D4AF37]" /> Saved Addresses
+                                        </p>
+                                        <div className="space-y-2">
+                                            {userDetails.addresses.map((addr: any) => (
+                                                <div key={addr.id} className="bg-white/5 border border-white/10 rounded-xl p-4 relative group hover:border-[#D4AF37]/20 transition-all">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-[10px] bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-0.5 rounded uppercase tracking-wider font-medium">
+                                                            {addr.label || 'Address'}
+                                                        </span>
+                                                        {addr.is_default && (
+                                                            <span className="text-[9px] text-white/30 uppercase tracking-widest italic">Default</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-sm space-y-1">
+                                                        <p className="font-semibold text-white/90">{addr.full_name}</p>
+                                                        <p className="text-white/60 leading-relaxed">{addr.street_address}</p>
+                                                        <p className="text-white/40 text-xs flex items-center gap-2">
+                                                            <Phone className="w-3 h-3 opacity-50" /> {addr.phone}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 {/* Danger Zone */}
                                 {adminRole === 'main_admin' && (
                                     <div className="pt-6 border-t border-white/5 space-y-3">
