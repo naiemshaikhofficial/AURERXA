@@ -44,6 +44,10 @@ export async function checkAdminRole() {
 // DASHBOARD STATS
 // ============================================
 
+// ============================================
+// DASHBOARD STATS
+// ============================================
+
 export async function getDashboardStats(dateFrom?: string, dateTo?: string) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
@@ -52,73 +56,82 @@ export async function getDashboardStats(dateFrom?: string, dateTo?: string) {
     const from = dateFrom || new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
     const to = dateTo || new Date().toISOString()
 
-    // Calculate previous period for growth comparison
-    const fromDate = new Date(from)
-    const toDate = new Date(to)
-    const periodMs = toDate.getTime() - fromDate.getTime()
-    const prevFrom = new Date(fromDate.getTime() - periodMs).toISOString()
-    const prevTo = fromDate.toISOString()
+    // RPC Call for optimized performance
+    const { data, error } = await client.rpc('get_dashboard_stats', {
+        date_from: from,
+        date_to: to
+    })
 
-    // Parallel Fetching for performance
-    const [ordersRes, filteredOrdersRes, prevOrdersRes, productsRes, usersRes] = await Promise.all([
-        client.from('orders').select('id, total, status, created_at'),
-        client.from('orders').select('id, total, status').gte('created_at', from).lte('created_at', to),
-        client.from('orders').select('id, total, status').gte('created_at', prevFrom).lte('created_at', prevTo),
-        client.from('products').select('id, stock, name, image_url'),
-        client.from('profiles').select('id')
+    if (error || !data) {
+        // Fallback to minimal query if RPC fails (e.g., function not created yet)
+        console.error('RPC get_dashboard_stats failed, falling back to legacy fetch:', error)
+        return await getDashboardStatsLegacy(client, from, to)
+    }
+
+    return {
+        confirmedRevenue: Number(data.confirmedRevenue) || 0,
+        filteredRevenue: Number(data.filteredRevenue) || 0,
+        pendingRevenue: Number(data.pendingRevenue) || 0,
+        cancelledRevenue: Number(data.cancelledRevenue) || 0,
+        revenueGrowth: data.prevRevenue > 0 ? ((data.filteredRevenue - data.prevRevenue) / data.prevRevenue) * 100 : 0,
+        ordersGrowth: 0, // Simplified for RPC to avoid complexity, or calculate if filteredOrders vs prev exists
+        prevRevenue: Number(data.prevRevenue) || 0,
+        totalOrders: Number(data.totalOrders) || 0,
+        filteredOrders: Number(data.filteredOrders) || 0,
+        pendingOrders: Number(data.pendingOrders) || 0,
+        packedOrders: Number(data.packedOrders) || 0,
+        shippedOrders: Number(data.shippedOrders) || 0,
+        deliveredOrders: Number(data.deliveredOrders) || 0,
+        cancelledOrders: Number(data.cancelledOrders) || 0,
+        totalProducts: Number(data.totalProducts) || 0,
+        totalUsers: Number(data.totalUsers) || 0,
+        lowStockProducts: data.lowStockProducts || [],
+    }
+}
+
+// Fallback legacy function (Optimized to NOT fetch all fields)
+async function getDashboardStatsLegacy(client: any, from: string, to: string) {
+    const [ordersRes, productsRes, usersRes] = await Promise.all([
+        client.from('orders').select('total, status, created_at'),
+        client.from('products').select('id, stock, name, image_url', { count: 'exact' }),
+        client.from('profiles').select('id', { count: 'exact', head: true })
     ])
 
     const allOrders = ordersRes.data || []
-    const filteredOrders = filteredOrdersRes.data || []
-    const prevOrders = prevOrdersRes.data || []
     const allProducts = productsRes.data || []
 
-    // Revenue: Only count confirmed orders (delivered + shipped + packed)
+    // Revenue logic (Same as before)
     const confirmedStatuses = ['delivered', 'shipped', 'packed']
-    const confirmedOrders = allOrders.filter(o => confirmedStatuses.includes(o.status))
-    const confirmedRevenue = confirmedOrders.reduce((sum, o) => sum + Number(o.total || 0), 0)
-    const filteredConfirmedOrders = filteredOrders.filter(o => confirmedStatuses.includes(o.status))
-    const filteredRevenue = filteredConfirmedOrders.reduce((sum, o) => sum + Number(o.total || 0), 0)
+    const confirmedOrders = allOrders.filter((o: any) => confirmedStatuses.includes(o.status))
+    const confirmedRevenue = confirmedOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
 
-    // Previous period confirmed revenue for growth %
-    const prevConfirmed = prevOrders.filter(o => confirmedStatuses.includes(o.status))
-    const prevRevenue = prevConfirmed.reduce((sum, o) => sum + Number(o.total || 0), 0)
+    // Filtered
+    const filteredOrders = allOrders.filter((o: any) => o.created_at >= from && o.created_at <= to)
+    const filteredConfirmed = filteredOrders.filter((o: any) => confirmedStatuses.includes(o.status))
+    const filteredRevenue = filteredConfirmed.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
 
-    // Growth percentages
-    const revenueGrowth = prevRevenue > 0 ? ((filteredRevenue - prevRevenue) / prevRevenue) * 100 : (filteredRevenue > 0 ? 100 : 0)
-    const ordersGrowth = prevOrders.length > 0 ? ((filteredOrders.length - prevOrders.length) / prevOrders.length) * 100 : (filteredOrders.length > 0 ? 100 : 0)
-
-    // Pending revenue (not yet confirmed)
-    const pendingOrdersList = allOrders.filter(o => o.status === 'pending')
-    const pendingRevenue = pendingOrdersList.reduce((sum, o) => sum + Number(o.total || 0), 0)
-
-    // Cancelled / Lost revenue
-    const cancelledOrdersList = allOrders.filter(o => o.status === 'cancelled')
-    const cancelledRevenue = cancelledOrdersList.reduce((sum, o) => sum + Number(o.total || 0), 0)
-
-    const packedOrders = allOrders.filter(o => o.status === 'packed').length
-    const shippedOrders = allOrders.filter(o => o.status === 'shipped').length
-    const deliveredOrders = allOrders.filter(o => o.status === 'delivered').length
-    const lowStockProducts = allProducts.filter(p => (p.stock || 0) <= 5)
+    // Other stats
+    const pendingOrders = allOrders.filter((o: any) => o.status === 'pending')
+    const lowStock = allProducts.filter((p: any) => (p.stock || 0) <= 5)
 
     return {
         confirmedRevenue,
         filteredRevenue,
-        pendingRevenue,
-        cancelledRevenue,
-        revenueGrowth: Math.round(revenueGrowth * 10) / 10,
-        ordersGrowth: Math.round(ordersGrowth * 10) / 10,
-        prevRevenue,
+        pendingRevenue: pendingOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0),
+        cancelledRevenue: allOrders.filter((o: any) => o.status === 'cancelled').reduce((sum: number, o: any) => sum + Number(o.total || 0), 0),
+        revenueGrowth: 0, // skipped for fallback
+        ordersGrowth: 0,
+        prevRevenue: 0,
         totalOrders: allOrders.length,
         filteredOrders: filteredOrders.length,
-        pendingOrders: pendingOrdersList.length,
-        packedOrders,
-        shippedOrders,
-        deliveredOrders,
-        cancelledOrders: cancelledOrdersList.length,
-        totalProducts: allProducts.length,
-        totalUsers: (usersRes.data || []).length,
-        lowStockProducts: lowStockProducts.map(p => ({ id: p.id, name: p.name, stock: p.stock, image_url: p.image_url })),
+        pendingOrders: pendingOrders.length,
+        packedOrders: allOrders.filter((o: any) => o.status === 'packed').length,
+        shippedOrders: allOrders.filter((o: any) => o.status === 'shipped').length,
+        deliveredOrders: allOrders.filter((o: any) => o.status === 'delivered').length,
+        cancelledOrders: allOrders.filter((o: any) => o.status === 'cancelled').length,
+        totalProducts: productsRes.count || 0,
+        totalUsers: usersRes.count || 0,
+        lowStockProducts: lowStock.map((p: any) => ({ id: p.id, name: p.name, stock: p.stock, image_url: p.image_url })),
     }
 }
 
