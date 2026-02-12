@@ -193,8 +193,15 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
         ].filter(Boolean).join(', ')
 
         onSave({
-            ...formData,
-            street_address: combinedAddress
+            label: formData.label,
+            full_name: formData.full_name,
+            phone: formData.phone,
+            street_address: combinedAddress,
+            city: formData.city,
+            state: formData.state,
+            country: formData.country,
+            pincode: formData.pincode,
+            is_default: formData.is_default,
         })
     }
 
