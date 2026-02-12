@@ -62,7 +62,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable} ${playfair.variable}`}>
       <head>
-        <link rel="preconnect" href="https://xquczexikijzbzcuvmqh.supabase.co" />
+        <link rel="preconnect" href="https://xquczexikijzbzcuvmqh.supabase.co" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://xquczexikijzbzcuvmqh.supabase.co" />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
         <ThemeProvider

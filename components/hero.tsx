@@ -52,33 +52,27 @@ export function Hero() {
 
       {/* 3. Main Content - Refined Typography */}
       <div className="relative z-10 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center">
-        <motion.div
-          style={{ y: yText }}
-          className="space-y-10"
-        >
-          {/* Logo Brand Mark - No Glow */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease: PREMIUM_EASE }}
-            className="mb-6 relative inline-block"
-          >
+        <div className="space-y-10">
+          {/* Logo Brand Mark - Removed motion wrapper for instant LCP */}
+          <div className="mb-6 relative inline-block">
             <Image
               src="/logo.png"
-              alt="Aurerxa Logo"
+              alt="AURERXA Logo - Timeless Luxury"
               width={112}
               height={112}
               priority
+              fetchPriority="high"
+              loading="eager"
               className="w-20 md:w-28 h-auto relative z-10 opacity-90 drop-shadow-xl dark:invert-0 invert"
             />
-          </motion.div>
+          </div>
 
           <div className="space-y-4">
-            {/* Elegant Headline - Museo-style tracking */}
+            {/* Elegant Headline - Lighter animation for TBT */}
             <motion.h1
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 1, delay: 0.1, ease: PREMIUM_EASE }}
               className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] font-serif font-black tracking-tighter text-foreground leading-[0.85] md:leading-[0.8]"
             >
               PURE<br />
@@ -87,9 +81,9 @@ export function Hero() {
           </div>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.4, ease: PREMIUM_EASE }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: PREMIUM_EASE }}
             className="max-w-lg mx-auto text-muted-foreground font-light text-[10px] sm:text-xs md:text-base tracking-widest leading-loose uppercase px-4 sm:px-0"
           >
             Forged in shadow. Defined by brilliance.<br />
@@ -97,9 +91,9 @@ export function Hero() {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.8, ease: PREMIUM_EASE }}
+            transition={{ duration: 1, delay: 0.5, ease: PREMIUM_EASE }}
             className="pt-8 md:pt-16"
           >
             <button className="group relative px-8 sm:px-12 py-4 sm:py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[10px] sm:text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl" aria-label="Discover the Collection">
@@ -107,7 +101,7 @@ export function Hero() {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[1500ms] ease-in-out" />
             </button>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
 
       {/* 4. Scroll Indicator */}

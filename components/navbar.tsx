@@ -170,18 +170,17 @@ export function Navbar() {
   return (
     <>
       <motion.nav
-        initial={{ y: 0 }}
-        animate={{ y: '0%' }}
-        transition={{ duration: 0.3, ease: PREMIUM_EASE }}
         style={{
           height: navHeight,
           backgroundColor: navBg,
+          y: hidden ? '-100%' : '0%'
         }}
+        transition={{ duration: 0.4, ease: PREMIUM_EASE }}
         className="fixed top-0 left-0 right-0 z-50 md:backdrop-blur-md flex items-center p-4 md:p-0"
       >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
-            <Link href="/" className="flex-shrink-0 group relative z-50 transition-transform active:scale-95" aria-label="AURERXA Home">
+            <Link href="/" className="flex-shrink-0 group relative z-50 transition-transform active:scale-95" aria-label="AURERXA Home - Luxury Jewelry">
               <div className="relative h-10 md:h-20 w-32 md:w-56">
                 <Image
                   src="/logo.png"
@@ -212,7 +211,7 @@ export function Navbar() {
               {mounted && (
                 <Sheet>
                   <SheetTrigger asChild>
-                    <button className="text-foreground/80 hover:text-primary transition-colors p-2" aria-label="Open navigation menu">
+                    <button className="text-foreground/80 hover:text-primary transition-colors p-2" aria-label="Open Navigation Menu">
                       <Menu className="w-6 h-6 stroke-1" />
                     </button>
                   </SheetTrigger>
@@ -329,7 +328,7 @@ export function Navbar() {
               </button>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group" aria-label="Wishlist">
+              <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group" aria-label="View Wishlist">
                 <Heart className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
               </Link>
 
@@ -349,10 +348,10 @@ export function Navbar() {
               {/* Auth Section */}
               {user ? (
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="outline-none">
-                    <div className="w-9 h-9 rounded-sm bg-muted/20 hover:bg-muted/30 border border-border flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer">
+                  <DropdownMenuTrigger asChild>
+                    <button className="outline-none w-9 h-9 rounded-sm bg-muted/20 hover:bg-muted/30 border border-border flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer" aria-label="Open User Menu">
                       {getInitials()}
-                    </div>
+                    </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-background border-border text-foreground min-w-[220px] p-2">
                     <DropdownMenuLabel className="px-3 py-2">
