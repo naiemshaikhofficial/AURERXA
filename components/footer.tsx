@@ -30,7 +30,7 @@ export function Footer() {
 
           {/* Shop Categories */}
           <div className="space-y-10">
-            <h4 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Shop by Category</h4>
+            <h2 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Shop by Category</h2>
             <ul className="grid grid-cols-2 gap-x-8 gap-y-4">
               {['Earrings', 'Rings', 'Pendants', 'Bangles', 'Necklaces', 'Mangalsutra', 'Bracelets', 'Gold Coins'].map((item) => (
                 <li key={item}>
@@ -44,7 +44,7 @@ export function Footer() {
 
           {/* Services */}
           <div className="space-y-10">
-            <h4 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Services</h4>
+            <h2 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Services</h2>
             <ul className="space-y-4">
               {[
                 { name: 'Book an Appointment', href: '/appointment' },
@@ -64,7 +64,7 @@ export function Footer() {
 
           {/* Contact & Support */}
           <div className="space-y-10">
-            <h4 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Concierge</h4>
+            <h2 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Concierge</h2>
             <div className="space-y-6">
               <div className="flex items-start gap-4 group cursor-pointer">
                 <img

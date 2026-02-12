@@ -46,9 +46,9 @@ export function TrustBar() {
                                 <item.icon className="w-8 h-8 md:w-10 md:h-10 text-primary/70 group-hover:text-primary transition-colors duration-500" strokeWidth={1} />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="text-foreground font-serif text-lg md:text-xl italic tracking-tight uppercase group-hover:text-primary/80 transition-colors">
+                                <h3 className="text-foreground font-serif text-lg md:text-xl italic tracking-tight uppercase group-hover:text-primary/80 transition-colors">
                                     {item.title}
-                                </h4>
+                                </h3>
                                 <p className="text-muted-foreground text-[10px] md:text-xs uppercase tracking-widest font-bold">
                                     {item.description}
                                 </p>

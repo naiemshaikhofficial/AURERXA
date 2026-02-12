@@ -103,7 +103,7 @@ export function CategoryNav() {
                             })}
 
                             {/* More Button */}
-                            <button className="flex flex-col items-center justify-center gap-2 group opacity-60 hover:opacity-100 transition-all duration-500 min-w-[70px] md:min-w-[80px]">
+                            <button className="flex flex-col items-center justify-center gap-2 group opacity-60 hover:opacity-100 transition-all duration-500 min-w-[70px] md:min-w-[80px]" aria-label="View more categories">
                                 <div className="h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full transition-all duration-500 group-hover:rotate-180">
                                     <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                                 </div>

@@ -78,8 +78,8 @@ export default function RootLayout({
                 <AdminRouteGuard>
                   <Navbar />
                 </AdminRouteGuard>
-                {/* Cinematic Grain Overlay */}
-                <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.03] mix-blend-overlay bg-[url('/noise.svg')] brightness-100 contrast-150" />
+                {/* Cinematic Grain Overlay - Optimized for TBT */}
+                <div className="fixed inset-0 z-[100] pointer-events-none opacity-[0.02] bg-[url('/noise.svg')] repeat" />
                 <AdminRouteGuard>
                   <div className="pt-20 md:pt-24">
                     <CategoryNav />

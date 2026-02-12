@@ -138,11 +138,14 @@ export function Navbar() {
 
   const { scrollY } = useScroll()
   const [hidden, setHidden] = useState(false)
-  const navHeight = useTransform(scrollY, [0, 100], ['6rem', '4.5rem'])
-  const navBg = useTransform(scrollY, [0, 100], ['rgba(var(--background), 0)', 'rgba(8, 8, 8, 0.95)'])
+  const [isScrolled, setIsScrolled] = useState(false)
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0
+    // Scrolled state for height/background toggle
+    setIsScrolled(latest > 50)
+
+    // Hidden state for hide-on-scroll
     if (latest > previous && latest > 150) {
       setHidden(true)
     } else {
@@ -170,13 +173,13 @@ export function Navbar() {
   return (
     <>
       <motion.nav
-        style={{
-          height: navHeight,
-          backgroundColor: navBg,
-          y: hidden ? '-100%' : '0%'
+        animate={{
+          height: isScrolled ? '4.5rem' : '6rem',
+          backgroundColor: isScrolled ? 'rgba(8, 8, 8, 0.95)' : 'rgba(var(--background), 0)'
         }}
         transition={{ duration: 0.4, ease: PREMIUM_EASE }}
-        className="fixed top-0 left-0 right-0 z-50 md:backdrop-blur-md flex items-center p-4 md:p-0"
+        className="fixed top-0 left-0 right-0 z-50 md:backdrop-blur-md flex items-center p-4 md:p-0 border-b border-transparent data-[scrolled=true]:border-border/40"
+        data-scrolled={isScrolled}
       >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
@@ -193,8 +196,18 @@ export function Navbar() {
               </div>
             </Link>
 
-            {/* Mobile Cart & Search Actions (Visible only on mobile) */}
-            <div className="flex gap-4 items-center md:hidden relative z-50 pt-1">
+            {/* Mobile Actions */}
+            <div className="flex gap-3 items-center md:hidden relative z-50 pt-1">
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="relative text-[#D4AF37] p-2 bg-[#D4AF37]/10 rounded-full backdrop-blur-sm border border-[#D4AF37]/20 flex items-center justify-center animate-in zoom-in duration-500"
+                  aria-label="Admin Dashboard"
+                >
+                  <Shield className="w-5 h-5" />
+                </Link>
+              )}
+
               <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-background/50 rounded-full backdrop-blur-sm border border-border group" aria-label={`Cart with ${cartCount} items`}>
                 <img
                   src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=BF9B65"
@@ -316,6 +329,15 @@ export function Navbar() {
                   {item}
                 </Link>
               ))}
+
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="text-[11px] font-premium-sans text-[#D4AF37] font-bold hover:text-[#D4AF37]/80 transition-colors duration-500 tracking-[0.2em] animate-pulse"
+                >
+                  ADMIN
+                </Link>
+              )}
 
               {/* Search */}
               <button
