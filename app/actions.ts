@@ -1587,7 +1587,8 @@ export async function checkDeliveryAvailability(pincode: string) {
         const data = await res.json()
         if (data && data[0] && data[0].Status === 'Success') {
           const postOffice = data[0].PostOffice[0]
-          locality = postOffice.Name
+          // Prioritize "Block" or "Taluka" as it usually represents the main city/town
+          locality = postOffice.Block || postOffice.Name
           district = postOffice.District
           state = postOffice.State
         }

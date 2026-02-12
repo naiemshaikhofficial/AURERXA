@@ -264,7 +264,9 @@ export function DeliveryEstimate({ pincode }: { pincode?: string }) {
                     <Truck className="w-4 h-4 text-amber-200/60" />
                 </div>
                 <div className="flex-1">
-                    <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] mb-0.5">Estimated Delivery</p>
+                    <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] mb-0.5">
+                        Estimated Delivery to <span className="text-white font-bold">{deliveryInfo.location}</span>
+                    </p>
                     <p className="text-xs text-white uppercase tracking-wider font-bold">
                         {deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}
                     </p>
