@@ -70,11 +70,6 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
         if (mainImage) result.push(mainImage)
 
         const imgs = product.images
-        console.log(`🖼️ RAW IMAGES [${product.name.slice(0, 10)}]:`, {
-            type: typeof imgs,
-            value: imgs,
-            image_url: product.image_url
-        })
 
         if (Array.isArray(imgs)) {
             imgs.forEach(img => {
@@ -117,10 +112,10 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
     useEffect(() => {
         if (allImages.length <= 1) return
 
-        const intervalTime = isHovered ? 1500 : 4000
+        const intervalTime = isHovered ? 2000 : 4000
         const interval = setInterval(() => {
             setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
-        }, intervalTime + (index * 100))
+        }, intervalTime + (index * 50))
 
         return () => clearInterval(interval)
     }, [allImages.length, index, isHovered])
@@ -175,8 +170,8 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                         animate={{ x: 0, rotateY: 0, scale: 1, opacity: 1 }}
                         exit={{ x: '-100%', rotateY: -10, scale: 1.05, opacity: 0 }}
                         transition={{
-                            duration: 1.4,
-                            ease: [0.16, 1, 0.3, 1]
+                            duration: 0.8,
+                            ease: [0.33, 1, 0.68, 1]
                         }}
                         className="absolute inset-0 overflow-hidden"
                         style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
@@ -209,7 +204,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
 
             {/* Product Info - Minimalist Editorial Style */}
             <div className={cn(
-                "p-5 space-y-3 relative z-10 bg-card flex-1 flex flex-col",
+                "p-4 md:p-5 space-y-3 relative z-10 bg-card flex-1 flex flex-col",
                 viewMode === 'list' ? 'md:p-8 md:justify-center' : ''
             )}>
                 <div className="flex flex-col gap-1">

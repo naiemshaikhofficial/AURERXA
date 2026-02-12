@@ -79,7 +79,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.5, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="text-6xl md:text-8xl lg:text-[10rem] font-serif font-black tracking-tighter text-foreground leading-[0.85] md:leading-[0.8]"
+              className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] font-serif font-black tracking-tighter text-foreground leading-[0.85] md:leading-[0.8]"
             >
               PURE<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200/40 via-amber-500/60 to-amber-700/40 italic drop-shadow-2xl">PRESTIGE</span>
@@ -90,7 +90,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.4, ease: PREMIUM_EASE }}
-            className="max-w-lg mx-auto text-muted-foreground font-light text-sm md:text-base tracking-widest leading-loose uppercase"
+            className="max-w-lg mx-auto text-muted-foreground font-light text-[10px] sm:text-xs md:text-base tracking-widest leading-loose uppercase px-4 sm:px-0"
           >
             Forged in shadow. Defined by brilliance.<br />
             The quiet authority of true luxury.
@@ -100,9 +100,9 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.2, delay: 0.8, ease: PREMIUM_EASE }}
-            className="pt-16"
+            className="pt-8 md:pt-16"
           >
-            <button className="group relative px-12 py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl" aria-label="Discover the Collection">
+            <button className="group relative px-8 sm:px-12 py-4 sm:py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[10px] sm:text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl" aria-label="Discover the Collection">
               <span className="relative z-10">Discover Collection</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[1500ms] ease-in-out" />
             </button>

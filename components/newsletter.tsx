@@ -43,7 +43,7 @@ export function Newsletter() {
   }
 
   return (
-    <section ref={sectionRef} className="py-24 md:py-32 px-6 lg:px-12 bg-card relative overflow-hidden border-y border-border">
+    <section ref={sectionRef} className="py-16 md:py-32 px-6 lg:px-12 bg-card relative overflow-hidden border-y border-border">
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -52,7 +52,7 @@ export function Newsletter() {
         transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
         className="max-w-xl mx-auto text-center relative z-10"
       >
-        <div className="space-y-12">
+        <div className="space-y-8 md:space-y-12">
           <div className="space-y-4">
             <p className="text-primary/80 text-[10px] font-premium-sans">
               Private Membership
@@ -60,7 +60,7 @@ export function Newsletter() {
             <div className="w-12 h-[1px] bg-primary/30 mx-auto" />
           </div>
 
-          <h2 className="text-4xl md:text-6xl font-serif font-light text-foreground tracking-widest italic">
+          <h2 className="text-3xl md:text-6xl font-serif font-light text-foreground tracking-widest italic">
             Exclusive <span className="text-primary">Access</span>
           </h2>
 

@@ -50,10 +50,8 @@ export default function HomePage() {
         <HeritageHighlights />
       </Suspense>
 
-      <div className="hidden md:block">
-        <CustomOrderForm />
-        <Newsletter />
-      </div>
+      <CustomOrderForm />
+      <Newsletter />
       <FloatingConcierge />
       <Footer />
     </div>

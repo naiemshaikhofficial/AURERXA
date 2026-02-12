@@ -73,7 +73,7 @@ export function CustomOrderForm() {
   }
 
   return (
-    <section ref={sectionRef} id="custom" className="py-24 md:py-32 px-6 lg:px-12 bg-background relative overflow-hidden transition-colors duration-500">
+    <section ref={sectionRef} id="custom" className="py-16 md:py-32 px-6 lg:px-12 bg-background relative overflow-hidden transition-colors duration-500">
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -82,11 +82,11 @@ export function CustomOrderForm() {
         transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
         className="max-w-3xl mx-auto relative z-10"
       >
-        <div className="text-center mb-24">
+        <div className="text-center mb-16 md:mb-24">
           <p className="text-primary/80 text-[10px] font-premium-sans mb-6">
             Bespoke Service
           </p>
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-foreground tracking-widest italic">
+          <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-foreground tracking-widest italic">
             Custom <span className="text-primary">Jewelry</span>
           </h2>
           <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-8" />
@@ -95,7 +95,7 @@ export function CustomOrderForm() {
           </p>
         </div>
 
-        <div className="bg-card border border-border p-8 md:p-16 relative overflow-hidden group hover:border-primary/20 transition-all duration-1000 shadow-[0_0_50px_rgba(0,0,0,0.2)] dark:shadow-[0_0_50px_rgba(0,0,0,1)]">
+        <div className="bg-card border border-border p-6 md:p-16 relative overflow-hidden group hover:border-primary/20 transition-all duration-1000 shadow-[0_0_50px_rgba(0,0,0,0.2)] dark:shadow-[0_0_50px_rgba(0,0,0,1)]">
           <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">

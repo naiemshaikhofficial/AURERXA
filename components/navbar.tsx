@@ -216,7 +216,7 @@ export function Navbar() {
                       <Menu className="w-6 h-6 stroke-1" />
                     </button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[300px] p-0">
+                  <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[85vw] max-w-[300px] p-0">
                     <SheetHeader className="p-8 border-b border-border text-left bg-card/30 flex flex-row items-center justify-between">
                       <div>
                         <SheetTitle className="text-3xl font-serif text-foreground/90 font-light tracking-wide">AURERXA</SheetTitle>

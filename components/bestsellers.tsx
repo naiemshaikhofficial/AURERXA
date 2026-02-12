@@ -41,7 +41,7 @@ export function Bestsellers() {
           <motion.div variants={fadeInUp} className="text-center mb-24 md:mb-40 space-y-8">
             <motion.div className="space-y-6">
               <span className="text-primary/60 text-[10px] tracking-[0.8em] font-bold uppercase block">Timeless Selection</span>
-              <h2 className="text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none mb-6">
+              <h2 className="text-4xl sm:text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none mb-6">
                 Curated <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Bestsellers.</span>
               </h2>
               <div className="w-16 h-[0.5px] mx-auto bg-primary/20" />

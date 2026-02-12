@@ -79,7 +79,7 @@ export function HeritageHighlights() {
                     >
                         <div className="space-y-8">
                             <span className="text-primary/60 text-[10px] tracking-[0.8em] font-bold uppercase block">The Scale of Respect</span>
-                            <h2 className="text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none">
+                            <h2 className="text-4xl sm:text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none">
                                 Millions of <br />
                                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Masterpieces.</span>
                             </h2>

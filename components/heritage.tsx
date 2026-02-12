@@ -26,6 +26,7 @@ export function Heritage() {
                     src="/photo_6066572646712807057_y.jpg"
                     alt="Heritage Background"
                     fill
+                    priority
                     className="object-cover brightness-[0.4]"
                     sizes="100vw"
                 />
@@ -56,7 +57,7 @@ export function Heritage() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 1.5, ease: PREMIUM_EASE }}
-                        className="text-7xl md:text-[14rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white/40 to-white/5 italic select-none"
+                        className="text-5xl sm:text-7xl md:text-[14rem] leading-none font-serif font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-white/40 to-white/5 italic select-none"
                     >
                         HERITAGE
                     </motion.h2>
@@ -67,12 +68,12 @@ export function Heritage() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 1, delay: 0.4, ease: PREMIUM_EASE }}
-                        className="max-w-3xl mx-auto space-y-12 border-l-4 border-primary pl-8 md:pl-12 text-left bg-gradient-to-r from-black/50 to-transparent p-8 backdrop-blur-sm"
+                        className="max-w-3xl mx-auto space-y-8 md:space-y-12 border-l-2 md:border-l-4 border-primary pl-6 md:pl-12 text-left bg-gradient-to-r from-black/50 to-transparent p-6 md:p-8 backdrop-blur-sm"
                     >
-                        <p className="text-lg md:text-2xl font-medium text-white/90 leading-relaxed tracking-wide">
+                        <p className="text-base sm:text-lg md:text-2xl font-medium text-white/90 leading-relaxed tracking-wide">
                             "We don't just craft jewelry. We forge <span className="text-primary">respect</span>."
                         </p>
-                        <p className="text-sm md:text-base font-light text-white/50 leading-loose tracking-widest italic">
+                        <p className="text-xs sm:text-sm md:text-base font-light text-white/50 leading-loose tracking-widest italic">
                             Born from a child's resilience. Starting at just 9 years old, my father mastered
                             the craft through 50 years of honest labor. We honor those hands today,
                             ensuring fairness for the makers and integrity for the wearers.
