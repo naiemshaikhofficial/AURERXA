@@ -70,23 +70,36 @@ export async function getDashboardStats(dateFrom?: string, dateTo?: string) {
     const filteredOrders = todayOrders || []
     const allProducts = products || []
 
-    const totalRevenue = allOrders.reduce((sum, o) => sum + Number(o.total || 0), 0)
-    const filteredRevenue = filteredOrders.reduce((sum, o) => sum + Number(o.total || 0), 0)
-    const pendingOrders = allOrders.filter(o => o.status === 'pending').length
+    // Revenue: Only count confirmed orders (delivered + shipped)
+    const confirmedStatuses = ['delivered', 'shipped', 'packed']
+    const confirmedOrders = allOrders.filter(o => confirmedStatuses.includes(o.status))
+    const confirmedRevenue = confirmedOrders.reduce((sum, o) => sum + Number(o.total || 0), 0)
+    const filteredConfirmedOrders = filteredOrders.filter(o => confirmedStatuses.includes(o.status))
+    const filteredRevenue = filteredConfirmedOrders.reduce((sum, o) => sum + Number(o.total || 0), 0)
+
+    // Pending revenue (not yet confirmed)
+    const pendingOrdersList = allOrders.filter(o => o.status === 'pending')
+    const pendingRevenue = pendingOrdersList.reduce((sum, o) => sum + Number(o.total || 0), 0)
+
+    // Cancelled / Lost revenue
+    const cancelledOrdersList = allOrders.filter(o => o.status === 'cancelled')
+    const cancelledRevenue = cancelledOrdersList.reduce((sum, o) => sum + Number(o.total || 0), 0)
+
     const shippedOrders = allOrders.filter(o => o.status === 'shipped').length
     const deliveredOrders = allOrders.filter(o => o.status === 'delivered').length
-    const cancelledOrders = allOrders.filter(o => o.status === 'cancelled').length
     const lowStockProducts = allProducts.filter(p => (p.stock || 0) <= 5)
 
     return {
-        totalRevenue,
+        confirmedRevenue,
         filteredRevenue,
+        pendingRevenue,
+        cancelledRevenue,
         totalOrders: allOrders.length,
         filteredOrders: filteredOrders.length,
-        pendingOrders,
+        pendingOrders: pendingOrdersList.length,
         shippedOrders,
         deliveredOrders,
-        cancelledOrders,
+        cancelledOrders: cancelledOrdersList.length,
         totalProducts: allProducts.length,
         totalUsers: (users || []).length,
         lowStockProducts: lowStockProducts.map(p => ({ id: p.id, name: p.name, stock: p.stock, image_url: p.image_url })),
@@ -108,8 +121,9 @@ export async function getRevenueChart(period: 'daily' | 'weekly' | 'monthly' | '
 
     const { data: orders } = await client
         .from('orders')
-        .select('total, created_at')
+        .select('total, status, created_at')
         .gte('created_at', fromDate.toISOString())
+        .in('status', ['delivered', 'shipped', 'packed'])
         .order('created_at', { ascending: true })
 
     if (!orders) return []
@@ -164,6 +178,102 @@ export async function getOrdersChart(period: 'daily' | 'weekly' | 'monthly' = 'm
     })
 
     return Object.entries(grouped).map(([label, data]) => ({ label, ...data }))
+}
+
+// ============================================
+// DASHBOARD WIDGETS DATA
+// ============================================
+
+export async function getRecentOrders(limit: number = 5) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    const { data } = await client
+        .from('orders')
+        .select('id, order_number, total, status, created_at, profiles(full_name)')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+    return data || []
+}
+
+export async function getTopProducts(limit: number = 5) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    const { data: items } = await client
+        .from('order_items')
+        .select('product_id, quantity, orders!inner(status)')
+
+    if (!items?.length) return []
+
+    // Aggregate sales (exclude cancelled)
+    const productSales: Record<string, number> = {}
+    items.forEach((item: any) => {
+        if (item.orders?.status !== 'cancelled') {
+            productSales[item.product_id] = (productSales[item.product_id] || 0) + item.quantity
+        }
+    })
+
+    const topIds = Object.entries(productSales)
+        .sort(([, a], [, b]) => b - a)
+        .slice(0, limit)
+        .map(([id]) => id)
+
+    if (topIds.length === 0) return []
+
+    const { data: products } = await client
+        .from('products')
+        .select('id, name, price, image_url, stock')
+        .in('id', topIds)
+
+    if (!products) return []
+
+    return products.map(p => ({
+        ...p,
+        sales: productSales[p.id] || 0
+    })).sort((a, b) => b.sales - a.sales)
+}
+
+export async function getCancelledOrderDetails(limit: number = 10) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    const { data } = await client
+        .from('orders')
+        .select('id, order_number, total, status, created_at, updated_at, profiles(full_name, email), order_items(quantity, price, products(name))')
+        .eq('status', 'cancelled')
+        .order('updated_at', { ascending: false })
+        .limit(limit)
+
+    return data || []
+}
+
+export async function getOrdersByStatus(statusFilter?: string, limit: number = 20) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    let query = client
+        .from('orders')
+        .select('id, order_number, total, status, created_at, updated_at, tracking_number, payment_method, profiles(full_name, email, phone_number), order_items(quantity, price, products(name, image_url))')
+
+    if (statusFilter && statusFilter !== 'all') {
+        if (statusFilter === 'confirmed') {
+            query = query.in('status', ['delivered', 'shipped', 'packed'])
+        } else {
+            query = query.eq('status', statusFilter)
+        }
+    }
+
+    const { data } = await query
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+    return data || []
 }
 
 // ============================================
