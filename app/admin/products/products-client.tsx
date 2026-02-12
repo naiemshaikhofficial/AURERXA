@@ -194,6 +194,39 @@ export function ProductsClient({ initialProducts }: { initialProducts: any[] }) 
                                         <Input type="number" value={editingProduct.stock} onChange={(e) => setEditingProduct({ ...editingProduct, stock: parseInt(e.target.value) })} className="bg-white/5 border-white/10 rounded-xl" placeholder="Stock" />
                                     </div>
                                     <ImageUpload label="Main Image" initialUrl={editingProduct.image_url} onUploadComplete={(url) => setEditingProduct({ ...editingProduct, image_url: url })} />
+
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-medium text-white/40 uppercase tracking-wider">Additional Images</label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {editingProduct.images?.map((url: string, index: number) => (
+                                                <div key={index} className="relative group">
+                                                    <ImageUpload
+                                                        initialUrl={url}
+                                                        onUploadComplete={(newUrl) => {
+                                                            const newImages = [...editingProduct.images]
+                                                            newImages[index] = newUrl
+                                                            setEditingProduct({ ...editingProduct, images: newImages })
+                                                        }}
+                                                        className="aspect-square"
+                                                    />
+                                                    <button
+                                                        onClick={() => removeImageField(index)}
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                                        title="Remove Image"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <button
+                                                onClick={addImageField}
+                                                className="aspect-square border border-dashed border-white/20 rounded-xl flex flex-col items-center justify-center text-white/40 hover:text-white hover:border-white/40 transition gap-2"
+                                            >
+                                                <Plus className="w-6 h-6" />
+                                                <span className="text-xs">Add Image</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                     <Button onClick={handleSave} disabled={saving} className="w-full bg-[#D4AF37] text-black">
                                         {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
                                     </Button>
