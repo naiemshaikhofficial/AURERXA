@@ -23,7 +23,7 @@ export function Heritage() {
             {/* Background Image with Cinematic Parallax */}
             <motion.div style={{ y: yBg, scale: scaleBg, opacity: opacityBg }} className="absolute inset-0 z-0 will-change-transform">
                 <Image
-                    src="/photo_6066572646712807057_y.jpg"
+                    src="/photo_6066572646712807057_y.webp"
                     alt="Heritage Background"
                     fill
                     priority

@@ -18,7 +18,7 @@ export function Footer() {
           <div className="space-y-10">
             <Link href="/" className="inline-block group" aria-label="AURERXA Home">
               <img
-                src="/logo.png"
+                src="/logo.webp"
                 alt="AURERXA Logo"
                 className="h-12 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700 invert dark:invert-0"
               />

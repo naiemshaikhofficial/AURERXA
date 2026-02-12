@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic'
 
 import './globals.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 
 // Defer non-critical interactive overlays (code-split via dynamic import)
 const BottomNav = dynamic(() => import('@/components/bottom-nav').then(mod => mod.BottomNav))
@@ -113,6 +114,7 @@ export default function RootLayout({
                   <NotificationManager />
                 </AdminRouteGuard>
                 <SpeedInsights />
+                <Analytics />
               </SmoothScroll>
             </SearchProvider>
           </CartProvider>

@@ -72,7 +72,7 @@ export function MobileInstallPrompt() {
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
                                 <div className="w-14 h-14 bg-card rounded-2xl flex items-center justify-center border border-border p-2">
-                                    <img src="/logo.png" alt="AURERXA" className="w-full h-full object-contain invert dark:invert-0" />
+                                    <img src="/logo.webp" alt="AURERXA" className="w-full h-full object-contain invert dark:invert-0" />
                                 </div>
                                 <div className="space-y-1">
                                     <h4 className="text-foreground font-bold text-sm tracking-tight">AURERXA App</h4>

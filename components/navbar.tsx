@@ -164,7 +164,7 @@ export function Navbar() {
             <Link href="/" className="flex-shrink-0 group relative z-50 transition-transform active:scale-95" aria-label="AURERXA Home - Luxury Jewelry">
               <div className="relative h-10 md:h-20 w-32 md:w-56">
                 <Image
-                  src="/logo.png"
+                  src="/logo.webp"
                   alt=""
                   fill
                   priority

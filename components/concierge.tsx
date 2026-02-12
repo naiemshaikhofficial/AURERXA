@@ -67,7 +67,7 @@ export function ConciergeServices() {
                                 {service.description}
                             </p>
 
-                            <button className="text-[10px] text-primary uppercase tracking-[0.3em] font-bold border-b border-primary/20 pb-2 group-hover:border-primary transition-all">
+                            <button className="text-[10px] text-primary uppercase tracking-[0.3em] font-bold border-b border-primary/20 pb-2 group-hover:border-primary transition-all" aria-label={service.cta}>
                                 {service.cta}
                             </button>
                         </motion.div>
@@ -86,7 +86,7 @@ export function FloatingConcierge() {
             transition={{ delay: 2 }}
             className="fixed bottom-24 right-6 md:bottom-12 md:right-12 z-50"
         >
-            <button className="relative group">
+            <button className="relative group" aria-label="Book a concierge appointment">
                 <div className="absolute inset-0 bg-primary rounded-full blur-xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse" />
                 <div className="relative flex items-center gap-3 bg-primary text-primary-foreground px-6 py-4 rounded-full shadow-2xl transition-transform hover:scale-105 active:scale-95 overflow-hidden">
                     <Calendar className="w-5 h-5" />

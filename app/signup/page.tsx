@@ -108,7 +108,7 @@ function SignupForm() {
                 <div className="text-center mb-10">
                     <Link href="/">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/logo.png" alt="Aurerxa" className="h-24 mx-auto mb-6 opacity-90 dark:invert-0 invert" />
+                        <img src="/logo.webp" alt="Aurerxa" className="h-24 mx-auto mb-6 opacity-90 dark:invert-0 invert" />
                     </Link>
                     <h2 className="text-3xl font-serif font-bold text-foreground mb-2">
                         {isSubmitted ? 'Check Your Inbox' : 'Create Account'}

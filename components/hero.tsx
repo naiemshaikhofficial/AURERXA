@@ -34,11 +34,12 @@ export function Hero() {
         {/* High-Res Luxury Background */}
         <div className="relative w-full h-full">
           <Image
-            src="/pexels-the-glorious-studio-3584518-29245554.jpg"
-            alt="Black Edition Background"
+            src="/pexels-the-glorious-studio-3584518-29245554.webp"
+            alt=""
             fill
             priority
-            quality={85}
+            fetchPriority="high"
+            quality={75}
             className="object-cover object-center scale-105 dark:opacity-70 opacity-30"
             sizes="100vw"
           />
@@ -56,12 +57,11 @@ export function Hero() {
           {/* Logo Brand Mark - Removed motion wrapper for instant LCP */}
           <div className="mb-6 relative inline-block">
             <Image
-              src="/logo.png"
+              src="/logo.webp"
               alt=""
               width={112}
               height={112}
               priority
-              fetchPriority="high"
               loading="eager"
               className="w-20 md:w-28 h-auto relative z-10 opacity-90 drop-shadow-xl dark:invert-0 invert"
             />
