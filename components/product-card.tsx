@@ -112,10 +112,10 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
     useEffect(() => {
         if (allImages.length <= 1) return
 
-        const intervalTime = isHovered ? 2000 : 4000
+        const intervalTime = isHovered ? 1000 : 4000
         const interval = setInterval(() => {
             setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
-        }, intervalTime + (index * 50))
+        }, intervalTime + (index * 20))
 
         return () => clearInterval(interval)
     }, [allImages.length, index, isHovered])
@@ -170,8 +170,8 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                         animate={{ x: 0, rotateY: 0, scale: 1, opacity: 1 }}
                         exit={{ x: '-100%', rotateY: -10, scale: 1.05, opacity: 0 }}
                         transition={{
-                            duration: 0.8,
-                            ease: [0.33, 1, 0.68, 1]
+                            duration: 0.5,
+                            ease: [0.16, 1, 0.3, 1]
                         }}
                         className="absolute inset-0 overflow-hidden"
                         style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
@@ -193,8 +193,8 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                                     isHovered ? "scale-110" : "scale-100"
                                 )}
                                 sizes="(max-width: 480px) 50vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                                priority={priority || index < 4}
-                                fetchPriority={priority || index < 4 ? "high" : "auto"}
+                                priority={priority || index < 2}
+                                fetchPriority={priority || index < 2 ? "high" : "auto"}
                                 loader={supabaseLoader}
                             />
                         </motion.div>
