@@ -139,6 +139,7 @@ const withPWA = (await import("@ducanh2912/next-pwa")).default({
   disable: false, // Force enable for testing the install button
   workboxOptions: {
     disableDevLogs: true,
+    importScripts: ["/sw-push.js"],
   },
 });
 
