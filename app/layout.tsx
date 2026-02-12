@@ -8,11 +8,11 @@ import dynamic from 'next/dynamic'
 import './globals.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-// Defer non-critical interactive overlays
-const BottomNav = dynamic(() => import('@/components/bottom-nav').then(mod => mod.BottomNav), { ssr: false })
-const MobileInstallPrompt = dynamic(() => import('@/components/mobile-install-prompt').then(mod => mod.MobileInstallPrompt), { ssr: false })
-const NotificationManager = dynamic(() => import('@/components/notification-manager').then(mod => mod.NotificationManager), { ssr: false })
-const CartSheet = dynamic(() => import('@/components/cart-sheet').then(mod => mod.CartSheet), { ssr: false })
+// Defer non-critical interactive overlays (code-split via dynamic import)
+const BottomNav = dynamic(() => import('@/components/bottom-nav').then(mod => mod.BottomNav))
+const MobileInstallPrompt = dynamic(() => import('@/components/mobile-install-prompt').then(mod => mod.MobileInstallPrompt))
+const NotificationManager = dynamic(() => import('@/components/notification-manager').then(mod => mod.NotificationManager))
+const CartSheet = dynamic(() => import('@/components/cart-sheet').then(mod => mod.CartSheet))
 
 const geist = Geist({
   subsets: ['latin'],
