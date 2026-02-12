@@ -10,7 +10,19 @@ import {
 type DatePreset = 'today' | 'yesterday' | 'week' | 'month' | 'year' | 'custom'
 
 export default function AdminDashboard() {
-    const [stats, setStats] = useState<any>(null)
+    const [stats, setStats] = useState<any>({
+        totalRevenue: 0,
+        filteredRevenue: 0,
+        totalOrders: 0,
+        filteredOrders: 0,
+        pendingOrders: 0,
+        shippedOrders: 0,
+        deliveredOrders: 0,
+        cancelledOrders: 0,
+        totalProducts: 0,
+        totalUsers: 0,
+        lowStockProducts: []
+    })
     const [revenueData, setRevenueData] = useState<any[]>([])
     const [ordersData, setOrdersData] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
@@ -55,14 +67,15 @@ export default function AdminDashboard() {
     const loadData = async () => {
         setLoading(true)
         const { from, to } = getDateRange(datePreset)
+        // Parallel fetch for speed
         const [s, r, o] = await Promise.all([
             getDashboardStats(from, to),
             getRevenueChart('monthly'),
             getOrdersChart('monthly'),
         ])
-        setStats(s)
-        setRevenueData(r)
-        setOrdersData(o)
+        if (s) setStats(s)
+        if (r) setRevenueData(r)
+        if (o) setOrdersData(o)
         setLoading(false)
     }
 
@@ -80,14 +93,6 @@ export default function AdminDashboard() {
         { value: 'year', label: 'This Year' },
         { value: 'custom', label: 'Custom Range' },
     ]
-
-    if (loading && !stats) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="w-8 h-8 border-2 border-[#D4AF37] border-t-transparent rounded-full animate-spin" />
-            </div>
-        )
-    }
 
     return (
         <div className="space-y-6">
@@ -250,7 +255,7 @@ export default function AdminDashboard() {
 
             {/* Low Stock Alerts */}
             {stats?.lowStockProducts?.length > 0 && (
-                <div className="bg-[#111111] border border-red-500/20 rounded-2xl p-4 md:p-6">
+                <div className="bg-[#111111] border border-red-500/20 rounded-2xl p-4 md:p-6 mb-6">
                     <h3 className="text-sm font-medium text-red-400 flex items-center gap-2 mb-4">
                         <AlertTriangle className="w-4 h-4" />
                         Low Stock Alerts ({stats.lowStockProducts.length})
@@ -260,7 +265,7 @@ export default function AdminDashboard() {
                             <div key={p.id} className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
                                 <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center text-white/40 text-xs overflow-hidden">
                                     {p.image_url ? (
-                                        <img src={p.image_url} alt="" className="w-full h-full object-cover rounded-lg" />
+                                        <Image src={p.image_url} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
                                     ) : (
                                         <Package className="w-5 h-5" />
                                     )}
@@ -274,6 +279,90 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Recent Orders */}
+                <div className="lg:col-span-2 bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-base font-semibold">Recent Orders</h3>
+                        <a href="/admin/orders" className="text-xs text-[#D4AF37] hover:underline">View All</a>
+                    </div>
+                    <div className="space-y-3">
+                        {recentOrders.length > 0 ? recentOrders.map((order: any) => (
+                            <div key={order.id} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-[#D4AF37]/10 flex items-center justify-center text-[#D4AF37]">
+                                        <ShoppingCart className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium">{order.order_number}</p>
+                                        <p className="text-xs text-white/40">{order.profiles?.full_name || 'Guest'}</p>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-bold">{formatCurrency(order.total)}</p>
+                                    <p className={`text-[10px] uppercase font-medium ${order.status === 'delivered' ? 'text-emerald-400' :
+                                            order.status === 'cancelled' ? 'text-red-400' :
+                                                'text-amber-400'
+                                        }`}>{order.status}</p>
+                                </div>
+                            </div>
+                        )) : (
+                            <p className="text-center text-white/20 text-sm py-4">No recent orders</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Top Products */}
+                <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
+                    <h3 className="text-base font-semibold mb-4">Top Selling</h3>
+                    <div className="space-y-4">
+                        {topProducts.length > 0 ? topProducts.map((p: any, i: number) => (
+                            <div key={p.id} className="flex items-center gap-3">
+                                <div className="font-bold text-white/20 w-4">{i + 1}</div>
+                                <div className="w-10 h-10 bg-white/5 rounded-lg overflow-hidden flex-shrink-0 relative">
+                                    {p.image_url ? (
+                                        <Image src={p.image_url} alt="" fill className="object-cover" unoptimized />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-white/20"><Package className="w-4 h-4" /></div>
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate text-white/90">{p.name}</p>
+                                    <p className="text-xs text-white/40">{p.sales} sold</p>
+                                </div>
+                            </div>
+                        )) : (
+                            <p className="text-center text-white/20 text-sm py-4">No data yet</p>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
+                <h3 className="text-base font-semibold mb-4">Recent Activity</h3>
+                <div className="space-y-0">
+                    {activityLogs.length > 0 ? activityLogs.map((log: any, i: number) => (
+                        <div key={log.id} className="flex gap-4 py-3 border-b border-white/5 last:border-0 last:pb-0 first:pt-0">
+                            <div className="flex flex-col items-center">
+                                <div className="w-2 h-2 rounded-full bg-[#D4AF37] mt-2" />
+                                {i !== activityLogs.length - 1 && <div className="w-px h-full bg-white/5 mt-2" />}
+                            </div>
+                            <div>
+                                <p className="text-sm text-white/80">
+                                    <span className="font-medium text-white">{log.profiles?.full_name || 'Admin'}</span> {log.action}
+                                </p>
+                                <p className="text-xs text-white/30 mt-0.5">
+                                    {new Date(log.created_at).toLocaleString()} • {log.entity_type}
+                                </p>
+                            </div>
+                        </div>
+                    )) : (
+                        <p className="text-center text-white/20 text-sm py-4">No recent activity</p>
+                    )}
+                </div>
+            </div>
         </div>
     )
 }

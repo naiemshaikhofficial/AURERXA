@@ -53,23 +53,18 @@ export async function getDashboardStats(dateFrom?: string, dateTo?: string) {
     const to = dateTo || new Date().toISOString()
 
     // Total Revenue & Orders
-    const { data: orders } = await client
-        .from('orders')
-        .select('id, total, status, created_at')
+    // Parallel Fetching for performance
+    const [ordersRes, todayOrdersRes, productsRes, usersRes] = await Promise.all([
+        client.from('orders').select('id, total, status, created_at'),
+        client.from('orders').select('id, total, status').gte('created_at', from).lte('created_at', to),
+        client.from('products').select('id, stock, name, image_url'),
+        client.from('profiles').select('id')
+    ])
 
-    const { data: todayOrders } = await client
-        .from('orders')
-        .select('id, total, status')
-        .gte('created_at', from)
-        .lte('created_at', to)
-
-    const { data: products } = await client
-        .from('products')
-        .select('id, stock, name, image_url')
-
-    const { data: users } = await client
-        .from('profiles')
-        .select('id')
+    const orders = ordersRes.data
+    const todayOrders = todayOrdersRes.data
+    const products = productsRes.data
+    const users = usersRes.data
 
     const allOrders = orders || []
     const filteredOrders = todayOrders || []
