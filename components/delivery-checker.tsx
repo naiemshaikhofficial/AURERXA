@@ -20,18 +20,21 @@ interface DeliveryInfo {
     codAvailable?: boolean
     message?: string
     error?: string
+    location?: string
+    shippingRate?: number
 }
 
 interface DeliveryCheckerProps {
-    productPrice?: number
+    product: any
     compact?: boolean
 }
 
-export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryCheckerProps) {
+export function DeliveryChecker({ product, compact = false }: DeliveryCheckerProps) {
     const [pincode, setPincode] = useState('')
     const [loading, setLoading] = useState(false)
     const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const productPrice = product?.price || 0
 
     // Load saved pincode from localStorage
     useEffect(() => {
@@ -56,7 +59,14 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
         const result = await checkDeliveryAvailability(code)
 
         if (result.success) {
-            setDeliveryInfo(result)
+            // Calculate shipping rate for this specific product
+            const { calculateShippingRate } = await import('@/app/actions')
+            const shippingRes = await calculateShippingRate(code, [{ products: product, quantity: 1 }], false)
+
+            setDeliveryInfo({
+                ...result,
+                shippingRate: shippingRes.success ? shippingRes.rate : undefined
+            })
             localStorage.setItem('aurerxa_pincode', code)
         } else {
             setError(result.error || 'Unable to check delivery')
@@ -168,13 +178,24 @@ export function DeliveryChecker({ productPrice = 0, compact = false }: DeliveryC
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-white/80 text-xs font-serif italic tracking-wide mb-1">
-                                                Estimated Delivery
+                                                Estimated Delivery to <span className="text-white font-bold">{deliveryInfo.location}</span>
                                             </p>
                                             <p className="text-white text-sm">
                                                 <span className="font-bold">{deliveryInfo.estimatedDelivery?.from}</span> - <span className="font-bold">{deliveryInfo.estimatedDelivery?.to}</span>
                                             </p>
                                         </div>
                                     </div>
+                                </div>
+
+                                {/* Shipping Cost - Premium Info */}
+                                <div className="mt-4 flex items-center justify-between border border-white/5 bg-white/[0.02] p-4">
+                                    <div className="flex items-center gap-3">
+                                        <Truck className="w-4 h-4 text-white/40" />
+                                        <span className="text-[10px] text-white/60 uppercase tracking-[0.2em]">Shipping Charge</span>
+                                    </div>
+                                    <span className="text-xs font-bold text-primary tracking-widest">
+                                        {freeShipping ? 'FREE' : deliveryInfo.shippingRate ? `₹${deliveryInfo.shippingRate}` : '₹90'}
+                                    </span>
                                 </div>
 
                                 {/* Feature Badges - Text Only Grid */}

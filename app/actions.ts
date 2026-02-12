@@ -1509,6 +1509,8 @@ export async function checkDeliveryAvailability(pincode: string) {
     let codAvailable = true
     let prepaidAvailable = true
     let isODA = false // Out of Delivery Area
+    let district = ''
+    let state = ''
 
     const delhiveryToken = process.env.DELHIVERY_API_TOKEN
     const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
@@ -1534,6 +1536,8 @@ export async function checkDeliveryAvailability(pincode: string) {
             codAvailable = pincodeInfo.cod === 'Y' || pincodeInfo.cash === 'Y'
             prepaidAvailable = pincodeInfo.pre_paid === 'Y'
             isODA = pincodeInfo.is_oda === 'Y'
+            district = pincodeInfo.district
+            state = pincodeInfo.state_code
 
             // If pincode not serviceable at all
             if (!prepaidAvailable && !codAvailable) {
@@ -1634,6 +1638,7 @@ export async function checkDeliveryAvailability(pincode: string) {
       codAvailable,
       prepaidAvailable,
       isODA,
+      location: district && state ? `${district}, ${state}` : 'India',
       message: isODA
         ? 'Extended Delivery Area (Remote)'
         : zone === 'metro'

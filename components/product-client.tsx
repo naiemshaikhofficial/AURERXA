@@ -642,7 +642,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             </div>
                         </div>
 
-                        <DeliveryChecker productPrice={product.price} />
+                        <DeliveryChecker product={product} />
 
 
                         {/* Selectors */}
