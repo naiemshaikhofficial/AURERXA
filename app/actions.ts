@@ -230,7 +230,7 @@ export async function getProductBySlug(slug: string) {
 export async function getAdminProducts() {
   const { data, error } = await supabase
     .from('products')
-    .select('id, name, price, stock, slug, image_url, images, created_at, categories(name)')
+    .select('*, categories(name)')
     .order('created_at', { ascending: false })
 
   if (error) return []
