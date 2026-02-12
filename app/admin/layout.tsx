@@ -8,7 +8,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { checkAdminRole } from './actions'
 import {
     LayoutDashboard, ShoppingCart, Package, Users, HeadphonesIcon,
-    Settings, ChevronLeft, ChevronRight, Shield, Menu, X, LogOut, Activity, Sparkles
+    Settings, ChevronLeft, ChevronRight, Shield, Menu, X, LogOut, Activity, Sparkles, Wrench
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -21,6 +21,7 @@ const NAV_ITEMS = [
     { label: 'Settings', href: '/admin/settings', icon: Settings, roles: ['main_admin'] },
     { label: 'Activity', href: '/admin/activity', icon: Activity, roles: ['main_admin'] },
     { label: 'Services', href: '/admin/services', icon: Sparkles, imgSrc: 'https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Tools', href: '/admin/tools', icon: Wrench, imgSrc: 'https://img.icons8.com/?size=100&id=114321&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
