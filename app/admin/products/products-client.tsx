@@ -13,7 +13,7 @@ import { ImageUpload } from '@/components/admin/image-upload'
 import supabaseLoader from '@/lib/supabase-loader'
 import { useRouter } from 'next/navigation'
 
-export function ProductsClient({ initialProducts, initialCategories = [] }: { initialProducts: any[], initialCategories?: any[] }) {
+export function ProductsClient({ initialProducts, initialCategories = [], adminRole }: { initialProducts: any[], initialCategories?: any[], adminRole?: string }) {
     const [products, setProducts] = useState(initialProducts)
     const [editingProduct, setEditingProduct] = useState<any>(null)
     const [saving, setSaving] = useState(false)
@@ -29,7 +29,11 @@ export function ProductsClient({ initialProducts, initialCategories = [] }: { in
         if (typeof rawImages === 'string' && rawImages.startsWith('{')) {
             rawImages = rawImages.slice(1, -1).split(',').map(s => s.trim().replace(/^"|"$/g, '')).filter(Boolean);
         }
-        setEditingProduct({ ...product, images: Array.isArray(rawImages) ? rawImages : [] })
+        setEditingProduct({
+            ...product,
+            images: Array.isArray(rawImages) ? rawImages : [],
+            dimensions_unit: product.dimensions_unit || 'mm'
+        })
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 

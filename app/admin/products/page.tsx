@@ -1,5 +1,6 @@
 import React, { Suspense } from 'react'
 import { getAdminProducts, getCategories } from '@/app/actions'
+import { checkAdminRole } from '../actions'
 import { ProductsClient } from './products-client'
 import { ProductsSkeleton } from './products-skeleton'
 
@@ -14,9 +15,10 @@ export default async function AdminProductsPage() {
 }
 
 async function ProductsContent() {
-    const [products, categories] = await Promise.all([
+    const [products, categories, admin] = await Promise.all([
         getAdminProducts(),
-        getCategories()
+        getCategories(),
+        checkAdminRole()
     ])
-    return <ProductsClient initialProducts={products} initialCategories={categories} />
+    return <ProductsClient initialProducts={products} initialCategories={categories} adminRole={admin?.role} />
 }
