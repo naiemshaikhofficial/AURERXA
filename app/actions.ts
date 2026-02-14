@@ -2555,7 +2555,8 @@ export async function upsertVisitorIntelligence(payload: {
         device_info: payload.deviceInfo || {},
         marketing_info: {
           ...payload.marketingInfo,
-          ip_prefix: maskedIp
+          ip_prefix: maskedIp,
+          updated_at: new Date().toISOString()
         },
         consent_data: payload.consentData || {},
         last_active: new Date().toISOString()
