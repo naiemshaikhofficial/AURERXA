@@ -1,14 +1,16 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { updateOrderStatus, exportOrdersCsv, deleteOrder, getShipmentLabel } from '../actions'
 import { getOrderTracking } from '../../actions'
 import {
     Search, Filter, ChevronDown, Package, MapPin, CreditCard,
-    Truck, Clock, CheckCircle, XCircle, X, Download, User as UserIcon, Trash2, ShieldAlert, Copy, Check, Phone
+    Truck, Clock, CheckCircle, XCircle, X, Download, User as UserIcon, Trash2, ShieldAlert, Copy, Check, Phone, FileText, Printer
 } from 'lucide-react'
+import { InvoiceTemplate } from '@/components/invoice-template'
 
 const STATUS_COLORS: Record<string, string> = {
     pending: 'bg-amber-400/10 text-amber-400',
@@ -36,6 +38,7 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
     const [trackingData, setTrackingData] = useState<any>(null)
     const [loadingTracking, setLoadingTracking] = useState(false)
     const [labelUrl, setLabelUrl] = useState<string | null>(null)
+    const [printType, setPrintType] = useState<'customer' | 'shipping' | null>(null)
 
     // Sync Props when they change (Server Refetch)
     useEffect(() => {
@@ -132,6 +135,15 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
         navigator.clipboard.writeText(text)
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
+    }
+
+    const handlePrint = (type: 'customer' | 'shipping') => {
+        setPrintType(type)
+        // Longer timeout to ensure React finishes rendering the template
+        setTimeout(() => {
+            window.print()
+            setPrintType(null)
+        }, 1000)
     }
 
     const totalPages = Math.ceil(total / 20)
@@ -300,6 +312,18 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                 <p className="text-[10px] text-white/30 uppercase tracking-widest">{new Date(selectedOrder.created_at).toLocaleDateString()}</p>
                             </div>
                             <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => handlePrint('customer')}
+                                    className="px-3 py-1.5 bg-white/5 text-white/70 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
+                                >
+                                    <FileText className="w-3 h-3" /> Invoice
+                                </button>
+                                <button
+                                    onClick={() => handlePrint('shipping')}
+                                    className="px-3 py-1.5 bg-white/5 text-white/70 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
+                                >
+                                    <Truck className="w-3 h-3" /> Shipping
+                                </button>
                                 {labelUrl && (
                                     <a
                                         href={labelUrl}
@@ -307,7 +331,7 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                         rel="noopener noreferrer"
                                         className="px-3 py-1.5 bg-[#D4AF37]/10 text-[#D4AF37] hover:bg-[#D4AF37]/20 border border-[#D4AF37]/20 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all"
                                     >
-                                        <Download className="w-3 h-3" /> Label
+                                        <Download className="w-3 h-3" /> Carrier Label
                                     </a>
                                 )}
                                 <button onClick={() => setSelectedOrder(null)} className="text-white/40 hover:text-white p-2 hover:bg-white/5 rounded-full transition-colors">
@@ -524,6 +548,29 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                         </div>
                     </div>
                 </div>
+            )}
+            {/* Hidden Printing Template Container */}
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                @media print {
+                    @page { margin: 1cm; size: auto; }
+                    body > *:not(#print-root) { display: none !important; }
+                    #print-root { 
+                        display: block !important;
+                        width: 100% !important;
+                        background: white !important;
+                    }
+                }
+            `}} />
+
+            {/* The actual Printable Content - Using Portal to body for absolute print reliability */}
+            {printType && typeof document !== 'undefined' && createPortal(
+                <div id="print-root" className="fixed inset-0 z-[99999] bg-white overflow-auto p-10 select-none no-print-dialog">
+                    <div className="max-w-[800px] mx-auto shadow-2xl rounded-xl border border-slate-100 overflow-hidden bg-white">
+                        <InvoiceTemplate order={selectedOrder} type={printType} />
+                    </div>
+                </div>,
+                document.body
             )}
         </div>
     )

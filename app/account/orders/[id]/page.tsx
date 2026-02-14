@@ -1,7 +1,7 @@
-
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -9,7 +9,8 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
 import { getOrderById, getOrderTracking, verifyPayment } from '@/app/actions'
-import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw } from 'lucide-react'
+import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer } from 'lucide-react'
+import { InvoiceTemplate } from '@/components/invoice-template'
 
 export default function OrderDetailPage() {
     const params = useParams()
@@ -19,6 +20,7 @@ export default function OrderDetailPage() {
     const [loading, setLoading] = useState(true)
     const [verifying, setVerifying] = useState(false)
     const [trackingData, setTrackingData] = useState<any>(null)
+    const [isPrinting, setIsPrinting] = useState(false)
 
     useEffect(() => {
         async function load() {
@@ -62,6 +64,14 @@ export default function OrderDetailPage() {
             case 'delivered': return 3
             default: return 0
         }
+    }
+
+    const handlePrint = () => {
+        setIsPrinting(true)
+        setTimeout(() => {
+            window.print()
+            setIsPrinting(false)
+        }, 1000)
     }
 
     if (loading) {
@@ -135,13 +145,22 @@ export default function OrderDetailPage() {
                                             })}
                                         </p>
                                     </div>
-                                    <span className={`px-3 py-1 text-xs uppercase tracking-wider ${order.status === 'delivered' ? 'text-primary bg-primary/20' :
-                                        order.status === 'shipped' ? 'text-foreground/80 bg-muted' :
-                                            order.status === 'cancelled' ? 'text-destructive bg-destructive/10' :
-                                                'text-primary bg-primary/10'
-                                        }`}>
-                                        {order.status}
-                                    </span>
+                                    <div className="flex flex-col items-end gap-2">
+                                        <span className={`px-3 py-1 text-xs uppercase tracking-wider ${order.status === 'delivered' ? 'text-primary bg-primary/20' :
+                                            order.status === 'shipped' ? 'text-foreground/80 bg-muted' :
+                                                order.status === 'cancelled' ? 'text-destructive bg-destructive/10' :
+                                                    'text-primary bg-primary/10'
+                                            }`}>
+                                            {order.status}
+                                        </span>
+                                        <button
+                                            onClick={handlePrint}
+                                            className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-primary hover:text-primary/80 transition-colors"
+                                        >
+                                            <FileText className="w-3.5 h-3.5" />
+                                            Print Invoice
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Tracking & Delivery Info */}
@@ -371,8 +390,31 @@ export default function OrderDetailPage() {
                 </div>
             </main>
 
+            {/* Hidden Printing Template Container */}
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                @media print {
+                    @page { margin: 1cm; size: auto; }
+                    body > *:not(#print-root) { display: none !important; }
+                    #print-root { 
+                        display: block !important;
+                        width: 100% !important;
+                        background: white !important;
+                    }
+                }
+            `}} />
+
+            {/* The actual Printable Content */}
+            {isPrinting && typeof document !== 'undefined' && createPortal(
+                <div id="print-root" className="fixed inset-0 z-[99999] bg-white overflow-auto p-10 select-none">
+                    <div className="max-w-[800px] mx-auto shadow-2xl rounded-xl border border-slate-100 overflow-hidden bg-white">
+                        <InvoiceTemplate order={order} type="customer" />
+                    </div>
+                </div>,
+                document.body
+            )}
+
             <Footer />
         </div>
     )
 }
-
