@@ -24,6 +24,12 @@ export const PURITY_MAPPING: Record<string, { label: string; subLabel: string; t
     '925': { label: '925 Sterling Silver', subLabel: 'Premium Quality', type: 'Silver' },
     '99.9': { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' },
     '99.9%': { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' },
+
+    // Platinum Standards
+    '950': { label: '950 Platinum', subLabel: 'Highly Pure & Rare', type: 'Platinum' },
+    'PT950': { label: '950 Platinum', subLabel: 'Highly Pure & Rare', type: 'Platinum' },
+    '900': { label: '900 Platinum', subLabel: '90% Pure Platinum', type: 'Platinum' },
+    'PT900': { label: '900 Platinum', subLabel: '90% Pure Platinum', type: 'Platinum' },
 }
 
 export function formatPurity(value: string | number | null | undefined) {
