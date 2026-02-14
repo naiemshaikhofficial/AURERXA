@@ -115,10 +115,26 @@ export function Navbar() {
   }, [])
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
-    window.location.href = '/'
+    try {
+      // 1. Client-side sign out
+      await supabase.auth.signOut()
+
+      // 2. Server-side sign out (clears cookies)
+      const { signOutAction } = await import('@/app/actions')
+      await signOutAction()
+
+      // 3. Clear local state
+      setUser(null)
+      setProfile(null)
+      setIsAdmin(false)
+
+      // 4. Force a hard reload to clear all server/client state
+      window.location.href = '/'
+    } catch (error) {
+      console.error('Sign out error:', error)
+      // Fallback: still try to reload
+      window.location.href = '/'
+    }
   }
 
   const getInitials = () => {

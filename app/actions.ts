@@ -66,6 +66,28 @@ export async function getCurrentUserProfile() {
   }
 }
 
+export async function signOutAction() {
+  try {
+    const client = await getAuthClient()
+    const { error } = await client.auth.signOut()
+
+    if (error) {
+      console.error('Error in signOutAction:', error)
+      return { success: false, error: error.message }
+    }
+
+    // Clear the status cache cookie explicitly
+    const cookieStore = await cookies()
+    cookieStore.delete('ua-status-cache')
+
+    return { success: true }
+  } catch (err: any) {
+    console.error('Crash in signOutAction:', err)
+    return { success: false, error: err.message || 'Internal server error' }
+  }
+}
+
+
 export async function addNewProduct(productData: any) {
   const client = await getAuthClient()
 
