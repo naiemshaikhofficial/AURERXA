@@ -67,7 +67,7 @@ export const getCategories = unstable_cache(
   async () => {
     const { data, error } = await supabase
       .from('categories')
-      .select('*')
+      .select('id, name, slug, image_url, description')
       .order('name')
 
     if (error) {
@@ -77,14 +77,14 @@ export const getCategories = unstable_cache(
     return data
   },
   ['categories'],
-  { tags: ['categories'] }
+  { revalidate: 86400, tags: ['categories'] }
 )
 
 export const getSubCategories = unstable_cache(
   async (categoryId?: string) => {
     let query = supabase
       .from('sub_categories')
-      .select('*')
+      .select('id, name, slug, category_id, description')
       .order('name')
 
     if (categoryId) {
@@ -100,7 +100,7 @@ export const getSubCategories = unstable_cache(
     return data
   },
   ['sub-categories'],
-  { tags: ['sub-categories'] }
+  { revalidate: 86400, tags: ['sub-categories'] }
 )
 
 export async function addSubCategory(subCategoryData: any) {
@@ -240,7 +240,7 @@ export const getNewReleases = unstable_cache(
     return data || []
   },
   ['new-releases'],
-  { revalidate: 60, tags: ['products', 'new-releases'] }
+  { revalidate: 86400, tags: ['products', 'new-releases'] }
 )
 
 export const getProducts = unstable_cache(
@@ -285,7 +285,7 @@ export const getProducts = unstable_cache(
     return data || []
   },
   ['products-list'],
-  { revalidate: 60, tags: ['products'] }
+  { revalidate: 86400, tags: ['products'] }
 )
 
 // Product Actions
@@ -338,6 +338,7 @@ export async function updateProductDetails(productId: string, updates: any) {
     }
 
     console.log('✅ Update Product Details Success:', data)
+    revalidateTag('products', '')
     return { success: true }
   } catch (err: any) {
     console.error('❌ Update Product Details Crash:', err)
@@ -373,6 +374,7 @@ export async function deleteProduct(productId: string) {
       })
     }
 
+    revalidateTag('products', '')
     return { success: true }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to delete product' }

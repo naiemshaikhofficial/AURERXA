@@ -29,12 +29,63 @@ export async function middleware(request: NextRequest) {
         }
     )
 
-    const isProtectedRoute = request.nextUrl.pathname.startsWith('/account') ||
-        request.nextUrl.pathname.startsWith('/admin') ||
-        request.nextUrl.pathname.startsWith('/checkout')
+    // --- LIGHTWEIGHT RATE LIMITING ---
+    // Simple per-instance rate limiting for expensive routes
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous'
+    const pathname = request.nextUrl.pathname
 
-    const isAuthRoute = request.nextUrl.pathname.startsWith('/login') ||
-        request.nextUrl.pathname.startsWith('/signup')
+    // Expensive routes that need protection
+    const isExpensiveRoute = pathname.startsWith('/login') ||
+        pathname.startsWith('/signup') ||
+        pathname.startsWith('/api/search') ||
+        pathname.startsWith('/contact')
+
+    if (isExpensiveRoute) {
+        // Rate limit: 10 requests per minute per IP for sensitive routes
+        const rateLimitKey = `rl:${ip}:${pathname}`
+        const now = Date.now()
+        const windowSize = 60 * 1000 // 1 minute
+
+        // We use a simple cookie-based tracking if no persistent cache is available
+        // This is a "best effort" distributed rate limit
+        const rlData = request.cookies.get(rateLimitKey)?.value
+        let count = 0
+        let resetTime = now + windowSize
+
+        if (rlData) {
+            const parsed = JSON.parse(rlData)
+            if (now < parsed.resetTime) {
+                count = parsed.count + 1
+                resetTime = parsed.resetTime
+            }
+        }
+
+        if (count > 10) {
+            return new NextResponse('Too Many Requests', {
+                status: 429,
+                headers: {
+                    'Retry-After': Math.ceil((resetTime - now) / 1000).toString(),
+                    'X-RateLimit-Limit': '10',
+                    'X-RateLimit-Remaining': '0',
+                }
+            })
+        }
+
+        // Set/Update rate limit cookie
+        response.cookies.set(rateLimitKey, JSON.stringify({ count, resetTime }), {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'lax',
+            maxAge: 60
+        })
+    }
+
+    const isProtectedRoute = pathname.startsWith('/account') ||
+        pathname.startsWith('/admin') ||
+        pathname.startsWith('/checkout')
+
+    const isAuthRoute = pathname.startsWith('/login') ||
+        pathname.startsWith('/signup')
 
     if (!isProtectedRoute && !isAuthRoute) {
         // Early return for public routes - keep headers for security
