@@ -1,4 +1,4 @@
-import React from "react"
+import React, { Suspense } from "react"
 import type { Metadata, Viewport } from 'next'
 import { Geist, Playfair_Display } from 'next/font/google'
 import { SmoothScroll } from '@/components/smooth-scroll'
@@ -57,12 +57,18 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from '@/components/navbar'
 import { CategoryNav } from '@/components/category-nav'
 import { AdminRouteGuard, AdminOnlyWrapper } from '@/components/admin-route-guard'
+import { ConsentProvider } from '@/context/consent-context'
+import { CookieConsent } from '@/components/cookie-consent'
+import { TrackingScripts } from '@/components/scripts/tracking'
+import { BehaviorTracker } from '@/components/behavior-tracker'
+import { getCurrentUserProfile } from '@/app/actions'
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const profile = await getCurrentUserProfile()
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable} ${playfair.variable}`}>
       <head>
@@ -86,36 +92,43 @@ export default function RootLayout({
         >
           <CartProvider>
             <SearchProvider>
-              <SmoothScroll>
-                <AdminRouteGuard>
-                  <Navbar />
-                </AdminRouteGuard>
-                {/* Cinematic Grain Overlay - Optimized for TBT */}
-                <div
-                  className="fixed inset-0 z-[100] pointer-events-none opacity-[0.015] bg-[url('/noise.svg')] repeat will-change-transform"
-                  style={{ transform: 'translateZ(0)' }}
-                />
-                <AdminRouteGuard>
-                  <div className="pt-20 md:pt-24">
-                    <CategoryNav />
-                    <main>
-                      {children}
-                    </main>
-                  </div>
-                </AdminRouteGuard>
-                <AdminOnlyWrapper>
-                  {children}
-                </AdminOnlyWrapper>
-                <Toaster />
-                <AdminRouteGuard>
-                  <CartSheet />
-                  <BottomNav />
-                  <MobileInstallPrompt />
-                  <NotificationManager />
-                </AdminRouteGuard>
-                <SpeedInsights />
-                <Analytics />
-              </SmoothScroll>
+              <ConsentProvider initialProfile={profile}>
+                <SmoothScroll>
+                  <AdminRouteGuard>
+                    <Navbar />
+                  </AdminRouteGuard>
+                  {/* Cinematic Grain Overlay - Optimized for TBT */}
+                  <div
+                    className="fixed inset-0 z-[100] pointer-events-none opacity-[0.015] bg-[url('/noise.svg')] repeat will-change-transform"
+                    style={{ transform: 'translateZ(0)' }}
+                  />
+                  <AdminRouteGuard>
+                    <div className="pt-20 md:pt-24">
+                      <CategoryNav />
+                      <main>
+                        {children}
+                      </main>
+                    </div>
+                  </AdminRouteGuard>
+                  <AdminOnlyWrapper>
+                    {children}
+                  </AdminOnlyWrapper>
+                  <Toaster />
+                  <AdminRouteGuard>
+                    <CartSheet />
+                    <BottomNav />
+                    <MobileInstallPrompt />
+                    <NotificationManager />
+                  </AdminRouteGuard>
+                  <SpeedInsights />
+                  <Analytics />
+                </SmoothScroll>
+                <CookieConsent />
+                <TrackingScripts />
+                <Suspense fallback={null}>
+                  <BehaviorTracker />
+                </Suspense>
+              </ConsentProvider>
             </SearchProvider>
           </CartProvider>
         </ThemeProvider>

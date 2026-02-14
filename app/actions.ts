@@ -1,7 +1,7 @@
 'use server'
 
 import { supabase } from '@/lib/supabase'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { notifyNewProduct } from './push-actions'
 import { createCashfreeOrder, getCashfreePayments } from '@/lib/cashfree'
@@ -33,6 +33,35 @@ async function getAuthClient() {
       },
     }
   )
+}
+
+export async function getCurrentUserProfile() {
+  try {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+
+    if (!user) return null
+
+    const { data, error } = await client
+      .from('profiles')
+      .select('full_name, email, phone_number')
+      .eq('id', user.id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching profile:', error)
+      return null
+    }
+
+    return {
+      name: data.full_name,
+      email: data.email,
+      phone: data.phone_number
+    }
+  } catch (err) {
+    console.error('Crash in getCurrentUserProfile:', err)
+    return null
+  }
 }
 
 export async function addNewProduct(productData: any) {
@@ -2494,5 +2523,100 @@ export async function verifyRazorpayPayment(orderId: string, params: { razorpay_
   } catch (err: any) {
     console.error('Verification Error:', err)
     return { success: false, error: err.message }
+  }
+}
+
+// ============================================
+// VISITOR INTELLIGENCE & TRACKING (Extreme)
+// ============================================
+
+export async function upsertVisitorIntelligence(payload: {
+  sessionId: string;
+  identityData?: any;
+  deviceInfo?: any;
+  marketingInfo?: any;
+  consentData?: any;
+}) {
+  try {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+
+    // Mask IP for legal safety (keeps prefix for geographic intelligence without PII)
+    const headerList = await headers()
+    const ip = headerList.get('x-forwarded-for') || '0.0.0.0'
+    const maskedIp = ip.split('.').slice(0, 3).join('.') + '.0'
+
+    const { data, error } = await client
+      .from('visitor_intelligence')
+      .upsert({
+        session_id: payload.sessionId,
+        user_id: user?.id || null,
+        identity_data: payload.identityData || {},
+        device_info: payload.deviceInfo || {},
+        marketing_info: {
+          ...payload.marketingInfo,
+          ip_prefix: maskedIp
+        },
+        consent_data: payload.consentData || {},
+        last_active: new Date().toISOString()
+      }, {
+        onConflict: 'session_id'
+      })
+
+    if (error) {
+      console.error('Error upserting visitor intelligence:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  } catch (err: any) {
+    console.error('Crash in upsertVisitorIntelligence:', err)
+    return { success: false, error: err.message }
+  }
+}
+
+export async function logVisitorEvent(sessionId: string, eventName: string, metadata: any = {}) {
+  try {
+    const client = await getAuthClient()
+
+    // Fetch current behavior summary
+    const { data: current } = await client
+      .from('visitor_intelligence')
+      .select('behavior_summary')
+      .eq('session_id', sessionId)
+      .single()
+
+    const summary = current?.behavior_summary || { page_views: [], interaction_count: 0 }
+
+    // Add event to history (limit to last 50 for database health)
+    const newPageViews = [...(summary.page_views || [])]
+    newPageViews.push({
+      event: eventName,
+      timestamp: new Date().toISOString(),
+      ...metadata
+    })
+
+    if (newPageViews.length > 50) newPageViews.shift()
+
+    const { error } = await client
+      .from('visitor_intelligence')
+      .update({
+        behavior_summary: {
+          page_views: newPageViews,
+          interaction_count: (summary.interaction_count || 0) + 1
+        },
+        last_active: new Date().toISOString()
+      })
+      .eq('session_id', sessionId)
+
+    if (error) {
+      console.error('Error logging visitor event:', error)
+      return { success: false }
+    }
+
+    return { success: true }
+  } catch (err) {
+    console.error('Crash in logVisitorEvent:', err)
+    return { success: false }
   }
 }

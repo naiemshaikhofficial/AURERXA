@@ -29,6 +29,7 @@ import {
 
 import { getPincodeDetails } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
+import { useConsent } from '@/context/consent-context'
 
 interface AddressFormProps {
     initialData?: any
@@ -119,7 +120,20 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
     })
 
     const { items: cartItems } = useCart()
+    const { consentStatus, userDetails, updateUserDetails } = useConsent()
     const [pincodeLoading, setPincodeLoading] = useState(false)
+
+    // Pre-fill from consent context if empty
+    useEffect(() => {
+        if (consentStatus === 'granted' && !initialData?.id) { // Only pre-fill for new addresses
+            if (userDetails.name && !formData.full_name) {
+                updateField('full_name', userDetails.name)
+            }
+            if (userDetails.phone && !formData.phone) {
+                updateField('phone', userDetails.phone)
+            }
+        }
+    }, [consentStatus, userDetails, initialData?.id, formData.full_name, formData.phone])
 
     const [countryOpen, setCountryOpen] = useState(false)
     const [stateOpen, setStateOpen] = useState(false)
@@ -207,6 +221,14 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
             state: formData.state,
             pincode: formData.pincode,
             is_default: formData.is_default,
+        }
+
+        // Persist details to context if consented
+        if (consentStatus === 'granted') {
+            updateUserDetails({
+                name: formData.full_name,
+                phone: formData.phone
+            })
         }
 
         onSave(savePayload)

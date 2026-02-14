@@ -9,6 +9,8 @@ import {
     Building2, User, Mail, Phone, FileText, MessageSquare,
     CheckCircle2, ShoppingBag, X
 } from 'lucide-react'
+import { useConsent } from '@/context/consent-context'
+import { useEffect } from 'react'
 
 interface Product {
     id: string
@@ -27,11 +29,17 @@ interface BulkItem {
     quantity: number
 }
 
-export function BulkOrderForm({ products }: { products: Product[] }) {
+export function BulkOrderForm({
+    products,
+    initialProfile
+}: {
+    products: Product[],
+    initialProfile?: { name?: string; email?: string; phone?: string } | null
+}) {
     const [businessName, setBusinessName] = useState('')
-    const [contactName, setContactName] = useState('')
-    const [email, setEmail] = useState('')
-    const [phone, setPhone] = useState('')
+    const [contactName, setContactName] = useState(initialProfile?.name || '')
+    const [email, setEmail] = useState(initialProfile?.email || '')
+    const [phone, setPhone] = useState(initialProfile?.phone || '')
     const [gstNumber, setGstNumber] = useState('')
     const [message, setMessage] = useState('')
     const [items, setItems] = useState<BulkItem[]>([])
@@ -41,6 +49,17 @@ export function BulkOrderForm({ products }: { products: Product[] }) {
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [submitted, setSubmitted] = useState(false)
     const [showProductPicker, setShowProductPicker] = useState(false)
+
+    const { consentStatus, userDetails, updateUserDetails } = useConsent()
+
+    // Pre-fill from consent context
+    useEffect(() => {
+        if (consentStatus === 'granted') {
+            if (userDetails.name && !contactName) setContactName(userDetails.name)
+            if (userDetails.email && !email) setEmail(userDetails.email)
+            if (userDetails.phone && !phone) setPhone(userDetails.phone)
+        }
+    }, [consentStatus, userDetails, contactName, email, phone])
 
     // Search products
     const handleSearch = async (query: string) => {
@@ -137,6 +156,15 @@ export function BulkOrderForm({ products }: { products: Product[] }) {
             if (result.success) {
                 setSubmitted(true)
                 toast.success('Bulk order inquiry submitted!')
+
+                // Persist details if consented
+                if (consentStatus === 'granted') {
+                    updateUserDetails({
+                        name: contactName,
+                        email: email,
+                        phone: phone
+                    })
+                }
             } else {
                 toast.error(result.error || 'Failed to submit')
             }

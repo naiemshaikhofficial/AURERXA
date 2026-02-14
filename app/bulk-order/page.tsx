@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { getProducts } from '@/app/actions'
+import { getProducts, getCurrentUserProfile } from '@/app/actions'
 import { BulkOrderForm } from '@/components/bulk-order-form'
 import { Footer } from '@/components/footer'
 import { Navbar } from '@/components/navbar'
@@ -11,8 +11,11 @@ export const metadata: Metadata = {
 }
 
 async function BulkOrderContent() {
-    const products = await getProducts()
-    return <BulkOrderForm products={products || []} />
+    const [products, profile] = await Promise.all([
+        getProducts(),
+        getCurrentUserProfile()
+    ])
+    return <BulkOrderForm products={products || []} initialProfile={profile} />
 }
 
 export default function BulkOrderPage() {
