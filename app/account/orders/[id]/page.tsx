@@ -406,9 +406,28 @@ export default function OrderDetailPage() {
 
             {/* The actual Printable Content */}
             {isPrinting && typeof document !== 'undefined' && createPortal(
-                <div id="print-root" className="fixed inset-0 z-[99999] bg-white overflow-auto p-10 select-none">
-                    <div className="mx-auto shadow-2xl rounded-xl border border-slate-100 overflow-hidden bg-white max-w-[800px]">
-                        <InvoiceTemplate order={order} type="customer" />
+                <div id="print-root" className="fixed inset-0 z-[99999] bg-slate-100 overflow-y-auto p-4 sm:p-10 select-none no-print-dialog scrollbar-thin">
+                    <div className="flex flex-col items-center gap-6 min-h-full">
+                        {/* Control Bar */}
+                        <div className="w-full max-w-[800px] flex justify-between items-center bg-white p-4 rounded-lg shadow-lg border border-slate-200">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-[#D4AF37] text-white rounded-md">
+                                    <Printer className="w-4 h-4" />
+                                </div>
+                                <h2 className="text-sm font-black text-slate-900 leading-none">AURERXA INVOICE</h2>
+                            </div>
+                            <button
+                                onClick={() => setIsPrinting(false)}
+                                className="bg-red-50 text-red-600 px-6 py-2 rounded-lg font-black text-sm hover:bg-red-600 hover:text-white transition-all shadow-sm border border-red-100"
+                            >
+                                CLOSE PREVIEW
+                            </button>
+                        </div>
+
+                        {/* Invoice Content */}
+                        <div className="w-full max-w-[800px] shadow-2xl border border-slate-200 bg-white mb-20">
+                            <InvoiceTemplate order={order} type="customer" />
+                        </div>
                     </div>
                 </div>,
                 document.body

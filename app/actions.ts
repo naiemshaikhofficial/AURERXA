@@ -888,7 +888,7 @@ export async function getOrderById(orderId: string) {
 
   const { data, error } = await client
     .from('orders')
-    .select('*, order_items(*)')
+    .select('*, order_items(*, products(name, image_url, weight_grams, purity))')
     .eq('id', orderId)
     .eq('user_id', user.id)
     .single()

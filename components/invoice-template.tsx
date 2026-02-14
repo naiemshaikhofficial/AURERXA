@@ -1,13 +1,30 @@
 'use client'
 
 import React from 'react'
-import Image from 'next/image'
-import { Package, MapPin, Phone, Mail, Globe, Printer, Shield } from 'lucide-react'
+import { Phone, MapPin, Globe, Shield, Scale, Hash, BadgeCheck, FileCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface InvoiceProps {
     order: any
     type: 'customer' | 'shipping'
+}
+
+// Utility to convert number to words of Indian Currency
+function numberToWords(num: number): string {
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen']
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
+
+    function convert(n: number): string {
+        if (n < 20) return ones[n]
+        if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + ones[n % 10] : '')
+        if (n < 1000) return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' and ' + convert(n % 100) : '')
+        if (n < 100000) return convert(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 !== 0 ? ' ' + convert(n % 1000) : '')
+        if (n < 10000000) return convert(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 !== 0 ? ' ' + convert(n % 100000) : '')
+        return convert(Math.floor(n / 10000000)) + ' Crore' + (n % 10000000 !== 0 ? ' ' + convert(n % 10000000) : '')
+    }
+
+    if (num === 0) return 'Zero'
+    return convert(Math.floor(num)) + ' Rupees Only'
 }
 
 export function InvoiceTemplate({ order, type }: InvoiceProps) {
@@ -31,265 +48,273 @@ export function InvoiceTemplate({ order, type }: InvoiceProps) {
 
     const isShipping = type === 'shipping'
 
+    // Business Details (Industry Standard Placeholder for Gold Trader)
+    const sellerDetails = {
+        name: "NIJAM GOLD WORKS (AURERXA)",
+        address: "Captain Lakshmi Chowk, Rangargalli, Sangamner, MS 422605",
+        gstin: "27XXXXX0000X1Z5", // Placeholder GSTIN
+        mobile: "+91 7776818394",
+        bis_license: "CM/L-0000000", // BIS Hallmarking License Placeholder
+        pan: "ABCDE0000F"
+    }
+
+    // Jewelry Specific Calculations
+    const items = order.order_items?.map((item: any) => {
+        const product = item.products?.[0] || item.products || {}
+        const totalItemPrice = item.price * item.quantity
+
+        const goldPercentage = 0.90
+        const goldValue = totalItemPrice * goldPercentage
+        const makingCharges = totalItemPrice * (1 - goldPercentage)
+
+        const goldTax = goldValue * 0.03
+        const makingTax = makingCharges * 0.05
+
+        return {
+            ...item,
+            hsn: "7113",
+            purity: product.purity || "22K",
+            weight: product.weight_grams || 0,
+            goldValue,
+            makingCharges,
+            goldTax,
+            makingTax,
+            totalTax: goldTax + makingTax,
+            finalItemTotal: totalItemPrice + goldTax + makingTax
+        }
+    }) || []
+
+    const totalGoldTax = items.reduce((acc: number, item: any) => acc + item.goldTax, 0)
+    const totalMakingTax = items.reduce((acc: number, item: any) => acc + item.makingTax, 0)
+    const gstTotal = totalGoldTax + totalMakingTax
+    const grandTotal = order.total + gstTotal
+
     return (
         <div
             className={cn(
                 "bg-white text-slate-900 mx-auto font-sans relative",
                 isShipping
                     ? "p-6 w-[600px] h-[400px] border-[12px] border-slate-900 overflow-hidden shadow-2xl"
-                    : "p-10 max-w-[800px] border-[1px] border-slate-100 shadow-2xl"
+                    : "p-6 max-w-[800px] border-[1px] border-slate-100 min-h-[1000px] flex flex-col"
             )}
             id="printable-invoice"
         >
-            {/* Corner Accents for Luxury Feel (Only on Invoice) */}
-            {!isShipping && (
-                <>
-                    <div className="absolute top-0 left-0 w-24 h-24 border-t-4 border-l-4 border-[#D4AF37] pointer-events-none opacity-20" />
-                    <div className="absolute top-0 right-0 w-24 h-24 border-t-4 border-r-4 border-[#D4AF37] pointer-events-none opacity-20" />
-                    <div className="absolute bottom-0 left-0 w-24 h-24 border-b-4 border-l-4 border-[#D4AF37] pointer-events-none opacity-20" />
-                    <div className="absolute bottom-0 right-0 w-24 h-24 border-b-4 border-r-4 border-[#D4AF37] pointer-events-none opacity-20" />
-                </>
-            )}
-
-            {/* Header section */}
-            <div className={cn("flex justify-between items-start", isShipping ? "mb-6" : "border-b-4 border-[#D4AF37] pb-10 mb-10")}>
-                <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-4">
+            {/* Logo and Header Details - Compacted */}
+            <div className={cn("flex justify-between items-start mb-4 pb-4 border-b-2 border-slate-50")}>
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-3">
                         <img
                             src="/logo.png"
-                            alt="AURERXA Logo"
-                            className={cn("object-contain filter grayscale invert brightness-0", isShipping ? "h-14" : "h-20")}
+                            alt="Logo"
+                            className={cn("object-contain", isShipping ? "h-10" : "h-14")}
                         />
                         {!isShipping && (
-                            <div className="border-l-2 border-[#D4AF37] pl-4">
-                                <h1 className="text-3xl font-black tracking-tight text-slate-900 leading-none">AURERXA</h1>
-                                <p className="text-[12px] uppercase tracking-[0.3em] text-[#D4AF37] font-black mt-1.5">Heritage Craftsmanship</p>
+                            <div className="border-l border-[#D4AF37] pl-3">
+                                <h1 className="text-xl font-black tracking-tight text-slate-900 leading-none">AURERXA</h1>
+                                <p className="text-[8px] uppercase tracking-[0.2em] text-[#D4AF37] font-black mt-0.5">Heritage Craftsmanship</p>
                             </div>
                         )}
                     </div>
 
                     {!isShipping && (
-                        <div className="mt-6 text-[11px] text-slate-600 space-y-1 font-medium bg-slate-50 p-4 rounded-lg border border-slate-100">
-                            <p className="font-black text-slate-900 text-[12px] mb-1">NIJAM GOLD WORKS</p>
-                            <p className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5 text-[#D4AF37]" /> Captain Lakshmi Chowk, Rangargalli, Sangamner 422605</p>
-                            <p className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-[#D4AF37]" /> +91 7776818394</p>
-                            <p className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-[#D4AF37]" /> www.aurerxa.com</p>
+                        <div className="text-[9px] text-slate-500 space-y-0 mt-1">
+                            <p className="font-bold text-slate-900 leading-tight">{sellerDetails.name}</p>
+                            <p className="max-w-[200px] leading-tight">{sellerDetails.address}</p>
+                            <p className="font-bold text-slate-600">
+                                Ph: {sellerDetails.mobile} • <span className="text-slate-400">GSTIN:</span> {sellerDetails.gstin}
+                            </p>
                         </div>
                     )}
                 </div>
 
                 <div className="text-right">
-                    <div className="inline-block bg-slate-900 text-white px-4 py-2 rounded-sm mb-4">
-                        <h2 className={cn("font-black uppercase tracking-[0.2em]", isShipping ? "text-lg" : "text-xl")}>
+                    <div className="bg-slate-900 text-white px-2 py-1 rounded-sm inline-block mb-1">
+                        <h2 className="text-[10px] font-black uppercase tracking-widest leading-none">
                             {isShipping ? 'LOGISTICS UNIT' : 'TAX INVOICE'}
                         </h2>
                     </div>
-                    <div className="space-y-1">
-                        <p className="text-[12px] text-slate-400 font-mono font-black uppercase">REFERENCE: <span className="text-slate-900 bg-slate-100 px-1">#{order.order_number}</span></p>
-                        <p className="text-[11px] text-slate-400 font-black uppercase tracking-wider">{formatDate(order.created_at)}</p>
-                    </div>
+                    <p className="text-[10px] font-bold text-slate-400 font-mono uppercase">REF: <span className="text-slate-900 font-black">#{order.order_number}</span></p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase">{formatDate(order.created_at)}</p>
+                    {!isShipping && <p className="text-[8px] text-[#D4AF37] font-bold">BIS: {sellerDetails.bis_license}</p>}
                 </div>
             </div>
 
-            {/* Main Content Area */}
             {isShipping ? (
-                /* Landscape Shipping Layout - Premium Match */
-                <div className="grid grid-cols-12 gap-8 items-stretch pt-2">
-                    {/* Left side: Ship To */}
-                    <div className="col-span-7 bg-white border-[3px] border-slate-900 p-6 rounded-none relative flex flex-col justify-center">
-                        <div className="absolute -top-3 left-4 bg-slate-900 text-white text-[10px] font-black px-3 py-0.5 tracking-widest uppercase">Recipient</div>
-                        <div className="space-y-2">
-                            <p className="text-3xl font-black text-slate-900 leading-none tracking-tight mb-2">
-                                {order.shipping_address?.full_name || order.shipping_address?.name}
+                /* REDACTED LANDSCAPE SHIPPING (Stealth Mode) */
+                <div className="grid grid-cols-12 gap-6 items-stretch pt-2">
+                    <div className="col-span-7 border-[4px] border-slate-900 p-6 rounded-none relative flex flex-col justify-center">
+                        <div className="absolute -top-3 left-4 bg-slate-900 text-white text-[9px] font-black px-2 py-0.5 tracking-widest uppercase">CONSIGNEE</div>
+                        <div className="space-y-1">
+                            <p className="text-2xl font-black text-slate-900 leading-none mb-2">
+                                {order.shipping_address?.full_name}
                             </p>
-                            <p className="text-lg font-bold text-slate-700 leading-tight border-l-4 border-[#D4AF37] pl-4 py-1">
-                                {order.shipping_address?.street_address || order.shipping_address?.address}
+                            <p className="text-base font-bold text-slate-700 leading-tight">
+                                {order.shipping_address?.street_address}
                             </p>
-                            <p className="text-xl font-black text-slate-900 uppercase tracking-tighter mt-4">
+                            <p className="text-lg font-black text-slate-900 uppercase mt-2">
                                 {order.shipping_address?.city}, {order.shipping_address?.state} - {order.shipping_address?.pincode}
                             </p>
-                            <div className="pt-4 mt-2">
-                                {order.shipping_address?.phone && (
-                                    <div className="inline-flex items-center gap-3 bg-slate-900 text-white px-4 py-2 rounded-full font-black text-xl">
-                                        <Phone className="w-5 h-5 text-[#D4AF37]" /> {order.shipping_address.phone}
-                                    </div>
-                                )}
+                            <div className="pt-4 border-t border-slate-100 mt-2">
+                                <p className="text-xl font-black flex items-center gap-3">
+                                    <Phone className="w-5 h-5 text-slate-400" /> {order.shipping_address?.phone}
+                                </p>
                             </div>
                         </div>
                     </div>
-
-                    {/* Right side: Security & Shipping Info */}
                     <div className="col-span-5 flex flex-col gap-4">
-                        <div className="bg-slate-50 border-2 border-slate-200 p-5 h-1/2 flex flex-col justify-center">
-                            <h3 className="text-[10px] uppercase font-black text-slate-400 mb-2 tracking-[0.2em]">Return Center</h3>
-                            <div className="text-[12px] font-bold text-slate-700 leading-tight space-y-1">
-                                <p className="text-slate-900 font-black text-sm">AURERXA OFFICIAL</p>
-                                <p>CL Chowk • Rangargalli</p>
-                                <p>Sangamner • MS 422605</p>
-                                <p className="text-[#D4AF37] font-black">M: 7776818394</p>
-                            </div>
+                        <div className="bg-slate-50 p-4 border border-slate-200">
+                            <p className="text-[8px] font-black text-slate-400 uppercase mb-1">Return Center</p>
+                            <p className="text-[11px] font-bold text-slate-700 leading-tight">AURERXA OFFICIAL, Sangamner, MS</p>
+                            <p className="text-[10px] text-slate-400">P: 7776818394</p>
                         </div>
-
                         <div className={cn(
-                            "flex-grow rounded-none border-b-8 flex flex-col items-center justify-center text-center p-4",
-                            order.payment_method === 'cod' ? "bg-slate-900 border-[#D4AF37] text-white" : "bg-[#D4AF37] border-slate-900 text-slate-900"
+                            "flex-grow flex flex-col items-center justify-center p-4 border-b-8",
+                            order.payment_method === 'cod' ? "bg-slate-900 border-[#D4AF37] text-white" : "bg-white border-slate-900 text-slate-900"
                         )}>
-                            <p className="text-[10px] uppercase tracking-[0.4em] font-black opacity-70">Payment Mode</p>
-                            <p className="text-3xl font-black uppercase tracking-tight mt-1 leading-none">
-                                {order.payment_method === 'cod' ? 'C O D' : 'PREPAID'}
-                            </p>
-                            {order.payment_method === 'cod' && (
-                                <div className="mt-4 py-2 px-6 bg-white/10 border border-white/20 rounded-lg">
-                                    <p className="text-2xl font-black text-[#D4AF37]">
-                                        {formatCurrency(order.total)}
-                                    </p>
-                                </div>
-                            )}
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-60">MODE</p>
+                            <p className="text-2xl font-black">{order.payment_method === 'cod' ? 'C O D' : 'PREPAID'}</p>
+                            {order.payment_method === 'cod' && <p className="text-xl font-black text-[#D4AF37] mt-1">{formatCurrency(grandTotal)}</p>}
                         </div>
                     </div>
                 </div>
             ) : (
-                /* Standard Portrait Invoice Layout - Full Premium */
-                <>
-                    {/* Billing/Shipping Info */}
-                    <div className="grid grid-cols-2 gap-16 mb-16">
-                        <div className="relative">
-                            <div className="absolute -left-4 top-0 bottom-0 w-1 bg-[#D4AF37] opacity-60" />
-                            <h3 className="text-[12px] uppercase font-black text-slate-400 tracking-[0.3em] mb-4">Shipping Destination</h3>
-                            <div className="space-y-2">
-                                <p className="text-2xl font-black text-slate-900 leading-none">
-                                    {order.shipping_address?.full_name || order.shipping_address?.name}
-                                </p>
-                                <p className="text-base font-bold text-slate-600 leading-relaxed">
-                                    {order.shipping_address?.street_address || order.shipping_address?.address}
-                                </p>
-                                <p className="text-base font-black text-slate-900 uppercase tracking-tight">
-                                    {order.shipping_address?.city}, {order.shipping_address?.state} - {order.shipping_address?.pincode}
-                                </p>
-                                <div className="pt-4">
-                                    {order.shipping_address?.phone && (
-                                        <p className="font-black text-slate-900 flex items-center gap-2 text-md">
-                                            <Phone className="w-4 h-4 text-[#D4AF37]" /> +91 {order.shipping_address.phone}
-                                        </p>
-                                    )}
-                                </div>
+                /* COMPACT COMPLIANCE GOLD TAX INVOICE */
+                <div className="flex-grow flex flex-col">
+                    {/* Biller / Client Split - Compact */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="bg-slate-50 p-3 rounded border border-slate-100">
+                            <h3 className="text-[9px] uppercase font-black text-slate-400 tracking-widest mb-1 border-b border-slate-200">Customer</h3>
+                            <div className="text-[10px] space-y-0.5">
+                                <p className="font-black text-slate-900">{order.shipping_address?.full_name}</p>
+                                <p className="text-slate-600 leading-tight line-clamp-2">{order.shipping_address?.street_address}</p>
+                                <p className="font-bold text-slate-800">{order.shipping_address?.city}, {order.shipping_address?.state} - {order.shipping_address?.pincode}</p>
+                                <p className="font-black">ph: {order.shipping_address?.phone}</p>
                             </div>
                         </div>
-
-                        <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
-                            <h3 className="text-[12px] uppercase font-black text-slate-400 tracking-[0.3em] mb-4">Order Intelligence</h3>
-                            <div className="space-y-3 text-sm">
-                                {order.user?.email && (
-                                    <div className="flex justify-between border-b border-slate-200 pb-2">
-                                        <span className="text-slate-400 font-bold uppercase text-[10px]">Client</span>
-                                        <span className="font-black text-slate-900">{order.user.email}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between border-b border-slate-200 pb-2">
-                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Method</span>
-                                    <span className="font-black text-slate-900 uppercase tracking-tighter">{order.payment_method}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-slate-400 font-bold uppercase text-[10px]">Transaction</span>
-                                    <span className="font-mono text-slate-900 font-black">#{order.payment_id?.slice(0, 12) || 'AUTH_D_GEN'}</span>
+                        <div className="p-3 border border-slate-100 flex flex-col justify-between">
+                            <div>
+                                <h3 className="text-[9px] uppercase font-black text-slate-400 tracking-widest mb-1 border-b border-slate-200">Legal</h3>
+                                <div className="text-[9px] space-y-0.5 font-bold">
+                                    <div className="flex justify-between"><span className="text-slate-400">GSTIN:</span> <span>{order.shipping_address?.gstin || "CONSUMER"}</span></div>
+                                    <div className="flex justify-between"><span className="text-slate-400">PAYMENT:</span> <span className="uppercase">{order.payment_method}</span></div>
                                 </div>
                             </div>
+                            <p className="text-[8px] font-black text-[#D4AF37] italic uppercase flex items-center gap-1 mt-1">
+                                <BadgeCheck className="w-2 h-2" /> 916 BIS Verified
+                            </p>
                         </div>
                     </div>
 
-                    {/* Items Table - High End Style */}
-                    <div className="mb-16">
-                        <table className="w-full">
+                    {/* Highly Granular Gold Table - Compact Row heights */}
+                    <div className="mb-4">
+                        <table className="w-full text-left border-collapse border border-slate-200">
                             <thead>
-                                <tr className="bg-slate-900 text-white text-[11px] uppercase font-black tracking-widest">
-                                    <th className="text-left p-5 rounded-tl-lg">Item</th>
-                                    <th className="text-left p-5">Description</th>
-                                    <th className="text-center p-5">Quantity</th>
-                                    <th className="text-right p-5">Unit Price</th>
-                                    <th className="text-right p-5 rounded-tr-lg">Extension</th>
+                                <tr className="bg-slate-900 text-white text-[8px] uppercase tracking-wider font-black">
+                                    <th className="p-1.5 border border-slate-800">S.No</th>
+                                    <th className="p-1.5 border border-slate-800">Item & HSN</th>
+                                    <th className="p-1.5 border border-slate-800 text-center">Wt(g)</th>
+                                    <th className="p-1.5 border border-slate-800 text-center">Purity</th>
+                                    <th className="p-1.5 border border-slate-800">Taxable Value</th>
+                                    <th className="p-1.5 border border-slate-800 text-right">Taxes</th>
+                                    <th className="p-1.5 border border-slate-800 text-right">Total</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y-2 divide-slate-100 italic">
-                                {order.order_items?.map((item: any, idx: number) => (
-                                    <tr key={item.id} className="text-sm font-black group hover:bg-slate-50 transition-colors">
-                                        <td className="p-5 text-slate-300 font-mono text-xs">{String(idx + 1).padStart(2, '0')}</td>
-                                        <td className="p-5">
-                                            <p className="font-black text-slate-900 text-base">{item.product_name}</p>
-                                            <p className="text-[11px] text-[#D4AF37] font-black uppercase tracking-widest mt-1">Ref ID: {item.id.slice(0, 8)}</p>
+                            <tbody className="text-[9px]">
+                                {items.map((item: any, idx: number) => (
+                                    <tr key={item.id} className="border-b border-slate-100">
+                                        <td className="p-1.5 text-center text-slate-400 font-bold border-x border-slate-50">{idx + 1}</td>
+                                        <td className="p-1.5 border-r border-slate-50">
+                                            <p className="font-black text-slate-900 leading-tight">{item.product_name}</p>
+                                            <p className="text-[7px] text-slate-400 font-mono italic">HSN: {item.hsn}</p>
                                         </td>
-                                        <td className="p-5 text-center font-black text-slate-900">{item.quantity}</td>
-                                        <td className="p-5 text-right text-slate-500">{formatCurrency(item.price)}</td>
-                                        <td className="p-5 text-right font-black text-slate-900 text-lg">{formatCurrency(item.price * item.quantity)}</td>
+                                        <td className="p-1.5 border-r border-slate-50 font-black text-center text-slate-700">
+                                            {item.weight.toFixed(3)}
+                                        </td>
+                                        <td className="p-1.5 border-r border-slate-50 font-black text-center text-[#D4AF37]">
+                                            {item.purity}
+                                        </td>
+                                        <td className="p-1.5 border-r border-slate-50 leading-tight">
+                                            <p className="font-medium">{formatCurrency(item.goldValue)}</p>
+                                            <p className="text-[7px] text-slate-400">Making: {formatCurrency(item.makingCharges)}</p>
+                                        </td>
+                                        <td className="p-1.5 border-r border-slate-50 text-right font-bold text-slate-500 leading-tight">
+                                            {formatCurrency(item.goldTax + item.makingTax)}
+                                        </td>
+                                        <td className="p-1.5 font-black text-right text-slate-900 bg-slate-50/20">
+                                            {formatCurrency(item.finalItemTotal)}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
 
-                    {/* Summary Area - Luxury Split */}
-                    <div className="flex justify-between items-end pt-10 border-t-4 border-slate-900 mb-16">
-                        <div className="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] max-w-[300px] leading-loose">
-                            This document serves as an official confirmation of heritage craftsmanship by Nijam Gold Works. All items are verified for quality standards.
-                        </div>
-                        <div className="w-80 space-y-4">
-                            <div className="flex justify-between text-[12px] font-black text-slate-400 uppercase tracking-widest">
-                                <span>Subtotal</span>
-                                <span className="text-slate-900">{formatCurrency(order.subtotal)}</span>
-                            </div>
-                            <div className="flex justify-between text-[12px] font-black text-slate-400 uppercase tracking-widest">
-                                <span>Logistic Fees</span>
-                                <span className="text-slate-900">{order.shipping === 0 ? 'COMPLIMENTARY' : formatCurrency(order.shipping)}</span>
-                            </div>
-                            {order.coupon_discount > 0 && (
-                                <div className="flex justify-between text-[12px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-1">
-                                    <span>Exclusive Privilege</span>
-                                    <span>- {formatCurrency(order.coupon_discount)}</span>
+                    {/* Tax Breakdown and Total - More compact */}
+                    <div className="grid grid-cols-12 gap-4 pt-2 border-t border-slate-100 mt-auto">
+                        <div className="col-span-12">
+                            <div className="bg-slate-50 p-2 rounded border border-slate-100 flex justify-between items-center">
+                                <div className="space-y-0.5">
+                                    <h4 className="text-[7px] font-black uppercase text-slate-400 tracking-widest">Amount in Words</h4>
+                                    <p className="text-[10px] font-black text-slate-900 italic">{numberToWords(grandTotal)}</p>
                                 </div>
-                            )}
-                            <div className="flex justify-between pt-6 border-t-2 border-[#D4AF37] items-center">
-                                <span className="text-[14px] uppercase font-black text-slate-900 tracking-tighter">Grand Total</span>
-                                <span className="text-4xl font-black text-slate-900 tracking-tighter decoration-[#D4AF37] underline underline-offset-8">
-                                    {formatCurrency(order.total)}
-                                </span>
+                                <div className="text-[8px] font-bold text-slate-500 text-right border-l pl-4 border-slate-200">
+                                    <p>CGST/SGST (1.5% ea on Gold): {formatCurrency(totalGoldTax)}</p>
+                                    <p>CGST/SGST (2.5% ea on Mk): {formatCurrency(totalMakingTax)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="col-span-12 flex justify-end gap-10 items-end mt-4">
+                            <div className="flex gap-6 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                <div className="flex flex-col items-end">
+                                    <span>SUBTOTAL</span>
+                                    <span className="text-slate-900">{formatCurrency(order.subtotal)}</span>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                    <span>TAX TOTAL</span>
+                                    <span className="text-slate-900">{formatCurrency(gstTotal)}</span>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                    <span>SHIPPING</span>
+                                    <span className="text-emerald-600">FREE</span>
+                                </div>
+                            </div>
+                            <div className="border-l-2 border-slate-900 pl-6 h-12 flex flex-col justify-center">
+                                <span className="text-[9px] font-black text-slate-900 uppercase">AMOUNT PAYABLE</span>
+                                <span className="text-2xl font-black text-slate-900 leading-none underline decoration-[#D4AF37] decoration-2 underline-offset-4">{formatCurrency(grandTotal)}</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Footer / Legal - Luxury Block */}
-                    <div className="mt-auto grid grid-cols-12 gap-10 items-end">
-                        <div className="col-span-8 text-[10px] text-slate-400 leading-relaxed font-black uppercase tracking-wider bg-slate-50 p-6 rounded-lg">
-                            <h4 className="text-slate-900 mb-3 tracking-[0.4em] text-[11px]">Official Authentication</h4>
-                            <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-                                <p>• Computer Generated Status</p>
-                                <p>• Subject to Sangamner Rules</p>
-                                <p>• Heritage Product Policy</p>
-                                <p>• Non-Transferable Balance</p>
+                    {/* Fine Print / Footer - Compacted */}
+                    <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-slate-100 items-end">
+                        <div className="col-span-2 space-y-2">
+                            <div className="text-[7px] font-bold text-slate-400 uppercase leading-tight max-w-sm">
+                                <p className="text-slate-900 font-bold">Terms:</p>
+                                <p>1. 22K/18K Gold Purity Verified. 2. No returns on customized items. 3. Subject to Sangamner jurisdiction.</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded text-[7px] font-black">
+                                    <Shield className="w-2 h-2" /> SECURE TRANSIT
+                                </div>
+                                <div className="flex items-center gap-1 bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[7px] font-black">
+                                    <BadgeCheck className="w-2 h-2" /> 100% HALLMARKED
+                                </div>
                             </div>
                         </div>
-                        <div className="col-span-4 text-right">
-                            <div className="mb-4 h-16 w-full border-b-2 border-dashed border-[#D4AF37] opacity-40 flex items-center justify-center">
-                                <Shield className="w-8 h-8 text-[#D4AF37] opacity-20" />
+                        <div className="text-right">
+                            <div className="h-8 border-b border-dashed border-slate-300 mb-1 relative">
+                                <span className="absolute bottom-0 right-0 text-[7px] text-slate-300 italic">Auth Sign</span>
                             </div>
-                            <p className="text-[12px] font-black text-slate-900 uppercase tracking-widest">Authorized</p>
-                            <p className="text-[9px] text-[#D4AF37] font-black mt-1 uppercase tracking-tighter">NIJAM GOLD WORKS ORIGIN</p>
+                            <p className="text-[9px] font-black text-slate-900 uppercase leading-none">NIJAM GOLD WORKS</p>
                         </div>
                     </div>
-                </>
-            )}
-
-            {/* In Shipping Mode, add Security Detail */}
-            {isShipping && (
-                <div className="absolute bottom-6 right-6 flex items-center gap-4">
-                    <div className="h-10 w-24 bg-slate-50 border border-slate-200 flex items-center justify-center font-mono text-[10px] font-black text-slate-400">
-                        VERIFIED
-                    </div>
-                    <Shield className="w-12 h-12 text-[#D4AF37] opacity-10" />
                 </div>
             )}
 
-            {/* Branding Watermark - Premium Large */}
+            {/* Branding Watermark - Less Intrusive */}
             {!isShipping && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none rotate-12 select-none font-black text-[12rem] text-slate-900 tracking-tight">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.015] pointer-events-none rotate-12 select-none font-black text-[10rem] text-slate-900 tracking-tight">
                     AURERXA
                 </div>
             )}
