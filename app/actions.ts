@@ -2586,7 +2586,7 @@ export async function logVisitorEvent(sessionId: string, eventName: string, meta
       .eq('session_id', sessionId)
       .single()
 
-    const summary = current?.behavior_summary || { page_views: [], interaction_count: 0 }
+    const summary = current?.behavior_summary || { page_views: [], interaction_count: 0, interests: {} }
 
     // Add event to history (limit to last 50 for database health)
     const newPageViews = [...(summary.page_views || [])]
@@ -2598,12 +2598,19 @@ export async function logVisitorEvent(sessionId: string, eventName: string, meta
 
     if (newPageViews.length > 50) newPageViews.shift()
 
+    // Update Interests (Behavioral Segmentation)
+    const newInterests = { ...(summary.interests || {}) }
+    if (metadata.interest) {
+      newInterests[metadata.interest] = (newInterests[metadata.interest] || 0) + 1
+    }
+
     const { error } = await client
       .from('visitor_intelligence')
       .update({
         behavior_summary: {
           page_views: newPageViews,
-          interaction_count: (summary.interaction_count || 0) + 1
+          interaction_count: (summary.interaction_count || 0) + 1,
+          interests: newInterests
         },
         last_active: new Date().toISOString()
       })

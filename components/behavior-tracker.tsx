@@ -26,11 +26,27 @@ export function BehaviorTracker() {
         if (lastPathRef.current === currentPath) return
         lastPathRef.current = currentPath
 
-        // Log page view event
+        // Detect Interest (Segmentation)
+        let interest: 'jewelry' | 'watches' | null = null
+        const lowercasePath = pathname.toLowerCase()
+
+        // Watch detection: URL contains 'watch' or is in a watch collection
+        if (lowercasePath.includes('watch') || searchParams.get('category') === 'watches' || searchParams.get('type') === 'watches') {
+            interest = 'watches'
+        }
+        // Jewelry detection: Standard products (not watches) or explicitly 'jewelry'
+        else if (lowercasePath.includes('necklace') || lowercasePath.includes('ring') ||
+            lowercasePath.includes('earring') || lowercasePath.includes('bangle') ||
+            lowercasePath.includes('jewelry') || lowercasePath.startsWith('/products/')) {
+            interest = 'jewelry'
+        }
+
+        // Log page view event with segment
         logVisitorEvent(sessionId, 'page_view', {
             path: pathname,
             query: searchParams.toString(),
-            referrer: document.referrer
+            referrer: document.referrer,
+            interest: interest // Automated segmentation
         })
 
     }, [pathname, searchParams, consentStatus, sessionId])
