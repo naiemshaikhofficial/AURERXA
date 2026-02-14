@@ -94,21 +94,16 @@ export default async function RootLayout({
         >
           {/* Premium scroll progress indicator */}
           <ScrollProgress />
-          
+
           <CartProvider>
             <SearchProvider>
               <ConsentProvider initialProfile={profile}>
                 {/* Navbar outside smooth scroll for proper fixed positioning */}
-                <AdminRouteGuard>
-                  <Navbar />
-                </AdminRouteGuard>
-                
+                {/* Navbar outside smooth scroll for proper fixed positioning */}
+                <Navbar />
+
+
                 <SmoothScroll>
-                  {/* Cinematic Grain Overlay - Optimized for TBT */}
-                  <div
-                    className="fixed inset-0 z-[100] pointer-events-none opacity-[0.015] bg-[url('/noise.svg')] repeat will-change-transform"
-                    style={{ transform: 'translateZ(0)' }}
-                  />
                   <AdminRouteGuard>
                     <div className="pt-20 md:pt-24">
                       <CategoryNav />
