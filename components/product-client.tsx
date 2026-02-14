@@ -133,15 +133,8 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
         }
     }, [scale, x, y])
 
-    // Body scroll lock when zoomed
-    useEffect(() => {
-        if (scale > 1) {
-            document.body.style.overflow = 'hidden'
-        } else {
-            document.body.style.overflow = ''
-        }
-        return () => { document.body.style.overflow = '' }
-    }, [scale])
+    // We no longer lock the body scroll to prevent layout shift.
+    // Instead, we use overscroll-behavior: contain and stopPropagation.
 
     // Native Wheel Listener
     useEffect(() => {
@@ -216,7 +209,8 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
             className="relative w-full h-full overflow-hidden bg-neutral-950 select-none cursor-zoom-in group/zoom isolate"
             style={{
                 touchAction: scale > 1 ? 'none' : 'pan-y',
-                contain: 'paint'
+                contain: 'paint',
+                overscrollBehavior: 'contain'
             }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
