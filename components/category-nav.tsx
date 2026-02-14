@@ -72,9 +72,7 @@ export function CategoryNav() {
                     animate={{
                         y: 0,
                         opacity: 1,
-                        top: isScrolled
-                            ? (isMobile ? '4.5rem' : '4.5rem') // Docked Scrolled (Matched to Navbar)
-                            : (isMobile ? '5rem' : '6rem')     // Docked Initial
+                        top: isMobile ? '4.5rem' : '5.5rem' // Docked accurately to fixed Navbar
                     }}
                     exit={{ y: -20, opacity: 0 }}
                     transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}

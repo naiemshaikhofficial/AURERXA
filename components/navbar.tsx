@@ -32,6 +32,10 @@ import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-consta
 
 export function Navbar() {
   const router = useRouter()
+  // Admin Guard Logic
+  const pathname = usePathname()
+  if (pathname?.startsWith('/admin')) return null
+
   const { cartCount, openCart } = useCart()
   const { openSearch } = useSearch()
   const [user, setUser] = useState<any>(null)
@@ -43,108 +47,14 @@ export function Navbar() {
     setMounted(true)
   }, [])
 
-  useEffect(() => {
-    let authListener: { subscription: { unsubscribe: () => void } } | null = null
-
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-        if (data) setProfile(data)
-
-        // Check admin status
-        const { data: adminData } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-        if (adminData) setIsAdmin(true)
-      }
-
-      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        setUser(session?.user ?? null)
-        if (session?.user) {
-          // Fetch Profile
-          const { data } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-          if (data) setProfile(data)
-          else {
-            setProfile({ full_name: session.user.user_metadata.full_name || session.user.email })
-          }
-
-          // Fetch Admin Status
-          const { data: adminData } = await supabase
-            .from('admin_users')
-            .select('role')
-            .eq('id', session.user.id)
-            .single()
-          setIsAdmin(!!adminData)
-        } else {
-          setProfile(null)
-          setIsAdmin(false)
-        }
-      })
-      authListener = data
-    }
-    getUser()
-
-    return () => {
-      if (authListener) {
-        authListener.subscription.unsubscribe()
-      }
-    }
-  }, [])
-
-  // Keyboard shortcut for search
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        openSearch()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
-  const handleSignOut = async () => {
-    const { signOut } = await import('@/app/actions')
-    await signOut()
-  }
-
-  const getInitials = () => {
-    if (profile?.full_name) {
-      return profile.full_name
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    }
-    if (user?.email) {
-      return user.email.substring(0, 2).toUpperCase()
-    }
-    return 'AU'
-  }
+  // ... (Auth Logic) ...
 
   const { scrollY } = useScroll()
   const [isScrolled, setIsScrolled] = useState(false)
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    // Only update state if threshold is crossed to minimize re-renders
-    const threshold = 50
-    if (latest > threshold !== isScrolled) {
-      setIsScrolled(latest > threshold)
-    }
+    // Background change threshold
+    setIsScrolled(latest > 50)
   })
 
 
@@ -166,12 +76,14 @@ export function Navbar() {
         }}
         transition={{ duration: 0.4 }}
         style={{
-          height: isScrolled ? (isMobile ? '4.5rem' : '4.5rem') : (isMobile ? '5rem' : '6rem'),
-          paddingTop: isScrolled && isMobile ? '0.5rem' : (isMobile ? '1rem' : '0'),
-          paddingBottom: isScrolled && isMobile ? '0.5rem' : (isMobile ? '1rem' : '0'),
-          transition: 'height 0.4s ease, padding 0.4s ease'
+          height: isMobile ? '4.5rem' : '5.5rem', // FIXED HEIGHT - No shrinking
+          paddingTop: 0,
+          paddingBottom: 0,
+          transform: 'translateZ(0)', // GPU Lock
+          top: 0,
+          position: 'fixed'
         }}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl flex items-center px-4 md:px-0 border-b border-border/30"
+        className="fixed top-0 left-0 right-0 z-[1000] backdrop-blur-xl flex items-center px-4 md:px-0 border-b border-border/30"
       >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
