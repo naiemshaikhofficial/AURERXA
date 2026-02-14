@@ -18,6 +18,7 @@ import supabaseLoader from '@/lib/supabase-loader'
 import { VTOModal } from '@/components/vto-modal'
 import { ProductCard } from '@/components/product-card'
 import { SizeGuide } from '@/components/size-guide'
+import { formatPurity, formatWeight, formatDimensions } from '@/lib/material-intelligence'
 
 
 interface ProductClientProps {
@@ -600,23 +601,23 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 {product.purity && (
                                     <div className="space-y-1">
                                         <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Purity / Karat</p>
-                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{product.purity}</p>
+                                        <div className="flex flex-col">
+                                            <p className="text-xs md:text-sm font-serif italic text-white/80">{formatPurity(product.purity).label}</p>
+                                            <p className="text-[9px] text-white/30 uppercase tracking-widest">{formatPurity(product.purity).subLabel}</p>
+                                        </div>
                                     </div>
                                 )}
                                 {product.weight_grams && (
                                     <div className="space-y-1">
                                         <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Net Weight</p>
-                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{product.weight_grams}g</p>
+                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{formatWeight(product.weight_grams)}</p>
                                     </div>
                                 )}
                                 {(product.dimensions_width || product.dimensions_height || product.dimensions_length) && (
                                     <div className="space-y-1">
                                         <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Dimensions</p>
                                         <p className="text-xs md:text-sm font-serif italic text-white/80">
-                                            {[product.dimensions_length, product.dimensions_width, product.dimensions_height]
-                                                .filter(Boolean)
-                                                .join(' x ')
-                                            } {product.dimensions_unit || 'mm'}
+                                            {formatDimensions(product.dimensions_length, product.dimensions_width, product.dimensions_height, product.dimensions_unit || 'cm')}
                                         </p>
                                     </div>
                                 )}
@@ -651,7 +652,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 </div>
                                 <div className="space-y-1">
                                     <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Material</p>
-                                    <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">{product.purity || 'Fine Metals'}</p>
+                                    <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">{formatPurity(product.purity).label}</p>
                                 </div>
                             </div>
                         </div>

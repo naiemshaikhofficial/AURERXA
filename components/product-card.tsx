@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 import supabaseLoader from '@/lib/supabase-loader'
 import { fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
+import { formatWeight } from '@/lib/material-intelligence'
 
 export interface Product {
     id: string
@@ -226,7 +227,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                         </span>
                         {product.weight_grams && (
                             <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">
-                                {product.weight_grams}g
+                                {formatWeight(product.weight_grams)}
                             </span>
                         )}
                     </div>
