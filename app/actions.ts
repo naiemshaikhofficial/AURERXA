@@ -18,23 +18,45 @@ export async function getTestProductCount() {
 
 // Helper to get authenticated supabase client
 async function getAuthClient() {
-  const cookieStore = await cookies()
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
+  try {
+    const cookieStore = await cookies()
+    return createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            try {
+              return cookieStore.getAll()
+            } catch {
+              return []
+            }
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {
+              // Ignore cookie set errors during static generation
+            }
+          },
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          )
+      }
+    )
+  } catch (e) {
+    // If cookies() fails during static generation, return a public client
+    return createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() { return [] },
+          setAll() { },
         },
-      },
-    }
-  )
+      }
+    )
+  }
 }
 
 export async function getCurrentUserProfile() {
@@ -51,7 +73,10 @@ export async function getCurrentUserProfile() {
       .single()
 
     if (error) {
-      console.error('Error fetching profile:', error)
+      // Don't log expected errors during build
+      if (error.code !== 'PGRST116') {
+        console.error('Error fetching profile:', error)
+      }
       return null
     }
 
@@ -61,7 +86,7 @@ export async function getCurrentUserProfile() {
       phone: data.phone_number
     }
   } catch (err) {
-    console.error('Crash in getCurrentUserProfile:', err)
+    // Silent fail for dynamic server usage errors during build
     return null
   }
 }
