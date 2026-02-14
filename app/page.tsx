@@ -17,7 +17,7 @@ const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod =>
 const CustomOrderForm = dynamic(() => import('@/components/custom-order-form').then(mod => mod.CustomOrderForm))
 const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => mod.Newsletter))
 const Footer = dynamic(() => import('@/components/footer').then(mod => mod.Footer))
-const HeritageHighlights = dynamic(() => import('@/components/heritage-highlights').then(mod => mod.HeritageHighlights))
+const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-story').then(mod => mod.CraftsmanshipStory))
 const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
 const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
 
@@ -47,7 +47,7 @@ export default function HomePage() {
       <Bestsellers />
 
       <Suspense fallback={<div className="h-96 w-full animate-pulse bg-muted/20" />}>
-        <HeritageHighlights />
+        <CraftsmanshipStory />
       </Suspense>
 
       <CustomOrderForm />
