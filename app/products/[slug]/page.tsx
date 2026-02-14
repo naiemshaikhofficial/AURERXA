@@ -79,17 +79,38 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         )
     }
 
-    const [related, isWishlisted] = await Promise.all([
-        getRelatedProducts(product.category_id, product.id),
-        isInWishlist(product.id)
-    ])
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.name,
+        image: product.image_url,
+        description: product.description,
+        sku: product.id,
+        brand: {
+            '@type': 'Brand',
+            name: 'AURERXA',
+        },
+        offers: {
+            '@type': 'Offer',
+            url: `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.slug}`,
+            priceCurrency: 'INR',
+            price: product.price,
+            availability: 'https://schema.org/InStock',
+        },
+    }
 
     return (
-        <ProductClient
-            product={product}
-            related={related || []}
-            isWishlisted={isWishlisted}
-        />
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <ProductClient
+                product={product}
+                related={related || []}
+                isWishlisted={isWishlisted}
+            />
+        </>
     )
 }
 

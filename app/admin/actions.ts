@@ -1071,3 +1071,34 @@ export async function deleteBulkOrder(bulkOrderId: string) {
 
     return { success: true }
 }
+
+// ============================================
+// SYSTEM HEALTH & ERROR LOGS
+// ============================================
+
+export async function getErrorLogs(limit: number = 50) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin || admin.role !== 'main_admin') return []
+
+    const { data, error } = await client
+        .from('error_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+
+    if (error) {
+        console.error('Error fetching logs:', error)
+        return []
+    }
+    return data || []
+}
+
+export async function deleteErrorLog(id: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin || admin.role !== 'main_admin') return { success: false }
+
+    const { error } = await client.from('error_logs').delete().eq('id', id)
+    return { success: !error }
+}

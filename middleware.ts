@@ -41,31 +41,34 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith('/contact')
 
     if (isExpensiveRoute) {
-        // Rate limit: 10 requests per minute per IP for sensitive routes
+        // Rate limit: 20 requests per minute per IP for sensitive routes (slack for genuine burst)
         const rateLimitKey = `rl:${ip}:${pathname}`
         const now = Date.now()
         const windowSize = 60 * 1000 // 1 minute
 
-        // We use a simple cookie-based tracking if no persistent cache is available
-        // This is a "best effort" distributed rate limit
         const rlData = request.cookies.get(rateLimitKey)?.value
-        let count = 0
+        let count = 1
         let resetTime = now + windowSize
 
         if (rlData) {
-            const parsed = JSON.parse(rlData)
-            if (now < parsed.resetTime) {
-                count = parsed.count + 1
-                resetTime = parsed.resetTime
+            try {
+                const parsed = JSON.parse(rlData)
+                if (now < parsed.resetTime) {
+                    count = parsed.count + 1
+                    resetTime = parsed.resetTime
+                }
+            } catch (e) {
+                // Ignore parse errors from malformed cookies
             }
         }
 
-        if (count > 10) {
+        if (count > 20) {
+            // Secondary blunt check: Overall IP limit to prevent distributed/malicious spikes
             return new NextResponse('Too Many Requests', {
                 status: 429,
                 headers: {
-                    'Retry-After': Math.ceil((resetTime - now) / 1000).toString(),
-                    'X-RateLimit-Limit': '10',
+                    'Retry-After': '60',
+                    'X-RateLimit-Limit': '20',
                     'X-RateLimit-Remaining': '0',
                 }
             })
@@ -75,7 +78,7 @@ export async function middleware(request: NextRequest) {
         response.cookies.set(rateLimitKey, JSON.stringify({ count, resetTime }), {
             httpOnly: true,
             secure: true,
-            sameSite: 'lax',
+            sameSite: 'strict', // Harder security for expensive routes
             maxAge: 60
         })
     }

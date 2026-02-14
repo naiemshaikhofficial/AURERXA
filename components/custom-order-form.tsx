@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -37,6 +37,7 @@ export function CustomOrderForm() {
   const [selectedImages, setSelectedImages] = useState<{ file: File; preview: string }[]>([])
   const [isCatalogRequested, setIsCatalogRequested] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
 
   const {
     register,
