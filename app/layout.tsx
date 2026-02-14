@@ -100,13 +100,9 @@ export default async function RootLayout({
               <ConsentProvider initialProfile={profile}>
                 {/* Navbar outside smooth scroll for proper fixed positioning */}
                 {/* Navbar outside smooth scroll for proper fixed positioning */}
-                <Navbar />
-
-
                 <SmoothScroll>
                   <AdminRouteGuard>
                     <div className="pt-20 md:pt-24">
-                      <CategoryNav />
                       <main>
                         {children}
                       </main>
@@ -125,6 +121,10 @@ export default async function RootLayout({
                   <SpeedInsights />
                   <Analytics />
                 </SmoothScroll>
+
+                {/* Navbar moved to bottom for Z-Index Dominance */}
+                <Navbar />
+
                 <CookieConsent />
                 <TrackingScripts />
                 <Suspense fallback={null}>

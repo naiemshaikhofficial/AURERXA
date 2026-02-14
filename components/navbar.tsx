@@ -33,11 +33,13 @@ import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-consta
 export function Navbar() {
   const router = useRouter()
   // Admin Guard Logic
-  const pathname = usePathname()
-  if (pathname?.startsWith('/admin')) return null
+  // Admin Guard Logic REMOVED for debugging
+  // const pathname = usePathname()
+  // if (pathname?.startsWith('/admin')) return null
 
   const { cartCount, openCart } = useCart()
   const { openSearch } = useSearch()
+
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -45,45 +47,74 @@ export function Navbar() {
 
   useEffect(() => {
     setMounted(true)
+
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user || null)
+
+      if (session?.user) {
+        // Check admin status
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+
+        setProfile(profile)
+        setIsAdmin(profile?.role === 'admin' || profile?.email === 'naiem@aurerxa.com')
+      }
+    }
+
+    checkUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+      if (session?.user) {
+        checkUser()
+      } else {
+        setProfile(null)
+        setIsAdmin(false)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  // ... (Auth Logic) ...
+  // ... (rest of function)
 
   const { scrollY } = useScroll()
-  const [isScrolled, setIsScrolled] = useState(false)
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    // Background change threshold
-    setIsScrolled(latest > 50)
+    const currentScrollY = latest
+    const scrollDelta = currentScrollY - lastScrollY
+
+    // Show if scrolling UP or at the very TOP
+    if (scrollDelta < 0 || currentScrollY < 50) {
+      setIsVisible(true)
+    }
+    // Hide if scrolling DOWN and past threshold
+    else if (scrollDelta > 0 && currentScrollY > 50) {
+      setIsVisible(false)
+    }
+
+    setLastScrollY(currentScrollY)
   })
 
-
-  // Responsive height logic
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
+  /* 
+    SMART NAVBAR: 
+    - Visible when scrolling Up
+    - Hidden when scrolling Down
+    - Always visible at Top
+  */
   return (
     <>
-      <motion.nav
-        animate={{
-          backgroundColor: isScrolled ? 'rgba(8, 8, 8, 0.98)' : 'rgba(8, 8, 8, 0.85)'
-        }}
-        transition={{ duration: 0.4 }}
+      <nav
+        className={`fixed top-0 left-0 right-0 flex items-center px-4 md:px-0 h-[4.5rem] md:h-[5.5rem] bg-black transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
         style={{
-          height: isMobile ? '4.5rem' : '5.5rem', // FIXED HEIGHT - No shrinking
-          paddingTop: 0,
-          paddingBottom: 0,
-          transform: 'translateZ(0)', // GPU Lock
-          top: 0,
-          position: 'fixed'
+          zIndex: 99999,
         }}
-        className="fixed top-0 left-0 right-0 z-[1000] backdrop-blur-xl flex items-center px-4 md:px-0 border-b border-border/30"
       >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
@@ -324,7 +355,7 @@ export function Navbar() {
             </div>
           </div>
         </div>
-      </motion.nav>
+      </nav>
 
       <SearchModal />
     </>

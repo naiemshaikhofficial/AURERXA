@@ -15,8 +15,9 @@ export function Hero() {
   // Deep Parallax - Optimized (No Spring)
   // const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
   // Boosted Intensities for "Aur Jyada" feel
-  const yBg = useTransform(scrollYProgress, [0, 1], [0, 400]) // Increased 2x
-  const yText = useTransform(scrollYProgress, [0, 1], [0, 150]) // Increased 1.5x
+  // FIXED: Using Percentages to prevent Top Gap on scroll
+  const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '50%'])
+  const yText = useTransform(scrollYProgress, [0, 1], ['0%', '25%']) // Strong foreground separation
   const opacityFade = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
   // Spotlight Parallax

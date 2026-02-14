@@ -14,7 +14,7 @@ export function Heritage() {
 
     // Optimized - No Spring
     // const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
-    const yBg = useTransform(scrollYProgress, [0, 1], ['-20%', '20%'])
+    const yBg = useTransform(scrollYProgress, [0, 1], ['-40%', '40%']) // Doubled range for "More Parallax"
     const scaleBg = useTransform(scrollYProgress, [0, 1], [1.1, 1.3])
     const opacityBg = useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 0.6, 0.4])
 
