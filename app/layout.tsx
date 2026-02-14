@@ -47,8 +47,8 @@ export const viewport: Viewport = {
   themeColor: '#D4AF37',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
-  userScalable: true,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 import { CartProvider } from '@/context/cart-context'
