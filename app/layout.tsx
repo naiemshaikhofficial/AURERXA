@@ -101,11 +101,13 @@ export default async function RootLayout({
                 {/* Navbar outside smooth scroll for proper fixed positioning */}
                 {/* Navbar outside smooth scroll for proper fixed positioning */}
                 <SmoothScroll>
-                  <div className="pt-20 md:pt-24">
-                    <main>
-                      {children}
-                    </main>
-                  </div>
+                  <AdminRouteGuard>
+                    <div className="pt-20 md:pt-24">
+                      <main>
+                        {children}
+                      </main>
+                    </div>
+                  </AdminRouteGuard>
                   <AdminOnlyWrapper>
                     {children}
                   </AdminOnlyWrapper>

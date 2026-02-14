@@ -148,41 +148,28 @@ export function Navbar() {
     }
   })
 
-  // Reveal navbar when scrolling stops (User Preference)
+  // Reveal navbar when scrolling stops
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout
     const handleScroll = () => {
       clearTimeout(scrollTimeout)
-      if (document.documentElement.scrollTop > 150) {
-        // Only auto-reveal if we are past the initial threshold, 
-        // otherwise it fights with the top position.
-        scrollTimeout = setTimeout(() => {
-          setHidden(false)
-        }, 600) // Longer delay to prevent accidental reveals during slow reads, but eventually shows up
-      }
-    }
-
-    const startReset = () => {
-      clearTimeout(scrollTimeout)
       scrollTimeout = setTimeout(() => {
         setHidden(false)
-      }, 200) // Standard 200ms reveal on stop
+      }, 100)
     }
 
-    window.addEventListener('scroll', startReset)
+    window.addEventListener('scroll', handleScroll)
     return () => {
-      window.removeEventListener('scroll', startReset)
+      window.removeEventListener('scroll', handleScroll)
       clearTimeout(scrollTimeout)
     }
   }, [])
-
-
 
   return (
     <>
       <motion.nav
         initial={{ y: 0 }}
-        animate={{ y: 0 }} // Navbar always fixed
+        animate={{ y: '0%' }}
         transition={{ duration: 0.3, ease: PREMIUM_EASE }}
         style={{
           height: navHeight,
