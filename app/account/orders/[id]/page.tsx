@@ -407,7 +407,7 @@ export default function OrderDetailPage() {
             {/* The actual Printable Content */}
             {isPrinting && typeof document !== 'undefined' && createPortal(
                 <div id="print-root" className="fixed inset-0 z-[99999] bg-white overflow-auto p-10 select-none">
-                    <div className="max-w-[800px] mx-auto shadow-2xl rounded-xl border border-slate-100 overflow-hidden bg-white">
+                    <div className="mx-auto shadow-2xl rounded-xl border border-slate-100 overflow-hidden bg-white max-w-[800px]">
                         <InvoiceTemplate order={order} type="customer" />
                     </div>
                 </div>,

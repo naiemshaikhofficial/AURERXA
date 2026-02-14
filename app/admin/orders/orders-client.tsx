@@ -553,7 +553,10 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
             <style dangerouslySetInnerHTML={{
                 __html: `
                 @media print {
-                    @page { margin: 1cm; size: auto; }
+                    @page { 
+                        margin: 1cm; 
+                        size: ${printType === 'shipping' ? 'landscape' : 'portrait'}; 
+                    }
                     body > *:not(#print-root) { display: none !important; }
                     #print-root { 
                         display: block !important;
@@ -566,7 +569,10 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
             {/* The actual Printable Content - Using Portal to body for absolute print reliability */}
             {printType && typeof document !== 'undefined' && createPortal(
                 <div id="print-root" className="fixed inset-0 z-[99999] bg-white overflow-auto p-10 select-none no-print-dialog">
-                    <div className="max-w-[800px] mx-auto shadow-2xl rounded-xl border border-slate-100 overflow-hidden bg-white">
+                    <div className={cn(
+                        "mx-auto shadow-2xl rounded-xl border border-slate-100 overflow-hidden bg-white",
+                        printType === 'shipping' ? "w-[600px]" : "max-w-[800px]"
+                    )}>
                         <InvoiceTemplate order={selectedOrder} type={printType} />
                     </div>
                 </div>,
