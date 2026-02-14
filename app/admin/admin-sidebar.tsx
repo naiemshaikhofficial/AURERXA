@@ -13,6 +13,7 @@ import { supabase } from '@/lib/supabase'
 const NAV_ITEMS = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, imgSrc: 'https://img.icons8.com/?size=100&id=ZQ9axxszRfad&format=png&color=000000', roles: ['main_admin', 'support_admin', 'staff'] },
     { label: 'Orders', href: '/admin/orders', icon: ShoppingCart, imgSrc: 'https://img.icons8.com/?size=100&id=nmdLxlZq4cQi&format=png&color=000000', roles: ['main_admin', 'support_admin', 'staff'] },
+    { label: 'Bulk Orders', href: '/admin/bulk-orders', icon: Package, imgSrc: 'https://img.icons8.com/?size=100&id=13007&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
     { label: 'Categories', href: '/admin/categories', icon: Sparkles, imgSrc: 'https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
     { label: 'Products', href: '/admin/products', icon: Package, imgSrc: 'https://img.icons8.com/?size=100&id=12091&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
     { label: 'Users', href: '/admin/users', icon: Users, imgSrc: 'https://img.icons8.com/?size=100&id=IbG1lmsRkQI2&format=png&color=000000', roles: ['main_admin', 'support_admin'] },

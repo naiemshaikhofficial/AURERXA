@@ -1013,6 +1013,104 @@ export async function submitCustomOrder(formData: any) {
   }
 }
 
+// ============================================
+// BULK / WHOLESALE ORDERS
+// ============================================
+
+export async function submitBulkOrder(formData: {
+  businessName: string
+  contactName: string
+  email: string
+  phone: string
+  gstNumber?: string
+  message?: string
+  items: {
+    productId: string
+    productName: string
+    productImage: string
+    retailPrice: number
+    quantity: number
+  }[]
+}) {
+  try {
+    // Validate required fields
+    if (!formData.businessName?.trim()) return { success: false, error: 'Business name is required' }
+    if (!formData.contactName?.trim()) return { success: false, error: 'Contact name is required' }
+    if (!formData.email?.trim() || !formData.email.includes('@')) return { success: false, error: 'Valid email is required' }
+    if (!formData.phone?.trim() || formData.phone.replace(/\D/g, '').length < 10) return { success: false, error: 'Valid phone number is required' }
+    if (!formData.items || formData.items.length === 0) return { success: false, error: 'Please add at least one product to your bulk order' }
+
+    // Validate minimum quantity per item
+    for (const item of formData.items) {
+      if (!item.quantity || item.quantity < 10) {
+        return { success: false, error: `Minimum quantity is 10 per product. "${item.productName}" has only ${item.quantity}.` }
+      }
+    }
+
+    // Try to get authenticated user (optional - guests can also submit)
+    let userId: string | null = null
+    try {
+      const client = await getAuthClient()
+      const { data: { user } } = await client.auth.getUser()
+      userId = user?.id || null
+    } catch {
+      // Guest submission
+    }
+
+    // Insert bulk order
+    const { data: bulkOrder, error: orderError } = await supabase
+      .from('bulk_orders')
+      .insert({
+        user_id: userId,
+        business_name: formData.businessName.trim(),
+        contact_name: formData.contactName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim(),
+        gst_number: formData.gstNumber?.trim() || null,
+        message: formData.message?.trim() || null,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (orderError || !bulkOrder) {
+      console.error('Bulk order insert error:', orderError)
+      return { success: false, error: `Failed to submit inquiry: ${orderError?.message || 'Unknown error'}` }
+    }
+
+    // Insert bulk order items
+    const bulkItems = formData.items.map(item => ({
+      bulk_order_id: bulkOrder.id,
+      product_id: item.productId,
+      product_name: item.productName,
+      product_image: item.productImage || '',
+      retail_price: item.retailPrice,
+      quantity: item.quantity,
+      created_at: new Date().toISOString(),
+    }))
+
+    const { error: itemsError } = await supabase
+      .from('bulk_order_items')
+      .insert(bulkItems)
+
+    if (itemsError) {
+      console.error('Bulk order items insert error:', itemsError)
+      // Order was created, just items failed - still consider success but log
+    }
+
+    return {
+      success: true,
+      bulkOrderId: bulkOrder.id,
+      message: 'Your bulk order inquiry has been submitted. Our team will contact you within 24 hours with wholesale pricing.'
+    }
+  } catch (err: any) {
+    console.error('Bulk order error:', err)
+    return { success: false, error: `System Error: ${err.message || 'Failed to submit bulk order.'}` }
+  }
+}
+
 export async function submitContact(formData: any) {
   if (!formData.name || !formData.email || !formData.message) {
     return { success: false, error: 'Please fill in all required fields' }

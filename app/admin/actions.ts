@@ -979,3 +979,95 @@ export async function getShipmentLabel(waybill: string) {
         return null
     }
 }
+
+// ============================================
+// BULK / WHOLESALE ORDERS MANAGEMENT
+// ============================================
+
+export async function getAdminBulkOrders(status?: string, page: number = 1, limit: number = 20) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return { orders: [], total: 0 }
+
+    let query = client
+        .from('bulk_orders')
+        .select('*, bulk_order_items(*)', { count: 'exact' })
+
+    if (status && status !== 'all') query = query.eq('status', status)
+
+    const offset = (page - 1) * limit
+    query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
+
+    const { data, count, error } = await query
+    if (error) {
+        console.error('Admin bulk orders error:', error)
+        return { orders: [], total: 0 }
+    }
+
+    return { orders: data || [], total: count || 0 }
+}
+
+export async function updateBulkOrderStatus(
+    bulkOrderId: string,
+    status: string,
+    adminNotes?: string,
+    quotedTotal?: number,
+    itemQuotes?: { itemId: string; quotedPrice: number }[]
+) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    const updates: any = {
+        status,
+        updated_at: new Date().toISOString()
+    }
+    if (adminNotes !== undefined) updates.admin_notes = adminNotes
+    if (quotedTotal !== undefined) updates.quoted_total = quotedTotal
+
+    const { error } = await client
+        .from('bulk_orders')
+        .update(updates)
+        .eq('id', bulkOrderId)
+
+    if (error) return { success: false, error: error.message }
+
+    // Update individual item quotes if provided
+    if (itemQuotes && itemQuotes.length > 0) {
+        for (const iq of itemQuotes) {
+            await client
+                .from('bulk_order_items')
+                .update({ quoted_price: iq.quotedPrice })
+                .eq('id', iq.itemId)
+        }
+    }
+
+    // Log activity
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: `Updated bulk order status to ${status}`,
+        entity_type: 'bulk_order',
+        entity_id: bulkOrderId,
+        details: { status, adminNotes, quotedTotal },
+    })
+
+    return { success: true }
+}
+
+export async function deleteBulkOrder(bulkOrderId: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin || admin.role === 'staff') return { success: false, error: 'Unauthorized' }
+
+    const { error } = await client.from('bulk_orders').delete().eq('id', bulkOrderId)
+    if (error) return { success: false, error: error.message }
+
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: 'Deleted bulk order inquiry',
+        entity_type: 'bulk_order',
+        entity_id: bulkOrderId,
+    })
+
+    return { success: true }
+}

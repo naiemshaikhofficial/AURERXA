@@ -50,6 +50,7 @@ export function Footer() {
                 { name: 'Book an Appointment', href: '/appointment' },
                 { name: 'Gold Harvest Scheme', href: '/schemes' },
                 { name: 'Jewellery Care', href: '/care' },
+                { name: 'Bulk Orders', href: '/bulk-order' },
                 { name: 'Find a Boutique', href: '/stores' },
                 { name: 'Virtual Try-On', href: '/try-on' }
               ].map((service) => (
