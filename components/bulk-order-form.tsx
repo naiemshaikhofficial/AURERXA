@@ -248,7 +248,10 @@ export function BulkOrderForm({
                                 <input
                                     type="text"
                                     value={contactName}
-                                    onChange={e => setContactName(e.target.value)}
+                                    onChange={e => {
+                                        setContactName(e.target.value)
+                                        if (consentStatus === 'granted') updateUserDetails({ name: e.target.value })
+                                    }}
                                     placeholder="Full Name"
                                     className="w-full bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm"
                                 />
@@ -260,7 +263,10 @@ export function BulkOrderForm({
                                 <input
                                     type="email"
                                     value={email}
-                                    onChange={e => setEmail(e.target.value)}
+                                    onChange={e => {
+                                        setEmail(e.target.value)
+                                        if (consentStatus === 'granted') updateUserDetails({ email: e.target.value })
+                                    }}
                                     placeholder="business@example.com"
                                     className="w-full bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm"
                                 />
@@ -272,7 +278,10 @@ export function BulkOrderForm({
                                 <input
                                     type="tel"
                                     value={phone}
-                                    onChange={e => setPhone(e.target.value)}
+                                    onChange={e => {
+                                        setPhone(e.target.value)
+                                        if (consentStatus === 'granted') updateUserDetails({ phone: e.target.value })
+                                    }}
                                     placeholder="+91 9XXXXXXXXX"
                                     className="w-full bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm"
                                 />

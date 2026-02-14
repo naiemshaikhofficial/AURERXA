@@ -250,6 +250,12 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
 
     const updateField = (field: string, value: any) => {
         setFormData(prev => ({ ...prev, [field]: value }))
+
+        // Dynamic Guest Lead Capture
+        if (consentStatus === 'granted') {
+            if (field === 'full_name') updateUserDetails({ name: value })
+            if (field === 'phone') updateUserDetails({ phone: value })
+        }
     }
 
     return (
