@@ -153,11 +153,11 @@ export function Navbar() {
       <motion.nav
         animate={{
           height: isScrolled ? '4.5rem' : '6rem',
-          backgroundColor: isScrolled ? 'rgba(8, 8, 8, 0.95)' : 'rgba(var(--background), 0)'
+          backgroundColor: isScrolled ? 'rgba(8, 8, 8, 0.98)' : 'rgba(8, 8, 8, 0.85)'
         }}
-        transition={{ duration: 0.4, ease: PREMIUM_EASE }}
-        className="fixed top-0 left-0 right-0 z-50 md:backdrop-blur-md flex items-center p-4 md:p-0 border-b border-transparent data-[scrolled=true]:border-border/40"
-        data-scrolled={isScrolled}
+        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl flex items-center p-4 md:p-0 border-b border-border/30"
+        style={{ willChange: 'height, background-color' }}
       >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">

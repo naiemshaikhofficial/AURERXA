@@ -62,6 +62,8 @@ import { CookieConsent } from '@/components/cookie-consent'
 import { TrackingScripts } from '@/components/scripts/tracking'
 import { BehaviorTracker } from '@/components/behavior-tracker'
 import { getCurrentUserProfile } from '@/app/actions'
+import { ScrollProgress } from '@/components/scroll-progress'
+import { FloatingElements } from '@/components/floating-elements'
 
 export default async function RootLayout({
   children,
@@ -90,13 +92,18 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          {/* Premium scroll progress indicator */}
+          <ScrollProgress />
+          
           <CartProvider>
             <SearchProvider>
               <ConsentProvider initialProfile={profile}>
+                {/* Navbar outside smooth scroll for proper fixed positioning */}
+                <AdminRouteGuard>
+                  <Navbar />
+                </AdminRouteGuard>
+                
                 <SmoothScroll>
-                  <AdminRouteGuard>
-                    <Navbar />
-                  </AdminRouteGuard>
                   {/* Cinematic Grain Overlay - Optimized for TBT */}
                   <div
                     className="fixed inset-0 z-[100] pointer-events-none opacity-[0.015] bg-[url('/noise.svg')] repeat will-change-transform"

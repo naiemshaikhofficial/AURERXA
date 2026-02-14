@@ -21,6 +21,14 @@ const HeritageHighlights = dynamic(() => import('@/components/heritage-highlight
 const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
 const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
 
+// New content sections
+const WhyChooseUs = dynamic(() => import('@/components/why-choose-us').then(mod => mod.WhyChooseUs))
+const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-story').then(mod => mod.CraftsmanshipStory))
+const OurStory = dynamic(() => import('@/components/testimonials-luxury').then(mod => mod.OurStory))
+const PricingTransparency = dynamic(() => import('@/components/pricing-transparency').then(mod => mod.PricingTransparency))
+const InstagramFeed = dynamic(() => import('@/components/instagram-feed').then(mod => mod.InstagramFeed))
+const FAQLuxury = dynamic(() => import('@/components/faq-luxury').then(mod => mod.FAQLuxury))
+
 async function NewReleasesSection() {
   const newReleases = await getNewReleases()
   return <NewReleases products={newReleases} />
@@ -29,29 +37,62 @@ async function NewReleasesSection() {
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
+      {/* Hero Section */}
       <Hero />
+      
+      {/* Heritage & Trust */}
       <Heritage />
       <TrustBar />
-      <CategoryBrowsing />
-      <ShopByGender />
-      <OccasionBrowsing />
-      <ConciergeServices />
-      <ServicesSection />
-
+      
+      {/* PRODUCTS - Featured Early for Visibility */}
+      {/* New Releases */}
       <Suspense fallback={<div className="h-96 w-full animate-pulse bg-muted/20" />}>
         <NewReleasesSection />
       </Suspense>
-
-      <GoldRateCard />
+      
+      {/* Featured Products */}
       <FeaturedCollections />
       <Bestsellers />
+      
+      {/* Browse Collections */}
+      <CategoryBrowsing />
+      <ShopByGender />
+      <OccasionBrowsing />
+      
+      {/* Gold Rate */}
+      <GoldRateCard />
+      
+      {/* Why Choose AURERXA - NEW */}
+      <WhyChooseUs />
+      
+      {/* Craftsmanship Story - NEW */}
+      <CraftsmanshipStory />
+      
+      {/* Services */}
+      <ServicesSection />
 
+      {/* Heritage Highlights */}
       <Suspense fallback={<div className="h-96 w-full animate-pulse bg-muted/20" />}>
         <HeritageHighlights />
       </Suspense>
 
+      {/* Our Story - NEW */}
+      <OurStory />
+      
+      {/* Pricing Transparency - NEW */}
+      <PricingTransparency />
+      
+      {/* Instagram Feed - NEW */}
+      <InstagramFeed />
+      
+      {/* FAQ Section - NEW */}
+      <FAQLuxury />
+      
+      {/* Custom Order & Newsletter */}
       <CustomOrderForm />
       <Newsletter />
+      
+      {/* Footer & Floating Elements */}
       <FloatingConcierge />
       <Footer />
     </div>
