@@ -25,7 +25,7 @@ import {
 import { Menu } from "lucide-react"
 import { SearchModal } from './search-modal'
 import { ModeToggle } from './mode-toggle'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export function Navbar() {
@@ -135,8 +135,35 @@ export function Navbar() {
   }
 
   const { scrollY } = useScroll()
+  const [hidden, setHidden] = useState(false)
   const navHeight = useTransform(scrollY, [0, 100], ['6rem', '4.5rem'])
   const navBg = useTransform(scrollY, [0, 100], ['rgba(var(--background), 0)', 'rgba(8, 8, 8, 0.95)'])
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    const previous = scrollY.getPrevious() ?? 0
+    if (latest > previous && latest > 150) {
+      setHidden(true)
+    } else {
+      setHidden(false)
+    }
+  })
+
+  // Reveal navbar when scrolling stops
+  useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout)
+      scrollTimeout = setTimeout(() => {
+        setHidden(false)
+      }, 100)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      clearTimeout(scrollTimeout)
+    }
+  }, [])
 
   return (
     <>

@@ -10,7 +10,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
 
 // Defer non-critical interactive overlays (code-split via dynamic import)
-const BottomNav = dynamic(() => import('@/components/bottom-nav').then(mod => mod.BottomNav))
 const MobileInstallPrompt = dynamic(() => import('@/components/mobile-install-prompt').then(mod => mod.MobileInstallPrompt))
 const NotificationManager = dynamic(() => import('@/components/notification-manager').then(mod => mod.NotificationManager))
 const CartSheet = dynamic(() => import('@/components/cart-sheet').then(mod => mod.CartSheet))
@@ -56,14 +55,14 @@ import { SearchProvider } from '@/context/search-context'
 import { ThemeProvider } from "@/components/theme-provider"
 import { Navbar } from '@/components/navbar'
 import { CategoryNav } from '@/components/category-nav'
+import { BottomNav } from '@/components/bottom-nav'
 import { AdminRouteGuard, AdminOnlyWrapper } from '@/components/admin-route-guard'
 import { ConsentProvider } from '@/context/consent-context'
 import { CookieConsent } from '@/components/cookie-consent'
 import { TrackingScripts } from '@/components/scripts/tracking'
 import { BehaviorTracker } from '@/components/behavior-tracker'
 import { getCurrentUserProfile } from '@/app/actions'
-import { ScrollProgress } from '@/components/scroll-progress'
-import { FloatingElements } from '@/components/floating-elements'
+
 
 export default async function RootLayout({
   children,
@@ -92,37 +91,35 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* Premium scroll progress indicator */}
-          <ScrollProgress />
 
           <CartProvider>
             <SearchProvider>
               <ConsentProvider initialProfile={profile}>
-                {/* Navbar outside smooth scroll for proper fixed positioning */}
-                {/* Navbar outside smooth scroll for proper fixed positioning */}
                 <SmoothScroll>
-                  <div className="pt-20 md:pt-24">
-                    <main>
-                      {children}
-                    </main>
-                  </div>
+                  <AdminRouteGuard>
+                    <Navbar />
+                  </AdminRouteGuard>
+                  <AdminRouteGuard>
+                    <div className="pt-20 md:pt-24">
+                      <CategoryNav />
+                      <main>
+                        {children}
+                      </main>
+                    </div>
+                  </AdminRouteGuard>
                   <AdminOnlyWrapper>
                     {children}
                   </AdminOnlyWrapper>
                   <Toaster />
                   <AdminRouteGuard>
                     <CartSheet />
+                    <BottomNav />
                     <MobileInstallPrompt />
                     <NotificationManager />
                   </AdminRouteGuard>
                   <SpeedInsights />
                   <Analytics />
                 </SmoothScroll>
-
-                {/* Fixed navigation components - OUTSIDE SmoothScroll for guaranteed rendering */}
-                <Navbar />
-                <CategoryNav />
-                <BottomNav />
 
                 <CookieConsent />
                 <TrackingScripts />
@@ -137,4 +134,3 @@ export default async function RootLayout({
     </html>
   )
 }
-

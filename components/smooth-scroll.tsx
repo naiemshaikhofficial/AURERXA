@@ -5,21 +5,20 @@ import Lenis from 'lenis'
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
     useEffect(() => {
+        // Defer smooth scroll initialization until after first paint
+        // to avoid contributing to TBT during initial load
         const initTimeout = setTimeout(() => {
             const lenis = new Lenis({
-                duration: 0.5, // Very low duration for "almost native" feel but smooth enough for parallax
+                duration: 1.2,
                 easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
                 orientation: 'vertical',
                 gestureOrientation: 'vertical',
                 smoothWheel: true,
-                wheelMultiplier: 1, // Standard speed
+                wheelMultiplier: 1,
                 touchMultiplier: 2,
                 infinite: false,
-                syncTouch: false,
-                prevent: (node) => node.classList.contains('no-smooth-scroll'),
             })
 
-            // Fast RAF
             let rafId: number
 
             function raf(time: number) {
@@ -34,7 +33,7 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
                     cancelAnimationFrame(rafId)
                     lenis.destroy()
                 }
-        }, 100)
+        }, 100) // Short delay to let critical paint finish
 
         return () => {
             clearTimeout(initTimeout)
