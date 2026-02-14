@@ -16,6 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = `${product.name} | AURERXA`
     const description = product.description || `Exquisite ${product.name} from AURERXA's heritage collection.`
 
+    const ogImageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/og/product/${product.slug}`
+
     return {
         title,
         description,
@@ -25,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             type: 'website',
             images: [
                 {
-                    url: product.image_url,
+                    url: ogImageUrl,
                     width: 1200,
                     height: 630,
                     alt: product.name,
@@ -36,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             card: 'summary_large_image',
             title,
             description,
-            images: [product.image_url],
+            images: [ogImageUrl],
         },
     }
 }

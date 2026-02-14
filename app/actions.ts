@@ -9,6 +9,7 @@ import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib 
 import { unstable_cache, revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
+import { sanitize, sanitizeObject } from '@/lib/sanitizer'
 
 export async function getTestProductCount() {
   const { count, error } = await supabase.from('products').select('*', { count: 'exact', head: true })
@@ -1090,7 +1091,8 @@ export async function subscribeNewsletter(email: string) {
 }
 
 export async function submitCustomOrder(formData: any) {
-  if (!formData.name || !formData.email || !formData.description) {
+  const sanitizedData = sanitizeObject(formData)
+  if (!sanitizedData.name || !sanitizedData.email || !sanitizedData.description) {
     return { success: false, error: 'Please fill in all required fields' }
   }
 
@@ -1099,7 +1101,7 @@ export async function submitCustomOrder(formData: any) {
     const { error } = await client
       .from('custom_orders')
       .insert([{
-        ...formData,
+        ...sanitizedData,
         status: 'pending',
         created_at: new Date().toISOString(),
         // Add additional metadata if these columns don't exist, 
@@ -1140,13 +1142,14 @@ export async function submitBulkOrder(formData: {
     quantity: number
   }[]
 }) {
+  const sanitized = sanitizeObject(formData)
   try {
     // Validate required fields
-    if (!formData.businessName?.trim()) return { success: false, error: 'Business name is required' }
-    if (!formData.contactName?.trim()) return { success: false, error: 'Contact name is required' }
-    if (!formData.email?.trim() || !formData.email.includes('@')) return { success: false, error: 'Valid email is required' }
-    if (!formData.phone?.trim() || formData.phone.replace(/\D/g, '').length < 10) return { success: false, error: 'Valid phone number is required' }
-    if (!formData.items || formData.items.length === 0) return { success: false, error: 'Please add at least one product to your bulk order' }
+    if (!sanitized.businessName?.trim()) return { success: false, error: 'Business name is required' }
+    if (!sanitized.contactName?.trim()) return { success: false, error: 'Contact name is required' }
+    if (!sanitized.email?.trim() || !sanitized.email.includes('@')) return { success: false, error: 'Valid email is required' }
+    if (!sanitized.phone?.trim() || sanitized.phone.replace(/\D/g, '').length < 10) return { success: false, error: 'Valid phone number is required' }
+    if (!sanitized.items || sanitized.items.length === 0) return { success: false, error: 'Please add at least one product to your bulk order' }
 
     // Validate minimum quantity per item
     for (const item of formData.items) {
@@ -1170,12 +1173,12 @@ export async function submitBulkOrder(formData: {
       .from('bulk_orders')
       .insert({
         user_id: userId,
-        business_name: formData.businessName.trim(),
-        contact_name: formData.contactName.trim(),
-        email: formData.email.trim().toLowerCase(),
-        phone: formData.phone.trim(),
-        gst_number: formData.gstNumber?.trim() || null,
-        message: formData.message?.trim() || null,
+        business_name: sanitized.businessName.trim(),
+        contact_name: sanitized.contactName.trim(),
+        email: sanitized.email.trim().toLowerCase(),
+        phone: sanitized.phone.trim(),
+        gst_number: sanitized.gstNumber?.trim() || null,
+        message: sanitized.message?.trim() || null,
         status: 'pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -1220,7 +1223,8 @@ export async function submitBulkOrder(formData: {
 }
 
 export async function submitContact(formData: any) {
-  if (!formData.name || !formData.email || !formData.message) {
+  const sanitized = sanitizeObject(formData)
+  if (!sanitized.name || !sanitized.email || !sanitized.message) {
     return { success: false, error: 'Please fill in all required fields' }
   }
 
@@ -1228,7 +1232,7 @@ export async function submitContact(formData: any) {
     const client = await getAuthClient()
     const { error } = await client
       .from('contact_messages')
-      .insert([{ ...formData, created_at: new Date().toISOString() }])
+      .insert([{ ...sanitized, created_at: new Date().toISOString() }])
 
     if (error) throw error
 
@@ -2728,5 +2732,61 @@ export async function logVisitorEvent(sessionId: string, eventName: string, meta
   } catch (err) {
     console.error('Crash in logVisitorEvent:', err)
     return { success: false }
+  }
+}
+
+// ============================================
+// RETENTION & RECOVERY (Phase 4)
+// ============================================
+
+/**
+ * Checks for users who have items in their cart for more than 24 hours
+ * and haven't placed an order recently.
+ */
+export async function checkAbandonedCarts() {
+  try {
+    const client = await getAuthClient()
+
+    // Get carts older than 24 hours
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    // We fetch user_id from cart_items that were created > 24h ago
+    const { data: abandonedItems, error } = await client
+      .from('cart_items')
+      .select('user_id, profiles(email, full_name)')
+      .lt('created_at', yesterday.toISOString())
+      .not('user_id', 'is', null)
+
+    if (error || !abandonedItems) return []
+
+    // Group by user and filter out those who ordered recently
+    const users = Array.from(new Set(abandonedItems.map(item => (item as any).user_id)))
+    const recoveryList = []
+
+    for (const userId of users) {
+      // Check if user has a recent order (last 24h)
+      const { count } = await client
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .gt('created_at', yesterday.toISOString())
+
+      if (count === 0) {
+        const profile = abandonedItems.find(item => item.user_id === userId)?.profiles
+        if (profile) {
+          recoveryList.push({
+            userId,
+            email: (profile as any).email,
+            name: (profile as any).full_name,
+          })
+        }
+      }
+    }
+
+    return recoveryList
+  } catch (err) {
+    console.error('Abandoned cart check error:', err)
+    return []
   }
 }

@@ -1102,3 +1102,59 @@ export async function deleteErrorLog(id: string) {
     const { error } = await client.from('error_logs').delete().eq('id', id)
     return { success: !error }
 }
+
+// ============================================
+// DATA EXPORT TOOLS (Phase 4)
+// ============================================
+
+export async function exportOrdersToCSV() {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    const { data: orders, error } = await client
+        .from('orders')
+        .select('order_number, total, status, payment_method, created_at, profiles(full_name, email)')
+        .order('created_at', { ascending: false })
+
+    if (error || !orders) return { success: false, error: 'Database error' }
+
+    const headers = ['Order #', 'Customer', 'Email', 'Total (INR)', 'Status', 'Payment', 'Date']
+    const rows = orders.map((o: any) => [
+        o.order_number,
+        o.profiles?.full_name || 'Guest',
+        o.profiles?.email || '',
+        o.total,
+        o.status,
+        o.payment_method || 'N/A',
+        new Date(o.created_at).toLocaleDateString()
+    ])
+
+    const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n')
+    return { success: true, csv: csvContent, filename: `orders_report_${new Date().toISOString().split('T')[0]}.csv` }
+}
+
+export async function exportUsersToCSV() {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin || admin.role === 'staff') return { success: false, error: 'Unauthorized' }
+
+    const { data: users, error } = await client
+        .from('profiles')
+        .select('full_name, email, phone_number, created_at, is_banned')
+        .order('created_at', { ascending: false })
+
+    if (error || !users) return { success: false, error: 'Database error' }
+
+    const headers = ['Full Name', 'Email', 'Phone', 'Joined Date', 'Banned Status']
+    const rows = users.map((u: any) => [
+        u.full_name,
+        u.email,
+        u.phone_number || '',
+        new Date(u.created_at).toLocaleDateString(),
+        u.is_banned ? 'Yes' : 'No'
+    ])
+
+    const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n')
+    return { success: true, csv: csvContent, filename: `users_report_${new Date().toISOString().split('T')[0]}.csv` }
+}
