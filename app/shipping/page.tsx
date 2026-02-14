@@ -7,6 +7,8 @@ export const metadata = {
     description: 'Learn about our shipping policies, delivery times, and free shipping offers.'
 }
 
+export const revalidate = 3600
+
 export default function ShippingPage() {
     return (
         <div className="min-h-screen bg-background text-foreground">

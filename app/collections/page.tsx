@@ -5,7 +5,7 @@ import { CollectionsClient } from './collections-client'
 import { PRICE_RANGES, FilterState } from '@/components/cinematic-filter'
 
 // Set revalidation time for the page
-export const revalidate = 60
+export const revalidate = 600 // revalidate every 10 mins
 
 export default async function CollectionsPage({
   searchParams,

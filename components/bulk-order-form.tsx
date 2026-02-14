@@ -29,6 +29,21 @@ interface BulkItem {
     quantity: number
 }
 
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+
+const bulkOrderSchema = z.object({
+    businessName: z.string().min(2, 'Business name is required'),
+    contactName: z.string().min(2, 'Contact person name is required'),
+    email: z.string().email('Invalid email address'),
+    phone: z.string().min(10, 'Invalid phone number'),
+    gstNumber: z.string().optional(),
+    message: z.string().optional(),
+})
+
+type BulkOrderValues = z.infer<typeof bulkOrderSchema>
+
 export function BulkOrderForm({
     products,
     initialProfile
@@ -36,12 +51,6 @@ export function BulkOrderForm({
     products: Product[],
     initialProfile?: { name?: string; email?: string; phone?: string } | null
 }) {
-    const [businessName, setBusinessName] = useState('')
-    const [contactName, setContactName] = useState(initialProfile?.name || '')
-    const [email, setEmail] = useState(initialProfile?.email || '')
-    const [phone, setPhone] = useState(initialProfile?.phone || '')
-    const [gstNumber, setGstNumber] = useState('')
-    const [message, setMessage] = useState('')
     const [items, setItems] = useState<BulkItem[]>([])
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState<Product[]>([])
@@ -52,14 +61,32 @@ export function BulkOrderForm({
 
     const { consentStatus, userDetails, updateUserDetails } = useConsent()
 
-    // Pre-fill from consent context
-    useEffect(() => {
-        if (consentStatus === 'granted') {
-            if (userDetails.name && !contactName) setContactName(userDetails.name)
-            if (userDetails.email && !email) setEmail(userDetails.email)
-            if (userDetails.phone && !phone) setPhone(userDetails.phone)
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        formState: { errors },
+        reset
+    } = useForm<BulkOrderValues>({
+        resolver: zodResolver(bulkOrderSchema),
+        defaultValues: {
+            businessName: '',
+            contactName: initialProfile?.name || userDetails.name || '',
+            email: initialProfile?.email || userDetails.email || '',
+            phone: initialProfile?.phone || userDetails.phone || '',
+            gstNumber: '',
+            message: '',
         }
-    }, [consentStatus, userDetails, contactName, email, phone])
+    })
+
+    // Pre-fill from consent or profile
+    useEffect(() => {
+        if (initialProfile) {
+            if (initialProfile.name) setValue('contactName', initialProfile.name)
+            if (initialProfile.email) setValue('email', initialProfile.email)
+            if (initialProfile.phone) setValue('phone', initialProfile.phone)
+        }
+    }, [initialProfile, setValue])
 
     // Search products
     const handleSearch = async (query: string) => {
@@ -131,25 +158,18 @@ export function BulkOrderForm({
         items.reduce((sum, i) => sum + i.quantity, 0), [items])
 
     // Submit
-    const handleSubmit = async () => {
+    const onBulkSubmit = async (data: BulkOrderValues) => {
         if (isSubmitting) return
 
-        // Client-side validation
-        if (!businessName.trim()) return toast.error('Please enter your business name')
-        if (!contactName.trim()) return toast.error('Please enter your name')
-        if (!email.trim() || !email.includes('@')) return toast.error('Please enter a valid email')
-        if (!phone.trim() || phone.replace(/\D/g, '').length < 10) return toast.error('Please enter a valid phone number')
-        if (items.length === 0) return toast.error('Please add at least one product')
+        if (items.length === 0) {
+            toast.error('Please add at least one product')
+            return
+        }
 
         setIsSubmitting(true)
         try {
             const result = await submitBulkOrder({
-                businessName,
-                contactName,
-                email,
-                phone,
-                gstNumber: gstNumber || undefined,
-                message: message || undefined,
+                ...data,
                 items,
             })
 
@@ -160,16 +180,20 @@ export function BulkOrderForm({
                 // Persist details if consented
                 if (consentStatus === 'granted') {
                     updateUserDetails({
-                        name: contactName,
-                        email: email,
-                        phone: phone
+                        name: data.contactName,
+                        email: data.email,
+                        phone: data.phone
                     })
                 }
             } else {
                 toast.error(result.error || 'Failed to submit')
+                const { logError } = await import('@/lib/logger')
+                await logError(new Error(result.error), { metadata: { form: 'BulkOrderForm' } })
             }
-        } catch (err) {
+        } catch (err: any) {
             toast.error('Something went wrong. Please try again.')
+            const { logError } = await import('@/lib/logger')
+            await logError(err, { metadata: { form: 'BulkOrderForm' } })
         } finally {
             setIsSubmitting(false)
         }
@@ -200,12 +224,7 @@ export function BulkOrderForm({
                     onClick={() => {
                         setSubmitted(false)
                         setItems([])
-                        setBusinessName('')
-                        setContactName('')
-                        setEmail('')
-                        setPhone('')
-                        setGstNumber('')
-                        setMessage('')
+                        reset()
                     }}
                     className="text-xs font-premium-sans tracking-wider text-primary hover:text-primary/80 transition-colors"
                 >
@@ -230,82 +249,71 @@ export function BulkOrderForm({
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5">
+                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5 font-bold">
                                     <Building2 className="w-3 h-3" /> BUSINESS NAME *
                                 </label>
                                 <input
                                     type="text"
-                                    value={businessName}
-                                    onChange={e => setBusinessName(e.target.value)}
+                                    {...register('businessName')}
                                     placeholder="Your Company Name"
-                                    className="w-full bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm"
+                                    className={`w-full bg-background border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm ${errors.businessName ? 'border-destructive/50' : 'border-border'}`}
                                 />
+                                {errors.businessName && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.businessName.message}</p>}
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5">
+                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5 font-bold">
                                     <User className="w-3 h-3" /> CONTACT PERSON *
                                 </label>
                                 <input
                                     type="text"
-                                    value={contactName}
-                                    onChange={e => {
-                                        setContactName(e.target.value)
-                                        if (consentStatus === 'granted') updateUserDetails({ name: e.target.value })
-                                    }}
+                                    {...register('contactName')}
                                     placeholder="Full Name"
-                                    className="w-full bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm"
+                                    className={`w-full bg-background border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm ${errors.contactName ? 'border-destructive/50' : 'border-border'}`}
                                 />
+                                {errors.contactName && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.contactName.message}</p>}
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5">
+                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5 font-bold">
                                     <Mail className="w-3 h-3" /> EMAIL *
                                 </label>
                                 <input
                                     type="email"
-                                    value={email}
-                                    onChange={e => {
-                                        setEmail(e.target.value)
-                                        if (consentStatus === 'granted') updateUserDetails({ email: e.target.value })
-                                    }}
+                                    {...register('email')}
                                     placeholder="business@example.com"
-                                    className="w-full bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm"
+                                    className={`w-full bg-background border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm ${errors.email ? 'border-destructive/50' : 'border-border'}`}
                                 />
+                                {errors.email && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.email.message}</p>}
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5">
+                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5 font-bold">
                                     <Phone className="w-3 h-3" /> PHONE *
                                 </label>
                                 <input
                                     type="tel"
-                                    value={phone}
-                                    onChange={e => {
-                                        setPhone(e.target.value)
-                                        if (consentStatus === 'granted') updateUserDetails({ phone: e.target.value })
-                                    }}
+                                    {...register('phone')}
                                     placeholder="+91 9XXXXXXXXX"
-                                    className="w-full bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm"
+                                    className={`w-full bg-background border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm ${errors.phone ? 'border-destructive/50' : 'border-border'}`}
                                 />
+                                {errors.phone && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.phone.message}</p>}
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5">
+                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5 font-bold">
                                     <FileText className="w-3 h-3" /> GST NUMBER
                                 </label>
                                 <input
                                     type="text"
-                                    value={gstNumber}
-                                    onChange={e => setGstNumber(e.target.value)}
+                                    {...register('gstNumber')}
                                     placeholder="Optional"
                                     className="w-full bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5">
+                                <label className="text-[10px] text-muted-foreground font-premium-sans tracking-wider flex items-center gap-1.5 font-bold">
                                     <MessageSquare className="w-3 h-3" /> NOTES
                                 </label>
                                 <input
                                     type="text"
-                                    value={message}
-                                    onChange={e => setMessage(e.target.value)}
+                                    {...register('message')}
                                     placeholder="Special requirements..."
                                     className="w-full bg-background border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary/50 focus:outline-none transition-colors rounded-sm"
                                 />
@@ -508,7 +516,7 @@ export function BulkOrderForm({
 
                             {/* Submit Button */}
                             <button
-                                onClick={handleSubmit}
+                                onClick={handleSubmit(onBulkSubmit)}
                                 disabled={isSubmitting || items.length === 0}
                                 className={`w-full py-4 text-[10px] font-premium-sans tracking-[0.2em] uppercase transition-all duration-500 flex items-center justify-center gap-2 rounded-sm ${items.length > 0
                                     ? 'bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer'

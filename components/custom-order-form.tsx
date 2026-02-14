@@ -11,6 +11,21 @@ import { submitCustomOrder } from '@/app/actions'
 import { uploadToSupabase } from '@/lib/storage'
 import imageCompression from 'browser-image-compression'
 import { Loader2, CheckCircle, AlertCircle, X, Camera } from 'lucide-react'
+import { cn } from '@/lib/utils'
+
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+
+const customOrderSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  phone: z.string().min(10, 'Invalid phone number'),
+  description: z.string().min(10, 'Please provide a more detailed description'),
+  budget: z.string().min(1, 'Please select a budget range'),
+})
+
+type CustomOrderValues = z.infer<typeof customOrderSchema>
 
 export function CustomOrderForm() {
   const [isLoading, setIsLoading] = useState(false)
@@ -23,31 +38,30 @@ export function CustomOrderForm() {
   const [isCatalogRequested, setIsCatalogRequested] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+    reset
+  } = useForm<CustomOrderValues>({
+    resolver: zodResolver(customOrderSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      description: '',
+      budget: '',
+    }
+  })
+
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    description: '',
-    budget: '',
-  })
-
-  const sectionRef = useRef(null)
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'end start']
-  })
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
   const handleBudgetChange = (value: string) => {
-    setFormData(prev => ({ ...prev, budget: value }))
+    setValue('budget', value)
   }
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,8 +88,7 @@ export function CustomOrderForm() {
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: CustomOrderValues) => {
     setIsLoading(true)
     setStatus('idle')
 
@@ -84,7 +97,6 @@ export function CustomOrderForm() {
       const imageUrls: string[] = []
 
       for (const item of selectedImages) {
-        // Compress image
         const options = {
           maxSizeMB: 1,
           maxWidthOrHeight: 1920,
@@ -93,7 +105,6 @@ export function CustomOrderForm() {
 
         try {
           const compressedFile = await imageCompression(item.file, options)
-          // Upload to Supabase (using 'custom_designs' bucket)
           const uploadResult = await uploadToSupabase(compressedFile, 'custom_designs')
 
           if (uploadResult.success && uploadResult.url) {
@@ -106,7 +117,7 @@ export function CustomOrderForm() {
 
       // 2. Submit Order
       const finalData = {
-        ...formData,
+        ...data,
         images: imageUrls,
         catalog_requested: isCatalogRequested
       }
@@ -116,23 +127,22 @@ export function CustomOrderForm() {
       if (result.success) {
         setStatus('success')
         setMessage(result.message!)
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          description: '',
-          budget: '',
-        })
+        reset()
         setSelectedImages([])
         setIsCatalogRequested(false)
       } else {
         setStatus('error')
         setMessage(result.error!)
+        // Log to our new system
+        const { logError } = await import('@/lib/logger')
+        await logError(new Error(result.error), { metadata: { form: 'CustomOrderForm' } })
       }
     } catch (err: any) {
       console.error('Submit Error:', err)
       setStatus('error')
       setMessage('An unexpected error occurred. Please try again.')
+      const { logError } = await import('@/lib/logger')
+      await logError(err, { metadata: { form: 'CustomOrderForm' } })
     } finally {
       setIsLoading(false)
       setTimeout(() => setStatus('idle'), 5000)
@@ -163,7 +173,7 @@ export function CustomOrderForm() {
         </div>
 
         <div className="bg-card border border-border p-6 md:p-16 relative overflow-hidden group hover:border-primary/20 transition-all duration-1000 shadow-[0_0_50px_rgba(0,0,0,0.2)] dark:shadow-[0_0_50px_rgba(0,0,0,1)]">
-          <form onSubmit={handleSubmit} className="space-y-12 relative z-10">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-12 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
               <div className="space-y-4">
                 <Label htmlFor="name" className="text-muted-foreground text-[9px] font-premium-sans">
@@ -171,13 +181,14 @@ export function CustomOrderForm() {
                 </Label>
                 <Input
                   id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
+                  {...register('name')}
                   placeholder="Your illustrious name"
-                  required
-                  className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest"
+                  className={cn(
+                    "bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest",
+                    errors.name && "border-destructive/50"
+                  )}
                 />
+                {errors.name && <p className="text-[10px] text-destructive uppercase tracking-widest font-bold">{errors.name.message}</p>}
               </div>
 
               <div className="space-y-4">
@@ -186,14 +197,15 @@ export function CustomOrderForm() {
                 </Label>
                 <Input
                   id="email"
-                  name="email"
                   type="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  {...register('email')}
                   placeholder="your@excellence.com"
-                  required
-                  className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest"
+                  className={cn(
+                    "bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest",
+                    errors.email && "border-destructive/50"
+                  )}
                 />
+                {errors.email && <p className="text-[10px] text-destructive uppercase tracking-widest font-bold">{errors.email.message}</p>}
               </div>
             </div>
 
@@ -204,12 +216,14 @@ export function CustomOrderForm() {
                 </Label>
                 <Input
                   id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
+                  {...register('phone')}
                   placeholder="+91 (000) 000-0000"
-                  className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest"
+                  className={cn(
+                    "bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest",
+                    errors.phone && "border-destructive/50"
+                  )}
                 />
+                {errors.phone && <p className="text-[10px] text-destructive uppercase tracking-widest font-bold">{errors.phone.message}</p>}
               </div>
 
               <div className="space-y-4">
@@ -217,8 +231,11 @@ export function CustomOrderForm() {
                   Budget Range
                 </Label>
                 {mounted && (
-                  <Select value={formData.budget} onValueChange={handleBudgetChange}>
-                    <SelectTrigger className="bg-background/40 border-border text-muted-foreground h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest">
+                  <Select value={watch('budget')} onValueChange={handleBudgetChange}>
+                    <SelectTrigger className={cn(
+                      "bg-background/40 border-border text-muted-foreground h-14 focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest",
+                      errors.budget && "border-destructive/50"
+                    )}>
                       <SelectValue placeholder="Select budget range" />
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border text-popover-foreground rounded-none">
@@ -230,6 +247,7 @@ export function CustomOrderForm() {
                     </SelectContent>
                   </Select>
                 )}
+                {errors.budget && <p className="text-[10px] text-destructive uppercase tracking-widest font-bold">{errors.budget.message}</p>}
               </div>
             </div>
 
@@ -278,14 +296,15 @@ export function CustomOrderForm() {
               </Label>
               <Textarea
                 id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
+                {...register('description')}
                 placeholder="Tell us about your design, materials, and inspiration..."
-                required
                 rows={4}
-                className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 resize-none focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest leading-loose"
+                className={cn(
+                  "bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 resize-none focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest leading-loose",
+                  errors.description && "border-destructive/50"
+                )}
               />
+              {errors.description && <p className="text-[10px] text-destructive uppercase tracking-widest font-bold">{errors.description.message}</p>}
             </div>
 
             <div className="flex items-center gap-3 group cursor-pointer" onClick={() => setIsCatalogRequested(!isCatalogRequested)}>

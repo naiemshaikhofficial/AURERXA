@@ -103,41 +103,58 @@ const PhoneInputStyles = () => (
     `}</style>
 )
 
-export function AddressForm({ initialData, onSave, onCancel, loading }: AddressFormProps) {
-    const [formData, setFormData] = useState({
-        label: initialData?.label || 'Home',
-        full_name: initialData?.full_name || '',
-        phone: formatInitialPhone(initialData?.phone, initialData?.country),
-        street_address: initialData?.street_address || '',
-        address_line1: initialData?.address_line1 || (initialData?.street_address?.split(', ')[0] || ''),
-        address_line2: initialData?.address_line2 || (initialData?.street_address?.split(', ').slice(1, -1).join(', ') || ''),
-        landmark: initialData?.landmark || (initialData?.street_address?.split(', ').slice(-1)[0] || ''),
-        city: initialData?.city || '',
-        state: initialData?.state || '',
-        country: initialData?.country || 'IN',
-        pincode: initialData?.pincode || '',
-        is_default: initialData?.is_default || false,
-    })
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 
+const addressSchema = z.object({
+    label: z.string().min(1, 'Label is required'),
+    full_name: z.string().min(2, 'Full name is required'),
+    phone: z.string().min(10, 'Invalid phone number'),
+    pincode: z.string().length(6, 'Pincode must be 6 digits'),
+    address_line1: z.string().min(5, 'Address is too short'),
+    address_line2: z.string().optional(),
+    landmark: z.string().optional(),
+    city: z.string().min(2, 'City is required'),
+    state: z.string().min(2, 'State is required'),
+    country: z.string().min(2, 'Country is required'),
+    is_default: z.boolean().default(false),
+})
+
+type AddressValues = z.infer<typeof addressSchema>
+
+export function AddressForm({ initialData, onSave, onCancel, loading }: AddressFormProps) {
     const { items: cartItems } = useCart()
     const { consentStatus, userDetails, updateUserDetails } = useConsent()
     const [pincodeLoading, setPincodeLoading] = useState(false)
-
-    // Pre-fill from consent context if empty
-    useEffect(() => {
-        if (consentStatus === 'granted' && !initialData?.id) { // Only pre-fill for new addresses
-            if (userDetails.name && !formData.full_name) {
-                updateField('full_name', userDetails.name)
-            }
-            if (userDetails.phone && !formData.phone) {
-                updateField('phone', userDetails.phone)
-            }
-        }
-    }, [consentStatus, userDetails, initialData?.id, formData.full_name, formData.phone])
-
     const [countryOpen, setCountryOpen] = useState(false)
     const [stateOpen, setStateOpen] = useState(false)
     const [cityOpen, setCityOpen] = useState(false)
+
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        formState: { errors },
+    } = useForm<AddressValues>({
+        resolver: zodResolver(addressSchema),
+        defaultValues: {
+            label: initialData?.label || 'Home',
+            full_name: initialData?.full_name || userDetails.name || '',
+            phone: formatInitialPhone(initialData?.phone || userDetails.phone, initialData?.country),
+            pincode: initialData?.pincode || '',
+            address_line1: initialData?.address_line1 || (initialData?.street_address?.split(', ')[0] || ''),
+            address_line2: initialData?.address_line2 || (initialData?.street_address?.split(', ').slice(1, -1).join(', ') || ''),
+            landmark: initialData?.landmark || (initialData?.street_address?.split(', ').slice(-1)[0] || ''),
+            city: initialData?.city || '',
+            state: initialData?.state || '',
+            country: initialData?.country || 'IN',
+            is_default: initialData?.is_default || false,
+        }
+    })
+
+    const formData = watch()
 
     const countries = useMemo(() => Country.getAllCountries(), [])
     const states = useMemo(() =>
@@ -150,26 +167,20 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
     const currentCountry = useMemo(() => countries.find(c => c.isoCode === formData.country), [countries, formData.country])
     const currentState = useMemo(() => states.find(s => s.isoCode === formData.state), [states, formData.state])
 
-    // Pincode auto-detection and estimates
+    // Pincode auto-detection
     useEffect(() => {
         let isCancelled = false;
-
         const detectAddress = async () => {
             if (formData.country === 'IN' && formData.pincode.length === 6) {
                 setPincodeLoading(true)
                 try {
-                    // 1. Get City/State
                     const data = await getPincodeDetails(formData.pincode)
                     if (isCancelled) return;
 
                     if (data && data[0] && data[0].Status === 'Success') {
                         const postOffice = data[0].PostOffice[0]
                         let cityName = postOffice.Block || postOffice.District
-
-                        // Override with better names if necessary
-                        if (formData.pincode.startsWith('422')) {
-                            cityName = 'Sangamner'
-                        }
+                        if (formData.pincode.startsWith('422')) cityName = 'Sangamner'
 
                         const stateName = postOffice.State
                         const stateObj = states.find(s =>
@@ -177,11 +188,8 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             s.name.toLowerCase().includes(stateName.toLowerCase())
                         )
 
-                        setFormData(prev => ({
-                            ...prev,
-                            city: cityName,
-                            state: stateObj ? stateObj.isoCode : prev.state
-                        }))
+                        if (cityName) setValue('city', cityName)
+                        if (stateObj) setValue('state', stateObj.isoCode)
                     }
                 } catch (err) {
                     console.error('Pincode detection error:', err)
@@ -190,44 +198,32 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                 }
             }
         }
-
         detectAddress()
+        return () => { isCancelled = true }
+    }, [formData.pincode, formData.country, states, setValue])
 
-        return () => {
-            isCancelled = true;
-        }
-    }, [formData.pincode, formData.country, states, cartItems])
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        const stateName = currentState?.name || formData.state
-        const countryName = currentCountry?.name || formData.country
+    const onAddressSubmit = (data: AddressValues) => {
+        const stateName = currentState?.name || data.state
+        const countryName = currentCountry?.name || data.country
         const combinedAddress = [
-            formData.address_line1,
-            formData.address_line2,
-            formData.landmark,
-            formData.city,
+            data.address_line1,
+            data.address_line2,
+            data.landmark,
+            data.city,
             stateName,
-            formData.pincode,
+            data.pincode,
             countryName
         ].filter(Boolean).join(', ')
 
         const savePayload = {
-            label: formData.label,
-            full_name: formData.full_name,
-            phone: formData.phone,
+            ...data,
             street_address: combinedAddress,
-            city: formData.city,
-            state: formData.state,
-            pincode: formData.pincode,
-            is_default: formData.is_default,
         }
 
-        // Persist details to context if consented
         if (consentStatus === 'granted') {
             updateUserDetails({
-                name: formData.full_name,
-                phone: formData.phone
+                name: data.full_name,
+                phone: data.phone
             })
         }
 
@@ -248,19 +244,9 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
         visible: { opacity: 1, y: 0 }
     }
 
-    const updateField = (field: string, value: any) => {
-        setFormData(prev => ({ ...prev, [field]: value }))
-
-        // Dynamic Guest Lead Capture
-        if (consentStatus === 'granted') {
-            if (field === 'full_name') updateUserDetails({ name: value })
-            if (field === 'phone') updateUserDetails({ phone: value })
-        }
-    }
-
     return (
         <motion.form
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onAddressSubmit)}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -284,11 +270,14 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             Address Label
                         </Label>
                         <Input
-                            value={formData.label}
-                            onChange={(e) => updateField('label', e.target.value)}
+                            {...register('label')}
                             placeholder="e.g. Home, Office, Studio"
-                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all placeholder:text-muted-foreground/20 font-light italic text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
+                            className={cn(
+                                "bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all placeholder:text-muted-foreground/20 font-light italic text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center",
+                                errors.label && "border-destructive/50"
+                            )}
                         />
+                        {errors.label && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.label.message}</p>}
                     </div>
 
                     <div className="space-y-3 group">
@@ -297,12 +286,14 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             Full Name
                         </Label>
                         <Input
-                            value={formData.full_name}
-                            onChange={(e) => updateField('full_name', e.target.value)}
-                            required
+                            {...register('full_name')}
                             placeholder="Enter your full name"
-                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
+                            className={cn(
+                                "bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center",
+                                errors.full_name && "border-destructive/50"
+                            )}
                         />
+                        {errors.full_name && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.full_name.message}</p>}
                     </div>
                 </motion.div>
 
@@ -312,17 +303,21 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             <Phone className="w-3.5 h-3.5" />
                             Phone Number
                         </Label>
-                        <div className="phone-input-wrapper border-white/5 border-b border-b-primary/20 transition-all focus-within:border-primary/40 hover:border-primary/30">
+                        <div className={cn(
+                            "phone-input-wrapper border-white/5 border-b border-b-primary/20 transition-all focus-within:border-primary/40 hover:border-primary/30",
+                            errors.phone && "border-destructive/50"
+                        )}>
                             <PhoneInput
                                 international
                                 defaultCountry="IN"
                                 flags={flags}
                                 flagUrl="https://flagcdn.com/{xx}.svg"
                                 value={formData.phone}
-                                onChange={(val) => updateField('phone', val || '')}
+                                onChange={(val) => setValue('phone', val || '')}
                                 className="flex h-14 w-full bg-transparent px-0 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/20 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
                             />
                         </div>
+                        {errors.phone && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.phone.message}</p>}
                     </div>
 
                     <div className="space-y-3 group">
@@ -332,13 +327,15 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             {pincodeLoading && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
                         </Label>
                         <Input
-                            value={formData.pincode}
-                            onChange={(e) => updateField('pincode', e.target.value)}
-                            required
+                            {...register('pincode')}
                             placeholder="e.g. 422001"
                             maxLength={6}
-                            className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
+                            className={cn(
+                                "bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center",
+                                errors.pincode && "border-destructive/50"
+                            )}
                         />
+                        {errors.pincode && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.pincode.message}</p>}
                     </div>
                 </motion.div>
             </div>
@@ -359,12 +356,14 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                             Address Line 1 (House No., Building, Area)
                         </Label>
                         <Textarea
-                            value={formData.address_line1}
-                            onChange={(e) => updateField('address_line1', e.target.value)}
-                            required
+                            {...register('address_line1')}
                             placeholder="e.g. House No. 12, AURERXA Residency, Heritage Colony"
-                            className="bg-background/20 border-white/5 text-foreground min-h-[100px] rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-center py-8 text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 resize-none"
+                            className={cn(
+                                "bg-background/20 border-white/5 text-foreground min-h-[100px] rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-center py-8 text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 resize-none",
+                                errors.address_line1 && "border-destructive/50"
+                            )}
                         />
+                        {errors.address_line1 && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.address_line1.message}</p>}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -374,8 +373,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                 Address Line 2
                             </Label>
                             <Input
-                                value={formData.address_line2}
-                                onChange={(e) => updateField('address_line2', e.target.value)}
+                                {...register('address_line2')}
                                 placeholder="e.g. Near Heritage Tower"
                                 className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
                             />
@@ -387,8 +385,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                 Landmark
                             </Label>
                             <Input
-                                value={formData.landmark}
-                                onChange={(e) => updateField('landmark', e.target.value)}
+                                {...register('landmark')}
                                 placeholder="e.g. Opp. Gold Market"
                                 className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
                             />
@@ -403,7 +400,10 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                     <Button
                                         variant="outline"
                                         role="combobox"
-                                        className="w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground hover:bg-white/5 transition-all text-base px-12 border-b-primary/20"
+                                        className={cn(
+                                            "w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground hover:bg-white/5 transition-all text-base px-12 border-b-primary/20",
+                                            errors.country && "border-destructive/50"
+                                        )}
                                     >
                                         <span className="truncate">{formData.country ? currentCountry?.name : "Select Country"}</span>
                                         <ChevronsUpDown className="absolute right-4 h-4 w-4 shrink-0 opacity-40 text-primary" />
@@ -420,12 +420,9 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                                         key={country.isoCode}
                                                         value={country.name}
                                                         onSelect={() => {
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                country: country.isoCode,
-                                                                state: '',
-                                                                city: ''
-                                                            }))
+                                                            setValue('country', country.isoCode)
+                                                            setValue('state', '')
+                                                            setValue('city', '')
                                                             setCountryOpen(false)
                                                         }}
                                                         className="cursor-pointer hover:bg-white/5 py-4 transition-colors"
@@ -439,6 +436,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                     </Command>
                                 </PopoverContent>
                             </Popover>
+                            {errors.country && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.country.message}</p>}
                         </div>
 
                         <div className="space-y-3">
@@ -449,7 +447,10 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                         variant="outline"
                                         role="combobox"
                                         disabled={!formData.country}
-                                        className="w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-12 border-b-primary/20"
+                                        className={cn(
+                                            "w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-12 border-b-primary/20",
+                                            errors.state && "border-destructive/50"
+                                        )}
                                     >
                                         <span className="truncate">{formData.state ? currentState?.name : "Select State"}</span>
                                         <ChevronsUpDown className="absolute right-4 h-4 w-4 shrink-0 opacity-40 text-primary" />
@@ -466,7 +467,8 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                                         key={state.isoCode}
                                                         value={state.name}
                                                         onSelect={() => {
-                                                            setFormData(prev => ({ ...prev, state: state.isoCode, city: '' }))
+                                                            setValue('state', state.isoCode)
+                                                            setValue('city', '')
                                                             setStateOpen(false)
                                                         }}
                                                         className="cursor-pointer hover:bg-white/5 py-4 transition-colors"
@@ -480,6 +482,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                     </Command>
                                 </PopoverContent>
                             </Popover>
+                            {errors.state && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.state.message}</p>}
                         </div>
 
                         <div className="space-y-3">
@@ -490,7 +493,10 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                         variant="outline"
                                         role="combobox"
                                         disabled={!formData.state}
-                                        className="w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-12 border-b-primary/20"
+                                        className={cn(
+                                            "w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-12 border-b-primary/20",
+                                            errors.city && "border-destructive/50"
+                                        )}
                                     >
                                         <span className="truncate">{formData.city ? formData.city : "Select City"}</span>
                                         <ChevronsUpDown className="absolute right-4 h-4 w-4 shrink-0 opacity-40 text-primary" />
@@ -507,7 +513,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                                         key={city.name}
                                                         value={city.name}
                                                         onSelect={() => {
-                                                            setFormData(prev => ({ ...prev, city: city.name }))
+                                                            setValue('city', city.name)
                                                             setCityOpen(false)
                                                         }}
                                                         className="cursor-pointer hover:bg-white/5 py-4 transition-colors"
@@ -521,6 +527,7 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                                     </Command>
                                 </PopoverContent>
                             </Popover>
+                            {errors.city && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.city.message}</p>}
                         </div>
                     </div>
                 </div>

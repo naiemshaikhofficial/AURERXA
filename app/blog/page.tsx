@@ -10,6 +10,8 @@ export const metadata = {
     description: 'Discover jewelry care tips, buying guides, and the latest trends from AURERXA.'
 }
 
+export const revalidate = 3600 // revalidate every hour
+
 export default async function BlogPage() {
     const posts = await getBlogPosts()
 

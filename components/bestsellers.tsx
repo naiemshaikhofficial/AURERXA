@@ -12,19 +12,23 @@ import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-consta
 
 import { ProductCard, Product } from '@/components/product-card'
 
-export function Bestsellers() {
-  const [bestsellers, setBestsellers] = useState<Product[]>([])
+export function Bestsellers({ products: initialProducts }: { products?: Product[] }) {
+  const [bestsellers, setBestsellers] = useState<Product[]>(initialProducts || [])
   const [loadingId, setLoadingId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
-  // Fetch data on client side
+  // Fetch data on client side only if not provided by server
   useEffect(() => {
-    async function loadData() {
-      const data = await getBestsellers()
-      if (data) setBestsellers(data as any)
+    if (!initialProducts) {
+      async function loadData() {
+        const data = await getBestsellers()
+        if (data) setBestsellers(data as any)
+      }
+      loadData()
+    } else {
+      setBestsellers(initialProducts)
     }
-    loadData()
-  }, [])
+  }, [initialProducts])
 
   if (bestsellers.length === 0) return null
 

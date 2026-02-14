@@ -6,6 +6,8 @@ export const metadata = {
     description: 'Terms and conditions for using our website and services.'
 }
 
+export const revalidate = 3600
+
 export default function TermsPage() {
     return (
         <div className="min-h-screen bg-background text-foreground">

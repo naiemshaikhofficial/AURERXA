@@ -11,46 +11,66 @@ import { Label } from '@/components/ui/label'
 import { submitContact } from '@/app/actions'
 import { ParallaxScroll } from '@/components/parallax-scroll'
 import { Loader2, CheckCircle, AlertCircle, Mail, Phone, MapPin } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+
+const contactSchema = z.object({
+  name: z.string().min(2, 'Name is required'),
+  email: z.string().email('Invalid email address'),
+  subject: z.string().min(2, 'Subject is required'),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+})
+
+type ContactValues = z.infer<typeof contactSchema>
 
 export default function ContactPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset
+  } = useForm<ContactValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      subject: '',
+      message: '',
+    }
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: ContactValues) => {
     setIsLoading(true)
     setStatus('idle')
 
-    const result = await submitContact(formData)
+    try {
+      const result = await submitContact(data)
 
-    if (result.success) {
-      setStatus('success')
-      setMessage(result.message!)
-      setFormData({
-        name: '',
-        email: '',
-        subject: '',
-        message: '',
-      })
-    } else {
+      if (result.success) {
+        setStatus('success')
+        setMessage(result.message!)
+        reset()
+      } else {
+        setStatus('error')
+        setMessage(result.error!)
+        const { logError } = await import('@/lib/logger')
+        await logError(new Error(result.error), { metadata: { form: 'ContactPage' } })
+      }
+    } catch (err: any) {
       setStatus('error')
-      setMessage(result.error!)
+      setMessage('Something went wrong. Please try again.')
+      const { logError } = await import('@/lib/logger')
+      await logError(err, { metadata: { form: 'ContactPage' } })
+    } finally {
+      setIsLoading(false)
+      setTimeout(() => setStatus('idle'), 5000)
     }
-
-    setIsLoading(false)
-    setTimeout(() => setStatus('idle'), 5000)
   }
 
   return (
@@ -131,7 +151,7 @@ export default function ContactPage() {
             <div className="lg:col-span-2 border border-border p-8 bg-card">
               <h2 className="text-2xl font-serif font-bold mb-8 text-foreground">Send us a Message</h2>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-foreground/80 font-light text-sm">
@@ -139,13 +159,14 @@ export default function ContactPage() {
                     </Label>
                     <Input
                       id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
+                      {...register('name')}
                       placeholder="Your name"
-                      required
-                      className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-14 focus:border-primary/50 rounded-none transition-colors"
+                      className={cn(
+                        "bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-14 focus:border-primary/50 rounded-none transition-colors",
+                        errors.name && "border-destructive/50"
+                      )}
                     />
+                    {errors.name && <p className="text-[10px] text-destructive uppercase tracking-widest font-bold">{errors.name.message}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -154,14 +175,15 @@ export default function ContactPage() {
                     </Label>
                     <Input
                       id="email"
-                      name="email"
                       type="email"
-                      value={formData.email}
-                      onChange={handleChange}
+                      {...register('email')}
                       placeholder="your@email.com"
-                      required
-                      className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-14 focus:border-primary/50 rounded-none transition-colors"
+                      className={cn(
+                        "bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-14 focus:border-primary/50 rounded-none transition-colors",
+                        errors.email && "border-destructive/50"
+                      )}
                     />
+                    {errors.email && <p className="text-[10px] text-destructive uppercase tracking-widest font-bold">{errors.email.message}</p>}
                   </div>
                 </div>
 
@@ -171,12 +193,14 @@ export default function ContactPage() {
                   </Label>
                   <Input
                     id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
+                    {...register('subject')}
                     placeholder="What is this about?"
-                    className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-14 focus:border-primary/50 rounded-none transition-colors"
+                    className={cn(
+                      "bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 h-14 focus:border-primary/50 rounded-none transition-colors",
+                      errors.subject && "border-destructive/50"
+                    )}
                   />
+                  {errors.subject && <p className="text-[10px] text-destructive uppercase tracking-widest font-bold">{errors.subject.message}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -185,14 +209,15 @@ export default function ContactPage() {
                   </Label>
                   <Textarea
                     id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
+                    {...register('message')}
                     placeholder="Tell us more about your inquiry..."
-                    required
                     rows={6}
-                    className="bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 resize-none focus:border-primary/50 rounded-none transition-colors"
+                    className={cn(
+                      "bg-background/50 border-input text-foreground placeholder:text-muted-foreground/50 resize-none focus:border-primary/50 rounded-none transition-colors",
+                      errors.message && "border-destructive/50"
+                    )}
                   />
+                  {errors.message && <p className="text-[10px] text-destructive uppercase tracking-widest font-bold">{errors.message.message}</p>}
                 </div>
 
                 {status === 'success' && (

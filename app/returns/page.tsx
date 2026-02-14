@@ -8,6 +8,8 @@ export const metadata = {
     description: 'Our hassle-free return and refund policy for your peace of mind.'
 }
 
+export const revalidate = 3600
+
 export default function ReturnsPage() {
     return (
         <div className="min-h-screen bg-background text-foreground">

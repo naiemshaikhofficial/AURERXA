@@ -49,6 +49,8 @@ const GoldParticles = ({ count = 15 }: { count?: number }) => (
     </div>
 )
 
+export const revalidate = 3600 // revalidate every hour
+
 export default function AboutPage() {
     const heroRef = useRef(null)
     const { scrollYProgress: heroScroll } = useScroll({

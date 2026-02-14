@@ -6,6 +6,8 @@ export const metadata = {
     description: 'Learn how we collect, use, and protect your personal information.'
 }
 
+export const revalidate = 3600
+
 export default function PrivacyPage() {
     return (
         <div className="min-h-screen bg-background text-foreground">

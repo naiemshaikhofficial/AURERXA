@@ -65,8 +65,8 @@ function CollectionCard({ category, parentScrollProgress }: { category: any, par
   )
 }
 
-export function FeaturedCollections() {
-  const [categories, setCategories] = useState<any[]>([])
+export function FeaturedCollections({ categories: initialCategories }: { categories?: any[] }) {
+  const [categories, setCategories] = useState<any[]>(initialCategories || [])
   const containerRef = useRef(null)
 
   // Shared Scroll Progress for Performance (1 listener for all cards)
@@ -76,12 +76,16 @@ export function FeaturedCollections() {
   })
 
   useEffect(() => {
-    async function load() {
-      const data = await getCategories()
-      if (data) setCategories(data)
+    if (!initialCategories) {
+      async function load() {
+        const data = await getCategories()
+        if (data) setCategories(data)
+      }
+      load()
+    } else {
+      setCategories(initialCategories)
     }
-    load()
-  }, [])
+  }, [initialCategories])
 
   // if (categories.length === 0) return null // Removed early return to fix Ref Hydration error
 
