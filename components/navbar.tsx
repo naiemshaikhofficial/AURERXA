@@ -65,18 +65,27 @@ export function Navbar() {
         if (adminData) setIsAdmin(true)
       }
 
-      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        setUser(session?.user ?? null)
+      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_OUT' || (event === 'USER_UPDATED' && !session)) {
+          setUser(null)
+          setProfile(null)
+          setIsAdmin(false)
+          return
+        }
+
         if (session?.user) {
+          setUser(session.user)
           // Fetch Profile
-          const { data } = await supabase
+          const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single()
-          if (data) setProfile(data)
-          else {
-            setProfile({ full_name: session.user.user_metadata.full_name || session.user.email })
+
+          if (profileData) {
+            setProfile(profileData)
+          } else {
+            setProfile({ full_name: session.user.user_metadata?.full_name || session.user.email })
           }
 
           // Fetch Admin Status
@@ -87,6 +96,7 @@ export function Navbar() {
             .single()
           setIsAdmin(!!adminData)
         } else {
+          setUser(null)
           setProfile(null)
           setIsAdmin(false)
         }
@@ -116,23 +126,23 @@ export function Navbar() {
 
   const handleSignOut = async () => {
     try {
-      // 1. Client-side sign out
-      await supabase.auth.signOut()
-
-      // 2. Server-side sign out (clears cookies)
-      const { signOutAction } = await import('@/app/actions')
-      await signOutAction()
-
-      // 3. Clear local state
+      // 1. Instant UI update
       setUser(null)
       setProfile(null)
       setIsAdmin(false)
 
-      // 4. Force a hard reload to clear all server/client state
-      window.location.href = '/'
+      // 2. Client-side sign out
+      await supabase.auth.signOut()
+
+      // 3. Server-side sign out (clears cookies)
+      const { signOutAction } = await import('@/app/actions')
+      await signOutAction()
+
+      // 4. Smoothly navigate to home
+      router.push('/')
+      router.refresh()
     } catch (error) {
       console.error('Sign out error:', error)
-      // Fallback: still try to reload
       window.location.href = '/'
     }
   }

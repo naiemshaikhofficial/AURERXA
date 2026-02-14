@@ -69,16 +69,26 @@ export async function getCurrentUserProfile() {
 export async function signOutAction() {
   try {
     const client = await getAuthClient()
-    const { error } = await client.auth.signOut()
+    await client.auth.signOut()
 
-    if (error) {
-      console.error('Error in signOutAction:', error)
-      return { success: false, error: error.message }
-    }
-
-    // Clear the status cache cookie explicitly
+    // Explicitly clear all auth related cookies
     const cookieStore = await cookies()
-    cookieStore.delete('ua-status-cache')
+    const allCookies = cookieStore.getAll()
+
+    // Pattern match Supabase auth cookies (usually sb-xyz-auth-token)
+    // Also clear the status cache and any other identifying cookies
+    allCookies.forEach(cookie => {
+      const name = cookie.name.toLowerCase()
+      if (
+        name.includes('auth') ||
+        name.includes('supabase') ||
+        name.startsWith('sb-') ||
+        name === 'ua-status-cache' ||
+        name.includes('session')
+      ) {
+        cookieStore.delete(cookie.name)
+      }
+    })
 
     return { success: true }
   } catch (err: any) {
