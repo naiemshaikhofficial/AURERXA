@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, ReactNode } from 'react'
-import { motion, useScroll, useTransform, useSpring, MotionValue } from 'framer-motion'
+import { motion, useScroll, useTransform, MotionValue } from 'framer-motion'
 
 interface ParallaxScrollProps {
     children: ReactNode
@@ -52,11 +52,12 @@ export function ParallaxScroll({
     const blurValue = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [blur ? 5 : 0, 0, 0, blur ? 5 : 0])
 
     // Apply spring for smoothness - optimized config
-    const springConfig = { stiffness: 100, damping: 30, mass: 0.5, restDelta: 0.001 }
-    const y = useSpring(yValue, springConfig)
-    const scale = useSpring(scaleValue, springConfig)
-    const opacity = useSpring(opacityValue, springConfig)
-    const rotate = useSpring(rotateValue, springConfig)
+    // Removed springs for performance - using raw transforms is much faster
+    // const springConfig = { stiffness: 100, damping: 30, mass: 0.5, restDelta: 0.001 }
+    // const y = useSpring(yValue, springConfig)
+    // const scale = useSpring(scaleValue, springConfig)
+    // const opacity = useSpring(opacityValue, springConfig)
+    // const rotate = useSpring(rotateValue, springConfig)
 
     // Create filter string for blur
     const filter = useTransform(blurValue, (value) => `blur(${value}px)`)
@@ -64,11 +65,11 @@ export function ParallaxScroll({
     return (
         <motion.div
             ref={ref}
-            style={{ 
-                y, 
-                scale, 
-                opacity, 
-                rotate,
+            style={{
+                y: yValue,
+                scale: scaleValue,
+                opacity: opacityValue,
+                rotate: rotateValue,
                 filter: blur ? filter : undefined,
                 transformStyle: 'preserve-3d',
                 backfaceVisibility: 'hidden',

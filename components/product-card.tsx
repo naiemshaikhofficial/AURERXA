@@ -101,13 +101,8 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
         return Array.from(new Set(result))
     }, [product])
 
-    // Scroll Parallax Logic
+    // Scroll Parallax Logic Removed for Performance
     const containerRef = useRef<HTMLDivElement>(null)
-    const { scrollYProgress } = useScroll({
-        target: containerRef,
-        offset: ['start end', 'end start']
-    })
-    const yParallax = useTransform(scrollYProgress, [0, 1], [-15, 15])
 
     // Auto-Cycle Logic (Faster on hover)
     useEffect(() => {
@@ -181,7 +176,6 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                             initial={{ x: '-20%' }}
                             animate={{ x: '0%' }}
                             exit={{ x: '20%' }}
-                            style={{ y: yParallax }}
                             transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
                             className="absolute inset-[-8%] will-change-transform"
                         >

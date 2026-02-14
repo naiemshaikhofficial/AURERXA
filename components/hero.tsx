@@ -2,7 +2,7 @@
 
 import React, { useRef } from 'react'
 import Image from 'next/image'
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export function Hero() {
@@ -12,10 +12,10 @@ export function Hero() {
     offset: ['start start', 'end start'],
   })
 
-  // Deep Parallax with Spring Physics for "Heavy" Premium Feel
-  const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
-  const yBg = useSpring(useTransform(scrollYProgress, [0, 1], [0, 200]), springConfig)
-  const yText = useSpring(useTransform(scrollYProgress, [0, 1], [0, 100]), springConfig)
+  // Deep Parallax - Optimized (No Spring)
+  // const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
+  const yBg = useTransform(scrollYProgress, [0, 1], [0, 200])
+  const yText = useTransform(scrollYProgress, [0, 1], [0, 100])
   const opacityFade = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
   // Spotlight Parallax

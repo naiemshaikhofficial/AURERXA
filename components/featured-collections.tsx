@@ -9,74 +9,26 @@ import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-consta
 import { sanitizeImagePath } from '@/lib/utils'
 
 function CollectionCard({ category }: { category: any }) {
-  const cardRef = useRef<HTMLAnchorElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: cardRef,
-    offset: ['start end', 'end start']
-  })
-
-  // Internal image drift
-  const yImage = useTransform(scrollYProgress, [0, 1], [-40, 40])
-
-  // Magnetic Tilt Logic
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-
-  const mouseXSpring = useSpring(x)
-  const mouseYSpring = useSpring(y)
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ['5deg', '-5deg'])
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ['-5deg', '5deg'])
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!cardRef.current) return
-    const rect = cardRef.current.getBoundingClientRect()
-    const width = rect.width
-    const height = rect.height
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-    const xPct = mouseX / width - 0.5
-    const yPct = mouseY / height - 0.5
-
-    // Disable heavy tilt on mobile simply by not setting if window is small (conceptually)
-    // or relying on the fact that mouseMove doesn't fire constantly on touch like this
-    x.set(xPct)
-    y.set(yPct)
-  }
-
-  // Optimize Image Drift for Mobile (Prevent "baar baar loading" feeling)
-  // We use `will-change` in CSS to help browser optimize
-
-
-  const handleMouseLeave = () => {
-    x.set(0)
-    y.set(0)
-  }
-
   return (
     <motion.div
       variants={fadeInUp}
-      style={{ rotateX, rotateY }}
     >
       <Link
-        ref={cardRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
         href={`/collections?material=${category.slug}`}
         className="group relative block aspect-[4/5] overflow-hidden bg-card transition-all duration-300 hover:z-20 hover:scale-[1.02] border border-border"
       >
-        {/* Image with Parallax Drift & Aggressive Scale */}
-        <div className="absolute inset-0 z-0 h-[120%] -top-[10%]">
-          <motion.div style={{ y: yImage }} className="relative h-full w-full">
+        {/* Image with Scale Effect */}
+        <div className="absolute inset-0 z-0 h-full w-full">
+          <div className="relative h-full w-full">
             <Image
               src={sanitizeImagePath(category.image_url)}
               alt={category.name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              className="object-cover transition-all duration-300 group-hover:scale-110 will-change-transform"
+              className="object-cover transition-all duration-700 group-hover:scale-110 will-change-transform"
               loading="eager"
             />
-          </motion.div>
+          </div>
 
           {/* Default Dark Overlay - kept dark for text contrast */}
           <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-all duration-300" />

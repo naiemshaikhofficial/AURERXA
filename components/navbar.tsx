@@ -148,16 +148,30 @@ export function Navbar() {
   })
 
 
+  // Responsive height logic
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   return (
     <>
       <motion.nav
         animate={{
-          height: isScrolled ? '4.5rem' : '6rem',
           backgroundColor: isScrolled ? 'rgba(8, 8, 8, 0.98)' : 'rgba(8, 8, 8, 0.85)'
         }}
-        transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl flex items-center p-4 md:p-0 border-b border-border/30"
-        style={{ willChange: 'height, background-color' }}
+        transition={{ duration: 0.4 }}
+        style={{
+          height: isScrolled ? (isMobile ? '4.5rem' : '4.5rem') : (isMobile ? '5rem' : '6rem'),
+          paddingTop: isScrolled && isMobile ? '0.5rem' : (isMobile ? '1rem' : '0'),
+          paddingBottom: isScrolled && isMobile ? '0.5rem' : (isMobile ? '1rem' : '0'),
+          transition: 'height 0.4s ease, padding 0.4s ease'
+        }}
+        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl flex items-center px-4 md:px-0 border-b border-border/30"
       >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">

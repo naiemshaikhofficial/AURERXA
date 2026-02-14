@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 
@@ -12,10 +12,11 @@ export function Heritage() {
         offset: ['start end', 'end start'],
     })
 
-    const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
-    const yBg = useSpring(useTransform(scrollYProgress, [0, 1], ['-20%', '20%']), springConfig)
-    const scaleBg = useSpring(useTransform(scrollYProgress, [0, 1], [1.1, 1.3]), springConfig)
-    const opacityBg = useSpring(useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 0.6, 0.4]), springConfig)
+    // Optimized - No Spring
+    // const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
+    const yBg = useTransform(scrollYProgress, [0, 1], ['-20%', '20%'])
+    const scaleBg = useTransform(scrollYProgress, [0, 1], [1.1, 1.3])
+    const opacityBg = useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 0.6, 0.4])
 
     return (
         <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center bg-background py-12 md:py-0">

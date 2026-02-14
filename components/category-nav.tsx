@@ -22,7 +22,16 @@ const categories = [
 export function CategoryNav() {
     const pathname = usePathname()
     const [isVisible, setIsVisible] = useState(true)
-    const [lastScrollY, setLastScrollY] = useState(0)
+    const [isScrolled, setIsScrolled] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
+    const lastScrollY = React.useRef(0)
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768)
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
 
     useEffect(() => {
         let scrollTimeout: NodeJS.Timeout
@@ -30,40 +39,46 @@ export function CategoryNav() {
         const handleScroll = () => {
             const currentScrollY = window.scrollY
 
+            // Track detailed scrolled state for docking
+            if (currentScrollY > 50) {
+                setIsScrolled(true)
+            } else {
+                setIsScrolled(false)
+            }
+
             // Hide on scroll down, show on scroll up
             if (currentScrollY < 50) {
                 setIsVisible(true)
-            } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+            } else if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
                 setIsVisible(false)
-            } else if (currentScrollY < lastScrollY) {
+            } else if (currentScrollY < lastScrollY.current) {
                 setIsVisible(true)
             }
 
-            setLastScrollY(currentScrollY)
-
-            // Reveal instantly when scrolling stops
-            clearTimeout(scrollTimeout)
-            scrollTimeout = setTimeout(() => {
-                setIsVisible(true)
-            }, 50) // Very small delay for "instant" feel
+            lastScrollY.current = currentScrollY
         }
 
         window.addEventListener('scroll', handleScroll, { passive: true })
         return () => {
             window.removeEventListener('scroll', handleScroll)
-            clearTimeout(scrollTimeout)
         }
-    }, [lastScrollY])
+    }, [])
 
     return (
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    initial={{ y: -100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -100, opacity: 0 }}
-                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                    className="fixed top-20 md:top-24 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/40 h-20 md:h-24 flex items-center overflow-hidden"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{
+                        y: 0,
+                        opacity: 1,
+                        top: isScrolled
+                            ? (isMobile ? '4.5rem' : '4.5rem') // Docked Scrolled (Matched to Navbar)
+                            : (isMobile ? '5rem' : '6rem')     // Docked Initial
+                    }}
+                    exit={{ y: -20, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="fixed left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/40 h-16 md:h-20 flex items-center overflow-hidden shadow-sm"
                 >
                     <div className="max-w-7xl mx-auto px-4 md:px-6 w-full overflow-x-auto no-scrollbar">
                         <div className="flex items-center justify-between min-w-max md:min-w-0 gap-6 md:gap-8">
@@ -75,7 +90,7 @@ export function CategoryNav() {
                                         key={cat.label}
                                         href={cat.href}
                                         className={cn(
-                                            "flex flex-col items-center justify-center gap-2 group transition-all duration-500 min-w-[70px] md:min-w-[80px]",
+                                            "flex flex-col items-center justify-center gap-1 md:gap-2 group transition-all duration-500 min-w-[60px] md:min-w-[80px]",
                                             isActive ? "opacity-100" : "opacity-60 hover:opacity-100"
                                         )}
                                     >
