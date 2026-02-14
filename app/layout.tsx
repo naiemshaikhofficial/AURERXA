@@ -101,20 +101,17 @@ export default async function RootLayout({
                 {/* Navbar outside smooth scroll for proper fixed positioning */}
                 {/* Navbar outside smooth scroll for proper fixed positioning */}
                 <SmoothScroll>
-                  <AdminRouteGuard>
-                    <div className="pt-20 md:pt-24">
-                      <main>
-                        {children}
-                      </main>
-                    </div>
-                  </AdminRouteGuard>
+                  <div className="pt-20 md:pt-24">
+                    <main>
+                      {children}
+                    </main>
+                  </div>
                   <AdminOnlyWrapper>
                     {children}
                   </AdminOnlyWrapper>
                   <Toaster />
                   <AdminRouteGuard>
                     <CartSheet />
-                    <BottomNav />
                     <MobileInstallPrompt />
                     <NotificationManager />
                   </AdminRouteGuard>
@@ -122,9 +119,10 @@ export default async function RootLayout({
                   <Analytics />
                 </SmoothScroll>
 
-                {/* Navbar moved to bottom for Z-Index Dominance */}
+                {/* Fixed navigation components - OUTSIDE SmoothScroll for guaranteed rendering */}
                 <Navbar />
                 <CategoryNav />
+                <BottomNav />
 
                 <CookieConsent />
                 <TrackingScripts />
