@@ -10,6 +10,8 @@ body {
   font-family: var(--font-geist), system-ui, -apple-system, sans-serif;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  line-height: 1.7;
+  letter-spacing: 0.01em;
 }
 
 @layer utilities {
@@ -27,53 +29,150 @@ body {
     scrollbar-width: none;
   }
 
-  /* Matte Luxury Utilities - No Glow */
-  .gold-glow {
-    /* REMOVED GLOW - Replaced with subtle depth */
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-  }
-
-  .gold-glow-lg {
-    /* REMOVED GLOW */
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  }
-
+  /* SOPHISTICATED TYPOGRAPHY */
   .font-serif {
-    font-family: var(--font-playfair), serif;
-    letter-spacing: -0.01em;
+    font-family: var(--font-playfair), 'Cormorant Garamond', serif;
+    letter-spacing: -0.015em;
+    font-weight: 400;
+    line-height: 1.4;
   }
 
   .font-serif-luxury {
-    font-family: 'Playfair Display', serif;
-    letter-spacing: 0.05em;
+    font-family: var(--font-playfair), 'Cormorant Garamond', serif;
+    letter-spacing: 0.03em;
     font-weight: 300;
+    line-height: 1.5;
+  }
+
+  .font-serif-display {
+    font-family: var(--font-playfair), serif;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    line-height: 1.2;
   }
 
   .font-premium-sans {
-    font-family: system-ui, -apple-system, sans-serif;
-    letter-spacing: 0.25em;
+    font-family: var(--font-geist), system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.15em;
     text-transform: uppercase;
     font-weight: 300;
+    line-height: 1.6;
   }
 
-  /* Matte Gold Gradient - Static, Elegant */
+  .font-body-refined {
+    font-family: var(--font-geist), system-ui, sans-serif;
+    letter-spacing: 0.015em;
+    font-weight: 400;
+    line-height: 1.75;
+  }
+
+  /* REFINED LUXURY SHADOWS */
+  .gold-glow {
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.15),
+      0 8px 24px rgba(0, 0, 0, 0.25),
+      0 0 1px rgba(191, 155, 101, 0.1);
+  }
+
+  .gold-glow-lg {
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.2),
+      0 16px 48px rgba(0, 0, 0, 0.35),
+      0 0 2px rgba(191, 155, 101, 0.15);
+  }
+
+  .shadow-luxury {
+    box-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.12),
+      0 4px 12px rgba(0, 0, 0, 0.18);
+  }
+
+  .shadow-luxury-lg {
+    box-shadow: 
+      0 2px 8px rgba(0, 0, 0, 0.15),
+      0 12px 32px rgba(0, 0, 0, 0.25);
+  }
+
+  /* RICHER GOLD GRADIENTS */
   .text-gradient-gold {
-    background: linear-gradient(to right,
-        #E5C590,
-        /* Matte Light Gold */
-        #BF9B65,
-        /* Matte Medium Gold */
-        #E5C590);
-    background-size: 100% auto;
+    background: linear-gradient(135deg,
+        #F4E4C1 0%,
+        #D4AF37 25%,
+        #B8860B 50%,
+        #D4AF37 75%,
+        #F4E4C1 100%);
+    background-size: 200% auto;
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    /* Removed animation for calmness */
+    animation: luxury-gradient-shift 8s ease-in-out infinite;
+  }
+
+  .bg-gradient-gold-subtle {
+    background: linear-gradient(135deg,
+        rgba(244, 228, 193, 0.05) 0%,
+        rgba(212, 175, 55, 0.08) 50%,
+        rgba(244, 228, 193, 0.05) 100%);
+  }
+
+  .bg-gradient-luxury {
+    background: linear-gradient(to bottom,
+        hsl(var(--background)) 0%,
+        hsl(var(--card)) 100%);
+  }
+
+  @keyframes luxury-gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  /* ELEGANT TRANSITIONS */
+  .transition-luxury {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-luxury-slow {
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .hover-lift {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+
+  /* REFINED SPACING UTILITIES */
+  .section-padding {
+    padding-top: clamp(4rem, 8vw, 8rem);
+    padding-bottom: clamp(4rem, 8vw, 8rem);
+  }
+
+  .section-padding-sm {
+    padding-top: clamp(2rem, 4vw, 4rem);
+    padding-bottom: clamp(2rem, 4vw, 4rem);
+  }
+
+  .container-luxury {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: clamp(1.5rem, 5vw, 3rem);
+    padding-right: clamp(1.5rem, 5vw, 3rem);
   }
 
   .bg-emerald-luxury {
     background-color: hsl(158 55% 12%);
-    /* Derived from a deep emerald that works in dark mode */
   }
 
   .text-emerald-luxury {
@@ -82,147 +181,187 @@ body {
 
   .border-premium {
     border-color: rgba(255, 255, 255, 0.08);
-    /* White subtle border */
   }
 
-  /* Luxury Selection */
+  .border-gold-subtle {
+    border-color: rgba(212, 175, 55, 0.15);
+  }
+
+  /* REFINED SELECTION & GLASS EFFECTS */
   ::selection {
-    background: rgba(191, 155, 101, 0.2);
-    /* Matte Gold Selection */
-    color: #E5C590;
+    background: rgba(212, 175, 55, 0.25);
+    color: #F4E4C1;
   }
 
   .glass-premium {
-    @apply bg-background/60 backdrop-blur-md border border-border;
+    @apply bg-background/70 backdrop-blur-xl border border-border/50;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   }
 
+  .glass-luxury {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* REFINED ALERT COMPONENTS */
   .alert-luxury-success {
-    @apply p-6 bg-card/40 backdrop-blur-xl border border-primary/20 text-primary font-premium-sans text-[10px] tracking-[0.2em] uppercase flex items-center justify-center gap-4 relative overflow-hidden;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
-    animation: luxury-slide-in 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    @apply p-8 bg-card/50 backdrop-blur-2xl border border-primary/25 text-primary font-premium-sans text-[11px] tracking-[0.18em] uppercase flex items-center justify-center gap-5 relative overflow-hidden;
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.2),
+      0 12px 40px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    animation: luxury-slide-in 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .alert-luxury-success::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-full;
-    animation: luxury-shimmer 3s infinite;
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(to right, transparent, hsl(var(--primary) / 0.08), transparent);
+    animation: luxury-shimmer 4s ease-in-out infinite;
   }
 
   .alert-luxury-error {
-    @apply p-6 bg-card/40 backdrop-blur-xl border border-destructive/20 text-destructive font-premium-sans text-[10px] tracking-[0.2em] uppercase flex items-center justify-center gap-4 relative overflow-hidden;
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
-    animation: luxury-slide-in 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    color: #ff4d4d;
-    /* More vibrant yet premium red */
+    @apply p-8 bg-card/50 backdrop-blur-2xl border border-destructive/25 text-destructive font-premium-sans text-[11px] tracking-[0.18em] uppercase flex items-center justify-center gap-5 relative overflow-hidden;
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.2),
+      0 12px 40px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    animation: luxury-slide-in 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #ff5555;
   }
 
   .alert-luxury-error::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-r from-transparent via-destructive/5 to-transparent -translate-x-full;
-    animation: luxury-shimmer 3s infinite;
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(to right, transparent, hsl(var(--destructive) / 0.08), transparent);
+    animation: luxury-shimmer 4s ease-in-out infinite;
   }
 
+  /* REFINED ANIMATIONS */
   @keyframes luxury-slide-in {
     from {
       opacity: 0;
-      transform: translateY(-10px);
+      transform: translateY(-12px) scale(0.98);
     }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 
+  @keyframes luxury-shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(200%);
+    }
+  }
+
+  @keyframes luxury-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
 
-  @keyframes luxury-shimmer {
-    100% {
-      transform: translateX(100%);
-    }
+  .animate-fade-in {
+    animation: luxury-fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .notification-luxury {
-    @apply fixed bottom-8 right-8 z-[100] p-6 backdrop-blur-xl border border-border text-foreground font-premium-sans text-[9px] tracking-[0.3em] uppercase;
-    background: hsl(var(--card));
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+    @apply fixed bottom-10 right-10 z-[100] p-8 backdrop-blur-2xl border border-border/60 text-foreground font-premium-sans text-[10px] tracking-[0.25em] uppercase;
+    background: hsl(var(--card) / 0.8);
+    box-shadow: 
+      0 8px 24px rgba(0, 0, 0, 0.3),
+      0 20px 48px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    animation: luxury-slide-in 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
 }
 
 @layer base {
   :root {
-    /* SILK LUXURY PALETTE (Light Mode) */
-    --background: 40 20% 98%;
-    /* #FCFBF9 - Warm Silk Cream */
-    --foreground: 0 0% 10%;
-    /* #1A1A1A - Soft Black */
+    /* REFINED SILK LUXURY PALETTE (Light Mode) */
+    --background: 40 25% 99%;
+    /* #FDFCFA - Pristine Silk White */
+    --foreground: 0 0% 8%;
+    /* #141414 - Deep Charcoal */
 
-    --card: 40 20% 98%;
-    --card-foreground: 0 0% 10%;
+    --card: 40 30% 97%;
+    /* #FAF8F5 - Warm Silk Card */
+    --card-foreground: 0 0% 8%;
 
-    --popover: 40 20% 98%;
-    --popover-foreground: 0 0% 10%;
+    --popover: 40 30% 98%;
+    --popover-foreground: 0 0% 8%;
 
-    --primary: 43 45% 40%;
-    /* #94712B - Rich Dark Gold (Contrast for light bg) */
-    --primary-foreground: 0 0% 98%;
+    --primary: 43 55% 45%;
+    /* #C9A961 - Rich Antique Gold */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 40 10% 94%;
-    /* #F2F0EB - Light Warm Grey */
+    --secondary: 40 15% 92%;
+    /* #EFEEE9 - Soft Warm Grey */
     --secondary-foreground: 0 0% 10%;
 
-    --muted: 40 10% 94%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 40 15% 93%;
+    --muted-foreground: 0 0% 35%;
 
-    --accent: 43 30% 90%;
-    /* #F5EFE0 - Pale Gold Background */
-    --accent-foreground: 43 45% 30%;
+    --accent: 43 40% 88%;
+    /* #F2EBDB - Champagne Accent */
+    --accent-foreground: 43 55% 25%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 43 20% 85%;
-    /* #E0DAD0 - Warm Border */
-    --input: 43 20% 85%;
-    --ring: 43 45% 40%;
+    --border: 43 25% 82%;
+    /* #DDD5C5 - Refined Border */
+    --input: 43 25% 82%;
+    --ring: 43 55% 45%;
 
     --radius: 0rem;
   }
 
   .dark {
-    /* MATTE BLACK LUXURY THEME (Dark Mode - Original) */
-    --background: 0 0% 3%;
-    /* #080808 - Deeper Matte Black */
-    --foreground: 0 0% 95%;
-    /* #f2f2f2 - Off-white */
+    /* DEEP LUXURY BLACK THEME (Dark Mode) */
+    --background: 0 0% 2%;
+    /* #050505 - Pure Deep Black */
+    --foreground: 40 15% 96%;
+    /* #F7F6F4 - Warm Off-White */
 
-    --card: 0 0% 6%;
-    /* #101010 */
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 4%;
+    /* #0A0A0A - Rich Card Black */
+    --card-foreground: 40 15% 96%;
 
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 40 15% 96%;
 
-    --primary: 43 30% 65%;
-    /* #BF9B65 - Muted/Matte Gold */
-    --primary-foreground: 0 0% 5%;
+    --primary: 43 50% 68%;
+    /* #D4AF37 - Luminous Classic Gold */
+    --primary-foreground: 0 0% 3%;
 
-    --secondary: 0 0% 12%;
-    /* Dark Gray */
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 0 0% 10%;
+    /* #1A1A1A - Refined Dark Gray */
+    --secondary-foreground: 40 15% 96%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 43 30% 25%;
-    /* Deep Gold Backgrounds */
-    --accent-foreground: 43 40% 75%;
-    /* Lighter Gold Text */
+    --accent: 43 40% 22%;
+    /* #3D3320 - Deep Gold Accent */
+    --accent-foreground: 43 50% 78%;
+    /* #E5D4A8 - Light Gold Text */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 95%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 40 15% 96%;
 
-    --border: 0 0% 12%;
-    --input: 0 0% 12%;
-    --ring: 43 30% 65%;
+    --border: 0 0% 10%;
+    --input: 0 0% 10%;
+    --ring: 43 50% 68%;
   }
 }
 
