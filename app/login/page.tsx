@@ -38,10 +38,12 @@ function LoginForm() {
             if (error) throw error
 
             // Successful login - handle redirect
-            // Prefer searchParams from hook, fallback to window only if needed (though hook is cleaner)
-            const redirect = searchParams.get('redirect') || '/'
-            router.push(redirect)
-            router.refresh()
+            // Check for 'redirect' or 'next' (common conventions)
+            const redirectPath = searchParams.get('redirect') || searchParams.get('next') || '/'
+
+            // Force a hard refresh to ensure middleware/server components pick up the new session
+            // This is often more reliable than router.push + router.refresh for auth state changes
+            window.location.href = redirectPath
         } catch (err: any) {
             setError(err.message || 'Failed to sign in')
         } finally {
@@ -52,9 +54,10 @@ function LoginForm() {
     const handleGoogleLogin = async () => {
         setLoading(true)
         setError(null)
-        const redirect = searchParams.get('redirect') || '/'
+        const redirect = searchParams.get('redirect') || searchParams.get('next') || '/'
         try {
             const redirectUrl = new URL('/auth/callback', window.location.origin)
+            // Always use 'next' for the callback handler to understand
             redirectUrl.searchParams.set('next', redirect)
 
             const { error } = await supabase.auth.signInWithOAuth({

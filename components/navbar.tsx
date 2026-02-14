@@ -116,7 +116,9 @@ export function Navbar() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
-    router.refresh()
+    setUser(null)
+    setProfile(null)
+    window.location.href = '/'
   }
 
   const getInitials = () => {
