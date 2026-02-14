@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield } from 'lucide-react'
@@ -22,131 +22,190 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import Image from 'next/image'
 import { Menu } from "lucide-react"
 import { SearchModal } from './search-modal'
 import { ModeToggle } from './mode-toggle'
-import { useSearch } from '@/context/search-context'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export function Navbar() {
   const router = useRouter()
-  // Admin Guard Logic
-  // Admin Guard Logic REMOVED for debugging
-  // const pathname = usePathname()
-  // if (pathname?.startsWith('/admin')) return null
-
   const { cartCount, openCart } = useCart()
-  const { openSearch } = useSearch()
-
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
+  const [searchOpen, setSearchOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user || null)
-
-      if (session?.user) {
-        // Check admin status
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
-
-        setProfile(profile)
-        setIsAdmin(profile?.role === 'admin' || profile?.email === 'naiem@aurerxa.com')
-      }
-    }
-
-    checkUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null)
-      if (session?.user) {
-        checkUser()
-      } else {
-        setProfile(null)
-        setIsAdmin(false)
-      }
-    })
-
-    return () => subscription.unsubscribe()
   }, [])
 
-  // ... (rest of function)
+  useEffect(() => {
+    let authListener: { subscription: { unsubscribe: () => void } } | null = null
+
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+        if (data) setProfile(data)
+
+        // Check admin status
+        const { data: adminData } = await supabase
+          .from('admin_users')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+        if (adminData) setIsAdmin(true)
+      }
+
+      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        setUser(session?.user ?? null)
+        if (session?.user) {
+          // Fetch Profile
+          const { data } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          if (data) setProfile(data)
+          else {
+            setProfile({ full_name: session.user.user_metadata.full_name || session.user.email })
+          }
+
+          // Fetch Admin Status
+          const { data: adminData } = await supabase
+            .from('admin_users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          setIsAdmin(!!adminData)
+        } else {
+          setProfile(null)
+          setIsAdmin(false)
+        }
+      })
+      authListener = data
+    }
+    getUser()
+
+    return () => {
+      if (authListener) {
+        authListener.subscription.unsubscribe()
+      }
+    }
+  }, [])
+
+  // Keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.refresh()
+  }
+
+  const getInitials = () => {
+    if (profile?.full_name) {
+      return profile.full_name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    }
+    if (user?.email) {
+      return user.email.substring(0, 2).toUpperCase()
+    }
+    return 'AU'
+  }
 
   const { scrollY } = useScroll()
-  const [isVisible, setIsVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const [hidden, setHidden] = useState(false)
+  const navHeight = useTransform(scrollY, [0, 100], ['6rem', '4.5rem'])
+  const navBg = useTransform(scrollY, [0, 100], ['rgba(var(--background), 0)', 'rgba(8, 8, 8, 0.95)'])
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const currentScrollY = latest
-    const scrollDelta = currentScrollY - lastScrollY
-
-    // Show if scrolling UP or at the very TOP
-    if (scrollDelta < 0 || currentScrollY < 50) {
-      setIsVisible(true)
+    const previous = scrollY.getPrevious() ?? 0
+    if (latest > previous && latest > 150) {
+      setHidden(true)
+    } else {
+      setHidden(false)
     }
-    // Hide if scrolling DOWN and past threshold
-    else if (scrollDelta > 0 && currentScrollY > 50) {
-      setIsVisible(false)
-    }
-
-    setLastScrollY(currentScrollY)
   })
 
-  /* 
-    SMART NAVBAR: 
-    - Visible when scrolling Up
-    - Hidden when scrolling Down
-    - Always visible at Top
-  */
+  // Reveal navbar when scrolling stops (User Preference)
+  useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout)
+      if (document.documentElement.scrollTop > 150) {
+        // Only auto-reveal if we are past the initial threshold, 
+        // otherwise it fights with the top position.
+        scrollTimeout = setTimeout(() => {
+          setHidden(false)
+        }, 600) // Longer delay to prevent accidental reveals during slow reads, but eventually shows up
+      }
+    }
+
+    const startReset = () => {
+      clearTimeout(scrollTimeout)
+      scrollTimeout = setTimeout(() => {
+        setHidden(false)
+      }, 200) // Standard 200ms reveal on stop
+    }
+
+    window.addEventListener('scroll', startReset)
+    return () => {
+      window.removeEventListener('scroll', startReset)
+      clearTimeout(scrollTimeout)
+    }
+  }, [])
+
+
+
   return (
     <>
-      <nav
-        className={`fixed top-0 left-0 right-0 flex items-center px-4 md:px-0 h-[4.5rem] md:h-[5.5rem] bg-black transition-transform duration-300 ease-in-out ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}
+      <motion.nav
+        initial={{ y: 0 }}
+        animate={{ y: 0 }} // Navbar always fixed
+        transition={{ duration: 0.3, ease: PREMIUM_EASE }}
         style={{
-          zIndex: 99999,
+          height: navHeight,
+          backgroundColor: navBg,
         }}
+        className="fixed top-0 left-0 right-0 z-50 md:backdrop-blur-md flex items-center p-4 md:p-0"
       >
         <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
-            <Link href="/" className="flex-shrink-0 group relative z-50 transition-transform active:scale-95" aria-label="AURERXA Home - Luxury Jewelry">
-              <div className="relative h-10 md:h-20 w-32 md:w-56">
-                <Image
-                  src="/logo.webp"
-                  alt=""
-                  fill
-                  priority
-                  className="object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
-                  sizes="(max-width: 768px) 128px, 224px"
-                />
-              </div>
+            <Link href="/" className="flex-shrink-0 group relative z-50" aria-label="AURERXA Home">
+              <img
+                src="/logo.png"
+                alt="AURERXA Logo"
+                className="h-10 md:h-20 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
+              />
             </Link>
 
-            {/* Mobile Actions */}
-            <div className="flex gap-3 items-center md:hidden relative z-50 pt-1">
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="relative text-[#D4AF37] p-2 bg-[#D4AF37]/10 rounded-full backdrop-blur-sm border border-[#D4AF37]/20 flex items-center justify-center animate-in zoom-in duration-500"
-                  aria-label="Admin Dashboard"
-                >
-                  <Shield className="w-5 h-5" />
-                </Link>
-              )}
-
+            {/* Mobile Cart & Search Actions (Visible only on mobile) */}
+            <div className="flex gap-4 items-center md:hidden relative z-50 pt-1">
               <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-background/50 rounded-full backdrop-blur-sm border border-border group" aria-label={`Cart with ${cartCount} items`}>
                 <img
                   src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=BF9B65"
-                  alt=""
+                  alt="Cart"
                   className="w-5 h-5 transition-transform duration-300 group-hover:scale-105"
                 />
                 {cartCount > 0 && (
@@ -159,11 +218,11 @@ export function Navbar() {
               {mounted && (
                 <Sheet>
                   <SheetTrigger asChild>
-                    <button className="text-foreground/80 hover:text-primary transition-colors p-2" aria-label="Open Navigation Menu">
+                    <button className="text-foreground/80 hover:text-primary transition-colors p-2" aria-label="Open navigation menu">
                       <Menu className="w-6 h-6 stroke-1" />
                     </button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[85vw] max-w-[300px] p-0">
+                  <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[300px] p-0">
                     <SheetHeader className="p-8 border-b border-border text-left bg-card/30 flex flex-row items-center justify-between">
                       <div>
                         <SheetTitle className="text-3xl font-serif text-foreground/90 font-light tracking-wide">AURERXA</SheetTitle>
@@ -265,18 +324,9 @@ export function Navbar() {
                 </Link>
               ))}
 
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="text-[11px] font-premium-sans text-[#D4AF37] font-bold hover:text-[#D4AF37]/80 transition-colors duration-500 tracking-[0.2em] animate-pulse"
-                >
-                  ADMIN
-                </Link>
-              )}
-
               {/* Search */}
               <button
-                onClick={openSearch}
+                onClick={() => setSearchOpen(true)}
                 className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 group"
                 aria-label="Search products"
               >
@@ -285,7 +335,7 @@ export function Navbar() {
               </button>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group" aria-label="View Wishlist">
+              <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group" aria-label="Wishlist">
                 <Heart className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
               </Link>
 
@@ -305,10 +355,10 @@ export function Navbar() {
               {/* Auth Section */}
               {user ? (
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="outline-none w-9 h-9 rounded-sm bg-muted/20 hover:bg-muted/30 border border-border flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer" aria-label="Open User Menu">
+                  <DropdownMenuTrigger className="outline-none">
+                    <div className="w-9 h-9 rounded-sm bg-muted/20 hover:bg-muted/30 border border-border flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer">
                       {getInitials()}
-                    </button>
+                    </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-background border-border text-foreground min-w-[220px] p-2">
                     <DropdownMenuLabel className="px-3 py-2">
@@ -355,9 +405,9 @@ export function Navbar() {
             </div>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
-      <SearchModal />
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   )
 }
