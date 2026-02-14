@@ -213,8 +213,11 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full overflow-hidden bg-neutral-950 select-none cursor-zoom-in group/zoom"
-            style={{ touchAction: scale > 1 ? 'none' : 'pan-y' }}
+            className="relative w-full h-full overflow-hidden bg-neutral-950 select-none cursor-zoom-in group/zoom isolate"
+            style={{
+                touchAction: scale > 1 ? 'none' : 'pan-y',
+                contain: 'paint'
+            }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onDoubleClick={toggleZoom}
