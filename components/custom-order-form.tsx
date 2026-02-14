@@ -1,20 +1,27 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { submitCustomOrder } from '@/app/actions'
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { uploadToSupabase } from '@/lib/storage'
+import imageCompression from 'browser-image-compression'
+import { Loader2, CheckCircle, AlertCircle, X, Camera } from 'lucide-react'
 
 export function CustomOrderForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [message, setMessage] = useState('')
   const [mounted, setMounted] = useState(false)
+
+  // Image states
+  const [selectedImages, setSelectedImages] = useState<{ file: File; preview: string }[]>([])
+  const [isCatalogRequested, setIsCatalogRequested] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -34,9 +41,6 @@ export function CustomOrderForm() {
     offset: ['start end', 'end start']
   })
 
-  // Subtle background pattern drift
-  const yPattern = useTransform(scrollYProgress, [0, 1], [-50, 50])
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -46,30 +50,93 @@ export function CustomOrderForm() {
     setFormData(prev => ({ ...prev, budget: value }))
   }
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files)
+      const remainingSlots = 3 - selectedImages.length
+      const newFiles = files.slice(0, remainingSlots)
+
+      const newImages = newFiles.map(file => ({
+        file,
+        preview: URL.createObjectURL(file)
+      }))
+
+      setSelectedImages(prev => [...prev, ...newImages])
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => {
+      const newImages = [...prev]
+      URL.revokeObjectURL(newImages[index].preview)
+      newImages.splice(index, 1)
+      return newImages
+    })
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setStatus('idle')
 
-    const result = await submitCustomOrder(formData)
+    try {
+      // 1. Process and Upload Images
+      const imageUrls: string[] = []
 
-    if (result.success) {
-      setStatus('success')
-      setMessage(result.message!)
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        description: '',
-        budget: '',
-      })
-    } else {
+      for (const item of selectedImages) {
+        // Compress image
+        const options = {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        }
+
+        try {
+          const compressedFile = await imageCompression(item.file, options)
+          // Upload to Supabase (using 'custom_designs' bucket)
+          const uploadResult = await uploadToSupabase(compressedFile, 'custom_designs')
+
+          if (uploadResult.success && uploadResult.url) {
+            imageUrls.push(uploadResult.url)
+          }
+        } catch (compressError) {
+          console.error('Compression/Upload error:', compressError)
+        }
+      }
+
+      // 2. Submit Order
+      const finalData = {
+        ...formData,
+        images: imageUrls,
+        catalog_requested: isCatalogRequested
+      }
+
+      const result = await submitCustomOrder(finalData)
+
+      if (result.success) {
+        setStatus('success')
+        setMessage(result.message!)
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          description: '',
+          budget: '',
+        })
+        setSelectedImages([])
+        setIsCatalogRequested(false)
+      } else {
+        setStatus('error')
+        setMessage(result.error!)
+      }
+    } catch (err: any) {
+      console.error('Submit Error:', err)
       setStatus('error')
-      setMessage(result.error!)
+      setMessage('An unexpected error occurred. Please try again.')
+    } finally {
+      setIsLoading(false)
+      setTimeout(() => setStatus('idle'), 5000)
     }
-
-    setIsLoading(false)
-    setTimeout(() => setStatus('idle'), 5000)
   }
 
   return (
@@ -166,6 +233,45 @@ export function CustomOrderForm() {
               </div>
             </div>
 
+            <div className="space-y-6">
+              <Label className="text-muted-foreground text-[9px] font-premium-sans uppercase tracking-[0.2em]">
+                Design Inspo (Max 3)
+              </Label>
+              <div className="grid grid-cols-3 gap-4">
+                {selectedImages.map((img, idx) => (
+                  <div key={idx} className="aspect-square relative group overflow-hidden border border-border bg-muted/20">
+                    <img src={img.preview} alt="preview" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
+                      className="absolute top-2 right-2 bg-black/60 text-white p-1 hover:bg-primary transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+
+                {selectedImages.length < 3 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="aspect-square border border-dashed border-border flex flex-col items-center justify-center gap-2 hover:border-primary/40 hover:bg-primary/5 transition-all group"
+                  >
+                    <Camera className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors stroke-1" />
+                    <span className="text-[8px] uppercase tracking-tighter text-muted-foreground/60">Upload</span>
+                  </button>
+                )}
+              </div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageSelect}
+                accept="image/*"
+                multiple
+                className="hidden"
+              />
+            </div>
+
             <div className="space-y-4">
               <Label htmlFor="description" className="text-muted-foreground text-[9px] font-premium-sans">
                 Describe Your Dream Piece
@@ -177,9 +283,18 @@ export function CustomOrderForm() {
                 onChange={handleChange}
                 placeholder="Tell us about your design, materials, and inspiration..."
                 required
-                rows={6}
+                rows={4}
                 className="bg-background/40 border-border text-foreground placeholder:text-muted-foreground/30 resize-none focus:border-primary/30 focus:ring-0 rounded-none text-xs tracking-widest leading-loose"
               />
+            </div>
+
+            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => setIsCatalogRequested(!isCatalogRequested)}>
+              <div className={`w-4 h-4 border border-border flex items-center justify-center transition-all ${isCatalogRequested ? 'bg-primary border-primary' : 'bg-transparent'}`}>
+                {isCatalogRequested && <CheckCircle size={10} className="text-white" />}
+              </div>
+              <span className="text-[10px] text-muted-foreground group-hover:text-primary transition-colors uppercase tracking-widest font-light">
+                I would also like to receive the AURERXA catalog
+              </span>
             </div>
 
             {status === 'success' && (
@@ -212,7 +327,7 @@ export function CustomOrderForm() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  Submitting Request...
+                  Processing...
                 </>
               ) : (
                 'Request Custom Consultation'
@@ -225,3 +340,4 @@ export function CustomOrderForm() {
     </section>
   )
 }
+

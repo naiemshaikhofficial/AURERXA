@@ -17,7 +17,8 @@ import {
     Loader2, Plus, MapPin, Check, CreditCard, Banknote,
     ChevronRight, Tag, Gift, X, AlertCircle, Clock,
     Pencil, ShoppingBag, ShieldCheck, Truck, Trophy,
-    Briefcase, Building2, Sparkles, User, Home
+    Briefcase, Building2, Sparkles, User, Home,
+    Minus, Trash2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { DeliveryEstimate } from '@/components/delivery-checker'
@@ -107,7 +108,8 @@ export default function CheckoutPage() {
         checkAuth()
     }, [router])
 
-    const { items: cart, loading: cartLoading, refreshCart } = useCart()
+    const { items: cart, loading: cartLoading, refreshCart, removeItem, updateQuantity } = useCart()
+
     const [addresses, setAddresses] = useState<any[]>([])
     const [selectedAddress, setSelectedAddress] = useState<string>('')
     const [paymentMethod, setPaymentMethod] = useState<string>('online')
@@ -768,8 +770,8 @@ export default function CheckoutPage() {
 
                                 <div className="space-y-4 mb-8 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                     {cart.map((item) => (
-                                        <div key={item.id} className="flex gap-4 p-2 hover:bg-foreground/5 transition-colors group rounded-sm">
-                                            <div className="relative w-16 h-16 flex-shrink-0 bg-background border border-border overflow-hidden">
+                                        <div key={item.id} className="flex gap-4 p-2 hover:bg-foreground/5 transition-colors group rounded-sm relative">
+                                            <Link href={`/products/${item.products?.slug}`} className="relative w-16 h-16 flex-shrink-0 bg-background border border-border overflow-hidden">
                                                 <Image
                                                     src={item.products?.image_url || '/placeholder.jpg'}
                                                     alt={item.products?.name || 'Product'}
@@ -778,22 +780,45 @@ export default function CheckoutPage() {
                                                     sizes="64px"
                                                     loader={supabaseLoader}
                                                 />
-                                            </div>
+                                            </Link>
                                             <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                <p className="text-sm font-serif text-foreground/90 truncate group-hover:text-primary transition-colors">{item.products?.name}</p>
-                                                <div className="flex flex-wrap items-center gap-x-3 text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
-                                                    <span>Qty: {item.quantity}</span>
-                                                    {item.size && (
-                                                        <>
-                                                            <span className="opacity-20">|</span>
-                                                            <span className="text-muted-foreground/80">{item.size}</span>
-                                                        </>
-                                                    )}
+                                                <Link href={`/products/${item.products?.slug}`}>
+                                                    <p className="text-sm font-serif text-foreground/90 truncate group-hover:text-primary transition-colors">{item.products?.name}</p>
+                                                </Link>
+                                                <div className="flex flex-wrap items-center justify-between gap-x-3 text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span>Size: {item.size || 'Standard'}</span>
+                                                        <span className="opacity-20">|</span>
+                                                        <div className="flex items-center gap-2 border border-border/50 px-2 py-0.5">
+                                                            <button
+                                                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                                className="hover:text-primary transition-colors"
+                                                            >
+                                                                <Minus size={10} />
+                                                            </button>
+                                                            <span className="text-foreground min-w-[12px] text-center font-medium">{item.quantity}</span>
+                                                            <button
+                                                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                                className="hover:text-primary transition-colors"
+                                                            >
+                                                                <Plus size={10} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <button
+                                                        onClick={() => removeItem(item.id)}
+                                                        className="p-1 text-muted-foreground/30 hover:text-red-500 hover:bg-red-500/10 transition-all rounded-sm"
+                                                        title="Remove item"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
                                                 </div>
                                                 <p className="text-xs font-premium-sans text-primary mt-1">₹{((item.products?.price || 0) * item.quantity).toLocaleString('en-IN')}</p>
                                             </div>
                                         </div>
                                     ))}
+
                                 </div>
 
                                 {/* Coupon Code */}

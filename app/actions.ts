@@ -1073,16 +1073,28 @@ export async function submitCustomOrder(formData: any) {
     const client = await getAuthClient()
     const { error } = await client
       .from('custom_orders')
-      .insert([{ ...formData, status: 'pending', created_at: new Date().toISOString() }])
+      .insert([{
+        ...formData,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        // Add additional metadata if these columns don't exist, 
+        // but typically Supabase expects these to be columns.
+        images: formData.images || [],
+        catalog_requested: formData.catalog_requested || false
+      }])
 
-    if (error) return { success: false, error: `Order Error: ${error.message}` }
+    if (error) {
+      console.error('Submit custom order error:', error)
+      return { success: false, error: `Order Error: ${error.message}` }
+    }
 
-    return { success: true, message: 'Your custom order request has been received.' }
+    return { success: true, message: 'Your custom jewelry consultation request has been received. Our artisans will reach out shortly.' }
   } catch (err: any) {
     console.error('Custom order error:', err)
     return { success: false, error: `System Error: ${err.message || 'Failed to submit order.'}` }
   }
 }
+
 
 // ============================================
 // BULK / WHOLESALE ORDERS
