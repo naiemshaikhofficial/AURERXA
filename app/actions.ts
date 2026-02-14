@@ -318,7 +318,7 @@ export const getProducts = unstable_cache(
 )
 
 // Product Actions
-export async function getProductBySlug(slug: string) {
+export const getProductBySlug = cache(async (slug: string) => {
   return unstable_cache(
     async () => {
       const { data, error } = await supabase
@@ -332,7 +332,7 @@ export async function getProductBySlug(slug: string) {
     ['product-detail', slug],
     { revalidate: 3600, tags: ['products'] }
   )()
-}
+})
 
 export async function getAdminProducts() {
   const { data, error } = await supabase
@@ -422,17 +422,23 @@ export async function getProductById(id: string) {
   return data
 }
 
-export async function getRelatedProducts(categoryId: string, excludeId: string) {
-  const { data, error } = await supabase
-    .from('products')
-    .select('id, name, price, image_url, slug, categories(id, name, slug)')
-    .eq('category_id', categoryId)
-    .neq('id', excludeId)
-    .limit(4)
+export const getRelatedProducts = cache(async (categoryId: string, excludeId: string) => {
+  return unstable_cache(
+    async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, price, image_url, slug, categories(id, name, slug)')
+        .eq('category_id', categoryId)
+        .neq('id', excludeId)
+        .limit(4)
 
-  if (error) return []
-  return data
-}
+      if (error) return []
+      return data
+    },
+    ['related-products', categoryId, excludeId],
+    { revalidate: 86400, tags: ['products'] }
+  )()
+})
 
 // ============================================
 // CART
@@ -1427,6 +1433,8 @@ export async function getStores() {
   }
 }
 
+import { cache } from 'react'
+
 // ============================================
 // FILTERS (for collections page)
 // ============================================
@@ -1440,64 +1448,70 @@ export async function getFilteredProducts(options: {
   gender?: string
   type?: string
 }) {
-  try {
-    let query = supabase
-      .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
+  return unstable_cache(
+    async () => {
+      try {
+        let query = supabase
+          .from('products')
+          .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
 
-    // Category filter
-    if (options.category) {
-      const { data: cat } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('slug', options.category)
-        .single()
-      if (cat) {
-        query = query.eq('category_id', cat.id)
+        // Category filter
+        if (options.category) {
+          const { data: cat } = await supabase
+            .from('categories')
+            .select('id')
+            .eq('slug', options.category)
+            .single()
+          if (cat) {
+            query = query.eq('category_id', cat.id)
+          }
+        }
+
+        // Gender filter
+        if (options.gender && options.gender !== 'all') {
+          query = query.eq('gender', options.gender)
+        }
+
+        // Type filter
+        if (options.type && options.type !== 'all') {
+          const singularType = options.type.endsWith('s') ? options.type.slice(0, -1) : options.type
+          query = query.ilike('name', `%${singularType}%`)
+        }
+
+        // Price filters
+        if (options.minPrice) query = query.gte('price', options.minPrice)
+        if (options.maxPrice) query = query.lte('price', options.maxPrice)
+
+        // Search
+        if (options.search) {
+          query = query.or(`name.ilike.%${options.search}%,description.ilike.%${options.search}%`)
+        }
+
+        // Sorting
+        switch (options.sortBy) {
+          case 'price-low':
+          case 'price_asc':
+            query = query.order('price', { ascending: true })
+            break
+          case 'price-high':
+          case 'price_desc':
+            query = query.order('price', { ascending: false })
+            break
+          default:
+            query = query.order('created_at', { ascending: false })
+        }
+
+        const { data, error } = await query
+        if (error) throw error
+        return data || []
+      } catch (err) {
+        console.error('Filter products error:', err)
+        return []
       }
-    }
-
-    // Gender filter
-    if (options.gender && options.gender !== 'all') {
-      query = query.eq('gender', options.gender)
-    }
-
-    // Type filter
-    if (options.type && options.type !== 'all') {
-      const singularType = options.type.endsWith('s') ? options.type.slice(0, -1) : options.type
-      query = query.ilike('name', `%${singularType}%`)
-    }
-
-    // Price filters
-    if (options.minPrice) query = query.gte('price', options.minPrice)
-    if (options.maxPrice) query = query.lte('price', options.maxPrice)
-
-    // Search
-    if (options.search) {
-      query = query.or(`name.ilike.%${options.search}%,description.ilike.%${options.search}%`)
-    }
-
-    // Sorting
-    switch (options.sortBy) {
-      case 'price-low':
-      case 'price_asc':
-        query = query.order('price', { ascending: true })
-        break
-      case 'price-high':
-      case 'price_desc':
-        query = query.order('price', { ascending: false })
-        break
-      default:
-        query = query.order('created_at', { ascending: false })
-    }
-
-    const { data, error } = await query
-    if (error) throw error
-    return data || []
-  } catch (err) {
-    console.error('Filter products error:', err)
-    return []
-  }
+    },
+    ['filtered-products', JSON.stringify(options)],
+    { revalidate: 3600, tags: ['products'] }
+  )()
 }
 
 // ============================================

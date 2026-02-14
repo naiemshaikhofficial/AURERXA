@@ -79,8 +79,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         )
     }
 
-    const related = await getRelatedProducts(product.category_id, product.id)
-    const isWishlisted = await isInWishlist(product.id)
+    const [related, isWishlisted] = await Promise.all([
+        getRelatedProducts(product.category_id, product.id),
+        isInWishlist(product.id)
+    ])
 
     return (
         <ProductClient

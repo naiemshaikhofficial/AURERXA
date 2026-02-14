@@ -59,7 +59,6 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                             <span className="text-foreground font-premium-sans text-[10px] tracking-[0.4em] uppercase">The Archive</span>
                             <div className="h-[1px] w-16 bg-foreground/20" />
                         </div>
-                        {/* H1 is critical LCP element, remove animation or use CSS */}
                         <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4">
                             COLLECTIONS
                         </h1>

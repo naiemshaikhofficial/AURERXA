@@ -13,7 +13,6 @@ export default async function CollectionsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const resolvedSearchParams = await searchParams
-  const categories = await getCategories()
 
   // Construct initial filters from URL params
   // Use a safe default for priceRange to avoid runtime errors
@@ -27,16 +26,18 @@ export default async function CollectionsPage({
     sortBy: (resolvedSearchParams?.sort as string) || 'newest'
   }
 
-  // Fetch initial products on the server
-  const initialProducts = await getFilteredProducts({
-    sortBy: initialFilters.sortBy,
-    category: initialFilters.category === 'all' ? undefined : initialFilters.category,
-    gender: initialFilters.gender === 'all' ? undefined : initialFilters.gender,
-    type: initialFilters.type === 'all' ? undefined : initialFilters.type,
-    // Safely access min/max with fallback
-    minPrice: initialFilters.priceRange?.min ?? 0,
-    maxPrice: initialFilters.priceRange?.max ?? undefined
-  })
+  // Parallel fetch initial products and categories on the server
+  const [categories, initialProducts] = await Promise.all([
+    getCategories(),
+    getFilteredProducts({
+      sortBy: initialFilters.sortBy,
+      category: initialFilters.category === 'all' ? undefined : initialFilters.category,
+      gender: initialFilters.gender === 'all' ? undefined : initialFilters.gender,
+      type: initialFilters.type === 'all' ? undefined : initialFilters.type,
+      minPrice: initialFilters.priceRange?.min ?? 0,
+      maxPrice: initialFilters.priceRange?.max ?? undefined
+    })
+  ])
 
   // Ensure initialProducts matches the expected type (Product[])
   // If getFilteredProducts returns something else, we need to cast or handle it.
