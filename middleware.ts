@@ -103,7 +103,9 @@ export async function middleware(request: NextRequest) {
 
     // 2. Protected Routes: Unauthenticated users
     if (!user && isProtectedRoute) {
-        return NextResponse.redirect(new URL('/login', request.url))
+        const redirectUrl = new URL('/login', request.url)
+        redirectUrl.searchParams.set('redirect', pathname)
+        return NextResponse.redirect(redirectUrl)
     }
 
     // Optimization: Cache user status (admin/ban) in a secure cookie for 10 minutes

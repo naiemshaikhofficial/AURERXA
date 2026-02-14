@@ -137,8 +137,8 @@ export default function AccountPage() {
     }
 
     const handleSignOut = async () => {
-        await supabase.auth.signOut()
-        router.push('/')
+        const { signOut } = await import('@/app/actions')
+        await signOut()
     }
 
     if (loading) {

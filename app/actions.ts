@@ -7,6 +7,8 @@ import { notifyNewProduct } from './push-actions'
 import { createCashfreeOrder, getCashfreePayments } from '@/lib/cashfree'
 import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib } from '@/lib/razorpay'
 import { unstable_cache, revalidateTag } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { cache } from 'react'
 
 export async function getTestProductCount() {
   const { count, error } = await supabase.from('products').select('*', { count: 'exact', head: true })
@@ -1433,7 +1435,24 @@ export async function getStores() {
   }
 }
 
-import { cache } from 'react'
+// ============================================
+// AUTH ACTIONS
+// ============================================
+
+// ============================================
+// AUTH ACTIONS
+// ============================================
+
+export async function signOut() {
+  const client = await getAuthClient()
+  await client.auth.signOut()
+  revalidateTag('user-profile', '')
+  redirect('/')
+}
+
+// ============================================
+// FILTERS (for collections page)
+// ============================================
 
 // ============================================
 // FILTERS (for collections page)
