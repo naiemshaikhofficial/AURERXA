@@ -15,7 +15,8 @@ export default function supabaseLoader({ src, width, quality }: { src: string, w
 
             // Add transformation parameters
             // We use resize=contain to preserve aspect ratio within the Next.js provided width
-            return `${transformedUrl}?width=${width}&quality=${quality || 75}&resize=contain`
+            // We force format=avif for extreme bandwidth savings
+            return `${transformedUrl}?width=${width}&quality=${quality || 75}&resize=contain&format=avif`
         }
     }
 

@@ -238,7 +238,7 @@ export const getBestsellers = unstable_cache(
   async () => {
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .eq('bestseller', true)
       .limit(4)
 
@@ -257,7 +257,7 @@ export const getNewReleases = unstable_cache(
   async (limit: number = 8) => {
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -276,7 +276,7 @@ export const getProducts = unstable_cache(
   async (categorySlug?: string, sortBy?: string) => {
     let query = supabase
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
 
     if (categorySlug) {
       // Since it's a join, we filter by the related table's field
