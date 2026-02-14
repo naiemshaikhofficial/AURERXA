@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -14,7 +15,6 @@ import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 import supabaseLoader from '@/lib/supabase-loader'
-import { motion, AnimatePresence } from 'framer-motion'
 import { VTOModal } from '@/components/vto-modal'
 import { ProductCard } from '@/components/product-card'
 import { SizeGuide } from '@/components/size-guide'
@@ -71,16 +71,6 @@ function CachedVideo({ src, isShort }: { src: string; isShort: boolean }) {
                     setLoading(false)
                 }
 
-                // Cleanup old caches (optional but good for maintenance)
-                const keys = await cache.keys()
-                for (const request of keys) {
-                    if (request.url !== src && !request.url.includes('youtube')) {
-                        // This is a simple logic: only keep the current video if it's a product page
-                        // In a real app, you might want more sophisticated cleanup
-                        // but for now, we'll keep it simple to ensure the current one is cached.
-                    }
-                }
-
             } catch (error) {
                 console.error('Video caching error:', error)
                 if (mounted) {
@@ -124,120 +114,147 @@ function CachedVideo({ src, isShort }: { src: string; isShort: boolean }) {
 
 function ZoomableImage({ src, alt }: { src: string, alt: string }) {
     const [scale, setScale] = useState(1)
-    const [position, setPosition] = useState({ x: 0, y: 0 })
+    const x = useMotionValue(0)
+    const y = useMotionValue(0)
     const containerRef = useRef<HTMLDivElement>(null)
 
-    // Reset zoom on image change
+    // Reset on image change
     useEffect(() => {
         setScale(1)
-        setPosition({ x: 0, y: 0 })
-    }, [src])
+        x.set(0)
+        y.set(0)
+    }, [src, x, y])
 
-    // Native Wheel Listener for non-passive behavior (prevents page scroll)
+    // Reset position when scale returns to 1
+    useEffect(() => {
+        if (scale === 1) {
+            x.set(0)
+            y.set(0)
+        }
+    }, [scale, x, y])
+
+    // Body scroll lock when zoomed
+    useEffect(() => {
+        if (scale > 1) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
+        return () => { document.body.style.overflow = '' }
+    }, [scale])
+
+    // Native Wheel Listener
     useEffect(() => {
         const container = containerRef.current
         if (!container) return
 
         const onWheel = (e: WheelEvent) => {
-            e.preventDefault()
-            e.stopPropagation()
-
-            const delta = -e.deltaY * 0.005
-
-            setScale(prevScale => {
-                const newScale = Math.min(Math.max(1, prevScale + delta), 4)
-                if (newScale === 1) setPosition({ x: 0, y: 0 })
-                return newScale
-            })
+            // If scale > 1, we always prevent default to avoid page movement
+            // If scale === 1, we only prevent if zooming (ctrlKey)
+            if (scale > 1 || e.ctrlKey || Math.abs(e.deltaY) > 2) {
+                e.preventDefault()
+                e.stopPropagation()
+                const delta = -e.deltaY * 0.005
+                setScale(prev => Math.min(Math.max(1, prev + delta), 4))
+            }
         }
 
         container.addEventListener('wheel', onWheel, { passive: false })
         return () => container.removeEventListener('wheel', onWheel)
-    }, [])
+    }, [scale]) // Re-bind when scale changes to ensure correct logic
 
     const toggleZoom = () => {
         if (scale > 1) {
             setScale(1)
-            setPosition({ x: 0, y: 0 })
         } else {
             setScale(2.5)
         }
     }
 
-    // Pinch Zoom Logic (Basic)
+    // Touch Handling (Pinch)
     const touchStartDist = useRef<number>(0)
-
     const onTouchStart = (e: React.TouchEvent) => {
         if (e.touches.length === 2) {
-            const dist = Math.hypot(
+            touchStartDist.current = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
                 e.touches[0].clientY - e.touches[1].clientY
             )
-            touchStartDist.current = dist
         }
     }
 
     const onTouchMove = (e: React.TouchEvent) => {
         if (e.touches.length === 2) {
+            e.preventDefault()
+            e.stopPropagation()
             const dist = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
                 e.touches[0].clientY - e.touches[1].clientY
             )
             const delta = dist - touchStartDist.current
-            // Sensitivity factor
-            const newScale = Math.min(Math.max(1, scale + delta * 0.01), 4)
-            setScale(newScale)
+            setScale(prevs => Math.min(Math.max(1, prevs + delta * 0.015), 4))
             touchStartDist.current = dist
+        }
+    }
+
+    // Dynamic constraints
+    const getConstraints = () => {
+        if (!containerRef.current) return { left: 0, right: 0, top: 0, bottom: 0 }
+        const { width, height } = containerRef.current.getBoundingClientRect()
+        const xLimit = Math.max(0, (width * scale - width) / 2)
+        const yLimit = Math.max(0, (height * scale - height) / 2)
+        return {
+            left: -xLimit,
+            right: xLimit,
+            top: -yLimit,
+            bottom: yLimit
         }
     }
 
     return (
         <div
             ref={containerRef}
-            className="relative w-full h-full overflow-hidden cursor-zoom-in active:cursor-grabbing bg-neutral-950"
+            className="relative w-full h-full overflow-hidden bg-neutral-950 select-none cursor-zoom-in group/zoom"
             style={{ touchAction: scale > 1 ? 'none' : 'pan-y' }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onDoubleClick={toggleZoom}
         >
             <motion.div
-                className="w-full h-full"
-                animate={{ scale, x: position.x, y: position.y }}
+                className="w-full h-full flex items-center justify-center origin-center"
+                style={{ scale, x, y, cursor: scale > 1 ? 'grab' : 'zoom-in' }}
                 drag={scale > 1}
-                dragConstraints={containerRef}
+                dragConstraints={getConstraints()}
                 dragElastic={0.1}
                 dragMomentum={false}
-                onDragEnd={(e, info) => {
-                    // Update position state if needed or let framer handle it
-                    setPosition({ x: info.point.x, y: info.point.y }) // Roughly
-                }}
-                transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             >
-                <Image
-                    src={src}
-                    alt={alt}
-                    fill
-                    className="object-contain p-8 lg:p-16 pointer-events-none select-none"
-                    priority
-                    sizes="(max-width: 768px) 100vw, 800px"
-                    draggable={false}
-                    loader={supabaseLoader}
-                />
+                <div className="relative w-full h-full pointer-events-none">
+                    <Image
+                        src={src}
+                        alt={alt}
+                        fill
+                        className="object-contain p-8 lg:p-24"
+                        priority
+                        sizes="(max-width: 768px) 100vw, 800px"
+                        draggable={false}
+                        loader={supabaseLoader}
+                    />
+                </div>
             </motion.div>
 
             {/* Floating Controls */}
-            <div className={`absolute bottom-6 right-6 flex gap-2 transition-opacity duration-300 ${scale > 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className={`absolute bottom-6 right-6 flex flex-col gap-2 transition-opacity duration-500 ${scale > 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 <button
-                    onClick={() => { setScale(1); setPosition({ x: 0, y: 0 }) }}
-                    className="p-3 bg-neutral-900/80 backdrop-blur-md text-white rounded-full hover:bg-white hover:text-black transition-colors border border-white/10"
+                    onClick={() => setScale(1)}
+                    className="w-12 h-12 flex items-center justify-center bg-neutral-900/80 backdrop-blur-xl text-white rounded-full hover:bg-white hover:text-black transition-all border border-white/10"
                 >
                     <RefreshCw className="w-4 h-4" />
                 </button>
             </div>
 
-            {/* Hint only when not zoomed */}
-            <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-neutral-900/60 backdrop-blur-md rounded-full text-[10px] text-white/60 uppercase tracking-[0.2em] pointer-events-none transition-opacity duration-300 border border-white/5 ${scale === 1 ? 'opacity-100' : 'opacity-0'}`}>
-                Pinch / Scroll to Zoom
+            {/* Hint */}
+            <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 px-6 py-2.5 bg-neutral-900/40 backdrop-blur-xl rounded-full text-[9px] text-white/40 uppercase tracking-[0.3em] pointer-events-none transition-all duration-500 border border-white/5 ${scale === 1 ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>
+                Double Click / Pinch to Explore
             </div>
         </div>
     )
