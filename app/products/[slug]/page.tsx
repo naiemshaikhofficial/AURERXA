@@ -81,6 +81,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         )
     }
 
+    const related = await getRelatedProducts(product.category_id, product.id)
+    const isWishlisted = await isInWishlist(product.id)
+
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Product',
