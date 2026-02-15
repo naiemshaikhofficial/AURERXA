@@ -25,6 +25,8 @@ const NAV_ITEMS = [
     { label: 'Tools', href: '/admin/tools', icon: Wrench, imgSrc: 'https://img.icons8.com/?size=100&id=114321&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
 ]
 
+import { AdminNotifications } from '@/components/admin/admin-notifications'
+
 export function AdminSidebar({ admin, children }: { admin: { email?: string; role: string }, children: React.ReactNode }) {
     const pathname = usePathname()
     const router = useRouter()
@@ -43,6 +45,7 @@ export function AdminSidebar({ admin, children }: { admin: { email?: string; rol
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-white flex">
+            <AdminNotifications />
             {/* Desktop Sidebar */}
             <aside className={`hidden md:flex flex-col ${collapsed ? 'w-[72px]' : 'w-64'} bg-[#111111] border-r border-white/5 transition-all duration-300 fixed top-0 left-0 h-full z-40`}>
                 {/* Logo */}
