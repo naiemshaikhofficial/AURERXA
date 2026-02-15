@@ -20,8 +20,6 @@ const Footer = dynamic(() => import('@/components/footer').then(mod => mod.Foote
 const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-story').then(mod => mod.CraftsmanshipStory))
 const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
 const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
-const DesignerPick = dynamic(() => import('@/components/designer-pick').then(mod => mod.DesignerPick))
-const Lookbook = dynamic(() => import('@/components/lookbook').then(mod => mod.Lookbook))
 import { SectionSkeleton } from '@/components/skeletons'
 
 async function NewReleasesSection() {
@@ -48,10 +46,6 @@ export default function HomePage() {
       <Hero />
       <Heritage />
 
-      <Suspense fallback={<div className="h-screen w-full bg-neutral-950 animate-pulse" />}>
-        <DesignerPick />
-      </Suspense>
-
       <TrustBar />
       <CategoryBrowsing />
       <ShopByGender />
@@ -64,10 +58,6 @@ export default function HomePage() {
       </Suspense>
 
       <GoldRateCard />
-
-      <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
-        <Lookbook />
-      </Suspense>
 
       <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="collection" columns={4} /></div>}>
         <FeaturedCollectionsSection />
