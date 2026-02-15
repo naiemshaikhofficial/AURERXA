@@ -498,6 +498,11 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                 <p className="text-xs text-white/40 mb-2 flex items-center gap-1"><CreditCard className="w-3 h-3" /> Payment</p>
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <div><span className="text-white/40">Method:</span> <span className="text-white/70">{selectedOrder.payment_method || 'N/A'}</span></div>
+                                    {selectedOrder.payment_id && (
+                                        <div className="col-span-2 text-xs text-white/30 border-t border-white/5 pt-1 mt-1 font-mono">
+                                            Txn ID: <span className="text-white/60 select-all">{selectedOrder.payment_id}</span>
+                                        </div>
+                                    )}
                                     <div><span className="text-white/40">Subtotal:</span> <span className="text-white/70">₹{Number(selectedOrder.subtotal).toLocaleString('en-IN')}</span></div>
                                     <div><span className="text-white/40">Shipping:</span> <span className="text-white/70">₹{Number(selectedOrder.shipping || 0).toLocaleString('en-IN')}</span></div>
                                     <div><span className="text-white/40">Total:</span> <span className="font-bold text-[#D4AF37]">₹{Number(selectedOrder.total).toLocaleString('en-IN')}</span></div>

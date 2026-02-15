@@ -416,25 +416,14 @@ export default function OrderDetailPage() {
                                             <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">Terms of Possession</h3>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2 text-primary">
-                                                    <Scale className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-tighter">Strict Return Policy</span>
-                                                </div>
-                                                <p className="text-xs text-muted-foreground leading-relaxed italic">
-                                                    Returns are accepted **ONLY for verified defective items**. Every return undergoes a rigorous forensic quality inspection by our master artisans.
-                                                </p>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2 text-primary">
+                                                <Scale className="w-4 h-4" />
+                                                <span className="text-xs font-bold uppercase tracking-tighter">Return Policy</span>
                                             </div>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2 text-destructive">
-                                                    <Gavel className="w-4 h-4" />
-                                                    <span className="text-xs font-bold uppercase tracking-tighter">Legal Protection</span>
-                                                </div>
-                                                <p className="text-xs text-muted-foreground leading-relaxed italic">
-                                                    Suspected fraudulent claims or scam-related return attempts on our luxury pieces will result in immediate refund forfeiture and escalated legal proceedings.
-                                                </p>
-                                            </div>
+                                            <p className="text-xs text-muted-foreground leading-relaxed italic">
+                                                Return only accepted on defective product. Email us at <a href="mailto:support@aurerxa.com" className="hover:text-primary underline">support@aurerxa.com</a> or visit our <Link href="/policies/refund-policy" className="hover:text-primary underline">refund or return policy</Link>.
+                                            </p>
                                         </div>
                                     </div>
                                 )}
@@ -627,6 +616,14 @@ export default function OrderDetailPage() {
                                         <span>Total</span>
                                         <span className="text-primary">₹{order.total.toLocaleString('en-IN')}</span>
                                     </div>
+                                    {order.payment_id && (
+                                        <div className="pt-2 text-xs text-muted-foreground flex justify-between items-center group">
+                                            <span>Transaction ID</span>
+                                            <span className="font-mono text-xs select-all bg-muted/50 px-1.5 py-0.5 rounded ml-2 max-w-[140px] truncate group-hover:max-w-none transition-all" title={order.payment_id}>
+                                                {order.payment_id}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 text-sm text-muted-foreground">
                                     <CreditCard className="w-4 h-4" />

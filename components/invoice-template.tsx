@@ -201,6 +201,12 @@ export function InvoiceTemplate({ order, type }: InvoiceProps) {
                                 <div className="flex justify-between font-bold"><span className="text-slate-400">GSTIN:</span> <span>{sellerDetails.gstin}</span></div>
                                 <div className="flex justify-between font-bold uppercase"><span className="text-slate-400">PAN:</span> <span>{sellerDetails.pan}</span></div>
                                 <div className="flex justify-between font-bold text-emerald-600 uppercase"><span className="text-slate-400">STATUS:</span> <span>{order.payment_method}</span></div>
+                                {order.payment_id && (
+                                    <div className="flex justify-between font-bold text-slate-800 uppercase mt-1 pt-1 border-t border-slate-100">
+                                        <span className="text-slate-400">Txn ID:</span>
+                                        <span className="text-[9px]">{order.payment_id}</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="mt-4 flex items-center gap-2">
                                 <div className="flex items-center gap-1 bg-amber-50 text-amber-700 font-black px-2 py-1 rounded text-[10px] uppercase">
