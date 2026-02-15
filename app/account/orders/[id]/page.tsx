@@ -1,26 +1,35 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import Script from 'next/script'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
-import { getOrderById, getOrderTracking, verifyPayment } from '@/app/actions'
-import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer } from 'lucide-react'
+import { getOrderById, getOrderTracking, verifyPayment, getOrderPaymentSession, initiatePayment } from '@/app/actions'
+import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle } from 'lucide-react'
 import { InvoiceTemplate } from '@/components/invoice-template'
+import { toast } from 'sonner'
+import { OrderCancellationDialog } from '@/components/order-cancellation-dialog'
 
 export default function OrderDetailPage() {
     const params = useParams()
     const searchParams = useSearchParams()
+    const router = useRouter()
     const isSuccess = searchParams.get('success') === 'true'
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [verifying, setVerifying] = useState(false)
     const [trackingData, setTrackingData] = useState<any>(null)
     const [isPrinting, setIsPrinting] = useState(false)
+    const [isCancellationOpen, setIsCancellationOpen] = useState(false)
+    const [retryingPayment, setRetryingPayment] = useState(false)
+    const [isExpired, setIsExpired] = useState(false)
+    const [timeLeft, setTimeLeft] = useState<string>('')
+    const timerRef = useRef<NodeJS.Timeout | null>(null)
 
     useEffect(() => {
         async function load() {
@@ -56,6 +65,36 @@ export default function OrderDetailPage() {
         load()
     }, [params.id, searchParams])
 
+    // Countdown Timer Logic
+    useEffect(() => {
+        if (order?.status === 'pending' && order?.created_at) {
+            const calculateTime = () => {
+                const start = new Date(order.created_at).getTime()
+                const now = new Date().getTime()
+                const expiry = start + (30 * 60 * 1000)
+                const diff = expiry - now
+
+                if (diff <= 0) {
+                    setIsExpired(true)
+                    setTimeLeft('00:00')
+                    if (timerRef.current) clearInterval(timerRef.current)
+                    return
+                }
+
+                const minutes = Math.floor(diff / (60 * 1000))
+                const seconds = Math.floor((diff % (60 * 1000)) / 1000)
+                setTimeLeft(`${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`)
+            }
+
+            calculateTime()
+            timerRef.current = setInterval(calculateTime, 1000)
+        }
+
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current)
+        }
+    }, [order])
+
     const getStatusStep = (status: string) => {
         switch (status) {
             case 'pending': return 0
@@ -71,7 +110,91 @@ export default function OrderDetailPage() {
         setTimeout(() => {
             window.print()
             setIsPrinting(false)
-        }, 1000)
+        }, 800)
+    }
+
+    const handleRetryPayment = async () => {
+        if (isExpired) {
+            toast.error('Payment window has expired')
+            return
+        }
+
+        setRetryingPayment(true)
+        try {
+            const paymentResult = await initiatePayment(order.id)
+
+            if (!paymentResult.success) {
+                toast.error(paymentResult.error || 'Failed to initiate payment')
+                setRetryingPayment(false)
+                return
+            }
+
+            if (paymentResult.gateway === 'razorpay') {
+                const rp = paymentResult as any
+                if (!(window as any).Razorpay) {
+                    toast.error('Payment connection is slow. Please wait...')
+                    setRetryingPayment(false)
+                    return
+                }
+
+                const options = {
+                    key: rp.keyId,
+                    amount: rp.amount,
+                    currency: rp.currency,
+                    name: "AURERXA",
+                    description: rp.productName,
+                    image: `${window.location.origin}/favicon 30x30.ico`,
+                    order_id: rp.razorpayOrderId,
+                    handler: async function (response: any) {
+                        setVerifying(true)
+                        const verifyResult = await verifyPayment(order.id, response)
+                        if (verifyResult.success) {
+                            toast.success('Payment successful!')
+                            // Refresh page or update status
+                            const updatedData = await getOrderById(order.id)
+                            setOrder(updatedData)
+                        } else {
+                            toast.error(verifyResult.error || 'Verification failed')
+                        }
+                        setVerifying(false)
+                        setRetryingPayment(false)
+                    },
+                    prefill: {
+                        name: rp.customer.name,
+                        email: rp.customer.email,
+                        contact: rp.customer.contact
+                    },
+                    theme: { color: "#D4AF37" },
+                    modal: {
+                        ondismiss: function () {
+                            setRetryingPayment(false)
+                        }
+                    }
+                }
+                const rzp = new (window as any).Razorpay(options)
+                rzp.open()
+            } else if (paymentResult.gateway === 'cashfree') {
+                const cf = paymentResult as any
+                if (!(window as any).Cashfree) {
+                    toast.error('Payment system loading...')
+                    setRetryingPayment(false)
+                    return
+                }
+
+                const cashfree = (window as any).Cashfree({
+                    mode: cf.mode || "sandbox"
+                })
+
+                cashfree.checkout({
+                    paymentSessionId: cf.paymentSessionId,
+                    redirectTarget: "_self", // Redirect back to this page
+                })
+            }
+        } catch (error) {
+            console.error('Retry Payment Error:', error)
+            toast.error('An error occurred. Please try again.')
+            setRetryingPayment(false)
+        }
     }
 
     if (loading) {
@@ -129,6 +252,62 @@ export default function OrderDetailPage() {
                         </div>
                     )}
 
+                    {/* Payment SDKs */}
+                    <Script
+                        src="https://checkout.razorpay.com/v1/checkout.js"
+                        strategy="afterInteractive"
+                    />
+                    <Script
+                        src="https://sdk.cashfree.com/js/v3/cashfree.js"
+                        strategy="afterInteractive"
+                    />
+
+                    {/* Pending Payment Advisory (Amazon-style) */}
+                    {order.status === 'pending' && (
+                        <div className="mb-8 p-6 bg-amber-500/10 border border-amber-500/30">
+                            <div className="flex items-start gap-4">
+                                <div className="p-3 bg-amber-500/20 rounded-full">
+                                    <Clock className="w-6 h-6 text-amber-500" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+                                        <h2 className="text-xl font-bold text-foreground">Action Required: Payment Pending</h2>
+                                        {timeLeft && !isExpired && (
+                                            <div className="flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/50 rounded-full">
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Time Left:</span>
+                                                <span className="text-sm font-mono font-bold text-amber-600">{timeLeft}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-muted-foreground text-sm mb-4">
+                                        Your payment session was not completed. To secure your luxury pieces, please complete the payment within 30 minutes.
+                                        <strong> Orders not paid in time will be automatically cancelled.</strong>
+                                    </p>
+                                    {!isExpired ? (
+                                        <button
+                                            onClick={handleRetryPayment}
+                                            disabled={retryingPayment}
+                                            className="px-8 py-3 bg-primary text-primary-foreground text-xs font-bold uppercase tracking-[0.2em] hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+                                        >
+                                            {retryingPayment ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <CreditCard className="w-4 h-4" />
+                                                    Complete Payment Now
+                                                </>
+                                            )}
+                                        </button>
+                                    ) : (
+                                        <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm font-bold uppercase tracking-widest text-center">
+                                            Payment Window Expired
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left: Order Info */}
                         <div className="lg:col-span-2 space-y-6">
@@ -153,18 +332,21 @@ export default function OrderDetailPage() {
                                             }`}>
                                             {order.status}
                                         </span>
-                                        <button
-                                            onClick={handlePrint}
-                                            className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-primary hover:text-primary/80 transition-colors"
-                                        >
-                                            <FileText className="w-3.5 h-3.5" />
-                                            Print Invoice
-                                        </button>
+                                        {/* Hide Invoice for Pending Orders */}
+                                        {order.status !== 'pending' && order.status !== 'cancelled' && (
+                                            <button
+                                                onClick={handlePrint}
+                                                className="flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold text-primary hover:text-primary/80 transition-colors"
+                                            >
+                                                <FileText className="w-3.5 h-3.5" />
+                                                Print Invoice
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Tracking & Delivery Info */}
-                                {order.status !== 'cancelled' && (
+                                {/* Tracking & Delivery Info - Only if NOT pending/cancelled */}
+                                {order.status !== 'cancelled' && order.status !== 'pending' && (
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-muted/50 border border-border/50">
                                             <div className="flex items-center gap-3">
@@ -226,19 +408,76 @@ export default function OrderDetailPage() {
                                     </div>
                                 )}
 
-                                {/* Cancellation Option */}
-                                {(order.status === 'pending' || order.status === 'confirmed') && (
-                                    <div className="mt-8 mb-6 p-4 border border-destructive/20 bg-destructive/5 flex items-center justify-between">
-                                        <div>
-                                            <p className="text-foreground text-sm font-medium">Changed your mind?</p>
-                                            <p className="text-muted-foreground text-xs">You can cancel this order before shipping.</p>
+                                {/* Order Policy & Legal Advisory - Hide for Pending */}
+                                {order.status !== 'pending' && (
+                                    <div className="mt-8 p-6 bg-muted/30 border border-border space-y-4">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <ShieldAlert className="w-5 h-5 text-primary" />
+                                            <h3 className="text-sm font-bold uppercase tracking-widest text-foreground">Terms of Possession</h3>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2 text-primary">
+                                                    <Scale className="w-4 h-4" />
+                                                    <span className="text-xs font-bold uppercase tracking-tighter">Strict Return Policy</span>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground leading-relaxed italic">
+                                                    Returns are accepted **ONLY for verified defective items**. Every return undergoes a rigorous forensic quality inspection by our master artisans.
+                                                </p>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2 text-destructive">
+                                                    <Gavel className="w-4 h-4" />
+                                                    <span className="text-xs font-bold uppercase tracking-tighter">Legal Protection</span>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground leading-relaxed italic">
+                                                    Suspected fraudulent claims or scam-related return attempts on our luxury pieces will result in immediate refund forfeiture and escalated legal proceedings.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Cancellation Option - Restricted by Status */}
+                                {order.status === 'confirmed' ? (
+                                    <div className="mt-6 p-6 border border-primary/20 bg-primary/5 flex flex-col md:flex-row items-center justify-between gap-4">
+                                        <div className="text-center md:text-left">
+                                            <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                                                <Clock className="w-4 h-4 text-primary" />
+                                                <p className="text-foreground text-sm font-bold uppercase tracking-tight">Active Cancellation Window</p>
+                                            </div>
+                                            <p className="text-muted-foreground text-xs">This order can still be cancelled before it enters the shipping phase.</p>
                                         </div>
                                         <button
-                                            onClick={() => alert('Order cancellation requested. Support team will be notified.')}
-                                            className="px-4 py-2 bg-destructive/10 text-destructive text-xs uppercase tracking-wider hover:bg-destructive/20 transition-colors border border-destructive/20"
+                                            onClick={() => setIsCancellationOpen(true)}
+                                            className="w-full md:w-auto px-6 py-2.5 bg-background text-primary text-xs font-bold uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all border border-primary/30"
                                         >
-                                            Cancel Order
+                                            Request Cancellation
                                         </button>
+                                    </div>
+                                ) : order.status === 'cancelled' ? (
+                                    <div className="mt-6 p-6 border border-destructive/20 bg-destructive/5 text-center">
+                                        <p className="text-destructive text-sm font-bold uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                                            <AlertCircle className="w-4 h-4" />
+                                            Order Cancelled
+                                        </p>
+                                        <div className="space-y-2">
+                                            {order.cancellation_reason && (
+                                                <p className="text-muted-foreground text-xs italic">Reason: {order.cancellation_reason}</p>
+                                            )}
+                                            <p className="text-foreground text-[11px] font-medium py-2 px-4 bg-background border border-border inline-block">
+                                                If any amount was debited, it will be credited within 5-7 days to your original payment method.
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="mt-6 p-6 border border-border bg-muted/20 text-center">
+                                        <p className="text-muted-foreground text-xs font-medium uppercase tracking-widest">
+                                            {order.status === 'pending'
+                                                ? 'Complete payment at the top of the page to finalize your order.'
+                                                : `The cancellation window for this order has closed as it is already ${order.status}.`}
+                                        </p>
                                     </div>
                                 )}
 
@@ -271,27 +510,52 @@ export default function OrderDetailPage() {
                             <div className="bg-card border border-border p-6">
                                 <h2 className="font-serif text-lg font-medium mb-4">Order Items</h2>
                                 <div className="space-y-4">
-                                    {order.order_items?.map((item: any) => (
-                                        <div key={item.id} className="flex gap-4 border-b border-border pb-4 last:border-0 last:pb-0">
-                                            <div className="relative w-20 h-20 bg-muted flex-shrink-0">
-                                                {item.product_image && (
-                                                    <Image
-                                                        src={item.product_image}
-                                                        alt={item.product_name}
-                                                        fill
-                                                        className="object-cover"
-                                                        loader={supabaseLoader}
-                                                    />
+                                    {order.order_items?.map((item: any) => {
+                                        const productSlug = item.products?.slug
+                                        const productLink = productSlug ? `/product/${productSlug}` : null
+
+                                        return (
+                                            <div key={item.id} className="flex gap-4 border-b border-border pb-4 last:border-0 last:pb-0">
+                                                {productLink ? (
+                                                    <Link href={productLink} className="relative w-20 h-20 bg-muted flex-shrink-0 group/img">
+                                                        {item.product_image && (
+                                                            <Image
+                                                                src={item.product_image}
+                                                                alt={item.product_name}
+                                                                fill
+                                                                className="object-cover group-hover/img:opacity-80 transition-opacity"
+                                                                loader={supabaseLoader}
+                                                            />
+                                                        )}
+                                                    </Link>
+                                                ) : (
+                                                    <div className="relative w-20 h-20 bg-muted flex-shrink-0">
+                                                        {item.product_image && (
+                                                            <Image
+                                                                src={item.product_image}
+                                                                alt={item.product_name}
+                                                                fill
+                                                                className="object-cover"
+                                                                loader={supabaseLoader}
+                                                            />
+                                                        )}
+                                                    </div>
                                                 )}
+                                                <div className="flex-1">
+                                                    {productLink ? (
+                                                        <Link href={productLink} className="font-medium hover:text-primary transition-colors">
+                                                            {item.product_name}
+                                                        </Link>
+                                                    ) : (
+                                                        <p className="font-medium">{item.product_name}</p>
+                                                    )}
+                                                    {item.size && <p className="text-sm text-muted-foreground">Size: {item.size}</p>}
+                                                    <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                                </div>
+                                                <p className="font-medium text-primary">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
                                             </div>
-                                            <div className="flex-1">
-                                                <p className="font-medium">{item.product_name}</p>
-                                                {item.size && <p className="text-sm text-muted-foreground">Size: {item.size}</p>}
-                                                <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                                            </div>
-                                            <p className="font-medium text-primary">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -366,7 +630,11 @@ export default function OrderDetailPage() {
                                 </div>
                                 <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 text-sm text-muted-foreground">
                                     <CreditCard className="w-4 h-4" />
-                                    <span className="capitalize">{order.payment_method === 'cod' ? 'Cash on Delivery' : 'Paid Online'}</span>
+                                    <span className="capitalize">
+                                        {order.payment_method === 'cod' ? 'Cash on Delivery' :
+                                            order.payment_method === 'online' ? 'Paid Online' :
+                                                order.payment_method}
+                                    </span>
                                 </div>
                             </div>
 
@@ -394,44 +662,40 @@ export default function OrderDetailPage() {
             <style dangerouslySetInnerHTML={{
                 __html: `
                 @media print {
-                    @page { margin: 1cm; size: auto; }
+                    @page { margin: 1cm; size: portrait; }
                     body > *:not(#print-root) { display: none !important; }
                     #print-root { 
                         display: block !important;
                         width: 100% !important;
                         background: white !important;
+                        opacity: 1 !important;
                     }
                 }
             `}} />
 
-            {/* The actual Printable Content */}
+            {/* The actual Printable Content - Hidden from screen but visible to print engine */}
             {isPrinting && typeof document !== 'undefined' && createPortal(
-                <div id="print-root" className="fixed inset-0 z-[99999] bg-slate-100 overflow-y-auto p-4 sm:p-10 select-none no-print-dialog scrollbar-thin">
-                    <div className="flex flex-col items-center gap-6 min-h-full">
-                        {/* Control Bar */}
-                        <div className="w-full max-w-[800px] flex justify-between items-center bg-white p-4 rounded-lg shadow-lg border border-slate-200">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-[#D4AF37] text-white rounded-md">
-                                    <Printer className="w-4 h-4" />
-                                </div>
-                                <h2 className="text-sm font-black text-slate-900 leading-none">AURERXA INVOICE</h2>
-                            </div>
-                            <button
-                                onClick={() => setIsPrinting(false)}
-                                className="bg-red-50 text-red-600 px-6 py-2 rounded-lg font-black text-sm hover:bg-red-600 hover:text-white transition-all shadow-sm border border-red-100"
-                            >
-                                CLOSE PREVIEW
-                            </button>
-                        </div>
-
-                        {/* Invoice Content */}
-                        <div className="w-full max-w-[800px] shadow-2xl border border-slate-200 bg-white mb-20">
+                <div id="print-root" className="fixed left-[-9999px] top-0 z-[99999] pointer-events-none overflow-hidden print:left-0 print:static print:w-full print:opacity-100">
+                    <div className="flex flex-col items-center justify-start">
+                        <div className="w-full max-w-[800px] bg-white">
                             <InvoiceTemplate order={order} type="customer" />
                         </div>
                     </div>
                 </div>,
                 document.body
             )}
+
+            {/* Cancellation Dialog */}
+            <OrderCancellationDialog
+                isOpen={isCancellationOpen}
+                onClose={() => setIsCancellationOpen(false)}
+                orderId={order.id}
+                orderNumber={order.order_number}
+                onSuccess={async () => {
+                    const updatedData = await getOrderById(order.id)
+                    setOrder(updatedData)
+                }}
+            />
 
             <Footer />
         </div>

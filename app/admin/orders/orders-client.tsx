@@ -139,11 +139,11 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
 
     const handlePrint = (type: 'customer' | 'shipping') => {
         setPrintType(type)
-        // Longer timeout to ensure React finishes rendering the template
+        // Shorter timeout since we don't need the user to "see" a preview anymore
         setTimeout(() => {
             window.print()
             setPrintType(null)
-        }, 1000)
+        }, 800)
     }
 
     const totalPages = Math.ceil(total / 20)
@@ -554,8 +554,8 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                 __html: `
                 @media print {
                     @page { 
-                        margin: 1cm; 
-                        size: ${printType === 'shipping' ? 'landscape' : 'portrait'}; 
+                        margin: 0.5cm; 
+                        size: ${printType === 'shipping' ? '100mm 100mm' : 'portrait'}; 
                     }
                     body > *:not(#print-root) { display: none !important; }
                     #print-root { 
@@ -567,32 +567,13 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
             `}} />
 
             {/* The actual Printable Content - Using Portal to body for absolute print reliability */}
+            {/* We keep this off-screen for the user but fully "visible" for the browser's print engine */}
             {printType && typeof document !== 'undefined' && createPortal(
-                <div id="print-root" className="fixed inset-0 z-[99999] bg-slate-100 overflow-y-auto p-4 sm:p-10 select-none no-print-dialog scrollbar-thin">
-                    <div className="flex flex-col items-center gap-6 min-h-full">
-                        {/* Control Bar */}
-                        <div className="w-full max-w-[800px] flex justify-between items-center bg-white p-4 rounded-lg shadow-lg border border-slate-200">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-slate-900 text-white rounded-md">
-                                    <Printer className="w-4 h-4" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-black uppercase text-slate-400">Print Preview</p>
-                                    <p className="text-sm font-bold text-slate-900">{printType === 'shipping' ? 'Logistics Label' : 'Tax Invoice'}</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setPrintType(null)}
-                                className="bg-red-50 text-red-600 px-6 py-2 rounded-lg font-black text-sm hover:bg-red-600 hover:text-white transition-all shadow-sm border border-red-100"
-                            >
-                                CLOSE PREVIEW
-                            </button>
-                        </div>
-
-                        {/* Invoice Content */}
+                <div id="print-root" className="fixed left-[-9999px] top-0 z-[99999] pointer-events-none overflow-hidden print:left-0 print:static print:w-full print:opacity-100">
+                    <div className="flex flex-col items-center justify-start">
                         <div className={cn(
-                            "shadow-2xl rounded-sm border border-slate-100 bg-white mb-20",
-                            printType === 'shipping' ? "w-[600px]" : "w-full max-w-[800px]"
+                            "bg-white",
+                            printType === 'shipping' ? "w-[100mm]" : "w-full max-w-[800px]"
                         )}>
                             <InvoiceTemplate order={selectedOrder} type={printType} />
                         </div>

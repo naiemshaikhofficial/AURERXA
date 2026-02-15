@@ -31,9 +31,6 @@ export async function createRazorpayOrder(amount: number, currency: string, rece
 }
 
 export async function verifyRazorpayPayment(paymentId: string, orderId: string, signature: string) {
-    // In a real implementation, you would use crypto.createHmac to verify signature
-    // For now, we'll implement a basic check or assumes the frontend verification is supplemented by server-side payment fetch
-
     const response = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}`, {
         method: 'GET',
         headers: {
@@ -47,5 +44,13 @@ export async function verifyRazorpayPayment(paymentId: string, orderId: string, 
     }
 
     // Check if payment is captured or authorized correctly
-    return data.status === 'captured' || data.status === 'authorized';
+    const isValid = data.status === 'captured' || data.status === 'authorized';
+
+    return {
+        isValid,
+        method: data.method, // upi, card, netbanking, etc.
+        card_network: data.card?.network,
+        card_type: data.card?.type,
+        vpa: data.vpa // for UPI
+    };
 }

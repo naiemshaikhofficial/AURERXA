@@ -1,6 +1,5 @@
 'use server'
 
-import { supabase } from '@/lib/supabase'
 import { cookies, headers } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { notifyNewProduct } from './push-actions'
@@ -11,13 +10,25 @@ import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { sanitize, sanitizeObject } from '@/lib/sanitizer'
 
+// Server-side Supabase client for static/public data (safe for unstable_cache)
+const supabaseServer = createServerClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  {
+    cookies: {
+      getAll() { return [] },
+      setAll() { },
+    },
+  }
+)
+
 export async function getTestProductCount() {
-  const { count, error } = await supabase.from('products').select('*', { count: 'exact', head: true })
+  const { count, error } = await supabaseServer.from('products').select('*', { count: 'exact', head: true })
   console.log('DEBUG: Product count:', count, error)
   return { count, error }
 }
 
-// Helper to get authenticated supabase client
+// Helper to get authenticated supabaseServer client
 async function getAuthClient() {
   try {
     const cookieStore = await cookies()
@@ -154,7 +165,7 @@ export async function addNewProduct(productData: any) {
 
 export const getCategories = unstable_cache(
   async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from('categories')
       .select('id, name, slug, image_url, description')
       .order('name')
@@ -171,7 +182,7 @@ export const getCategories = unstable_cache(
 
 export const getSubCategories = unstable_cache(
   async (categoryId?: string) => {
-    let query = supabase
+    let query = supabaseServer
       .from('sub_categories')
       .select('id, name, slug, category_id, description')
       .order('name')
@@ -253,7 +264,7 @@ export async function deleteSubCategory(id: string) {
 
 export const getGoldRates = unstable_cache(
   async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from('gold_rates')
       .select('purity, rate, updated_at')
       .order('purity', { ascending: false })
@@ -296,7 +307,7 @@ export const getGoldRates = unstable_cache(
 
 export const getBestsellers = unstable_cache(
   async () => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from('products')
       .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .eq('bestseller', true)
@@ -315,7 +326,7 @@ export const getBestsellers = unstable_cache(
 
 export const getNewReleases = unstable_cache(
   async (limit: number = 8) => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from('products')
       .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .order('created_at', { ascending: false })
@@ -334,13 +345,13 @@ export const getNewReleases = unstable_cache(
 
 export const getProducts = unstable_cache(
   async (categorySlug?: string, sortBy?: string) => {
-    let query = supabase
+    let query = supabaseServer
       .from('products')
       .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
 
     if (categorySlug) {
       // Since it's a join, we filter by the related table's field
-      const { data: cat } = await supabase
+      const { data: cat } = await supabaseServer
         .from('categories')
         .select('id')
         .eq('slug', categorySlug)
@@ -381,7 +392,7 @@ export const getProducts = unstable_cache(
 export const getProductBySlug = cache(async (slug: string) => {
   return unstable_cache(
     async () => {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServer
         .from('products')
         .select('*, categories(slug, name), sub_categories(slug, name)')
         .eq('slug', slug)
@@ -395,7 +406,7 @@ export const getProductBySlug = cache(async (slug: string) => {
 })
 
 export async function getAdminProducts() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from('products')
     .select('*, categories(name), sub_categories(name)')
     .order('created_at', { ascending: false })
@@ -472,7 +483,7 @@ export async function deleteProduct(productId: string) {
 
 
 export async function getProductById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseServer
     .from('products')
     .select('*, categories(*)')
     .eq('id', id)
@@ -485,7 +496,7 @@ export async function getProductById(id: string) {
 export const getRelatedProducts = cache(async (categoryId: string, excludeId: string) => {
   return unstable_cache(
     async () => {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseServer
         .from('products')
         .select('id, name, price, image_url, slug, categories(id, name, slug)')
         .eq('category_id', categoryId)
@@ -871,9 +882,18 @@ export async function getOrders() {
   const { data: { user } } = await client.auth.getUser()
   if (!user) return []
 
+  // Lazy Cleanup: Delete pending orders older than 30 minutes
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+  await client
+    .from('orders')
+    .delete()
+    .eq('user_id', user.id)
+    .eq('status', 'pending')
+    .lt('created_at', thirtyMinutesAgo)
+
   const { data, error } = await client
     .from('orders')
-    .select('id, order_number, status, total, created_at')
+    .select('id, order_number, status, total, created_at, payment_method, order_items(product_name, product_image, quantity, products(slug))')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
@@ -888,12 +908,22 @@ export async function getOrderById(orderId: string) {
 
   const { data, error } = await client
     .from('orders')
-    .select('*, order_items(*, products(name, image_url, weight_grams, purity))')
+    .select('*, order_items(*, products(name, image_url, weight_grams, purity, slug))')
     .eq('id', orderId)
     .eq('user_id', user.id)
     .single()
 
-  if (error) return null
+  if (error || !data) return null
+
+  // 30-Minute Expiry Logic for Pending Orders (Amazon-style)
+  if (data.status === 'pending') {
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
+    if (new Date(data.created_at) < thirtyMinutesAgo) {
+      await client.from('orders').delete().eq('id', orderId)
+      return null
+    }
+  }
+
   return data
 }
 
@@ -1023,6 +1053,150 @@ export async function createOrder(
 
   return { success: true, orderId: order.id, orderNumber }
 }
+
+export async function cancelOrder(orderId: string, reason: string) {
+  try {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+
+    if (!user) {
+      return { success: false, error: 'Authorization required' }
+    }
+
+    // 1. Fetch order and verify ownership/status
+    const { data: order, error: fetchError } = await client
+      .from('orders')
+      .select('id, user_id, status, order_number')
+      .eq('id', orderId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (fetchError || !order) {
+      return { success: false, error: 'Order not found or access denied' }
+    }
+
+    // 2. Strict status check: Cannot cancel if shipped or delivered
+    const nonCancellableStatuses = ['shipped', 'delivered', 'packed']
+    if (nonCancellableStatuses.includes(order.status)) {
+      return {
+        success: false,
+        error: `Order #${order.order_number} is already ${order.status} and cannot be cancelled.`
+      }
+    }
+
+    if (order.status === 'cancelled') {
+      return { success: false, error: 'Order is already cancelled' }
+    }
+
+    // 3. Update status (Using only confirmed columns to avoid schema errors)
+    const { error: updateError } = await client
+      .from('orders')
+      .update({
+        status: 'cancelled',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', orderId)
+
+    if (updateError) {
+      console.error('Cancel order error:', updateError)
+      return { success: false, error: 'Failed to cancel order. Please contact support.' }
+    }
+
+    // 4. Log activity (Optional but recommended for luxury audit)
+    try {
+      await client.from('admin_activity_logs').insert({
+        admin_id: user.id, // User is acting on their own order
+        action: `User cancelled order: ${order.order_number}`,
+        entity_type: 'order',
+        entity_id: orderId,
+        metadata: { reason }
+      })
+    } catch (e) {
+      console.error('Silent log failure:', e)
+    }
+
+    return { success: true, message: 'Your order has been cancelled successfully.' }
+  } catch (err: any) {
+    console.error('Cancel order crash:', err)
+    return { success: false, error: 'Internal server error occurred during cancellation.' }
+  }
+}
+
+/**
+ * Amazon-style Cleanup for Pending Orders
+ * Deletes pending orders that haven't been completed within 30 minutes.
+ * This can be called by a cron job or on-demand.
+ */
+export async function cleanupPendingOrders() {
+  try {
+    const client = await getAuthClient()
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+
+    const { data, error } = await client
+      .from('orders')
+      .delete()
+      .eq('status', 'pending')
+      .lt('created_at', thirtyMinutesAgo)
+      .select('id, order_number')
+
+    if (error) throw error
+
+    if (data && data.length > 0) {
+      console.log(`CLEANUP: Deleted ${data.length} expired pending orders:`, data.map(o => o.order_number))
+    }
+
+    return { success: true, count: data?.length || 0 }
+  } catch (err) {
+    console.error('Cleanup pending orders error:', err)
+    return { success: false }
+  }
+}
+
+/**
+ * Facilitates "Retry Payment" for pending orders
+ */
+export async function getOrderPaymentSession(orderId: string) {
+  try {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return { success: false, error: 'Authorization required' }
+
+    const { data: order, error } = await client
+      .from('orders')
+      .select('*')
+      .eq('id', orderId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (error || !order) return { success: false, error: 'Order not found' }
+    if (order.status !== 'pending') return { success: false, error: 'Only pending orders can be retried' }
+
+    // Check if expired (30 mins)
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
+    if (new Date(order.created_at) < thirtyMinutesAgo) {
+      // Auto-delete on access if expired
+      await client.from('orders').delete().eq('id', orderId)
+      return { success: false, error: 'Payment window of 30 minutes has expired. Please place a new order.' }
+    }
+
+    // Since our system usually creates a session during createOrder, 
+    // we'll return the the data needed for the client to initiate the payment again 
+    // OR return a direct payment URL if applicable.
+
+    return {
+      success: true,
+      order: {
+        id: order.id,
+        order_number: order.order_number,
+        total: order.total
+      }
+    }
+  } catch (err: any) {
+    return { success: false, error: 'Failed to retrieve payment session' }
+  }
+}
+
+
 
 
 // ============================================
@@ -1169,7 +1343,7 @@ export async function submitBulkOrder(formData: {
     }
 
     // Insert bulk order
-    const { data: bulkOrder, error: orderError } = await supabase
+    const { data: bulkOrder, error: orderError } = await supabaseServer
       .from('bulk_orders')
       .insert({
         user_id: userId,
@@ -1202,7 +1376,7 @@ export async function submitBulkOrder(formData: {
       created_at: new Date().toISOString(),
     }))
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await supabaseServer
       .from('bulk_order_items')
       .insert(bulkItems)
 
@@ -1259,7 +1433,7 @@ export async function forceSyncGoldRates() {
 }
 
 export async function updateGoldRate(purity: string, rate: number) {
-  const { error } = await supabase
+  const { error } = await supabaseServer
     .from('gold_rates')
     .upsert({ purity, rate, updated_at: new Date().toISOString() }, { onConflict: 'purity' })
 
@@ -1350,7 +1524,7 @@ export async function searchProducts(query: string) {
     if (!query || query.length < 2) return []
 
     // 1. Try ILIKE search first for better reliability on name/description
-    const { data: ilikeResults, error: ilikeError } = await supabase
+    const { data: ilikeResults, error: ilikeError } = await supabaseServer
       .from('products')
       .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
@@ -1361,7 +1535,7 @@ export async function searchProducts(query: string) {
     }
 
     // 2. Fallback to FTS if ILIKE yields no results (handles more complex term matching)
-    const { data: ftsResults, error: ftsError } = await supabase
+    const { data: ftsResults, error: ftsError } = await supabaseServer
       .from('products')
       .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .textSearch('fts_vector', query, {
@@ -1391,7 +1565,7 @@ export async function validateCoupon(code: string, orderTotal: number) {
   try {
     if (!code) return { valid: false, error: 'Please enter a coupon code' }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from('coupons')
       .select('*')
       .eq('code', code.toUpperCase())
@@ -1450,7 +1624,7 @@ export async function validateCoupon(code: string, orderTotal: number) {
 
 export async function getBlogPosts(category?: string) {
   try {
-    let query = supabase
+    let query = supabaseServer
       .from('blog_posts')
       .select('*')
       .eq('is_published', true)
@@ -1473,7 +1647,7 @@ export async function getBlogPosts(category?: string) {
 
 export async function getBlogPost(slug: string) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from('blog_posts')
       .select('*')
       .eq('slug', slug)
@@ -1494,7 +1668,7 @@ export async function getBlogPost(slug: string) {
 
 export async function getStores() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from('stores')
       .select('*')
       .eq('is_active', true)
@@ -1543,13 +1717,13 @@ export async function getFilteredProducts(options: {
   return unstable_cache(
     async () => {
       try {
-        let query = supabase
+        let query = supabaseServer
           .from('products')
           .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
 
         // Category filter
         if (options.category) {
-          const { data: cat } = await supabase
+          const { data: cat } = await supabaseServer
             .from('categories')
             .select('id')
             .eq('slug', options.category)
@@ -2474,19 +2648,33 @@ export async function verifyCashfreePayment(orderId: string) {
     const successPayment = payments.find((p: any) => p.payment_status === 'SUCCESS')
 
     if (successPayment) {
+      // Extract detailed payment method
+      let detailedMethod = 'online'
+      const pm = successPayment.payment_method
+      if (pm) {
+        if (pm.upi) detailedMethod = 'UPI'
+        else if (pm.card) {
+          const network = pm.card.card_network?.toUpperCase() || ''
+          const type = pm.card.card_type?.charAt(0).toUpperCase() + pm.card.card_type?.slice(1) || 'Card'
+          detailedMethod = `${network} ${type}`.trim()
+        } else if (pm.netbanking) detailedMethod = 'Net Banking'
+        else if (pm.app) detailedMethod = 'Wallet/App'
+      }
+
       // Update order status
       const { error: updateError } = await client
         .from('orders')
         .update({
-          status: 'paid', // Or 'processing'
+          status: 'confirmed',
           payment_id: successPayment.cf_payment_id,
+          payment_method: detailedMethod,
           updated_at: new Date().toISOString()
         })
         .eq('id', order.id)
 
       if (updateError) throw updateError
 
-      return { success: true, status: 'paid' }
+      return { success: true, status: 'confirmed' }
     }
 
     return { success: false, error: 'Payment not completed or failed' }
@@ -2605,18 +2793,24 @@ export async function verifyRazorpayPayment(orderId: string, params: { razorpay_
   const client = await getAuthClient()
 
   try {
-    const isValid = await verifyRazorpayPaymentLib(
+    const result = await verifyRazorpayPaymentLib(
       params.razorpay_payment_id,
       params.razorpay_order_id,
       params.razorpay_signature
     )
 
-    if (isValid) {
+    if (result.isValid) {
+      let detailedMethod = result.method || 'online'
+      if (detailedMethod === 'upi') detailedMethod = `UPI`
+      else if (detailedMethod === 'card') detailedMethod = `${result.card_network} Card`
+      else if (detailedMethod === 'netbanking') detailedMethod = 'Net Banking'
+
       const { error: updateError } = await client
         .from('orders')
         .update({
-          status: 'paid',
+          status: 'confirmed',
           payment_id: params.razorpay_payment_id,
+          payment_method: detailedMethod,
           updated_at: new Date().toISOString()
         })
         .eq('id', orderId)
