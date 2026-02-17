@@ -6,7 +6,8 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import {
     LayoutDashboard, ShoppingCart, Package, Users, HeadphonesIcon,
-    Settings, ChevronLeft, ChevronRight, Menu, X, LogOut, Activity, Sparkles, Wrench, ShieldAlert
+    Settings, ChevronLeft, ChevronRight, Menu, X, LogOut, Activity, Sparkles, Wrench, ShieldAlert,
+    ExternalLink
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -67,6 +68,15 @@ export function AdminSidebar({ admin, children }: { admin: { email?: string; rol
 
                 {/* Nav Items */}
                 <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto custom-scrollbar">
+                    {/* Visit Website Link */}
+                    <Link
+                        href="/"
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group text-white/50 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 mb-4 border border-white/5 hover:border-[#D4AF37]/20`}
+                    >
+                        <ExternalLink className="w-5 h-5 flex-shrink-0" />
+                        {!collapsed && <span className="text-sm font-medium">Visit Website</span>}
+                    </Link>
+
                     {filteredNav.map(item => {
                         const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
                         return (
@@ -142,6 +152,16 @@ export function AdminSidebar({ admin, children }: { admin: { email?: string; rol
                             </button>
                         </div>
                         <nav className="flex-1 space-y-1">
+                            {/* Visit Website Link */}
+                            <Link
+                                href="/"
+                                onClick={() => setMobileOpen(false)}
+                                className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-white/50 hover:text-[#D4AF37] hover:bg-[#D4AF37]/5 mb-4 border border-white/5`}
+                            >
+                                <ExternalLink className="w-5 h-5 flex-shrink-0" />
+                                <span className="text-sm font-medium">Visit Website</span>
+                            </Link>
+
                             {filteredNav.map(item => {
                                 const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href))
                                 return (

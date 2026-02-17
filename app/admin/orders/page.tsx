@@ -5,7 +5,7 @@ import { OrdersSkeleton } from './orders-skeleton'
 
 export const dynamic = 'force-dynamic'
 
-export default async function OrdersPage(props: { searchParams: Promise<{ status?: string, page?: string, search?: string }> }) {
+export default async function OrdersPage(props: { searchParams: Promise<{ status?: string, page?: string, search?: string, dateFrom?: string, dateTo?: string, minTotal?: string, maxTotal?: string }> }) {
     const searchParams = await props.searchParams
     return (
         <Suspense fallback={<OrdersSkeleton />}>
@@ -14,14 +14,18 @@ export default async function OrdersPage(props: { searchParams: Promise<{ status
     )
 }
 
-async function OrdersContent({ searchParams }: { searchParams: { status?: string, page?: string, search?: string } }) {
+async function OrdersContent({ searchParams }: { searchParams: { status?: string, page?: string, search?: string, dateFrom?: string, dateTo?: string, minTotal?: string, maxTotal?: string } }) {
     const page = Number(searchParams.page) || 1
     const status = searchParams.status || 'all'
     const search = searchParams.search || ''
+    const dateFrom = searchParams.dateFrom
+    const dateTo = searchParams.dateTo
+    const minTotal = searchParams.minTotal ? Number(searchParams.minTotal) : undefined
+    const maxTotal = searchParams.maxTotal ? Number(searchParams.maxTotal) : undefined
 
     // Parallel fetch
     const [ordersData, admin] = await Promise.all([
-        getAdminOrders(status, undefined, undefined, search, page),
+        getAdminOrders(status, dateFrom, dateTo, search, page, 20, minTotal, maxTotal),
         checkAdminRole()
     ])
 

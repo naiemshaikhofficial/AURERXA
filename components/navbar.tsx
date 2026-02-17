@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield, Loader2 } from 'lucide-react'
 import { useCart } from '@/context/cart-context'
 import { useSearch } from '@/context/search-context'
+import { getOrdersPollingData } from '@/app/admin/actions'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +38,8 @@ export function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [authLoading, setAuthLoading] = useState(true)
+  const [notificationCount, setNotificationCount] = useState(0)
+  const lastKnownTotal = React.useRef<number | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -45,38 +48,47 @@ export function Navbar() {
   useEffect(() => {
     let isMounted = true
 
-    const getUser = async () => {
+    const fetchUser = async () => {
       try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        // Use getSession first as it's less prone to throwing AuthSessionMissingError
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         if (!isMounted) return
 
-        if (authError) {
-          if (authError.message.includes('signal is aborted') || authError.name === 'AbortError') {
-            // Silently ignore abort errors during navigation/mount
-            return
+        if (sessionError) {
+          if (sessionError.message.includes('signal is aborted') || sessionError.name === 'AbortError') return
+          // Only log real errors, not session missing
+          if (!sessionError.message.includes('Auth session missing')) {
+            console.error('Navbar getSession error:', sessionError)
           }
-          console.error('Navbar getUser error:', authError)
+          setAuthLoading(false)
+          return
         }
 
-        setUser(user)
+        const currentUser = session?.user || null
+        setUser(currentUser)
 
-        if (user) {
+        if (currentUser) {
+          // Re-validate with getUser for security if we have a session
+          const { data: { user: validatedUser } } = await supabase.auth.getUser()
+          if (validatedUser) setUser(validatedUser)
+
+          const userToProcess = validatedUser || currentUser
           const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', user.id)
+            .eq('id', userToProcess.id)
             .single()
           if (isMounted && profileData) setProfile(profileData)
 
           const { data: adminData } = await supabase
             .from('admin_users')
             .select('role')
-            .eq('id', user.id)
+            .eq('id', userToProcess.id)
             .single()
           if (isMounted && adminData) setIsAdmin(true)
         }
       } catch (err: any) {
-        if (err.name !== 'AbortError' && !err.message?.includes('aborted')) {
+        if (err.name !== 'AbortError' && !err.message?.includes('aborted') && !err.message?.includes('Auth session missing')) {
           console.error('Navbar session check error:', err)
         }
       } finally {
@@ -84,7 +96,7 @@ export function Navbar() {
       }
     }
 
-    getUser()
+    fetchUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMounted) return
@@ -148,6 +160,39 @@ export function Navbar() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  // Admin Notification Polling
+  useEffect(() => {
+    if (!isAdmin || !mounted || !user) {
+      setNotificationCount(0)
+      return
+    }
+
+    const pollNotifications = async () => {
+      try {
+        // Double check if we still have a user before calling server action
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) return
+
+        const data = await getOrdersPollingData()
+        if (!data) return
+
+        const { getDashboardStats } = await import('@/app/admin/actions')
+        const stats = await getDashboardStats()
+        if (stats) {
+          setNotificationCount(stats.pendingOrders)
+        }
+      } catch (err: any) {
+        if (!err.message?.includes('Auth session missing')) {
+          console.error('Navbar notification poll error:', err)
+        }
+      }
+    }
+
+    pollNotifications()
+    const interval = setInterval(pollNotifications, 60000)
+    return () => clearInterval(interval)
+  }, [isAdmin, mounted, user])
 
   const handleSignOut = async () => {
     try {
@@ -257,8 +302,11 @@ export function Navbar() {
               {mounted && (
                 <Sheet>
                   <SheetTrigger asChild>
-                    <button className="text-foreground/80 hover:text-primary transition-colors p-2" aria-label="Open navigation menu">
+                    <button className="text-foreground/80 hover:text-primary transition-colors p-2 relative" aria-label="Open navigation menu">
                       <Menu className="w-6 h-6 stroke-1" />
+                      {isAdmin && notificationCount > 0 && (
+                        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-primary rounded-full animate-pulse border border-background" />
+                      )}
                     </button>
                   </SheetTrigger>
                   <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[300px] p-0">
@@ -333,9 +381,16 @@ export function Navbar() {
                               {isAdmin && (
                                 <Link
                                   href="/admin"
-                                  className="flex flex-col items-center justify-center p-4 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2"
+                                  className="flex flex-col items-center justify-center p-4 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2 relative"
                                 >
-                                  <Shield className="w-5 h-5 mb-2 text-[#D4AF37] transition-colors stroke-1" />
+                                  <div className="relative">
+                                    <Shield className="w-5 h-5 mb-2 text-[#D4AF37] transition-colors stroke-1" />
+                                    {notificationCount > 0 && (
+                                      <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary text-primary-foreground text-[8px] rounded-full flex items-center justify-center animate-pulse">
+                                        {notificationCount > 9 ? '9+' : notificationCount}
+                                      </span>
+                                    )}
+                                  </div>
                                   <span className="text-[9px] uppercase tracking-widest text-[#D4AF37]">Admin Panel</span>
                                 </Link>
                               )}
@@ -403,8 +458,13 @@ export function Navbar() {
               ) : user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger className="outline-none">
-                    <div className="w-9 h-9 rounded-sm bg-muted/20 hover:bg-muted/30 border border-border flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer">
+                    <div className="w-9 h-9 rounded-sm bg-muted/20 hover:bg-muted/30 border border-border flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer relative">
                       {getInitials()}
+                      {isAdmin && notificationCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse border-2 border-background shadow-lg">
+                          {notificationCount > 9 ? '9+' : notificationCount}
+                        </span>
+                      )}
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-background border-border text-foreground min-w-[220px] p-2">

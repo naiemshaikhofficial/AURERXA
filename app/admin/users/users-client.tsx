@@ -29,6 +29,12 @@ export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: 
     // URL State
     const currentSearch = searchParams.get('search') || ''
     const currentPage = Number(searchParams.get('page')) || 1
+    const currentRole = searchParams.get('role') || 'all'
+    const currentBanned = searchParams.get('banned') || 'all'
+    const currentDateFrom = searchParams.get('dateFrom') || ''
+    const currentDateTo = searchParams.get('dateTo') || ''
+    const currentMinSpent = searchParams.get('minSpent') || ''
+    const currentMaxSpent = searchParams.get('maxSpent') || ''
 
     const updateFilters = (key: string, value: string) => {
         const params = new URLSearchParams(searchParams.toString())
@@ -106,16 +112,91 @@ export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: 
                 <p className="text-white/40 text-sm mt-1">{total} registered users</p>
             </div>
 
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                <input
-                    type="text"
-                    placeholder="Search by name or email..."
-                    defaultValue={currentSearch}
-                    onKeyDown={e => e.key === 'Enter' && updateFilters('search', e.currentTarget.value)}
-                    onBlur={e => updateFilters('search', e.currentTarget.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#D4AF37]/30"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                    <input
+                        type="text"
+                        placeholder="Search name or email..."
+                        defaultValue={currentSearch}
+                        onKeyDown={e => e.key === 'Enter' && updateFilters('search', e.currentTarget.value)}
+                        onBlur={e => updateFilters('search', e.currentTarget.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#D4AF37]/30"
+                    />
+                </div>
+
+                <Select value={currentRole} onValueChange={val => updateFilters('role', val)}>
+                    <SelectTrigger className="bg-white/5 border-white/10 rounded-xl text-white h-11">
+                        <SelectValue placeholder="Role" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                        <SelectItem value="all">All Roles</SelectItem>
+                        <SelectItem value="main_admin">Main Admin</SelectItem>
+                        <SelectItem value="staff">Staff</SelectItem>
+                        <SelectItem value="user">User</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <Select value={currentBanned} onValueChange={val => updateFilters('banned', val)}>
+                    <SelectTrigger className="bg-white/5 border-white/10 rounded-xl text-white h-11">
+                        <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="true">Banned</SelectItem>
+                        <SelectItem value="false">Active Only</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white/40 h-11">
+                    <ShoppingBag className="w-4 h-4" />
+                    <span className="text-[10px] uppercase font-bold tracking-widest hidden lg:inline text-nowrap">Spent:</span>
+                    <input
+                        type="number"
+                        placeholder="Min"
+                        defaultValue={currentMinSpent}
+                        onBlur={e => updateFilters('minSpent', e.target.value)}
+                        className="w-full bg-transparent text-white focus:outline-none placeholder:text-white/20"
+                    />
+                    <span>-</span>
+                    <input
+                        type="number"
+                        placeholder="Max"
+                        defaultValue={currentMaxSpent}
+                        onBlur={e => updateFilters('maxSpent', e.target.value)}
+                        className="w-full bg-transparent text-white focus:outline-none placeholder:text-white/20"
+                    />
+                </div>
+
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white/40 h-11">
+                    <UserIcon className="w-4 h-4" />
+                    <span className="text-[10px] uppercase font-bold tracking-widest hidden lg:inline">Joined:</span>
+                    <input
+                        type="date"
+                        defaultValue={currentDateFrom}
+                        onChange={e => updateFilters('dateFrom', e.target.value)}
+                        className="bg-transparent text-white focus:outline-none [color-scheme:dark]"
+                    />
+                </div>
+                <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm text-white/40 h-11">
+                    <UserIcon className="w-4 h-4" />
+                    <span className="text-[10px] uppercase font-bold tracking-widest hidden lg:inline">Until:</span>
+                    <input
+                        type="date"
+                        defaultValue={currentDateTo}
+                        onChange={e => updateFilters('dateTo', e.target.value)}
+                        className="bg-transparent text-white focus:outline-none [color-scheme:dark]"
+                    />
+                </div>
+
+                {(currentSearch || currentRole !== 'all' || currentBanned !== 'all' || currentDateFrom || currentDateTo || currentMinSpent || currentMaxSpent) && (
+                    <button
+                        onClick={() => router.push(pathname)}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-red-500/10 text-red-400 rounded-xl text-xs hover:bg-red-500/20 transition h-11 lg:col-span-2"
+                    >
+                        <X className="w-4 h-4" /> Clear All Filters
+                    </button>
+                )}
             </div>
 
             {users.length === 0 ? (

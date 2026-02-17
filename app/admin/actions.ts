@@ -50,21 +50,27 @@ async function getAuthClient() {
 // ============================================
 
 export async function checkAdminRole() {
-    const client = await getAuthClient()
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) return null
+    try {
+        const client = await getAuthClient()
+        const { data: { user }, error: authError } = await client.auth.getUser()
 
-    const { data, error: roleError } = await client
-        .from('admin_users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+        if (authError || !user) {
+            return null
+        }
 
-    if (roleError || !data) {
-        console.log('DEBUG: checkAdminRole - No role found for user', user.id);
+        const { data, error: roleError } = await client
+            .from('admin_users')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (roleError || !data) {
+            return null
+        }
+        return { userId: user.id, email: user.email, role: data.role as 'main_admin' | 'support_admin' | 'staff' | 'product_manager' }
+    } catch (err) {
         return null
     }
-    return { userId: user.id, email: user.email, role: data.role as 'main_admin' | 'support_admin' | 'staff' | 'product_manager' }
 }
 
 // ============================================
@@ -410,7 +416,9 @@ export async function getAdminOrders(
     dateTo?: string,
     search?: string,
     page: number = 1,
-    limit: number = 20
+    limit: number = 20,
+    minTotal?: number,
+    maxTotal?: number
 ) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
@@ -424,6 +432,8 @@ export async function getAdminOrders(
     if (dateFrom) query = query.gte('created_at', dateFrom)
     if (dateTo) query = query.lte('created_at', dateTo)
     if (search) query = query.or(`order_number.ilike.%${search}%`)
+    if (minTotal) query = query.gte('total', minTotal)
+    if (maxTotal) query = query.lte('total', maxTotal)
 
     const offset = (page - 1) * limit
     query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
@@ -590,6 +600,22 @@ export async function updateOrderStatus(orderId: string, status: string, trackin
     return { success: true }
 }
 
+export async function bulkUpdateOrderStatus(orderIds: string[], status: string) {
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    // Use Promise.all for now, or a single Supabase query if preferred.
+    // updateOrderStatus has complex logic (Delhivery automation), so we'll call it for each.
+    const results = await Promise.all(orderIds.map(id => updateOrderStatus(id, status)))
+    const failedCount = results.filter(r => !r.success).length
+
+    if (failedCount > 0) {
+        return { success: false, error: `${failedCount} updates failed.` }
+    }
+
+    return { success: true }
+}
+
 export async function deleteOrder(orderId: string) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
@@ -617,21 +643,46 @@ export async function deleteOrder(orderId: string) {
 // PRODUCTS MANAGEMENT
 // ============================================
 
-export async function getAdminAllProducts(search?: string, page: number = 1, limit: number = 20) {
+export async function getAdminAllProducts(
+    search?: string,
+    page: number = 1,
+    limit: number = 20,
+    categoryId?: string,
+    subCategoryId?: string,
+    minPrice?: number,
+    maxPrice?: number,
+    stockStatus?: 'low' | 'out' | 'in',
+    dateFrom?: string,
+    dateTo?: string
+) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return { products: [], total: 0 }
 
     let query = client
         .from('products')
-        .select('id, name, price, stock, slug, created_at, categories(name)', { count: 'exact' })
+        .select('*, categories(name), sub_categories(name)', { count: 'exact' })
 
     if (search) query = query.ilike('name', `%${search}%`)
+    if (categoryId && categoryId !== 'all') query = query.eq('category_id', categoryId)
+    if (subCategoryId && subCategoryId !== 'all') query = query.eq('sub_category_id', subCategoryId)
+    if (minPrice) query = query.gte('price', minPrice)
+    if (maxPrice) query = query.lte('price', maxPrice)
+    if (dateFrom) query = query.gte('created_at', dateFrom)
+    if (dateTo) query = query.lte('created_at', dateTo)
+
+    if (stockStatus) {
+        if (stockStatus === 'low') query = query.lte('stock', 5).gt('stock', 0)
+        else if (stockStatus === 'out') query = query.eq('stock', 0)
+        else if (stockStatus === 'in') query = query.gt('stock', 5)
+    }
 
     const offset = (page - 1) * limit
     query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
 
-    const { data, count } = await query
+    const { data, count, error } = await query
+    if (error) console.error('Admin products error:', error)
+
     return { products: data || [], total: count || 0 }
 }
 
@@ -711,16 +762,43 @@ export async function deleteProduct(productId: string) {
 // USERS MANAGEMENT
 // ============================================
 
-export async function getAdminAllUsers(search?: string, page: number = 1, limit: number = 20) {
+export async function getAdminAllUsers(
+    search?: string,
+    page: number = 1,
+    limit: number = 20,
+    role?: string,
+    isBanned?: boolean,
+    dateFrom?: string,
+    dateTo?: string,
+    minSpent?: number,
+    maxSpent?: number
+) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin || admin.role === 'staff') return { users: [], total: 0 }
 
     let query = client
         .from('profiles')
-        .select('id, full_name, email, phone_number, created_at, is_banned', { count: 'exact' })
+        .select('id, full_name, email, phone_number, created_at, is_banned, avatar_url', { count: 'exact' })
 
     if (search) query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`)
+    if (isBanned !== undefined) query = query.eq('is_banned', isBanned)
+    if (dateFrom) query = query.gte('created_at', dateFrom)
+    if (dateTo) query = query.lte('created_at', dateTo)
+
+    if (role && role !== 'all') {
+        const { data: adminUsers } = await client.from('admin_users').select('id').eq('role', role)
+        const adminIds = adminUsers?.map((au: any) => au.id) || []
+        if (role === 'user') {
+            // This is tricky, we need users NOT in admin_users
+            const { data: allAdmins } = await client.from('admin_users').select('id')
+            const allAdminIds = allAdmins?.map((au: any) => au.id) || []
+            if (allAdminIds.length > 0) query = query.not('id', 'in', `(${allAdminIds.join(',')})`)
+        } else {
+            if (adminIds.length > 0) query = query.in('id', adminIds)
+            else return { users: [], total: 0 } // No users found with this admin role
+        }
+    }
 
     const offset = (page - 1) * limit
     query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
@@ -755,7 +833,13 @@ export async function getAdminAllUsers(search?: string, page: number = 1, limit:
         stats: statsMap[p.id] || { totalOrders: 0, totalSpent: 0, lastOrderDate: null }
     }))
 
-    return { users: usersWithStats, total: count || 0 }
+    // Client-side filtering for spent range since it's derived from multiple tables
+    // (Ideally this should be a view or RPC for large scale)
+    let filteredResults = usersWithStats
+    if (minSpent !== undefined) filteredResults = filteredResults.filter(u => u.stats.totalSpent >= minSpent)
+    if (maxSpent !== undefined) filteredResults = filteredResults.filter(u => u.stats.totalSpent <= maxSpent)
+
+    return { users: filteredResults, total: count || 0 }
 }
 
 export async function getUserDetails(userId: string) {

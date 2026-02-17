@@ -37,12 +37,27 @@ function LoginForm() {
 
             if (error) throw error
 
-            // Successful login - handle redirect
-            // Check for 'redirect' or 'next' (common conventions)
-            const redirectPath = searchParams.get('redirect') || searchParams.get('next') || '/'
+            // Success - Get user role
+            const { data: { user: currentUser } } = await supabase.auth.getUser()
+            let redirectPath = searchParams.get('redirect') || searchParams.get('next')
+
+            if (!redirectPath && currentUser) {
+                const { data: adminData } = await supabase
+                    .from('admin_users')
+                    .select('role')
+                    .eq('id', currentUser.id)
+                    .single()
+
+                if (adminData) {
+                    redirectPath = '/admin'
+                } else {
+                    redirectPath = '/'
+                }
+            } else if (!redirectPath) {
+                redirectPath = '/'
+            }
 
             // Force a hard refresh to ensure middleware/server components pick up the new session
-            // This is often more reliable than router.push + router.refresh for auth state changes
             window.location.href = redirectPath
         } catch (err: any) {
             setError(err.message || 'Failed to sign in')
