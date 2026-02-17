@@ -425,27 +425,45 @@ export async function getAdminOrders(
     return { orders: ordersWithProfiles, total: count || 0 }
 }
 
-// Lightweight polling endpoint for realtime change detection
+// Enhanced polling endpoint to get latest order details for notifications
 export async function getOrdersPollingData() {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return null
 
+    // Get the absolute latest order with items and product names
     const { data, error } = await client
         .from('orders')
-        .select('id, updated_at, created_at')
-        .order('created_at', { ascending: false })
+        .select(`
+            id, 
+            order_number, 
+            status, 
+            total, 
+            updated_at, 
+            created_at,
+            order_items (
+                quantity,
+                products (
+                    name
+                )
+            )
+        `)
+        .order('updated_at', { ascending: false })
         .limit(1)
         .single()
 
-    if (error) return null
+    if (error) {
+        console.error('Polling error:', error)
+        return null
+    }
 
-    // Also get total count of pending orders
+    // Also get total count to detect new orders specifically
     const { count } = await client
         .from('orders')
         .select('*', { count: 'exact', head: true })
 
     return {
+        latestOrder: data || null,
         latestId: data?.id || null,
         latestTimestamp: data?.updated_at || data?.created_at || null,
         totalOrders: count || 0,

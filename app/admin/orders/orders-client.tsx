@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -41,6 +41,13 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
     const [labelUrl, setLabelUrl] = useState<string | null>(null)
     const [printType, setPrintType] = useState<'customer' | 'shipping' | null>(null)
 
+    // Polling state
+    const lastKnownRef = useRef<{ id: string | null; timestamp: string | null; total: number | null }>({
+        id: null,
+        timestamp: null,
+        total: null
+    })
+
     // Sync Props when they change (Server Refetch)
     useEffect(() => {
         setOrders(initialOrders)
@@ -52,33 +59,45 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
 
     // 🔴 REALTIME: Polling for guaranteed instant updates
     useEffect(() => {
-        let lastKnownTimestamp: string | null = null
-        let lastKnownTotal: number | null = null
         let intervalId: ReturnType<typeof setInterval>
 
         const checkForUpdates = async () => {
             try {
                 const data = await getOrdersPollingData()
-                console.log('🔄 OrdersClient poll:', data)
                 if (!data) return
 
+                const prev = lastKnownRef.current
+
                 // First check — set baseline
-                if (lastKnownTimestamp === null) {
-                    lastKnownTimestamp = data.latestTimestamp
-                    lastKnownTotal = data.totalOrders
+                if (prev.timestamp === null) {
+                    lastKnownRef.current = {
+                        id: data.latestId,
+                        timestamp: data.latestTimestamp,
+                        total: data.totalOrders,
+                    }
                     return
                 }
 
-                // Detect changes
-                const hasChanged =
-                    data.latestTimestamp !== lastKnownTimestamp ||
-                    data.totalOrders !== lastKnownTotal
-
-                if (hasChanged) {
-                    console.log('📦 Orders changed! Refreshing list...')
-                    lastKnownTimestamp = data.latestTimestamp
-                    lastKnownTotal = data.totalOrders
+                // 1. Detect Deletion (Count decreased)
+                if (data.totalOrders < (prev.total || 0)) {
+                    console.log('🗑️ Order deletion detected via poll')
                     router.refresh()
+                }
+
+                // 2. Detect New Order/Update
+                const isNewOrder = data.latestId !== prev.id && data.totalOrders > (prev.total || 0)
+                const isUpdate = !isNewOrder && data.latestTimestamp !== prev.timestamp
+
+                if (isNewOrder || isUpdate) {
+                    console.log('✨ Order change detected via poll, refreshing...')
+                    router.refresh()
+                }
+
+                // Update last known state for next poll
+                lastKnownRef.current = {
+                    id: data.latestId,
+                    timestamp: data.latestTimestamp,
+                    total: data.totalOrders,
                 }
             } catch (e) {
                 console.error('❌ OrdersClient poll error:', e)
@@ -87,8 +106,7 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
 
         checkForUpdates()
         intervalId = setInterval(checkForUpdates, 5000)
-
-        return () => { clearInterval(intervalId) }
+        return () => clearInterval(intervalId)
     }, [router])
 
     // Fetch tracking and label when order is selected
@@ -101,6 +119,17 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
             setLabelUrl(null)
         }
     }, [selectedOrder])
+
+    // 🔍 HIGHLIGHT: Automatically select order if 'highlight' param exists
+    useEffect(() => {
+        const highlightId = searchParams.get('highlight')
+        if (highlightId && orders.length > 0) {
+            const orderToHighlight = orders.find(o => o.id === highlightId)
+            if (orderToHighlight) {
+                setSelectedOrder(orderToHighlight)
+            }
+        }
+    }, [searchParams, orders])
 
     const fetchTracking = async (awb: string) => {
         setLoadingTracking(true)
@@ -252,77 +281,93 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                 </tr>
                             </thead>
                             <tbody>
-                                {orders.map(order => (
-                                    <tr key={order.id} className="border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer" onClick={() => setSelectedOrder(order)}>
-                                        <td className="px-4 py-3">
-                                            <p className="text-sm font-medium text-[#D4AF37]">#{order.order_number}</p>
-                                            <p className="text-xs text-white/30">{order.payment_method || 'N/A'}</p>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            {order.user ? (
-                                                <>
-                                                    <p className="text-sm text-white/80">{order.user.full_name}</p>
-                                                    <p className="text-xs text-white/30">{order.user.email}</p>
-                                                </>
-                                            ) : (
-                                                <span className="text-xs text-white/20">Guest / Unknown</span>
+                                {orders.map(order => {
+                                    const isHighlighted = searchParams.get('highlight') === order.id
+                                    return (
+                                        <tr
+                                            key={order.id}
+                                            className={cn(
+                                                "border-b border-white/5 hover:bg-white/[0.02] transition cursor-pointer",
+                                                isHighlighted && "bg-[#D4AF37]/15 ring-1 ring-inset ring-[#D4AF37]/30 animate-pulse"
                                             )}
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-white/60">{order.order_items?.length || 0} items</td>
-                                        <td className="px-4 py-3 text-sm font-medium">₹{Number(order.total).toLocaleString('en-IN')}</td>
-                                        <td className="px-4 py-3">
-                                            <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${STATUS_COLORS[order.status] || 'bg-white/10 text-white/50'}`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-white/40">
-                                            {new Date(order.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                            <br />
-                                            <span className="text-white/20">{new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <select
-                                                value={order.status}
-                                                onClick={e => e.stopPropagation()}
-                                                onChange={e => handleStatusUpdate(order.id, e.target.value)}
-                                                className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white/70 focus:outline-none"
-                                            >
-                                                {STATUS_OPTIONS.filter(s => s !== 'all').map(s => (
-                                                    <option key={s} value={s} className="bg-[#1a1a1a]">{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                                                ))}
-                                            </select>
-                                        </td>
-                                    </tr>
-                                ))}
+                                            onClick={() => setSelectedOrder(order)}
+                                        >
+                                            <td className="px-4 py-3">
+                                                <p className="text-sm font-medium text-[#D4AF37]">#{order.order_number}</p>
+                                                <p className="text-xs text-white/30">{order.payment_method || 'N/A'}</p>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                {order.user ? (
+                                                    <>
+                                                        <p className="text-sm text-white/80">{order.user.full_name}</p>
+                                                        <p className="text-xs text-white/30">{order.user.email}</p>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-xs text-white/20">Guest / Unknown</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-white/60">{order.order_items?.length || 0} items</td>
+                                            <td className="px-4 py-3 text-sm font-medium">₹{Number(order.total).toLocaleString('en-IN')}</td>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${STATUS_COLORS[order.status] || 'bg-white/10 text-white/50'}`}>
+                                                    {order.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-white/40">
+                                                {new Date(order.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                <br />
+                                                <span className="text-white/20">{new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <select
+                                                    value={order.status}
+                                                    onClick={e => e.stopPropagation()}
+                                                    onChange={e => handleStatusUpdate(order.id, e.target.value)}
+                                                    className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white/70 focus:outline-none"
+                                                >
+                                                    {STATUS_OPTIONS.filter(s => s !== 'all').map(s => (
+                                                        <option key={s} value={s} className="bg-[#1a1a1a]">{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                                    ))}
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
 
                     {/* Mobile Cards */}
                     <div className="md:hidden space-y-3">
-                        {orders.map(order => (
-                            <div
-                                key={order.id}
-                                onClick={() => setSelectedOrder(order)}
-                                className="bg-[#111111] border border-white/5 rounded-xl p-4 active:bg-white/[0.02] transition"
-                            >
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-sm font-medium text-[#D4AF37]">#{order.order_number}</p>
-                                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${STATUS_COLORS[order.status] || ''}`}>
-                                        {order.status}
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <p className="text-sm font-bold">₹{Number(order.total).toLocaleString('en-IN')}</p>
-                                    <p className="text-[11px] text-white/30">{new Date(order.created_at).toLocaleDateString('en-IN')}</p>
-                                </div>
-                                {order.user && (
-                                    <div className="mt-2 pt-2 border-t border-white/5 text-xs text-white/40">
-                                        {order.user.email}
+                        {orders.map(order => {
+                            const isHighlighted = searchParams.get('highlight') === order.id
+                            return (
+                                <div
+                                    key={order.id}
+                                    onClick={() => setSelectedOrder(order)}
+                                    className={cn(
+                                        "bg-[#111111] border rounded-xl p-4 active:bg-white/[0.02] transition",
+                                        isHighlighted ? "border-[#D4AF37] ring-1 ring-[#D4AF37] shadow-lg shadow-[#D4AF37]/10" : "border-white/5"
+                                    )}
+                                >
+                                    <div className="flex items-center justify-between mb-2">
+                                        <p className="text-sm font-medium text-[#D4AF37]">#{order.order_number}</p>
+                                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium ${STATUS_COLORS[order.status] || ''}`}>
+                                            {order.status}
+                                        </span>
                                     </div>
-                                )}
-                            </div>
-                        ))}
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-bold">₹{Number(order.total).toLocaleString('en-IN')}</p>
+                                        <p className="text-[11px] text-white/30">{new Date(order.created_at).toLocaleDateString('en-IN')}</p>
+                                    </div>
+                                    {order.user && (
+                                        <div className="mt-2 pt-2 border-t border-white/5 text-xs text-white/40">
+                                            {order.user.email}
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
 
                     {/* Pagination */}

@@ -1,140 +1,167 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
-import { ShoppingCart, XCircle, AlertCircle } from 'lucide-react'
+import { ShoppingBag, PackageCheck, ShoppingCart, XCircle, AlertCircle } from 'lucide-react'
+import { getOrdersPollingData } from '@/app/admin/actions'
+import { cn } from '@/lib/utils'
 
 export function AdminNotifications() {
     const router = useRouter()
-    const audioRef = useRef<HTMLAudioElement | null>(null)
     const [notifications, setNotifications] = useState<any[]>([])
     const [isOpen, setIsOpen] = useState(false)
     const [unreadCount, setUnreadCount] = useState(0)
-
-    useEffect(() => {
-        // Initialize simple notification sound
-        audioRef.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3') // Simple ding sound
-        audioRef.current.volume = 0.5
-    }, [])
-
-    const playSound = () => {
-        try {
-            audioRef.current?.play().catch(e => console.log('Audio play failed (user interaction needed first):', e))
-        } catch (e) {
-            console.error('Audio error', e)
-        }
-    }
+    const lastKnownRef = useRef<{ id: string | null; timestamp: string | null; total: number | null }>({
+        id: null, timestamp: null, total: null
+    })
+    const isFirstPoll = useRef(true)
 
     const addNotification = (n: any) => {
-        setNotifications(prev => [n, ...prev].slice(0, 50))
+        setNotifications(prev => {
+            // Avoid duplicates by timestamp/id
+            if (prev.find(item => item.timestamp === n.timestamp && item.id === n.id)) return prev
+            return [n, ...prev].slice(0, 50)
+        })
         setUnreadCount(prev => prev + 1)
-        playSound()
+
+        // 🔊 Event-specific sounds
+        const sounds: Record<string, string> = {
+            new_order: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', // Ding
+            confirmed: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3', // Subtle success
+            cancelled: 'https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3', // Low alert
+            deleted: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'    // Pop/Swoosh
+        }
+
+        try {
+            const soundUrl = sounds[n.type] || sounds[n.status] || sounds.new_order
+            const audio = new Audio(soundUrl)
+            audio.volume = 0.4
+            audio.play().catch(() => { })
+        } catch (e) { /* ignore */ }
     }
 
+    // 🎯 PRIMARY: Polling for rich notifications & deletions
     useEffect(() => {
-        console.log('Initializing Admin Notifications Subscription...')
+        let intervalId: ReturnType<typeof setInterval>
 
-        const channel = supabase
-            .channel('admin-orders-channel')
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'orders'
-                },
-                (payload) => {
-                    const newOrder = payload.new as any
-                    console.log('New Order Received:', newOrder)
+        const pollForChanges = async () => {
+            try {
+                const data = await getOrdersPollingData()
+                if (!data) return
 
-                    const notification = {
-                        id: Date.now(),
-                        type: 'new_order',
-                        title: 'New Order Received!',
-                        message: `Order #${newOrder.order_number} • ₹${newOrder.total}`,
-                        time: new Date(),
-                        read: false
+                const prev = lastKnownRef.current
+                const latest = data.latestOrder
+
+                // First poll baseline
+                if (isFirstPoll.current) {
+                    lastKnownRef.current = {
+                        id: data.latestId,
+                        timestamp: data.latestTimestamp,
+                        total: data.totalOrders
                     }
-                    addNotification(notification)
+                    isFirstPoll.current = false
+                    return
+                }
 
-                    toast.success(
-                        <div className="flex flex-col gap-1">
-                            <span className="font-bold">{notification.title}</span>
-                            <span className="text-xs">{notification.message}</span>
-                        </div>,
-                        {
-                            icon: <ShoppingCart className="w-5 h-5 text-emerald-500" />,
-                            duration: 8000,
-                            action: {
-                                label: 'View',
-                                onClick: () => router.push('/admin/orders')
-                            }
-                        }
-                    )
+                // 1. Detect Deletion (Count decreased)
+                if (data.totalOrders < (prev.total || 0)) {
+                    addNotification({
+                        id: `del-${Date.now()}`,
+                        type: 'deleted',
+                        title: '🗑️ Order Deleted',
+                        message: 'An order was removed from the database.',
+                        detail: `Orders remaining: ${data.totalOrders}`,
+                        time: new Date(),
+                        timestamp: Date.now().toString(),
+                        read: false
+                    })
                     router.refresh()
                 }
-            )
-            .on(
-                'postgres_changes',
-                {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'orders'
-                },
-                (payload) => {
-                    const updatedOrder = payload.new as any
-                    const oldOrder = payload.old as any
 
-                    // Check for Status Change
-                    if (updatedOrder.status !== oldOrder.status) {
-                        console.log('Order Status Changed:', updatedOrder.status)
+                // 2. Detect New Order
+                const isNewOrder = data.latestId !== prev.id && data.totalOrders > (prev.total || 0)
+                // 3. Detect Update
+                const isUpdate = !isNewOrder && data.latestTimestamp !== prev.timestamp && latest
 
-                        if (updatedOrder.status === 'cancelled') {
-                            const notification = {
-                                id: Date.now(),
-                                type: 'cancelled',
-                                title: 'Order Cancelled',
-                                message: `Order #${updatedOrder.order_number} has been cancelled.`,
-                                time: new Date(),
-                                read: false
-                            }
-                            addNotification(notification)
+                if (isNewOrder || isUpdate) {
+                    const productNames = latest.order_items?.map((item: any) => item.products?.name).join(', ') || 'Various items'
 
-                            toast.error(
-                                <div className="flex flex-col gap-1">
-                                    <span className="font-bold">{notification.title}</span>
-                                    <span className="text-xs">{notification.message}</span>
-                                </div>,
-                                {
-                                    icon: <XCircle className="w-5 h-5 text-red-500" />,
-                                    duration: 8000,
-                                    action: {
-                                        label: 'View',
-                                        onClick: () => router.push('/admin/orders')
-                                    }
-                                }
-                            )
-                        } else if (updatedOrder.status === 'confirmed') {
-
-                            toast.info(
-                                <div className="flex flex-col gap-1">
-                                    <span className="font-bold">Order Confirmed</span>
-                                    <span className="text-xs">Order #{updatedOrder.order_number} is now confirmed.</span>
-                                </div>,
-                                {
-                                    icon: <AlertCircle className="w-5 h-5 text-blue-500" />
-                                }
-                            )
-                        }
-                        router.refresh()
+                    const notification = {
+                        id: latest.id,
+                        order_number: latest.order_number,
+                        type: isNewOrder ? 'new_order' : latest.status,
+                        status: latest.status,
+                        title: isNewOrder ? '🛍️ New Order' : `📦 Order ${latest.status}`,
+                        message: `Order #${latest.order_number} • ${productNames}`,
+                        detail: `Total: ₹${latest.total.toLocaleString('en-IN')}`,
+                        time: new Date(),
+                        timestamp: data.latestTimestamp,
+                        read: false
                     }
+
+                    addNotification(notification)
+
+                    // Also show toast
+                    if (isNewOrder) {
+                        toast.success(
+                            <div className="flex flex-col gap-1 text-black">
+                                <span className="font-bold">🛍️ New Order: #{latest.order_number}</span>
+                                <span className="text-xs">{productNames}</span>
+                            </div>,
+                            { duration: 8000 }
+                        )
+                    } else if (latest.status === 'cancelled') {
+                        toast.error(
+                            <div className="flex flex-col gap-1 text-black">
+                                <span className="font-bold">❌ Order Cancelled: #{latest.order_number}</span>
+                                <span className="text-xs">Status: {latest.status}</span>
+                            </div>,
+                            { duration: 8000 }
+                        )
+                    }
+
+                    router.refresh()
                 }
-            )
-            .subscribe((status) => {
-                console.log('Supabase Realtime Status:', status)
+
+                // Update ref
+                lastKnownRef.current = {
+                    id: data.latestId,
+                    timestamp: data.latestTimestamp,
+                    total: data.totalOrders
+                }
+            } catch (e) {
+                console.error('Notification poll error:', e)
+            }
+        }
+
+        pollForChanges()
+        intervalId = setInterval(pollForChanges, 6000) // Slightly different interval than OrdersClient
+        return () => clearInterval(intervalId)
+    }, [router])
+
+    // Supabase Realtime as backup
+    useEffect(() => {
+        const channel = supabase
+            .channel('admin-notifications-realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+                // If it's a delete event, show notification immediately
+                if (payload.eventType === 'DELETE') {
+                    addNotification({
+                        id: `del-${Date.now()}`,
+                        type: 'deleted',
+                        title: '🗑️ Order Deleted',
+                        message: 'An order was just deleted.',
+                        detail: 'Database record removed.',
+                        time: new Date(),
+                        timestamp: Date.now().toString(),
+                        read: false
+                    })
+                }
+                router.refresh()
             })
+            .subscribe()
 
         return () => {
             supabase.removeChannel(channel)
@@ -171,13 +198,31 @@ export function AdminNotifications() {
                         ) : (
                             <div className="space-y-1">
                                 {notifications.map((n) => (
-                                    <div key={n.id} className="p-3 hover:bg-white/5 rounded-xl transition cursor-pointer border border-transparent hover:border-white/5" onClick={() => router.push('/admin/orders')}>
+                                    <div
+                                        key={`${n.id}-${n.timestamp}`}
+                                        className="p-3 hover:bg-white/[0.03] rounded-xl transition cursor-pointer border border-transparent hover:border-white/5 group/notif"
+                                        onClick={() => router.push(`/admin/orders?highlight=${n.id}`)}
+                                    >
                                         <div className="flex items-start gap-3">
-                                            <div className={`mt-1 w-2 h-2 rounded-full ${n.type === 'cancelled' ? 'bg-red-500' : 'bg-emerald-500'}`} />
-                                            <div>
-                                                <p className={`text-xs font-bold ${n.type === 'cancelled' ? 'text-red-400' : 'text-emerald-400'}`}>{n.title}</p>
-                                                <p className="text-xs text-white/70 mt-0.5">{n.message}</p>
-                                                <p className="text-[10px] text-white/30 mt-1">{n.time.toLocaleTimeString()}</p>
+                                            <div className={cn(
+                                                "mt-1 w-2 h-2 rounded-full shrink-0",
+                                                n.type === 'new_order' ? 'bg-[#D4AF37] shadow-[0_0_8px_rgba(212,175,55,0.5)]' :
+                                                    n.status === 'cancelled' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]'
+                                            )} />
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start mb-0.5">
+                                                    <p className={cn(
+                                                        "text-[11px] font-bold uppercase tracking-wider",
+                                                        n.status === 'cancelled' ? 'text-red-400' :
+                                                            n.type === 'new_order' ? 'text-[#D4AF37]' : 'text-emerald-400'
+                                                    )}>{n.title}</p>
+                                                    <p className="text-[9px] text-white/20">{new Date(n.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                                </div>
+                                                <p className="text-xs text-white/80 font-medium truncate mt-0.5">{n.message}</p>
+                                                <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-white/[0.03]">
+                                                    <p className="text-[10px] text-white/40 font-medium">{n.detail}</p>
+                                                    <span className="text-[9px] text-[#D4AF37]/60 group-hover/notif:text-[#D4AF37] transition-colors font-bold uppercase tracking-widest">Details →</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
