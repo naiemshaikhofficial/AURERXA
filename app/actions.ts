@@ -493,23 +493,25 @@ export async function getProductById(id: string) {
   return data
 }
 
-export const getRelatedProducts = cache(async (categoryId: string, excludeId: string) => {
-  return unstable_cache(
-    async () => {
-      const { data, error } = await supabaseServer
-        .from('products')
-        .select('id, name, price, image_url, slug, categories(id, name, slug)')
-        .eq('category_id', categoryId)
-        .neq('id', excludeId)
-        .limit(4)
+export async function getRelatedProducts(categoryId: string, excludeId: string) {
+  try {
+    const { data, error } = await supabaseServer
+      .from('products')
+      .select('*')
+      .eq('category_id', categoryId)
+      .neq('id', excludeId)
+      .limit(4)
 
-      if (error) return []
-      return data
-    },
-    ['related-products', categoryId, excludeId],
-    { revalidate: 86400, tags: ['products'] }
-  )()
-})
+    if (error) {
+      console.error('Error fetching related products:', error)
+      return []
+    }
+    return data || []
+  } catch (error) {
+    console.error('Unexpected error fetching related products:', error)
+    return []
+  }
+}
 
 // ============================================
 // CART
