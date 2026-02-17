@@ -29,7 +29,7 @@ export default function PrivacyPage() {
                     <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
                         <li><strong className="text-foreground">CCTV Recordings:</strong> We record the packing of your order and the unpacking of any returns for verification and evidence in case of disputes.</li>
                         <li><strong className="text-foreground">Authentication IDs:</strong> Hallmarking (HUID) and certificate IDs associated with your purchase.</li>
-                        <li><strong className="text-foreground">Identity Verification:</strong> For high-value transactions (as per PMLA guidelines), we may require government-issued ID proof (Aadhar/PAN).</li>
+                        <li><strong className="text-foreground">Identity Verification:</strong> For high-value transactions exceeding ₹2,00,000 (PMLA guidelines), we are required to collect and verify your <strong className="text-foreground">PAN Card</strong> and/or other government-issued ID proofs.</li>
                     </ul>
                 </section>
 
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
                     </p>
                     <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
                         <li>Access to CCTV and high-value transaction data is restricted to authorized security personnel only.</li>
-                        <li>Verification videos are retained for a period of 90 days or until the return window expires, whichever is longer.</li>
+                        <li><strong className="text-foreground">Data Retention:</strong> Verification videos are retained for a period of 90 days or until the legal return window expires. In case of a dispute or detected fraud, data will be retained for up to 5 years or until legal proceedings are concluded.</li>
                     </ul>
                 </section>
 
@@ -58,20 +58,21 @@ export default function PrivacyPage() {
                     <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
                         <li>Processing and delivering your order securely.</li>
                         <li>Verifying authenticity and preventing fraudulent return attempts.</li>
-                        <li>Complying with legal requirements for high-value asset sales in India.</li>
-                        <li>Personalizing your luxury shopping experience.</li>
+                        <li>Complying with legal requirements (PMLA/KYC) for high-value asset sales in India.</li>
+                        <li>Reporting suspicious transactions to the <strong className="text-foreground">Financial Intelligence Unit (FIU-IND)</strong>.</li>
                     </ul>
                 </section>
 
                 <section className="space-y-4 border-t border-border pt-6">
-                    <h2 className="text-xl font-serif font-medium text-foreground">4. Disclosure to Third Parties</h2>
+                    <h2 className="text-xl font-serif font-medium text-foreground">4. Disclosure to Third Parties & Law Enforcement</h2>
                     <p className="text-muted-foreground text-sm leading-relaxed">
                         We do not sell your personal information. Data is only shared with:
                     </p>
                     <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
-                        <li><strong className="text-foreground">Secure Logistics Partners</strong> (for delivery).</li>
-                        <li><strong className="text-foreground">Legal Authorities</strong> (only if required by law or to report fraudulent activity).</li>
-                        <li><strong className="text-foreground">Certified Laboratories</strong> (for authenticity cross-verification).</li>
+                        <li><strong className="text-foreground">Secure Logistics Partners</strong> (for insured delivery).</li>
+                        <li><strong className="text-foreground">Law Enforcement Agencies (LEA):</strong> In cases of suspected fraud, weight tampering, or payment cheating, we will share all captured evidence (CCTV, logs, metadata) with relevant authorities for investigation and filing of an FIR.</li>
+                        <li><strong className="text-foreground">Regulatory Bodies:</strong> For PMLA compliance audits.</li>
+                        <li><strong className="text-foreground">Certified Laboratories:</strong> For authenticity cross-verification.</li>
                     </ul>
                 </section>
             </div>

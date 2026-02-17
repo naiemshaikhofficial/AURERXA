@@ -71,6 +71,43 @@ export default function ReturnsShippingPage() {
 
                 <hr className="border-border" />
 
+                {/* Cancellation Policy Section */}
+                <section className="space-y-8">
+                    <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
+                        <Ban className="w-6 h-6 text-primary" />
+                        Order Cancellation Policy
+                    </h2>
+
+                    <div className="grid gap-6">
+                        <div className="bg-card border border-border p-6">
+                            <h3 className="font-medium text-foreground mb-3">Cancellation by Customer</h3>
+                            <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2 leading-relaxed">
+                                <li>Orders can be cancelled <strong className="text-foreground">only within 6 hours</strong> of placement or before the status changes to "Packed", whichever is earlier.</li>
+                                <li>Once an order is shipped or customized work has begun, it <strong className="text-destructive">cannot be cancelled</strong>.</li>
+                                <li>For approved cancellations, the refund will be processed to the original payment method within 5-7 business days.</li>
+                            </ul>
+                        </div>
+
+                        <div className="bg-card border border-border p-6">
+                            <h3 className="font-medium text-foreground mb-3 font-serif">Cancellation by AURERXA</h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                                We reserve the right to cancel any order for reasons including but not limited to:
+                            </p>
+                            <ul className="text-xs text-muted-foreground list-disc pl-5 space-y-2">
+                                <li>Product failing our final multi-stage <strong className="text-foreground">Quality Check (QC)</strong> before dispatch.</li>
+                                <li>Unexpected inventory discrepancies or raw material availability.</li>
+                                <li>Errors in pricing or product descriptions on the website.</li>
+                                <li>Detection of suspicious or potentially fraudulent transaction patterns.</li>
+                            </ul>
+                            <p className="text-xs text-primary mt-4 italic">
+                                * In such cases, a 100% refund will be issued to the original payment method immediately.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <hr className="border-border" />
+
                 {/* Returns & Refund Policy */}
                 <section className="space-y-8">
                     <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
@@ -109,8 +146,12 @@ export default function ReturnsShippingPage() {
                             Every return is subjected to <strong className="text-foreground">mandatory physical inspection</strong> including:
                         </p>
                         <ul className="list-disc pl-5 text-xs text-muted-foreground space-y-2">
-                            <li><strong className="text-foreground">Purity Verification:</strong> We verify our embossed AURERXA logo, hallmark stamps, and HUID. Any alteration or missing stamp leads to immediate rejection.</li>
+                            <li><strong className="text-foreground">Purity Verification:</strong> We verify our embossed AURERXA logo, hallmark stamps, and <strong className="text-foreground">HUID (Hallmark Unique ID)</strong>.</li>
+                            <li><strong className="text-foreground">Hallmark Applicability:</strong> Please note that BIS Hallmarking is applicable only to 14K, 18K, 20K, 22K, 23K, and 24K Gold and certain Silver articles as per government norms. <strong className="text-foreground">Gold-plated, Bentex, Artificial jewelry, and fashion accessories do not carry a BIS Hallmark</strong> as they are not made entirely of precious metals.</li>
+                            <li><strong className="text-foreground">Verification Cross-Check:</strong> Any HUID mismatch or tampering with brand markings found against our records leads to immediate rejection of the return.</li>
                             <li><strong className="text-foreground">Weight Accuracy (0.01g):</strong> If the returned weight is marginally less than the documented dispatch weight, it is treated as <strong className="text-destructive">criminal fraud</strong>.</li>
+                            <li><strong className="text-foreground">Third-Party Inspection:</strong> In cases of dispute, AURERXA reserves the right to send the product to an independent government-approved gemological laboratory for verification. The decision of the laboratory will be final and binding.</li>
+                            <li><strong className="text-destructive">Legal Recovery:</strong> In the event of documented fraud, the customer agrees to indemnify AURERXA for all costs incurred, including but not limited to forensic testing fees, legal representative fees, and administrative costs.</li>
                             <li><strong className="text-foreground">Legal Action:</strong> Fraudulent activity will be prosecuted under <strong className="text-destructive">IPC Section 420</strong> (Cheating) and <strong className="text-destructive">IPC Section 406</strong> (Breach of Trust).</li>
                         </ul>
                     </div>
@@ -137,7 +178,7 @@ export default function ReturnsShippingPage() {
 
                 {/* Support Cross-Link */}
                 <section className="text-center pt-8 border-t border-border">
-                    <p className="text-muted-foreground text-sm flex flex-col items-center gap-2">
+                    <div className="text-muted-foreground text-sm flex flex-col items-center gap-2">
                         <span>Need assistance with a return? Visit our Help Center or contact support.</span>
                         <div className="flex gap-4">
                             <Link href="/help" className="px-6 py-2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all">
@@ -147,7 +188,7 @@ export default function ReturnsShippingPage() {
                                 View My Orders
                             </Link>
                         </div>
-                    </p>
+                    </div>
                 </section>
             </div>
         </PolicyLayout>
