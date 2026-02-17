@@ -81,10 +81,69 @@ export default function TermsPage() {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">5. Force Majeure & Delivery</h2>
+                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">5. Force Majeure & Artisanal Delivery</h2>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        AURERXA shall not be liable for any delay or failure in performance resulting from causes beyond its reasonable control, including but not limited to raw material shortages (gold/silver prices or availability), government regulations, weather conditions, or transportation delays. For custom-made jewelry, delivery timelines are estimates and may vary based on artisan availability and quality check requirements.
+                        AURERXA shall not be liable for any delay or failure in performance resulting from causes beyond its reasonable control, including but not limited to raw material shortages (gold/silver price volatility or availability), government regulations, weather conditions, or transportation delays.
                     </p>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        <strong className="text-foreground italic underline">Artisanal Nature & Delivery Timelines:</strong> Most AURERXA products are <strong className="text-foreground">handcrafted and involve intricate manual labor</strong>. By purchasing from us, you acknowledge that delivery timelines are <strong className="text-foreground">estimates only</strong> and "time is not of the essence" for delivery. We prioritize quality and craftsmanship over speed, and late delivery shall not entitle the customer to any compensation, damages, or cancellation beyond the standard 6-hour window.
+                    </p>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">6. Jewelry Care & Disclaimer</h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        Jewelry, especially handcrafted and plated items, require specific care. AURERXA is not liable for damage (such as tarnishing, stone fallout, or color change) resulting from:
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li>Exposure to chemicals, perfumes, hairsprays, or detergents.</li>
+                        <li>Improper storage or physical impact (drops/scratches).</li>
+                        <li>Natural wear and tear of plating over time.</li>
+                    </ul>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">7. Intellectual Property</h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        All designs, photographs, graphics, and brand identifiers on this website are the exclusive property of AURERXA. Any unauthorized reproduction, copying, or distribution of our unique jewelry designs or digital assets is strictly prohibited and will attract <strong className="text-foreground">legal action under the Copyright Act, 1957 and Design Act, 2000</strong>.
+                    </p>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">8. Payments & Financial Security</h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        We prioritize your financial security. All payments are processed through secure, RBI-authorized third-party payment gateways (Razorpay, Cashfree, etc.).
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li><strong className="text-foreground">Third-Party Liability:</strong> AURERXA is not liable for any payment failures, data breaches, or technical errors occurring on the third-party payment gateway&apos;s interface.</li>
+                        <li><strong className="text-foreground">Transaction Charges:</strong> In the event of an approved cancellation or refund (customer-side), any <strong className="text-foreground">non-refundable payment gateway fees</strong> (typically 2-3%) charged by our service providers will be deducted from the final refund amount.</li>
+                        <li><strong className="text-foreground">Price Volatility:</strong> Since the price of gold and silver fluctuates daily, the price at the moment of order placement is final. We will not honor refund requests based on subsequent price drops.</li>
+                    </ul>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">9. Right to Modify Policies</h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        AURERXA reserves the <strong className="text-foreground">absolute right to update, change, or replace any part of these Terms and Conditions or our website policies at any time</strong>.
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li>Changes will be effective immediately upon being posted on the website. </li>
+                        <li>It is your responsibility to check our website periodically for changes. </li>
+                        <li>Your continued use of or access to our website following the posting of any changes constitutes acceptance of those changes, <strong className="text-foreground">with or without specific notice to you</strong>.</li>
+                    </ul>
+                </section>
+
+                <section className="bg-primary/5 border border-primary/20 p-6 mt-12">
+                    <h2 className="text-lg font-serif font-bold mb-4">Grievance Officer</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        In accordance with the <strong className="text-foreground">Consumer Protection (E-Commerce) Rules, 2020</strong>, the name and contact details of the Grievance Officer are provided below:
+                    </p>
+                    <div className="mt-4 text-sm text-foreground space-y-1">
+                        <p><strong>Name:</strong> [Anisur Rehman Shaikh]</p>
+                        <p><strong>Designation:</strong> Legal Compliance Officer</p>
+                        <p><strong>Email:</strong> compliance@aurerxa.com</p>
+                        <p><strong>Address:</strong> Mumbai, Maharashtra, India</p>
+                    </div>
                 </section>
             </div>
         </PolicyLayout>

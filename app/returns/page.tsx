@@ -58,6 +58,9 @@ export default function ReturnsShippingPage() {
                                     <span className="text-foreground">7-10 business days</span>
                                 </li>
                             </ul>
+                            <p className="mt-4 text-[10px] text-primary italic leading-tight">
+                                * Note: Many AURERXA pieces are <strong className="text-foreground underline">handcrafted by artisans</strong>. Intricate designs may require additional time for perfection. Delivery dates are estimates, not guarantees.
+                            </p>
                         </div>
                     </div>
 
