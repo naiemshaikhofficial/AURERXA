@@ -651,6 +651,20 @@ export async function deleteUser(userId: string) {
     return { success: true }
 }
 
+export async function searchUsersForAdmin(query: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    const { data } = await client
+        .from('profiles')
+        .select('id, full_name, email, avatar_url')
+        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .limit(10)
+
+    return data || []
+}
+
 export async function toggleAdminRole(userId: string, makeAdmin: boolean) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()

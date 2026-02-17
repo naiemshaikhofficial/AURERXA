@@ -96,8 +96,14 @@ export async function middleware(request: NextRequest) {
     try {
         const { data } = await supabase.auth.getUser()
         user = data.user
-    } catch (e) {
-        console.error('Middleware Auth Error:', e)
+    } catch (e: any) {
+        // Handle potential AbortError from getUser() or AuthSessionMissingError
+        if (e.name === 'AbortError' || e.message?.includes('signal is aborted') || e.name === 'AuthSessionMissingError' || e.message?.includes('Auth session missing')) {
+            // These errors are expected during rapid navigation or initial load
+            // Treat as "no user" and allow safe failure
+        } else {
+            console.error('Middleware Auth Error:', e)
+        }
     }
 
     // 1. Auth Page Redirection: Authenticated users visiting /login or /signup

@@ -1,9 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Tab } from 'lucide-react'
-import { updateGoldRate, createCoupon, deleteCoupon, updateAdminRole, removeAdmin } from '../actions'
-import { CircleDollarSign, Tag, Shield, Save, Plus, Trash2, Crown, HeadphonesIcon, UserPlus } from 'lucide-react'
+import { updateGoldRate, createCoupon, deleteCoupon, updateAdminRole, removeAdmin, searchUsersForAdmin } from '../actions'
+import { CircleDollarSign, Tag, Shield, Save, Plus, Trash2, Crown, HeadphonesIcon, UserPlus, Search, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export function SettingsClient({ initialRates, initialCoupons, initialAdmins, currentRole }: any) {
@@ -18,6 +17,9 @@ export function SettingsClient({ initialRates, initialCoupons, initialAdmins, cu
     const [showAdminForm, setShowAdminForm] = useState(false)
     const [newAdminId, setNewAdminId] = useState('')
     const [newAdminRole, setNewAdminRole] = useState('staff')
+    const [adminSearch, setAdminSearch] = useState('')
+    const [searchResults, setSearchResults] = useState<any[]>([])
+    const [isSearching, setIsSearching] = useState(false)
     const router = useRouter()
 
     const handleRateUpdate = async (id: string) => {
@@ -66,6 +68,18 @@ export function SettingsClient({ initialRates, initialCoupons, initialAdmins, cu
         if (!confirm('Remove admin?')) return
         await removeAdmin(userId)
         router.refresh()
+    }
+
+    const handleSearch = async (query: string) => {
+        setAdminSearch(query)
+        if (query.length < 2) {
+            setSearchResults([])
+            return
+        }
+        setIsSearching(true)
+        const results = await searchUsersForAdmin(query)
+        setSearchResults(results)
+        setIsSearching(false)
     }
 
     const tabs = [
@@ -142,7 +156,38 @@ export function SettingsClient({ initialRates, initialCoupons, initialAdmins, cu
                     <button onClick={() => setShowAdminForm(!showAdminForm)} className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37] text-black rounded-xl text-sm font-medium"><UserPlus className="w-4 h-4" /> Add Admin</button>
                     {showAdminForm && (
                         <div className="bg-[#111111] border border-white/5 rounded-xl p-4 space-y-3">
-                            <input placeholder="UUID" value={newAdminId} onChange={e => setNewAdminId(e.target.value)} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none font-mono" />
+                            <div className="relative">
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40"><Search className="w-4 h-4" /></div>
+                                <input
+                                    placeholder="Search user by name or email..."
+                                    value={adminSearch}
+                                    onChange={e => handleSearch(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/50"
+                                />
+                                {isSearching && <div className="absolute right-3 top-1/2 -translate-y-1/2"><Loader2 className="w-4 h-4 animate-spin text-[#D4AF37]" /></div>}
+
+                                {searchResults.length > 0 && (
+                                    <div className="absolute top-full left-0 w-full mt-1 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl z-10 max-h-60 overflow-y-auto">
+                                        {searchResults.map(user => (
+                                            <button
+                                                key={user.id}
+                                                onClick={() => { setNewAdminId(user.id); setAdminSearch(user.full_name || user.email); setSearchResults([]) }}
+                                                className="w-full text-left px-4 py-3 hover:bg-white/5 flex items-center gap-3 border-b border-white/5 last:border-0"
+                                            >
+                                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center overflow-hidden">
+                                                    {user.avatar_url ? <img src={user.avatar_url} className="w-full h-full object-cover" /> : <div className="text-xs font-bold">{user.full_name?.[0] || '?'}</div>}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-medium text-white">{user.full_name || 'Unnamed'}</p>
+                                                    <p className="text-xs text-white/40 truncate">{user.email}</p>
+                                                </div>
+                                                {newAdminId === user.id && <div className="text-[#D4AF37] text-xs font-bold">Selected</div>}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <input type="hidden" value={newAdminId} />
                             <select value={newAdminRole} onChange={e => setNewAdminRole(e.target.value)} className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none">
                                 <option value="staff" className="bg-[#1a1a1a]">Staff</option>
                                 <option value="support_admin" className="bg-[#1a1a1a]">Support</option>
