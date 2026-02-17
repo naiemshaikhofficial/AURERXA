@@ -305,8 +305,8 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
             {selectedOrder && (
                 <div className="fixed inset-0 z-50">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
-                    <div className="absolute right-0 top-0 h-full w-full max-w-lg bg-[#111111] border-l border-white/5 overflow-y-auto animate-in slide-in-from-right-full duration-300">
-                        <div className="sticky top-0 bg-[#111111]/95 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between z-10">
+                    <div className="absolute right-0 top-0 h-screen w-full max-w-lg bg-[#111111] border-l border-white/5 flex flex-col animate-in slide-in-from-right-full duration-300">
+                        <div className="flex-none bg-[#111111]/95 backdrop-blur-xl border-b border-white/5 p-4 flex items-center justify-between z-10">
                             <div>
                                 <h3 className="text-lg font-semibold text-[#D4AF37]">#{selectedOrder.order_number}</h3>
                                 <p className="text-[10px] text-white/30 uppercase tracking-widest">{new Date(selectedOrder.created_at).toLocaleDateString()}</p>
@@ -339,23 +339,60 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                 </button>
                             </div>
                         </div>
-                        <div className="p-4 space-y-5">
-                            {/* Status */}
-                            <div className="bg-white/5 rounded-xl p-4">
-                                <p className="text-xs text-white/40 mb-2">Status</p>
-                                <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex-1 overflow-y-auto p-4 space-y-5 custom-scrollbar">
+                            {/* Status & Reasons */}
+                            <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                                <p className="text-xs text-white/40 mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                                    <Clock className="w-3 h-3" /> Order Status
+                                </p>
+                                <div className="flex items-center gap-2 flex-wrap mb-4">
                                     {STATUS_OPTIONS.filter(s => s !== 'all').map(s => (
                                         <button
                                             key={s}
                                             onClick={() => handleStatusUpdate(selectedOrder.id, s)}
                                             disabled={updatingStatus}
-                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${selectedOrder.status === s ? STATUS_COLORS[s] : 'bg-white/5 text-white/30 hover:bg-white/10'
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all duration-300 ${selectedOrder.status === s ? STATUS_COLORS[s] : 'bg-white/5 text-white/30 hover:bg-white/10'
                                                 }`}
                                         >
-                                            {s.charAt(0).toUpperCase() + s.slice(1)}
+                                            {s}
                                         </button>
                                     ))}
                                 </div>
+
+                                {selectedOrder.status === 'pending' && (
+                                    <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                                        <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1">Awaiting Payment</p>
+                                        <p className="text-xs text-white/60 leading-relaxed italic">
+                                            {selectedOrder.payment_error_reason || 'Customer has initiated but not yet completed the payment transaction.'}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {(selectedOrder.status === 'cancelled' || selectedOrder.cancellation_reason) && (
+                                    <div className="mt-3 p-3 bg-red-500/5 border border-red-500/10 rounded-lg">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <XCircle className="w-3.5 h-3.5 text-red-400" />
+                                            <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider">Cancellation Detail</span>
+                                        </div>
+                                        <p className="text-sm text-white/70 italic">"{selectedOrder.cancellation_reason || 'No reason provided'}"</p>
+                                        {selectedOrder.cancelled_at && (
+                                            <p className="text-[10px] text-white/20 mt-1">at {new Date(selectedOrder.cancelled_at).toLocaleString()}</p>
+                                        )}
+                                    </div>
+                                )}
+
+                                {(selectedOrder.status === 'return_requested' || selectedOrder.return_reason) && (
+                                    <div className="mt-3 p-3 bg-blue-500/5 border border-blue-500/10 rounded-lg">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <Truck className="w-3.5 h-3.5 text-blue-400" />
+                                            <span className="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Return ({selectedOrder.return_status || 'requested'})</span>
+                                        </div>
+                                        <p className="text-sm text-white/70 italic">"{selectedOrder.return_reason || 'No reason provided'}"</p>
+                                        {selectedOrder.returned_at && (
+                                            <p className="text-[10px] text-white/20 mt-1">requested at {new Date(selectedOrder.returned_at).toLocaleString()}</p>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Tracking Timeline (NEW) */}
@@ -495,17 +532,60 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
 
                             {/* Payment */}
                             <div className="bg-white/5 rounded-xl p-4">
-                                <p className="text-xs text-white/40 mb-2 flex items-center gap-1"><CreditCard className="w-3 h-3" /> Payment</p>
-                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-xs text-white/40 flex items-center gap-1"><CreditCard className="w-3 h-3" /> Payment & Security</p>
+                                    <span className={cn(
+                                        "text-[10px] px-2 py-0.5 rounded font-bold uppercase",
+                                        selectedOrder.payment_status === 'paid' ? "bg-emerald-500/10 text-emerald-400" :
+                                            selectedOrder.payment_status === 'flagged_mismatch' ? "bg-red-500 text-white animate-pulse" :
+                                                selectedOrder.payment_status === 'awaiting_refund' ? "bg-amber-500/10 text-amber-500" :
+                                                    "bg-white/5 text-white/30"
+                                    )}>
+                                        {selectedOrder.payment_status || 'awaiting'}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-y-3 gap-x-2 text-sm">
                                     <div><span className="text-white/40">Method:</span> <span className="text-white/70">{selectedOrder.payment_method || 'N/A'}</span></div>
-                                    {selectedOrder.payment_id && (
-                                        <div className="col-span-2 text-xs text-white/30 border-t border-white/5 pt-1 mt-1 font-mono">
-                                            Txn ID: <span className="text-white/60 select-all">{selectedOrder.payment_id}</span>
+                                    <div><span className="text-white/40">Attempts:</span> <span className="text-white/70">{selectedOrder.payment_attempts || 0}</span></div>
+
+                                    {selectedOrder.payment_gateway_order_id && (
+                                        <div className="col-span-2 text-[10px] text-white/30 pt-1 flex items-center justify-between border-t border-white/5">
+                                            <span className="uppercase tracking-widest font-mono">Gateway Order ID:</span>
+                                            <span className="text-white/50 select-all font-mono">{selectedOrder.payment_gateway_order_id}</span>
                                         </div>
                                     )}
-                                    <div><span className="text-white/40">Subtotal:</span> <span className="text-white/70">₹{Number(selectedOrder.subtotal).toLocaleString('en-IN')}</span></div>
-                                    <div><span className="text-white/40">Shipping:</span> <span className="text-white/70">₹{Number(selectedOrder.shipping || 0).toLocaleString('en-IN')}</span></div>
-                                    <div><span className="text-white/40">Total:</span> <span className="font-bold text-[#D4AF37]">₹{Number(selectedOrder.total).toLocaleString('en-IN')}</span></div>
+
+                                    {selectedOrder.payment_id && (
+                                        <div className="col-span-2 text-[10px] text-white/30 flex items-center justify-between">
+                                            <span className="uppercase tracking-widest font-mono">Gateway Txn ID:</span>
+                                            <span className="text-white/50 select-all font-mono">{selectedOrder.payment_id}</span>
+                                        </div>
+                                    )}
+
+                                    {selectedOrder.payment_error_reason && (
+                                        <div className="col-span-2 p-2 bg-red-500/5 border border-red-500/10 rounded text-[10px] text-red-400/80 italic">
+                                            Last Error: {selectedOrder.payment_error_reason}
+                                        </div>
+                                    )}
+
+                                    <div className="col-span-2 grid grid-cols-4 gap-2 border-t border-white/5 pt-3 mt-1">
+                                        <div className="flex flex-col"><span className="text-[10px] text-white/30 uppercase">Subtotal</span><span className="text-white/70 italic text-xs">₹{Number(selectedOrder.subtotal).toLocaleString('en-IN')}</span></div>
+                                        <div className="flex flex-col"><span className="text-[10px] text-white/30 uppercase">Shipping</span><span className="text-white/70 italic text-xs">₹{Number(selectedOrder.shipping || 0).toLocaleString('en-IN')}</span></div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-white/30 uppercase">Privilege</span>
+                                            <span className="text-primary italic text-xs flex items-center gap-1">
+                                                {selectedOrder.coupon_code ? (
+                                                    <>
+                                                        <span className="opacity-50 select-all font-mono ">{selectedOrder.coupon_code}</span>
+                                                        <span>-₹{Number(selectedOrder.coupon_discount || 0).toLocaleString('en-IN')}</span>
+                                                    </>
+                                                ) : (
+                                                    '₹0'
+                                                )}
+                                            </span>
+                                        </div>
+                                        <div className="flex flex-col"><span className="text-[10px] text-white/30 uppercase">Total</span><span className="font-bold text-[#D4AF37]">₹{Number(selectedOrder.total).toLocaleString('en-IN')}</span></div>
+                                    </div>
                                 </div>
                             </div>
 

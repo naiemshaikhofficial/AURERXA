@@ -40,6 +40,7 @@ export function OrderCancellationDialog({
     onSuccess
 }: OrderCancellationDialogProps) {
     const [reason, setReason] = useState('')
+    const [otherReason, setOtherReason] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     const handleCancel = async () => {
@@ -48,9 +49,16 @@ export function OrderCancellationDialog({
             return
         }
 
+        if (reason === 'Other' && !otherReason.trim()) {
+            toast.error('Please specify the reason for cancellation')
+            return
+        }
+
+        const finalReason = reason === 'Other' ? `Other: ${otherReason.trim()}` : reason
+
         setIsSubmitting(true)
         try {
-            const result = await cancelOrder(orderId, reason)
+            const result = await cancelOrder(orderId, finalReason)
             if (result.success) {
                 toast.success(result.message)
                 onSuccess()
@@ -94,6 +102,20 @@ export function OrderCancellationDialog({
                             ))}
                         </div>
                     </div>
+
+                    {/* Other Reason Input */}
+                    {reason === 'Other' && (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Please specify the reason</label>
+                            <textarea
+                                value={otherReason}
+                                onChange={(e) => setOtherReason(e.target.value)}
+                                placeholder="Tell us more about why you're cancelling..."
+                                className="w-full p-3 bg-background border border-input text-foreground text-sm focus:outline-none focus:border-primary resize-none min-h-[80px]"
+                                required
+                            />
+                        </div>
+                    )}
 
                     {/* Combined Policy Section - Compact */}
                     <div className="pt-4 border-t border-border space-y-3">

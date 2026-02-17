@@ -245,13 +245,14 @@ export default function CheckoutPage() {
         setCouponLoading(true)
         setCouponError(null)
 
-        const result = await validateCoupon(couponCode.toUpperCase(), subtotal)
+        const result = await validateCoupon(couponCode.trim(), subtotal, shipping)
 
         if (result.valid) {
             setCouponApplied({
-                code: couponCode.toUpperCase(),
+                code: couponCode.trim(),
                 discount: result.discount,
-                message: result.message
+                message: result.message,
+                shippingDiscount: result.shippingDiscount
             })
             setCouponError(null)
         } else {
@@ -303,6 +304,7 @@ export default function CheckoutPage() {
             if (!paymentResult.success) {
                 setError(paymentResult.error || 'Failed to initiate payment');
                 setPlacing(false);
+                router.push(`/checkout/payment-retry/${result.orderId}`); // Redirect on initiation failure
                 return;
             }
 
@@ -330,8 +332,10 @@ export default function CheckoutPage() {
                         if (verifyResult.success) {
                             router.push(`/account/orders/${result.orderId}?success=true`);
                         } else {
-                            setError(verifyResult.error || 'Verification failed');
-                            setPlacing(false);
+                            setError(verifyResult.error || 'Verification failed. Redirecting to retry page...');
+                            setTimeout(() => {
+                                router.push(`/checkout/payment-retry/${result.orderId}`);
+                            }, 2000);
                         }
                     },
                     prefill: {
@@ -345,6 +349,10 @@ export default function CheckoutPage() {
                     modal: {
                         ondismiss: function () {
                             setPlacing(false);
+                            setError('Payment was not completed. Redirecting to secure retry portal...');
+                            setTimeout(() => {
+                                router.push(`/checkout/payment-retry/${result.orderId}`);
+                            }, 2000);
                         }
                     }
                 };
@@ -690,6 +698,9 @@ export default function CheckoutPage() {
                                                     <span className={`font-medium ${paymentMethod === 'online' ? 'text-primary' : 'text-foreground'}`}>Secure Online Payment</span>
                                                     <div className="flex items-center gap-2 grayscale-0 group-hover:opacity-100 transition-all">
                                                         <div className="relative w-8 h-4">
+                                                            <img src="https://img.icons8.com/?size=100&id=TgHJI44zOCgU&format=png&color=000000" alt="Cashfree" className="h-full object-contain" />
+                                                        </div>
+                                                        <div className="relative w-8 h-4">
                                                             <Image src="/upi-icon.svg" alt="UPI" fill className="object-contain dark:invert invert-0" unoptimized />
                                                         </div>
                                                         <div className="relative w-8 h-4">
@@ -872,11 +883,18 @@ export default function CheckoutPage() {
                                     </div>
                                     <div className="flex justify-between text-muted-foreground text-xs uppercase tracking-widest">
                                         <span>Shipping</span>
-                                        <span className="text-foreground/80">
+                                        <span className="text-foreground/80 flex flex-col items-end">
                                             {shippingLoading ? (
                                                 <Loader2 className="w-3 h-3 animate-spin" />
                                             ) : (
-                                                shipping === 0 ? 'Complimentary' : `₹${shipping}`
+                                                <>
+                                                    <span className={cn(couponApplied?.shippingDiscount > 0 && "line-through opacity-50")}>
+                                                        {shipping === 0 ? 'Complimentary' : `₹${shipping}`}
+                                                    </span>
+                                                    {couponApplied?.shippingDiscount > 0 && (
+                                                        <span className="text-primary font-bold text-[10px]">FREE</span>
+                                                    )}
+                                                </>
                                             )}
                                         </span>
                                     </div>
@@ -888,7 +906,7 @@ export default function CheckoutPage() {
                                     )}
                                     {discount > 0 && (
                                         <div className="flex justify-between text-primary text-xs uppercase tracking-widest">
-                                            <span>Privilege</span>
+                                            <span>Savings</span>
                                             <span>-₹{discount.toLocaleString('en-IN')}</span>
                                         </div>
                                     )}

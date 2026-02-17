@@ -90,13 +90,7 @@ export async function middleware(request: NextRequest) {
     const isAuthRoute = pathname.startsWith('/login') ||
         pathname.startsWith('/signup')
 
-    if (!isProtectedRoute && !isAuthRoute) {
-        // Early return for public routes - keep headers for security
-        response.headers.set('X-Frame-Options', 'DENY')
-        response.headers.set('X-Content-Type-Options', 'nosniff')
-        return response
-    }
-
+    // Always call getUser to ensure session is refreshed
     const { data: { user } } = await supabase.auth.getUser()
 
     // 1. Auth Page Redirection: Authenticated users visiting /login or /signup

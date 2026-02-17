@@ -115,7 +115,10 @@ export default function OrderDetailPage() {
 
     const getStatusDescription = (status: string) => {
         switch (status) {
-            case 'pending': return 'Awaiting payment confirmation. Complete your payment to proceed.'
+            case 'pending':
+                return order.payment_error_reason
+                    ? `Payment Failed: ${order.payment_error_reason}. You can retry the payment within the time limit.`
+                    : 'Awaiting payment confirmation. Complete your payment to proceed.'
             case 'confirmed': return 'Your order is confirmed and being prepared for shipment.'
             case 'packed': return 'Your order has been carefully packed and is ready for dispatch.'
             case 'shipped': return 'Your order is on the way! Track it using the tracking number above.'
@@ -166,81 +169,7 @@ export default function OrderDetailPage() {
         }
 
         setRetryingPayment(true)
-        try {
-            const paymentResult = await initiatePayment(order.id)
-
-            if (!paymentResult.success) {
-                toast.error(paymentResult.error || 'Failed to initiate payment')
-                setRetryingPayment(false)
-                return
-            }
-
-            if (paymentResult.gateway === 'razorpay') {
-                const rp = paymentResult as any
-                if (!(window as any).Razorpay) {
-                    toast.error('Payment connection is slow. Please wait...')
-                    setRetryingPayment(false)
-                    return
-                }
-
-                const options = {
-                    key: rp.keyId,
-                    amount: rp.amount,
-                    currency: rp.currency,
-                    name: "AURERXA",
-                    description: rp.productName,
-                    image: `${window.location.origin}/favicon 30x30.ico`,
-                    order_id: rp.razorpayOrderId,
-                    handler: async function (response: any) {
-                        setVerifying(true)
-                        const verifyResult = await verifyPayment(order.id, response)
-                        if (verifyResult.success) {
-                            toast.success('Payment successful!')
-                            // Refresh page or update status
-                            const updatedData = await getOrderById(order.id)
-                            setOrder(updatedData)
-                        } else {
-                            toast.error(verifyResult.error || 'Verification failed')
-                        }
-                        setVerifying(false)
-                        setRetryingPayment(false)
-                    },
-                    prefill: {
-                        name: rp.customer.name,
-                        email: rp.customer.email,
-                        contact: rp.customer.contact
-                    },
-                    theme: { color: "#D4AF37" },
-                    modal: {
-                        ondismiss: function () {
-                            setRetryingPayment(false)
-                        }
-                    }
-                }
-                const rzp = new (window as any).Razorpay(options)
-                rzp.open()
-            } else if (paymentResult.gateway === 'cashfree') {
-                const cf = paymentResult as any
-                if (!(window as any).Cashfree) {
-                    toast.error('Payment system loading...')
-                    setRetryingPayment(false)
-                    return
-                }
-
-                const cashfree = (window as any).Cashfree({
-                    mode: cf.mode || "sandbox"
-                })
-
-                cashfree.checkout({
-                    paymentSessionId: cf.paymentSessionId,
-                    redirectTarget: "_self", // Redirect back to this page
-                })
-            }
-        } catch (error) {
-            console.error('Retry Payment Error:', error)
-            toast.error('An error occurred. Please try again.')
-            setRetryingPayment(false)
-        }
+        router.push(`/checkout/payment-retry/${order.id}`)
     }
 
     if (loading) {
@@ -646,16 +575,16 @@ export default function OrderDetailPage() {
                                         <span>Subtotal</span>
                                         <span>₹{order.subtotal.toLocaleString('en-IN')}</span>
                                     </div>
-                                    <div className="flex justify-between text-muted-foreground">
-                                        <span>Shipping</span>
-                                        <span>{order.shipping === 0 ? 'FREE' : `₹${order.shipping}`}</span>
-                                    </div>
                                     {order.coupon_discount > 0 && (
                                         <div className="flex justify-between text-primary">
-                                            <span>Discount</span>
+                                            <span>Discount ({order.coupon_code || 'Privilege'})</span>
                                             <span>-₹{order.coupon_discount.toLocaleString('en-IN')}</span>
                                         </div>
                                     )}
+                                    <div className="flex justify-between text-xs font-bold text-slate-400 uppercase">
+                                        <span>Shipping</span>
+                                        <span>{order.shipping === 0 ? 'FREE' : `₹${order.shipping}`}</span>
+                                    </div>
                                     {/* Calculated gift wrap cost if not explicitly stored */}
                                     {order.gift_wrap && (order.total - order.subtotal - order.shipping + (order.coupon_discount || 0)) > 0 && (
                                         <div className="flex justify-between text-muted-foreground">

@@ -123,6 +123,9 @@ export default function OrdersPage() {
                     modal: {
                         ondismiss: function () {
                             setRetryingOrderId(null)
+                            toast.info('Payment was cancelled. You can retry anytime.', {
+                                description: "Your order status remains 'Pending' until successful payment."
+                            });
                         }
                     }
                 }
@@ -329,19 +332,31 @@ export default function OrdersPage() {
                                     <div className="p-6">
                                         <div className="flex flex-col md:flex-row justify-between gap-8">
                                             <div className="flex-1 space-y-6">
-                                                <div className="flex items-center justify-between mb-4">
+                                                <div className="flex flex-col gap-1 items-start mb-4">
                                                     <div className="flex items-center gap-2">
                                                         <span className={`w-2 h-2 rounded-full ${order.status === 'delivered' ? 'bg-emerald-500' : 'bg-primary animate-pulse'}`} />
                                                         <h3 className={`text-base font-bold uppercase tracking-tight ${getStatusColor(order.status)}`}>
                                                             {order.status === 'pending' ? 'Payment Pending' : order.status}
                                                         </h3>
                                                     </div>
+                                                    {order.payment_status === 'flagged_mismatch' && (
+                                                        <div className="text-[10px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded border border-red-500/20 font-bold uppercase tracking-widest mt-1">
+                                                            Security Alert: Amount Mismatch Detected
+                                                        </div>
+                                                    )}
+                                                    {order.payment_error_reason && order.status === 'pending' && (
+                                                        <p className="text-[10px] text-destructive/60 italic max-w-sm mt-0.5 font-medium">
+                                                            Note: {order.payment_error_reason}
+                                                        </p>
+                                                    )}
                                                     {/* Timer for Pending Orders */}
-                                                    {order.status === 'pending' && (
-                                                        <CountdownTimer
-                                                            createdAt={order.created_at}
-                                                            onExpire={() => loadOrders()}
-                                                        />
+                                                    {order.status === 'pending' && order.payment_status !== 'flagged_mismatch' && (
+                                                        <div className="mt-2 text-left">
+                                                            <CountdownTimer
+                                                                createdAt={order.created_at}
+                                                                onExpire={() => loadOrders()}
+                                                            />
+                                                        </div>
                                                     )}
                                                 </div>
 
@@ -385,8 +400,8 @@ export default function OrdersPage() {
                                                         return (
                                                             <button
                                                                 onClick={() => handleRetryPayment(order.id)}
-                                                                disabled={retryingOrderId === order.id}
-                                                                className="w-full py-3 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20"
+                                                                disabled={retryingOrderId === order.id || order.payment_status === 'flagged_mismatch'}
+                                                                className="w-full py-3 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                                                             >
                                                                 {retryingOrderId === order.id ? (
                                                                     <Loader2 className="w-3.5 h-3.5 animate-spin" />

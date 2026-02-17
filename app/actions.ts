@@ -28,6 +28,25 @@ export async function getTestProductCount() {
   return { count, error }
 }
 
+// Helper to check if current user is an admin
+async function checkIsAdmin() {
+  try {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return false
+
+    const { data } = await client
+      .from('admin_users')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    return !!data
+  } catch (err) {
+    return false
+  }
+}
+
 // Helper to get authenticated supabaseServer client
 async function getAuthClient() {
   try {
@@ -121,11 +140,20 @@ export async function signOutAction() {
         name.includes('supabase') ||
         name.startsWith('sb-') ||
         name === 'ua-status-cache' ||
-        name.includes('session')
+        name.includes('session') ||
+        name.includes('token')
       ) {
+        cookieStore.set(cookie.name, '', { maxAge: 0, path: '/' })
         cookieStore.delete(cookie.name)
       }
     })
+
+    // Also explicitly delete common supabase cookie names just in case
+    cookieStore.delete('supabase-auth-token')
+
+    // Clear status cache explicitly
+    cookieStore.set('ua-status-cache', '', { maxAge: 0, path: '/' })
+    cookieStore.delete('ua-status-cache')
 
     return { success: true }
   } catch (err: any) {
@@ -136,6 +164,9 @@ export async function signOutAction() {
 
 
 export async function addNewProduct(productData: any) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   const client = await getAuthClient()
 
   const { data, error } = await client
@@ -204,6 +235,9 @@ export const getSubCategories = unstable_cache(
 )
 
 export async function addSubCategory(subCategoryData: any) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   const client = await getAuthClient()
 
   const { data, error } = await client
@@ -225,6 +259,9 @@ export async function addSubCategory(subCategoryData: any) {
 }
 
 export async function updateSubCategory(id: string, updates: any) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   const client = await getAuthClient()
 
   const { error } = await client
@@ -242,6 +279,9 @@ export async function updateSubCategory(id: string, updates: any) {
 }
 
 export async function deleteSubCategory(id: string) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   const client = await getAuthClient()
 
   const { error } = await client
@@ -406,6 +446,9 @@ export const getProductBySlug = cache(async (slug: string) => {
 })
 
 export async function getAdminProducts() {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return []
+
   const { data, error } = await supabaseServer
     .from('products')
     .select('*, categories(name), sub_categories(name)')
@@ -416,6 +459,9 @@ export async function getAdminProducts() {
 }
 
 export async function updateProductDetails(productId: string, updates: any) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   try {
     const client = await getAuthClient()
 
@@ -447,6 +493,9 @@ export async function updateProductDetails(productId: string, updates: any) {
 }
 
 export async function deleteProduct(productId: string) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   try {
     const client = await getAuthClient()
 
@@ -541,7 +590,7 @@ export async function getCart() {
 
 export async function addToCart(productId: string, size?: string, quantity: number = 1) {
   const client = await getAuthClient()
-  const { data: { user } } = await client.auth.getUser()
+  const { data: { user } = {} } = await client.auth.getUser()
 
   if (!user) {
     return { success: false, error: 'Please login to add items to cart' }
@@ -921,8 +970,25 @@ export async function getOrderById(orderId: string) {
   if (data.status === 'pending') {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
     if (new Date(data.created_at) < thirtyMinutesAgo) {
-      await client.from('orders').delete().eq('id', orderId)
-      return null
+      // SECURITY: Instead of deleting, mark as cancelled for audit trail
+      await client
+        .from('orders')
+        .update({
+          status: 'cancelled',
+          cancellation_reason: 'Payment session expired (30-minute timeout)',
+          payment_error_reason: 'Timeout: Payment not completed within 30 minutes',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId)
+
+      // Fetch fresh data after update to reflect cancelled status
+      const { data: cancelledOrder } = await client
+        .from('orders')
+        .select('*, order_items(*, products(name, image_url, weight_grams, purity, slug))')
+        .eq('id', orderId)
+        .single()
+
+      return cancelledOrder || null
     }
   }
 
@@ -947,6 +1013,18 @@ export async function createOrder(
     return { success: false, error: 'Please login' }
   }
 
+  // --- SECURITY: Rate Limiting ---
+  const { count: pendingOrders } = await client
+    .from('orders')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .eq('status', 'pending')
+    .gt('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString())
+
+  if (pendingOrders !== null && pendingOrders >= 3) {
+    return { success: false, error: 'Too many pending orders. Please complete or wait before creating a new one.' }
+  }
+
   // Get cart items with a short retry to handle race conditions
   let cart = await getCart()
 
@@ -954,8 +1032,6 @@ export async function createOrder(
     console.log('createOrder: Cart empty, immediate retry...')
     cart = await getCart()
   }
-
-  console.log(`createOrder debug: Final cart length is ${cart?.length || 0}`)
 
   if (!cart || cart.length === 0) {
     console.error('createOrder failed: Cart is definitively empty for user', user.id)
@@ -974,14 +1050,15 @@ export async function createOrder(
     return { success: false, error: 'Delivery address not found' }
   }
 
-  // Calculate totals
+  // --- SECURITY: Server-Side Price & Coupon Re-validation ---
+  // 1. Recalculate subtotal from DB prices (Don't trust client)
   const subtotal = cart.reduce((sum, item) => {
     const product = Array.isArray(item.products) ? item.products[0] : item.products
     const price = product?.price || 0
     return sum + (price * item.quantity)
   }, 0)
 
-  // Calculate dynamic shipping
+  // 2. Calculate dynamic shipping
   const isCod = paymentMethod === 'cod'
   const shippingResult = await calculateShippingRate(address.pincode, cart, isCod)
 
@@ -992,9 +1069,25 @@ export async function createOrder(
   }
   const shipping = subtotal >= 50000 ? 0 : (shippingResult.rate || 90)
 
+  // 3. Re-validate Coupon on Server (CRITICAL)
+  let couponDiscount = 0
+  if (options?.couponCode) {
+    const validation = await validateCoupon(options.couponCode, subtotal, shipping)
+    if (validation.valid) {
+      couponDiscount = validation.discount || 0
+    } else {
+      console.warn(`SECURITY: Potential coupon tampering detected for order. Coupon: ${options.couponCode}, Error: ${validation.error}`)
+      return { success: false, error: `Coupon Error: ${validation.error}` }
+    }
+  }
+
   const giftWrapCost = options?.giftWrap ? 199 : 0
-  const couponDiscount = options?.couponDiscount || 0
   const total = subtotal + shipping + giftWrapCost - couponDiscount
+
+  // SECURITY: Prevent negative or zero totals (except if business logic allows)
+  if (total < 0) {
+    return { success: false, error: 'Invalid order total calculated.' }
+  }
 
   // Generate order number
   const orderNumber = `AUR${Date.now().toString(36).toUpperCase()}`
@@ -1012,10 +1105,12 @@ export async function createOrder(
       payment_method: paymentMethod,
       status: 'pending',
       gift_wrap: options?.giftWrap || false,
-      gift_message: options?.giftMessage || null,
+      gift_message: options?.giftMessage ? sanitize(options.giftMessage) : null,
       delivery_time_slot: options?.deliveryTimeSlot || null,
       coupon_code: options?.couponCode || null,
-      coupon_discount: couponDiscount
+      coupon_discount: couponDiscount,
+      payment_status: 'awaiting',
+      payment_attempts: 0
     })
     .select()
     .single()
@@ -1051,6 +1146,11 @@ export async function createOrder(
   // Clear cart only for COD
   if (paymentMethod === 'cod') {
     await clearCart()
+
+    // Increment coupon usage for COD
+    if (options?.couponCode) {
+      await client.rpc('increment_coupon_usage', { coupon_code: options.couponCode })
+    }
   }
 
   return { success: true, orderId: order.id, orderNumber }
@@ -1103,6 +1203,7 @@ export async function cancelOrder(orderId: string, reason: string) {
       .update({
         status: 'cancelled',
         cancellation_reason: reason.trim(),
+        payment_status: order.payment_id && order.payment_method !== 'cod' ? 'awaiting_refund' : 'cancelled',
         cancelled_at: now,
         updated_at: now
       })
@@ -1477,6 +1578,9 @@ export async function submitContact(formData: any) {
 
 
 export async function forceSyncGoldRates() {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   const result = await syncLiveGoldRates();
   if (result.success) {
     // @ts-ignore - Handle varying revalidateTag signatures in newer Next.js versions
@@ -1486,6 +1590,9 @@ export async function forceSyncGoldRates() {
 }
 
 export async function updateGoldRate(purity: string, rate: number) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   const { error } = await supabaseServer
     .from('gold_rates')
     .upsert({ purity, rate, updated_at: new Date().toISOString() }, { onConflict: 'purity' })
@@ -1614,14 +1721,21 @@ export async function searchProducts(query: string) {
 // COUPONS
 // ============================================
 
-export async function validateCoupon(code: string, orderTotal: number) {
+export async function validateCoupon(code: string, orderTotal: number, shippingCharge: number = 0) {
   try {
     if (!code) return { valid: false, error: 'Please enter a coupon code' }
+
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+
+    if (!user) {
+      return { valid: false, error: 'Authorization required for coupon validation' }
+    }
 
     const { data, error } = await supabaseServer
       .from('coupons')
       .select('*')
-      .eq('code', code.toUpperCase())
+      .ilike('code', code.trim())
       .eq('is_active', true)
       .single()
 
@@ -1638,20 +1752,49 @@ export async function validateCoupon(code: string, orderTotal: number) {
       return { valid: false, error: 'Coupon has expired' }
     }
 
-    // Check usage limit
+    // 1. Check Global usage limit
     if (data.usage_limit && data.used_count >= data.usage_limit) {
       return { valid: false, error: 'Coupon usage limit reached' }
     }
 
-    // Check minimum order value
+    // 2. Check Per-User usage limit (Best Practice: Use 'orders' table to verify actual usage)
+    if (data.limit_per_user && data.limit_per_user > 0) {
+      const { count, error: countError } = await client
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .ilike('coupon_code', code.trim())
+        .not('status', 'eq', 'cancelled') // Don't count cancelled orders
+
+      if (!countError && count !== null && count >= data.limit_per_user) {
+        return {
+          valid: false,
+          error: data.limit_per_user === 1
+            ? 'This coupon can only be used once per customer'
+            : `You have reached the usage limit (${data.limit_per_user}) for this coupon`
+        }
+      }
+    }
+
+    // Check minimum order value (applies to subtotal)
     if (data.min_order_value && orderTotal < data.min_order_value) {
-      return { valid: false, error: `Minimum order value is ₹${data.min_order_value}` }
+      return { valid: false, error: `Minimum subtotal of ₹${data.min_order_value.toLocaleString('en-IN')} required for this coupon.` }
     }
 
     // Calculate discount
     let discount = 0
+    let shippingDiscount = 0
+
+    // 1. Handle Free Shipping
+    if (data.is_free_shipping) {
+      shippingDiscount = shippingCharge
+    }
+
+    // 2. Calculate Base Discount
+    const basis = data.applies_to_shipping ? (orderTotal + shippingCharge) : orderTotal
+
     if (data.discount_type === 'percentage') {
-      discount = (orderTotal * data.discount_value) / 100
+      discount = (basis * data.discount_value) / 100
       if (data.max_discount && discount > data.max_discount) {
         discount = data.max_discount
       }
@@ -1659,11 +1802,19 @@ export async function validateCoupon(code: string, orderTotal: number) {
       discount = data.discount_value
     }
 
+    const totalDiscount = Math.floor(discount + shippingDiscount)
+
     return {
       valid: true,
-      discount,
+      discount: totalDiscount,
+      baseDiscount: discount,
+      shippingDiscount: shippingDiscount,
       coupon: data,
-      message: `₹${discount.toLocaleString('en-IN')} discount applied!`
+      message: shippingDiscount > 0 && discount > 0
+        ? `₹${discount} off + Free Shipping!`
+        : shippingDiscount > 0
+          ? 'Free Shipping applied!'
+          : `₹${discount.toLocaleString('en-IN')} discount applied!`
     }
   } catch (err) {
     console.error('Coupon validation error:', err)
@@ -2007,6 +2158,18 @@ export async function requestReturn(orderId: string, formData: {
       console.error('Return request ticket creation error:', ticketError)
       return { success: false, error: 'Failed to submit return request. Please try again or contact support.' }
     }
+
+    // 4. Update order with detailed return tracking
+    await client
+      .from('orders')
+      .update({
+        status: 'return_requested',
+        return_status: 'requested',
+        return_reason: `${formData.issueType}: ${formData.reason}`,
+        returned_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', orderId)
 
     // 6. Log activity
     try {
@@ -2532,6 +2695,9 @@ export async function calculateShippingRate(pincode: string, cartItems: any[], i
 }
 
 export async function createDelhiveryShipment(orderId: string) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   try {
     const client = await getAuthClient()
     const delhiveryToken = process.env.DELHIVERY_API_TOKEN
@@ -2619,6 +2785,9 @@ export async function createDelhiveryShipment(orderId: string) {
 }
 
 export async function requestDelhiveryPickup(pickupDate?: string) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
   try {
     const delhiveryToken = process.env.DELHIVERY_API_TOKEN
     const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
@@ -2702,6 +2871,9 @@ export async function getOrderTracking(trackingNumber: string) {
 }
 
 export async function updateOrderStatus(orderId: string, status: string) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized: Admin access required' }
+
   const client = await getAuthClient()
 
   // Get order details first
@@ -2715,7 +2887,12 @@ export async function updateOrderStatus(orderId: string, status: string) {
 
   const { error } = await client
     .from('orders')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update({
+      status,
+      updated_at: new Date().toISOString(),
+      ...(status === 'cancelled' && { payment_status: 'awaiting_refund' }),
+      ...(status === 'returned' && { return_status: 'completed' })
+    })
     .eq('id', orderId)
 
   if (error) return { success: false, error: error.message }
@@ -2783,6 +2960,16 @@ export async function initiateCashfreePayment(orderId: string) {
     // Store the Cashfree order ID in our database if needed
     // In this case, we use order_number as the order_id in Cashfree
 
+    // Increment attempts and store gateway order ID
+    await client
+      .from('orders')
+      .update({
+        payment_gateway_order_id: cashfreeOrder.cf_order_id,
+        payment_attempts: (order.payment_attempts || 0) + 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', orderId)
+
     return {
       success: true,
       gateway: 'cashfree',
@@ -2802,7 +2989,7 @@ export async function verifyCashfreePayment(orderId: string) {
     const { data: { user } } = await client.auth.getUser()
     if (!user) return { success: false, error: 'Unauthorized' }
 
-    // Get order details
+    // SECURITY: Idempotency & Existence Check
     const { data: order, error: orderError } = await client
       .from('orders')
       .select('*')
@@ -2812,6 +2999,10 @@ export async function verifyCashfreePayment(orderId: string) {
 
     if (orderError || !order) {
       return { success: false, error: 'Order not found' }
+    }
+
+    if (order.status === 'confirmed' || order.payment_status === 'paid') {
+      return { success: true, message: 'Payment already verified' }
     }
 
     // Call Cashfree to get payments for this order
@@ -2835,16 +3026,38 @@ export async function verifyCashfreePayment(orderId: string) {
         else if (pm.app) detailedMethod = 'Wallet/App'
       }
 
+      // Verify amount integrity (Safety First)
+      const paymentAmount = Number(successPayment.payment_amount)
+      const orderTotal = Number(order.total)
+      const margin = 1 // 1 rupee tolerance for rounding
+
+      if (Math.abs(paymentAmount - orderTotal) > margin) {
+        console.error(`CRITICAL: Amount mismatch for order ${order.order_number}. Order: ${orderTotal}, Paid: ${paymentAmount}`)
+        await client.from('orders').update({
+          payment_status: 'flagged_mismatch',
+          payment_error_reason: `Amount mismatch: Expected ${orderTotal}, got ${paymentAmount}`
+        }).eq('id', order.id)
+        return { success: false, error: 'Security alert: Payment amount mismatch. Please contact support.' }
+      }
+
       // Update order status
       const { error: updateError } = await client
         .from('orders')
         .update({
           status: 'confirmed',
           payment_id: successPayment.cf_payment_id,
+          payment_status: 'paid',
           payment_method: detailedMethod,
           updated_at: new Date().toISOString()
         })
         .eq('id', order.id)
+
+      if (!updateError) {
+        // Increment coupon usage if applied
+        if (order.coupon_code) {
+          await client.rpc('increment_coupon_usage', { coupon_code: order.coupon_code })
+        }
+      }
 
       if (updateError) throw updateError
 
@@ -2874,11 +3087,12 @@ export async function getPaymentGatewayConfig() {
   }
 }
 
-export async function initiatePayment(orderId: string): Promise<PaymentResult> {
+export async function initiatePayment(orderId: string, gatewayOverride?: 'cashfree' | 'razorpay'): Promise<PaymentResult> {
   const config = await getPaymentGatewayConfig()
-  console.log('initiatePayment: Selected gateway is', config.gateway)
+  const gateway = gatewayOverride || config.gateway
+  console.log('initiatePayment: Target gateway is', gateway)
 
-  if (config.gateway === 'razorpay') {
+  if (gateway === 'razorpay') {
     if (!process.env.RAZORPAY_KEY_ID) {
       console.error('initiatePayment: Razorpay Key ID is missing');
       return { success: false, error: 'Razorpay configuration error' };
@@ -2943,6 +3157,16 @@ export async function initiateRazorpayPayment(orderId: string) {
       order.order_number
     )
 
+    // Increment attempts and store gateway order ID
+    await client
+      .from('orders')
+      .update({
+        payment_gateway_order_id: rpOrder.id,
+        payment_attempts: (order.payment_attempts || 0) + 1,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', orderId)
+
     return {
       success: true,
       gateway: 'razorpay',
@@ -2966,6 +3190,17 @@ export async function initiateRazorpayPayment(orderId: string) {
 export async function verifyRazorpayPayment(orderId: string, params: { razorpay_payment_id: string, razorpay_order_id: string, razorpay_signature: string }) {
   const client = await getAuthClient()
 
+  // SECURITY: Idempotency Check
+  const { data: existingOrder } = await client
+    .from('orders')
+    .select('status, payment_status')
+    .eq('id', orderId)
+    .single()
+
+  if (existingOrder?.status === 'confirmed' || existingOrder?.payment_status === 'paid') {
+    return { success: true, message: 'Payment already verified' }
+  }
+
   try {
     const result = await verifyRazorpayPaymentLib(
       params.razorpay_payment_id,
@@ -2979,15 +3214,32 @@ export async function verifyRazorpayPayment(orderId: string, params: { razorpay_
       else if (detailedMethod === 'card') detailedMethod = `${result.card_network} Card`
       else if (detailedMethod === 'netbanking') detailedMethod = 'Net Banking'
 
+      // Security: verify amount (Razorpay signature only verifies order integrity, not final amount in some edge cases)
+      const { data: order } = await client.from('orders').select('total, order_number').eq('id', orderId).single()
+      if (order && result.amount && Math.abs(Number(result.amount) / 100 - Number(order.total)) > 1) {
+        console.error(`SECURITY ALERT: Amount mismatch in Razorpay verify for ${order.order_number}`)
+        await client.from('orders').update({ payment_status: 'flagged_mismatch' }).eq('id', orderId)
+        return { success: false, error: 'Payment amount mismatch detected.' }
+      }
+
       const { error: updateError } = await client
         .from('orders')
         .update({
           status: 'confirmed',
           payment_id: params.razorpay_payment_id,
+          payment_status: 'paid',
           payment_method: detailedMethod,
           updated_at: new Date().toISOString()
         })
         .eq('id', orderId)
+
+      if (!updateError) {
+        // Increment coupon usage if applied
+        const { data: orderWithCoupon } = await client.from('orders').select('coupon_code').eq('id', orderId).single()
+        if (orderWithCoupon?.coupon_code) {
+          await client.rpc('increment_coupon_usage', { coupon_code: orderWithCoupon.coupon_code })
+        }
+      }
 
       if (updateError) throw updateError
       return { success: true }

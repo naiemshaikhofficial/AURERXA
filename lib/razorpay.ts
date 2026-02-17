@@ -48,6 +48,7 @@ export async function verifyRazorpayPayment(paymentId: string, orderId: string, 
 
     return {
         isValid,
+        amount: data.amount, // in paise
         method: data.method, // upi, card, netbanking, etc.
         card_network: data.card?.network,
         card_type: data.card?.type,

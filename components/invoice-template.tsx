@@ -299,6 +299,12 @@ export function InvoiceTemplate({ order, type }: InvoiceProps) {
                                     <span>Subtotal</span>
                                     <span className="text-slate-900">{formatCurrency(subtotal)}</span>
                                 </div>
+                                {order.coupon_discount > 0 && (
+                                    <div className="flex justify-between text-xs font-bold text-[#D4AF37] uppercase">
+                                        <span>Savings ({order.coupon_code})</span>
+                                        <span className="text-slate-900">-{formatCurrency(order.coupon_discount)}</span>
+                                    </div>
+                                )}
                                 {isGSTEnabled && (
                                     <div className="flex justify-between text-xs font-bold text-slate-400 uppercase">
                                         <span>GST (3%)</span>

@@ -67,9 +67,8 @@ function SignupForm() {
                     .eq('id', data.user.id)
             }
 
-            toast.success("Account created successfully! Check your email to verify.")
-            router.push('/')
-            router.refresh()
+            toast.success("Account created successfully! Welcome to AURERXA.")
+            window.location.href = '/'
             // setIsSubmitted(true)
         } catch (err: any) {
             setError(err.message || 'Failed to sign up')

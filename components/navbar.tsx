@@ -36,79 +36,79 @@ export function Navbar() {
   const [profile, setProfile] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [authLoading, setAuthLoading] = useState(true)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
   useEffect(() => {
-    let authListener: { subscription: { unsubscribe: () => void } } | null = null
-
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        setUser(user)
 
-      if (user) {
-        const { data } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single()
-        if (data) setProfile(data)
-
-        // Check admin status
-        const { data: adminData } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-        if (adminData) setIsAdmin(true)
-      }
-
-      const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_OUT' || (event === 'USER_UPDATED' && !session)) {
-          setUser(null)
-          setProfile(null)
-          setIsAdmin(false)
-          return
-        }
-
-        if (session?.user) {
-          setUser(session.user)
-          // Fetch Profile
+        if (user) {
           const { data: profileData } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', session.user.id)
+            .eq('id', user.id)
             .single()
+          if (profileData) setProfile(profileData)
 
-          if (profileData) {
-            setProfile(profileData)
-          } else {
-            setProfile({ full_name: session.user.user_metadata?.full_name || session.user.email })
-          }
-
-          // Fetch Admin Status
           const { data: adminData } = await supabase
             .from('admin_users')
             .select('role')
-            .eq('id', session.user.id)
+            .eq('id', user.id)
             .single()
-          setIsAdmin(!!adminData)
-        } else {
-          setUser(null)
-          setProfile(null)
-          setIsAdmin(false)
+          if (adminData) setIsAdmin(true)
         }
-      })
-      authListener = data
+      } catch (err) {
+        console.error('Navbar session check error:', err)
+      } finally {
+        setAuthLoading(false)
+      }
     }
+
     getUser()
 
-    return () => {
-      if (authListener) {
-        authListener.subscription.unsubscribe()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || (event === 'USER_UPDATED' && !session)) {
+        setUser(null)
+        setProfile(null)
+        setIsAdmin(false)
+        return
       }
+
+      if (session?.user) {
+        setUser(session.user)
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+
+        if (profileData) {
+          setProfile(profileData)
+        } else {
+          setProfile({ full_name: session.user.user_metadata?.full_name || session.user.email })
+        }
+
+        const { data: adminData } = await supabase
+          .from('admin_users')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+        setIsAdmin(!!adminData)
+      } else {
+        setUser(null)
+        setProfile(null)
+        setIsAdmin(false)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
     }
   }, [])
 
@@ -138,9 +138,8 @@ export function Navbar() {
       const { signOutAction } = await import('@/app/actions')
       await signOutAction()
 
-      // 4. Smoothly navigate to home
-      router.push('/')
-      router.refresh()
+      // 4. Force a hard reload to clear all memory state and ensure fresh middleware run
+      window.location.replace('/')
     } catch (error) {
       console.error('Sign out error:', error)
       window.location.href = '/'
@@ -276,7 +275,11 @@ export function Navbar() {
                         transition={{ delay: 0.5, duration: 0.8 }}
                         className="mt-8 px-6 pt-8 border-t border-border space-y-4"
                       >
-                        {user ? (
+                        {authLoading ? (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 className="w-5 h-5 animate-spin text-primary/40" />
+                          </div>
+                        ) : user ? (
                           <>
                             <div className="flex items-center gap-4 mb-6 p-4 rounded-sm bg-muted/10 border border-border">
                               <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-serif text-lg">
@@ -368,7 +371,11 @@ export function Navbar() {
               <ModeToggle />
 
               {/* Auth Section */}
-              {user ? (
+              {authLoading ? (
+                <div className="w-9 h-9 flex items-center justify-center">
+                  <Loader2 className="w-4 h-4 animate-spin text-primary/40" />
+                </div>
+              ) : user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger className="outline-none">
                     <div className="w-9 h-9 rounded-sm bg-muted/20 hover:bg-muted/30 border border-border flex items-center justify-center text-primary/80 font-serif font-medium text-sm transition-all cursor-pointer">
