@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getProfile, updateProfile, getAddresses, addAddress, updateAddress, deleteAddress, setDefaultAddress } from '@/app/actions'
-import { Loader2, User, MapPin, Package, Edit2, Trash2, Plus, Check, Star } from 'lucide-react'
+import { Loader2, User, MapPin, Package, Edit2, Trash2, Plus, Check, Star, LifeBuoy, Wrench, ShieldCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
@@ -172,6 +172,18 @@ export default function AccountPage() {
                         <Link href="/wishlist" className="bg-card border border-border p-6 text-center hover:border-primary/30 transition-all">
                             <Star className="w-8 h-8 mx-auto mb-3 text-primary" />
                             <p className="font-medium">Wishlist</p>
+                        </Link>
+                        <Link href="/help" className="bg-card border border-border p-6 text-center hover:border-primary/30 transition-all">
+                            <LifeBuoy className="w-8 h-8 mx-auto mb-3 text-primary" />
+                            <p className="font-medium">Help Center</p>
+                        </Link>
+                        <Link href="/account/repairs" className="bg-card border border-border p-6 text-center hover:border-primary/30 transition-all">
+                            <Wrench className="w-8 h-8 mx-auto mb-3 text-primary" />
+                            <p className="font-medium">Repair Services</p>
+                        </Link>
+                        <Link href="/account/certificate" className="bg-card border border-border p-6 text-center hover:border-primary/30 transition-all">
+                            <ShieldCheck className="w-8 h-8 mx-auto mb-3 text-primary" />
+                            <p className="font-medium">Certificates</p>
                         </Link>
                         <button onClick={handleSignOut} className="bg-card border border-border p-6 text-center hover:border-destructive/30 transition-all">
                             <User className="w-8 h-8 mx-auto mb-3 text-destructive" />

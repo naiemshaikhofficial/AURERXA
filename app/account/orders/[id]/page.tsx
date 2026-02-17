@@ -9,8 +9,8 @@ import Script from 'next/script'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
-import { getOrderById, getOrderTracking, verifyPayment, getOrderPaymentSession, initiatePayment } from '@/app/actions'
-import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle } from 'lucide-react'
+import { getOrderById, getOrderTracking, verifyPayment, getOrderPaymentSession, initiatePayment, requestReturn } from '@/app/actions'
+import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle, LifeBuoy, RotateCcw, ExternalLink, ShoppingBag, PackageCheck, HelpCircle } from 'lucide-react'
 import { InvoiceTemplate } from '@/components/invoice-template'
 import { toast } from 'sonner'
 import { OrderCancellationDialog } from '@/components/order-cancellation-dialog'
@@ -30,6 +30,13 @@ export default function OrderDetailPage() {
     const [isExpired, setIsExpired] = useState(false)
     const [timeLeft, setTimeLeft] = useState<string>('')
     const timerRef = useRef<NodeJS.Timeout | null>(null)
+    const [isReturnOpen, setIsReturnOpen] = useState(false)
+    const [returnSubmitting, setReturnSubmitting] = useState(false)
+    const [returnForm, setReturnForm] = useState({
+        reason: '',
+        issueType: '' as 'defective' | 'wrong_product' | 'damaged_in_transit' | '',
+        description: ''
+    })
 
     useEffect(() => {
         async function load() {
@@ -99,9 +106,48 @@ export default function OrderDetailPage() {
         switch (status) {
             case 'pending': return 0
             case 'confirmed': return 1
-            case 'shipped': return 2
-            case 'delivered': return 3
+            case 'packed': return 2
+            case 'shipped': return 3
+            case 'delivered': return 4
             default: return 0
+        }
+    }
+
+    const getStatusDescription = (status: string) => {
+        switch (status) {
+            case 'pending': return 'Awaiting payment confirmation. Complete your payment to proceed.'
+            case 'confirmed': return 'Your order is confirmed and being prepared for shipment.'
+            case 'packed': return 'Your order has been carefully packed and is ready for dispatch.'
+            case 'shipped': return 'Your order is on the way! Track it using the tracking number above.'
+            case 'delivered': return 'Your order has been delivered successfully. We hope you love your purchase!'
+            case 'cancelled': return 'This order has been cancelled.'
+            default: return ''
+        }
+    }
+
+    const handleReturnRequest = async () => {
+        if (!returnForm.issueType || !returnForm.reason.trim() || !returnForm.description.trim()) {
+            toast.error('Please fill in all fields')
+            return
+        }
+        setReturnSubmitting(true)
+        try {
+            const result = await requestReturn(order.id, {
+                reason: returnForm.reason,
+                issueType: returnForm.issueType as any,
+                description: returnForm.description
+            })
+            if (result.success) {
+                toast.success(result.message)
+                setIsReturnOpen(false)
+                setReturnForm({ reason: '', issueType: '', description: '' })
+            } else {
+                toast.error(result.error)
+            }
+        } catch {
+            toast.error('An unexpected error occurred')
+        } finally {
+            setReturnSubmitting(false)
         }
     }
 
@@ -217,7 +263,8 @@ export default function OrderDetailPage() {
     }
 
     const statusStep = getStatusStep(order.status)
-    const steps = ['Order Placed', 'Confirmed', 'Shipped', 'Delivered']
+    const steps = ['Order Placed', 'Confirmed', 'Packed', 'Shipped', 'Delivered']
+    const stepIcons = [CheckCircle, PackageCheck, Package, Truck, CheckCircle]
 
     return (
         <div className="min-h-screen bg-background text-foreground">
@@ -472,25 +519,29 @@ export default function OrderDetailPage() {
 
                                 {/* Status Timeline */}
                                 {order.status !== 'cancelled' && (
-                                    <div className="flex items-center justify-between mt-8">
-                                        {steps.map((step, i) => (
-                                            <div key={step} className="flex-1 flex flex-col items-center relative">
-                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${i <= statusStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                                                    }`}>
-                                                    {i < statusStep ? <CheckCircle className="w-4 h-4" /> :
-                                                        i === 1 ? <Package className="w-4 h-4" /> :
-                                                            i === 2 ? <Truck className="w-4 h-4" /> :
-                                                                <CheckCircle className="w-4 h-4" />}
-                                                </div>
-                                                <p className={`text-xs mt-2 text-center ${i <= statusStep ? 'text-foreground' : 'text-muted-foreground'}`}>
-                                                    {step}
-                                                </p>
-                                                {i < steps.length - 1 && (
-                                                    <div className={`absolute top-4 left-1/2 w-full h-0.5 ${i < statusStep ? 'bg-primary' : 'bg-muted'
-                                                        }`} />
-                                                )}
-                                            </div>
-                                        ))}
+                                    <div className="mt-8 space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            {steps.map((step, i) => {
+                                                const StepIcon = stepIcons[i]
+                                                return (
+                                                    <div key={step} className="flex-1 flex flex-col items-center relative">
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center z-10 ${i <= statusStep ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                                                            {i < statusStep ? <CheckCircle className="w-4 h-4" /> : <StepIcon className="w-4 h-4" />}
+                                                        </div>
+                                                        <p className={`text-[10px] sm:text-xs mt-2 text-center ${i <= statusStep ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                                                            {step}
+                                                        </p>
+                                                        {i < steps.length - 1 && (
+                                                            <div className={`absolute top-4 left-1/2 w-full h-0.5 ${i < statusStep ? 'bg-primary' : 'bg-muted'}`} />
+                                                        )}
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                        {/* Status Description */}
+                                        <div className="p-3 bg-muted/30 border border-border/50 text-center">
+                                            <p className="text-xs text-muted-foreground">{getStatusDescription(order.status)}</p>
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -549,7 +600,7 @@ export default function OrderDetailPage() {
                             </div>
                         </div>
 
-                        {/* Right: Summary */}
+                        {/* Right: Summary + Quick Actions */}
                         <div className="lg:col-span-1 space-y-6">
                             {/* Additional Services Info */}
                             {(order.gift_wrap || order.delivery_time_slot) && (
@@ -650,6 +701,80 @@ export default function OrderDetailPage() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Quick Actions Card */}
+                            <div className="bg-card border border-border p-6">
+                                <h2 className="font-serif text-lg font-medium mb-4 flex items-center gap-2">
+                                    <HelpCircle className="w-5 h-5 text-primary" />
+                                    Need Help?
+                                </h2>
+                                <div className="space-y-2">
+                                    {/* Contextual actions based on order status */}
+                                    {order.status === 'shipped' && order.tracking_number && (
+                                        <a
+                                            href={`https://www.delhivery.com/track/package/${order.tracking_number}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="flex items-center gap-3 w-full p-3 text-left text-sm bg-muted/50 border border-border hover:border-primary/30 transition-all group"
+                                        >
+                                            <Truck className="w-4 h-4 text-primary" />
+                                            <span className="flex-1 text-foreground group-hover:text-primary transition-colors">Track Package</span>
+                                            <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                                        </a>
+                                    )}
+
+                                    {order.status === 'delivered' && (
+                                        <button
+                                            onClick={() => setIsReturnOpen(true)}
+                                            className="flex items-center gap-3 w-full p-3 text-left text-sm bg-muted/50 border border-border hover:border-primary/30 transition-all group"
+                                        >
+                                            <RotateCcw className="w-4 h-4 text-primary" />
+                                            <span className="flex-1 text-foreground group-hover:text-primary transition-colors">Request Return</span>
+                                            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                                        </button>
+                                    )}
+
+                                    {order.status === 'cancelled' && (
+                                        <Link
+                                            href="/collections"
+                                            className="flex items-center gap-3 w-full p-3 text-left text-sm bg-muted/50 border border-border hover:border-primary/30 transition-all group"
+                                        >
+                                            <ShoppingBag className="w-4 h-4 text-primary" />
+                                            <span className="flex-1 text-foreground group-hover:text-primary transition-colors">Shop Again</span>
+                                            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                                        </Link>
+                                    )}
+
+                                    {order.status !== 'pending' && order.status !== 'cancelled' && (
+                                        <button
+                                            onClick={handlePrint}
+                                            className="flex items-center gap-3 w-full p-3 text-left text-sm bg-muted/50 border border-border hover:border-primary/30 transition-all group"
+                                        >
+                                            <FileText className="w-4 h-4 text-primary" />
+                                            <span className="flex-1 text-foreground group-hover:text-primary transition-colors">Download Invoice</span>
+                                            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                                        </button>
+                                    )}
+
+                                    <Link
+                                        href={`/help`}
+                                        className="flex items-center gap-3 w-full p-3 text-left text-sm bg-muted/50 border border-border hover:border-primary/30 transition-all group"
+                                    >
+                                        <LifeBuoy className="w-4 h-4 text-primary" />
+                                        <span className="flex-1 text-foreground group-hover:text-primary transition-colors">Contact Support</span>
+                                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+                                    </Link>
+
+                                    <Link
+                                        href="/returns"
+                                        className="flex items-center gap-3 w-full p-3 text-left text-sm bg-muted/50 border border-border hover:border-primary/30 transition-all group"
+                                    >
+                                        <Scale className="w-4 h-4 text-primary" />
+                                        <span className="flex-1 text-foreground group-hover:text-primary transition-colors">Return & Refund Policy</span>
+                                        <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                                    </Link>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -693,6 +818,96 @@ export default function OrderDetailPage() {
                     setOrder(updatedData)
                 }}
             />
+
+            {/* Return Request Dialog */}
+            {isReturnOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 px-4">
+                    <div className="bg-card border border-border w-full max-w-lg p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-xl font-serif font-bold text-foreground">Request Return</h2>
+                            <button onClick={() => setIsReturnOpen(false)} className="text-muted-foreground hover:text-foreground">✕</button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Issue Type */}
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-2">Type of Issue</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {[
+                                        { value: 'defective', label: 'Defective Product' },
+                                        { value: 'wrong_product', label: 'Wrong Product' },
+                                        { value: 'damaged_in_transit', label: 'Damaged in Transit' },
+                                    ].map((opt) => (
+                                        <button
+                                            key={opt.value}
+                                            type="button"
+                                            onClick={() => setReturnForm({ ...returnForm, issueType: opt.value as any })}
+                                            className={`text-left px-3 py-2 text-[11px] border transition-all ${returnForm.issueType === opt.value
+                                                ? 'border-primary bg-primary/5 text-primary'
+                                                : 'border-border hover:border-primary/50 text-muted-foreground'
+                                                }`}
+                                        >
+                                            {opt.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Reason */}
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-2">Reason</label>
+                                <input
+                                    type="text"
+                                    value={returnForm.reason}
+                                    onChange={(e) => setReturnForm({ ...returnForm, reason: e.target.value })}
+                                    placeholder="e.g., Product has a scratch on the surface"
+                                    className="w-full p-3 bg-background border border-input text-foreground text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground"
+                                />
+                            </div>
+
+                            {/* Description */}
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-2">Detailed Description</label>
+                                <textarea
+                                    value={returnForm.description}
+                                    onChange={(e) => setReturnForm({ ...returnForm, description: e.target.value })}
+                                    placeholder="Please describe the issue in detail. Include when you noticed it, and attach unboxing video if available."
+                                    rows={4}
+                                    className="w-full p-3 bg-background border border-input text-foreground text-sm focus:outline-none focus:border-primary resize-none placeholder:text-muted-foreground"
+                                />
+                            </div>
+
+                            {/* Policy & Anti-Fraud Reminder */}
+                            <div className="p-3 bg-destructive/5 border border-destructive/20 space-y-2">
+                                <p className="text-[10px] text-destructive font-bold uppercase tracking-widest">⚠️ Mandatory Requirements</p>
+                                <ul className="text-[10px] text-muted-foreground space-y-1 list-disc pl-4 leading-snug">
+                                    <li><strong className="text-foreground">Unboxing Video:</strong> A continuous, uncut video from parcel receipt to product inspection is mandatory. Edited or partial videos will be rejected.</li>
+                                    <li><strong className="text-foreground">Weight Verification:</strong> Every returned product will be weighed and inspected. If the weight is less than what was dispatched, the return will be rejected.</li>
+                                    <li><strong className="text-destructive">Anti-Fraud Warning:</strong> Any tampering, substitution, fake packaging, counterfeit labels, or weight manipulation will result in rejection of the return and may lead to legal action under IPC Section 420.</li>
+                                    <li>Product must be in original AURERXA packaging with all seals, tags, and certificates intact.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
+                            <button
+                                onClick={() => setIsReturnOpen(false)}
+                                className="px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground"
+                                disabled={returnSubmitting}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleReturnRequest}
+                                disabled={returnSubmitting || !returnForm.issueType || !returnForm.reason.trim() || !returnForm.description.trim()}
+                                className="px-6 py-2 bg-primary text-primary-foreground text-[11px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {returnSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Submit Request'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div>

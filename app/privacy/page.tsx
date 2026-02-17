@@ -1,100 +1,80 @@
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
+'use client'
 
-export const metadata = {
-    title: 'Privacy Policy | AURERXA',
-    description: 'Learn how we collect, use, and protect your personal information.'
-}
-
-export const revalidate = 3600
+import React from 'react'
+import { PolicyLayout } from '@/components/policy-layout'
+import { Shield, Eye, Lock, RefreshCw } from 'lucide-react'
 
 export default function PrivacyPage() {
     return (
-        <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
+        <PolicyLayout
+            title="Privacy Policy"
+            description="How AURERXA handles your personal data and verification records for high-value transactions."
+        >
+            <div className="prose prose-neutral dark:prose-invert max-w-none space-y-10">
+                <section>
+                    <p className="text-muted-foreground text-sm italic">Last updated: February 17, 2026</p>
+                    <p className="mt-6 text-sm text-muted-foreground leading-relaxed">
+                        Your privacy is of paramount importance to AURERXA. This policy outlines how we collect, use, and safeguard your data, including specialized verification data required for high-value jewelry transactions.
+                    </p>
+                </section>
 
-            <main className="pt-24 pb-24">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-4xl font-serif font-bold mb-4 text-center">Privacy Policy</h1>
-                    <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-4" />
-                    <p className="text-center text-muted-foreground mb-12 text-sm">Last updated: February 2026</p>
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground flex items-center gap-3">
+                        <Eye className="w-5 h-5 text-primary" />
+                        1. Verification Data Collection
+                    </h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        In addition to standard personal information (Name, Address, Email), for security and authenticity purposes, we collect:
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li><strong className="text-foreground">CCTV Recordings:</strong> We record the packing of your order and the unpacking of any returns for verification and evidence in case of disputes.</li>
+                        <li><strong className="text-foreground">Authentication IDs:</strong> Hallmarking (HUID) and certificate IDs associated with your purchase.</li>
+                        <li><strong className="text-foreground">Identity Verification:</strong> For high-value transactions (as per PMLA guidelines), we may require government-issued ID proof (Aadhar/PAN).</li>
+                    </ul>
+                </section>
 
-                    <div className="prose prose-neutral dark:prose-invert max-w-none space-y-8">
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">1. Information We Collect</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                We collect information you provide directly to us, including:
-                            </p>
-                            <ul className="text-muted-foreground space-y-2 mt-4">
-                                <li>• Name, email address, phone number, and shipping address</li>
-                                <li>• Payment information (processed securely through payment partners)</li>
-                                <li>• Order history and preferences</li>
-                                <li>• Communications with our customer service team</li>
-                            </ul>
-                        </section>
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground flex items-center gap-3">
+                        <Lock className="w-5 h-5 text-primary" />
+                        2. Data Security & Storage
+                    </h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        We implement bank-grade encryption for all transactions. Personal data and verification recordings are stored on secure, encrypted servers.
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li>Access to CCTV and high-value transaction data is restricted to authorized security personnel only.</li>
+                        <li>Verification videos are retained for a period of 90 days or until the return window expires, whichever is longer.</li>
+                    </ul>
+                </section>
 
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">2. How We Use Your Information</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                We use the information we collect to:
-                            </p>
-                            <ul className="text-muted-foreground space-y-2 mt-4">
-                                <li>• Process and fulfill your orders</li>
-                                <li>• Send order confirmations and shipping updates</li>
-                                <li>• Respond to your comments and questions</li>
-                                <li>• Send promotional communications (with your consent)</li>
-                                <li>• Improve our products and services</li>
-                            </ul>
-                        </section>
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground flex items-center gap-3">
+                        <RefreshCw className="w-5 h-5 text-primary" />
+                        3. Use of Information
+                    </h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        We use your data strictly for:
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li>Processing and delivering your order securely.</li>
+                        <li>Verifying authenticity and preventing fraudulent return attempts.</li>
+                        <li>Complying with legal requirements for high-value asset sales in India.</li>
+                        <li>Personalizing your luxury shopping experience.</li>
+                    </ul>
+                </section>
 
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">3. Information Sharing</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                We do not sell, trade, or rent your personal information to third parties. We may share
-                                your information only with:
-                            </p>
-                            <ul className="text-muted-foreground space-y-2 mt-4">
-                                <li>• Shipping partners to deliver your orders</li>
-                                <li>• Payment processors to complete transactions</li>
-                                <li>• Service providers who assist in our operations</li>
-                            </ul>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">4. Data Security</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                We implement appropriate security measures to protect your personal information against
-                                unauthorized access, alteration, disclosure, or destruction. All payment transactions
-                                are encrypted using SSL technology.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">5. Your Rights</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                You have the right to:
-                            </p>
-                            <ul className="text-muted-foreground space-y-2 mt-4">
-                                <li>• Access the personal information we hold about you</li>
-                                <li>• Request correction of inaccurate information</li>
-                                <li>• Request deletion of your personal information</li>
-                                <li>• Opt-out of marketing communications</li>
-                            </ul>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">6. Contact Us</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                For any privacy-related questions or concerns, please contact us at:
-                                <br /><br />
-                                <a href="mailto:privacy@aurerxa.com" className="text-primary hover:text-primary/80">privacy@aurerxa.com</a>
-                            </p>
-                        </section>
-                    </div>
-                </div>
-            </main>
-
-            <Footer />
-        </div>
+                <section className="space-y-4 border-t border-border pt-6">
+                    <h2 className="text-xl font-serif font-medium text-foreground">4. Disclosure to Third Parties</h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        We do not sell your personal information. Data is only shared with:
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li><strong className="text-foreground">Secure Logistics Partners</strong> (for delivery).</li>
+                        <li><strong className="text-foreground">Legal Authorities</strong> (only if required by law or to report fraudulent activity).</li>
+                        <li><strong className="text-foreground">Certified Laboratories</strong> (for authenticity cross-verification).</li>
+                    </ul>
+                </section>
+            </div>
+        </PolicyLayout>
     )
 }

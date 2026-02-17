@@ -1,130 +1,155 @@
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
+'use client'
+
+import React from 'react'
+import { PolicyLayout } from '@/components/policy-layout'
+import { Truck, Clock, MapPin, Phone, ShieldAlert, Scale, Video, Ban, Gem, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
-import { RefreshCw, Clock, AlertCircle, CheckCircle } from 'lucide-react'
 
-export const metadata = {
-    title: 'Returns & Refunds | AURERXA',
-    description: 'Our hassle-free return and refund policy for your peace of mind.'
-}
-
-export const revalidate = 3600
-
-export default function ReturnsPage() {
+export default function ReturnsShippingPage() {
     return (
-        <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
+        <PolicyLayout
+            title="Returns & Shipping Policy"
+            description="Our guidelines on delivery, returns, and anti-fraud measures for high-value jewelry."
+        >
+            <div className="space-y-12">
+                {/* Critical Warning */}
+                <section className="bg-destructive/10 border border-destructive/20 p-6 text-center space-y-2">
+                    <p className="text-destructive font-bold uppercase tracking-widest text-sm">
+                        ⚠️ DO NOT ACCEPT PARCELS IF THE SEAL IS BROKEN.
+                    </p>
+                    <p className="text-xs text-destructive/80">
+                        Broken seal = tampered product. Refuse delivery immediately and contact us.
+                    </p>
+                </section>
 
-            <main className="pt-24 pb-24">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-4xl font-serif font-bold mb-4 text-center">Returns & Refunds</h1>
-                    <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-12" />
+                {/* Shipping & Delivery Section */}
+                <section className="space-y-8">
+                    <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
+                        <Truck className="w-6 h-6 text-primary" />
+                        Shipping & Delivery
+                    </h2>
 
-                    <div className="space-y-12">
-                        {/* Important Note */}
-                        <section className="bg-destructive/10 border border-destructive/20 p-6 text-center">
-                            <p className="text-destructive font-bold uppercase tracking-widest text-sm">
-                                NOTE: DO NOT ACCEPT PARCELS IF THE SEAL IS BROKEN.
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-card border border-border p-6 h-full">
+                            <h3 className="font-medium text-foreground mb-3 flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-primary" />
+                                Secure Logistics
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Every AURERXA masterpiece is packaged in luxury tamper-evident boxes. All shipments are <strong className="text-foreground">fully insured</strong> and require a mandatory signature upon delivery. We ship globally with premium partners like Delhivery, Bluedart, and Sequel.
                             </p>
-                        </section>
-
-                        {/* Intro */}
-                        <section className="prose prose-invert max-w-none text-muted-foreground">
-                            <p>
-                                At AURERXA, we are dedicated to offering our customers the best products. Each item is thoroughly inspected, checked for defects, and packaged with utmost care to ensure you love our products. However, there may be times when we do not have the product(s) you choose in stock or face inventory and quality check issues. In such cases, we may have to cancel your order. You will be notified in advance to avoid any inconvenience. If you have purchased via online payment (not Cash on Delivery), you will be refunded once our team confirms your request.
-                            </p>
-                        </section>
-
-                        {/* Order Cancellation */}
-                        <section className="bg-card border border-border p-8">
-                            <h2 className="text-xl font-serif font-medium mb-4">Order Cancellation</h2>
-                            <div className="space-y-4">
-                                <h3 className="font-medium text-foreground">Physical Products</h3>
-                                <ul className="list-disc pl-5 text-muted-foreground space-y-2">
-                                    <li>Orders can be cancelled only before the item is shipped</li>
-                                    <li>Orders already shipped cannot be cancelled</li>
-                                </ul>
-                            </div>
-                        </section>
-
-                        {/* Refund Policy */}
-                        <section className="bg-card border border-border p-8">
-                            <h2 className="text-xl font-serif font-medium mb-4">Refund Policy</h2>
-
-                            <div className="mb-6">
-                                <h3 className="font-medium text-foreground mb-2">No-Refund Policy</h3>
-                                <p className="text-muted-foreground mb-4">
-                                    We maintain a strict no-refund policy for all products. However, we may make exceptions in the following cases:
-                                </p>
-                                <ul className="list-disc pl-5 text-muted-foreground space-y-2">
-                                    <li>Product Not Received</li>
-                                    <li>If the product is lost in transit</li>
-                                    <li>If the wrong product is delivered (Unboxing Video Required)</li>
-                                    <li>If the product is damaged during shipping (Unboxing Video Required)</li>
-                                </ul>
-                            </div>
-
-                            <div>
-                                <h3 className="font-medium text-foreground mb-2">Refund Process (When Applicable)</h3>
-                                <p className="text-muted-foreground">
-                                    If any refund is approved, the amount will be credited back in the form of Credit Note within 7-14 business days.
-                                </p>
-                            </div>
-                        </section>
-
-                        {/* Refund/Return Not Applicable */}
-                        <section className="bg-card border border-border p-8">
-                            <h2 className="text-xl font-serif font-medium mb-4">Refund/Return Not Applicable</h2>
-                            <p className="text-muted-foreground">
-                                Refund and Returns are not applicable on silver Coins and Rakhis.
-                            </p>
-                        </section>
-
-                        {/* Return Policy */}
-                        <section className="bg-card border border-border p-8">
-                            <h2 className="text-xl font-serif font-medium mb-4">Return Policy</h2>
-                            <p className="text-muted-foreground mb-6">
-                                We are committed to ensuring customer satisfaction and stand by the quality of our products. Below is our return policy to guide you through the return and replacement process:
-                            </p>
-
-                            <div className="space-y-6">
-                                <div>
-                                    <h3 className="font-medium text-foreground mb-2">Eligibility for Return</h3>
-                                    <ul className="list-disc pl-5 text-muted-foreground space-y-2">
-                                        <li>Returns are accepted only for defective, damaged, or incorrect products received.</li>
-                                        <li>The return request must be initiated within 24 hours of receiving the product.</li>
-                                    </ul>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-medium text-foreground mb-2">Return Process</h3>
-                                    <ul className="list-disc pl-5 text-muted-foreground space-y-2">
-                                        <li>If your return request is approved, the replacement process will be initiated within 2-3 business days.</li>
-                                        <li>Once the replacement is dispatched, it is expected to be delivered within 4-7 business days.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Important Notes */}
-                        <section className="bg-card border border-border p-8">
-                            <h2 className="text-xl font-serif font-medium mb-4">Important Notes</h2>
-                            <ul className="list-disc pl-5 text-muted-foreground space-y-2">
-                                <li>Delivery timelines may be affected by delays from the transport company, adverse weather conditions, or other unforeseen circumstances.</li>
-                                <li>We are not responsible for delays caused by external factors beyond our control.</li>
+                        </div>
+                        <div className="bg-card border border-border p-6 h-full">
+                            <h3 className="font-medium text-foreground mb-3 flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-primary" />
+                                Delivery Timelines
+                            </h3>
+                            <ul className="text-xs text-muted-foreground space-y-2">
+                                <li className="flex justify-between border-b border-border pb-1">
+                                    <span>Metro Cities</span>
+                                    <span className="text-foreground">3-5 business days</span>
+                                </li>
+                                <li className="flex justify-between border-b border-border pb-1">
+                                    <span>Tier-2 Cities</span>
+                                    <span className="text-foreground">5-7 business days</span>
+                                </li>
+                                <li className="flex justify-between">
+                                    <span>Other Locations</span>
+                                    <span className="text-foreground">7-10 business days</span>
+                                </li>
                             </ul>
-                        </section>
-
-                        <section className="text-center pt-8 border-t border-border">
-                            <p className="text-muted-foreground">
-                                We aim to make the return and replacement process as seamless as possible.
-                            </p>
-                        </section>
+                        </div>
                     </div>
-                </div>
-            </main>
 
-            <Footer />
-        </div>
+                    <div className="bg-primary/5 border border-primary/20 p-6">
+                        <h3 className="font-medium text-foreground mb-2">Shipping Charges</h3>
+                        <p className="text-sm text-muted-foreground">
+                            We offer <span className="text-primary font-bold">FREE Insured Shipping</span> on all orders above ₹50,000. For orders below this amount, a flat fee of ₹500 applies to cover high-value transit insurance and secure handling.
+                        </p>
+                    </div>
+                </section>
+
+                <hr className="border-border" />
+
+                {/* Returns & Refund Policy */}
+                <section className="space-y-8">
+                    <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
+                        <AlertTriangle className="w-6 h-6 text-primary" />
+                        Returns & Refund Policy
+                    </h2>
+
+                    <div className="prose prose-invert max-w-none text-muted-foreground">
+                        <p>
+                            At AURERXA, every piece of jewelry undergoes <strong className="text-foreground">rigorous quality inspection</strong> before dispatch. Given the high intrinsic value of these products, we maintain a <strong className="text-destructive">Strict No-Refund Policy</strong>. Returns are only considered in the following 3 verifiable cases:
+                        </p>
+                    </div>
+
+                    <div className="grid gap-4">
+                        {[
+                            { title: 'Defective Product', desc: 'Manufacturing defect identified upon delivery.' },
+                            { title: 'Wrong Product', desc: 'Item received does not match your order details.' },
+                            { title: 'Damaged in Transit', desc: 'Damaged during shipping despite secure packaging.' }
+                        ].map((item, i) => (
+                            <div key={i} className="flex items-start gap-4 p-4 bg-muted/30 border border-border/50">
+                                <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-serif font-bold text-sm">{i + 1}</div>
+                                <div>
+                                    <p className="font-medium text-foreground">{item.title}</p>
+                                    <p className="text-xs text-muted-foreground">{item.desc} (Must report within 24 hours)</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="bg-destructive/5 border border-destructive/20 p-6 space-y-4">
+                        <h3 className="font-medium text-destructive flex items-center gap-2">
+                            <Scale className="w-4 h-4" />
+                            Anti-Fraud Weight & Purity Check
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                            Every return is subjected to <strong className="text-foreground">mandatory physical inspection</strong> including:
+                        </p>
+                        <ul className="list-disc pl-5 text-xs text-muted-foreground space-y-2">
+                            <li><strong className="text-foreground">Purity Verification:</strong> We verify our embossed AURERXA logo, hallmark stamps, and HUID. Any alteration or missing stamp leads to immediate rejection.</li>
+                            <li><strong className="text-foreground">Weight Accuracy (0.01g):</strong> If the returned weight is marginally less than the documented dispatch weight, it is treated as <strong className="text-destructive">criminal fraud</strong>.</li>
+                            <li><strong className="text-foreground">Legal Action:</strong> Fraudulent activity will be prosecuted under <strong className="text-destructive">IPC Section 420</strong> (Cheating) and <strong className="text-destructive">IPC Section 406</strong> (Breach of Trust).</li>
+                        </ul>
+                    </div>
+                </section>
+
+                {/* Unboxing Protocol */}
+                <section className="bg-card border border-border p-8 space-y-4">
+                    <h2 className="text-xl font-serif font-bold flex items-center gap-3">
+                        <Video className="w-6 h-6 text-primary" />
+                        Mandatory Unboxing Video
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        Without a <strong className="text-foreground">continuous, uncut unboxing video</strong>, return claims will be automatically rejected. The video must show:
+                    </p>
+                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 text-xs text-muted-foreground list-disc pl-5">
+                        <li>The fully sealed parcel upon arrival</li>
+                        <li>Clear view of the shipping labels & seal</li>
+                        <li>The complete unboxing process (video must not be edited)</li>
+                        <li>The AURERXA logo/purity stamp on the product</li>
+                        <li>Invoice and certificates included in the box</li>
+                        <li>Close-up of the reported defect or damage</li>
+                    </ul>
+                </section>
+
+                {/* Support Cross-Link */}
+                <section className="text-center pt-8 border-t border-border">
+                    <p className="text-muted-foreground text-sm flex flex-col items-center gap-2">
+                        <span>Need assistance with a return? Visit our Help Center or contact support.</span>
+                        <div className="flex gap-4">
+                            <Link href="/help" className="px-6 py-2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all">
+                                Open Help Center
+                            </Link>
+                            <Link href="/account/orders" className="px-6 py-2 border border-border text-[10px] font-bold uppercase tracking-widest hover:bg-muted transition-all">
+                                View My Orders
+                            </Link>
+                        </div>
+                    </p>
+                </section>
+            </div>
+        </PolicyLayout>
     )
 }

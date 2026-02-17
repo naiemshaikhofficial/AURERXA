@@ -1,99 +1,73 @@
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
+'use client'
 
-export const metadata = {
-    title: 'Terms & Conditions | AURERXA',
-    description: 'Terms and conditions for using our website and services.'
-}
-
-export const revalidate = 3600
+import React from 'react'
+import { PolicyLayout } from '@/components/policy-layout'
+import { ShieldCheck, Scale, Gavel, Landmark } from 'lucide-react'
 
 export default function TermsPage() {
     return (
-        <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
-
-            <main className="pt-24 pb-24">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-4xl font-serif font-bold mb-4 text-center">Terms & Conditions</h1>
-                    <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-4" />
-                    <p className="text-center text-muted-foreground mb-12 text-sm">Last updated: February 2026</p>
-
-                    <div className="prose prose-neutral dark:prose-invert max-w-none space-y-8">
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">1. Acceptance of Terms</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                By accessing and using the AURERXA website, you accept and agree to be bound by these
-                                Terms and Conditions and our Privacy Policy. If you do not agree to these terms,
-                                please do not use our website.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">2. Products and Pricing</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                All products are subject to availability. Prices are displayed in Indian Rupees (₹)
-                                and are subject to change without notice. We reserve the right to modify or discontinue
-                                any product at any time.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">3. Orders and Payment</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                We accept major credit cards, debit cards, and UPI. Payment must be received in full before order processing.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">4. Authenticity Guarantee</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                All jewelry sold on AURERXA is guaranteed to be authentic and comes with appropriate
-                                certification and hallmarking as per BIS (Bureau of Indian Standards) regulations.
-                                Each piece is accompanied by a certificate of authenticity.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">5. Intellectual Property</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                All content on this website, including images, text, logos, and designs, is the
-                                property of AURERXA and is protected by intellectual property laws. You may not
-                                reproduce, distribute, or use any content without our written permission.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">6. Limitation of Liability</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                AURERXA shall not be liable for any indirect, incidental, special, or consequential
-                                damages arising from the use of our website or products. Our total liability shall
-                                not exceed the amount paid for the specific product in question.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">7. Governing Law</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                These terms shall be governed by and construed in accordance with the laws of India.
-                                Any disputes arising shall be subject to the exclusive jurisdiction of the courts
-                                in Mumbai, India.
-                            </p>
-                        </section>
-
-                        <section>
-                            <h2 className="text-xl font-serif font-medium text-primary mb-4">8. Contact</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                For any questions regarding these terms, please contact us at:
-                                <br /><br />
-                                <a href="mailto:legal@aurerxa.com" className="text-primary hover:text-primary/80">legal@aurerxa.com</a>
-                            </p>
-                        </section>
+        <PolicyLayout
+            title="Terms & Conditions"
+            description="The legal agreement between you and AURERXA regarding the purchase and use of our high-value jewelry."
+        >
+            <div className="prose prose-neutral dark:prose-invert max-w-none space-y-10">
+                <section>
+                    <p className="text-muted-foreground text-sm italic">Last updated: February 17, 2026</p>
+                    <div className="mt-6 flex items-start gap-4 p-4 bg-muted/30 border border-border/50">
+                        <Landmark className="w-5 h-5 text-primary mt-1" />
+                        <p className="text-sm text-foreground leading-relaxed">
+                            By accessing AURERXA, you agree to be bound by these Terms and Conditions. As we deal in high-value precious metals and jewelry, these terms include strict anti-fraud measures and special governing laws for authenticity and returns.
+                        </p>
                     </div>
-                </div>
-            </main>
+                </section>
 
-            <Footer />
-        </div>
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground flex items-center gap-3">
+                        <ShieldCheck className="w-5 h-5 text-primary" />
+                        1. Authenticity & Hallmarking
+                    </h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        Every piece of jewelry sold on AURERXA is guaranteed to be authentic. We comply strictly with <strong className="text-foreground">BIS (Bureau of Indian Standards)</strong> regulations.
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li>All gold jewelry is BIS Hallmarked and carries a unique <strong className="text-foreground">HUID (Hallmark Unique Identification)</strong>.</li>
+                        <li>Silver products carry appropriate purity stamps (e.g., 925).</li>
+                        <li>Each product is accompanied by our official AURERXA Purity Certificate and/or independent laboratory certification (GIA, IGI, etc.) where applicable.</li>
+                    </ul>
+                </section>
+
+                <section className="space-y-4 font-sans">
+                    <h2 className="text-xl font-serif font-medium text-foreground flex items-center gap-3">
+                        <Scale className="w-5 h-5 text-primary" />
+                        2. Anti-Fraud & Weight Verification
+                    </h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        To protect against the high risk of fraud in jewelry e-commerce, AURERXA implements a multi-stage verification process:
+                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li><strong className="text-foreground">CCTV Documentation:</strong> All packing and unpacking processes are recorded under 24/7 CCTV surveillance to document the condition and presence of the product.</li>
+                        <li><strong className="text-foreground">Weight Recording:</strong> Products are weighed at 0.01g precision. This digital weight is recorded on all shipping documents and is non-negotiable for return verification.</li>
+                        <li><strong className="text-destructive">Legal Prosecution:</strong> Any attempt to return tampered, substituted, or weight-reduced items will be treated as <strong className="text-destructive">Criminal Breach of Trust (IPC Section 406)</strong> and <strong className="text-destructive">Cheating (IPC Section 420)</strong>. AURERXA will pursue maximum legal penalties and civil damages for any such attempts.</li>
+                    </ul>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground flex items-center gap-3">
+                        <Gavel className="w-5 h-5 text-primary" />
+                        3. Governing Law & Jurisdiction
+                    </h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        These terms shall be governed by and construed in accordance with the laws of India. Any disputes arising from these terms or any purchase made through AURERXA shall be subject to the <strong className="text-foreground">exclusive jurisdiction of the courts in Mumbai, India</strong>.
+                    </p>
+                </section>
+
+                <section className="space-y-4">
+                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">4. Limitation of Liability</h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                        AURERXA&apos;s liability for any product purchase is strictly limited to the purchase price of that product. We are not liable for any indirect, incidental, or consequential damages resulting from the use or inability to use our products or services.
+                    </p>
+                </section>
+            </div>
+        </PolicyLayout>
     )
 }

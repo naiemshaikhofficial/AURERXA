@@ -1065,10 +1065,15 @@ export async function cancelOrder(orderId: string, reason: string) {
       return { success: false, error: 'Authorization required' }
     }
 
-    // 1. Fetch order and verify ownership/status
+    // Input validation
+    if (!reason || reason.trim().length === 0) {
+      return { success: false, error: 'Please provide a cancellation reason' }
+    }
+
+    // 1. Fetch order with items to restore stock
     const { data: order, error: fetchError } = await client
       .from('orders')
-      .select('id, user_id, status, order_number')
+      .select('id, user_id, status, order_number, total, payment_method, payment_id, order_items(product_id, quantity)')
       .eq('id', orderId)
       .eq('user_id', user.id)
       .single()
@@ -1077,12 +1082,12 @@ export async function cancelOrder(orderId: string, reason: string) {
       return { success: false, error: 'Order not found or access denied' }
     }
 
-    // 2. Strict status check: Cannot cancel if shipped or delivered
+    // 2. Strict status check: Cannot cancel if shipped, delivered, or packed
     const nonCancellableStatuses = ['shipped', 'delivered', 'packed']
     if (nonCancellableStatuses.includes(order.status)) {
       return {
         success: false,
-        error: `Order #${order.order_number} is already ${order.status} and cannot be cancelled.`
+        error: `Order #${order.order_number} is already ${order.status} and cannot be cancelled. Please contact support for assistance.`
       }
     }
 
@@ -1090,12 +1095,16 @@ export async function cancelOrder(orderId: string, reason: string) {
       return { success: false, error: 'Order is already cancelled' }
     }
 
-    // 3. Update status (Using only confirmed columns to avoid schema errors)
+    const now = new Date().toISOString()
+
+    // 3. Update order status with cancellation details
     const { error: updateError } = await client
       .from('orders')
       .update({
         status: 'cancelled',
-        updated_at: new Date().toISOString()
+        cancellation_reason: reason.trim(),
+        cancelled_at: now,
+        updated_at: now
       })
       .eq('id', orderId)
 
@@ -1104,20 +1113,62 @@ export async function cancelOrder(orderId: string, reason: string) {
       return { success: false, error: 'Failed to cancel order. Please contact support.' }
     }
 
-    // 4. Log activity (Optional but recommended for luxury audit)
+    // 4. Restore product stock for each item (prevent inventory leak)
+    if (order.order_items && order.order_items.length > 0) {
+      for (const item of order.order_items) {
+        if (item.product_id) {
+          try {
+            // Fetch current stock then increment
+            const { data: product } = await client
+              .from('products')
+              .select('stock')
+              .eq('id', item.product_id)
+              .single()
+
+            if (product) {
+              await client
+                .from('products')
+                .update({ stock: (product.stock || 0) + item.quantity })
+                .eq('id', item.product_id)
+            }
+          } catch (stockErr) {
+            // Don't fail the cancellation if stock restore fails — log and continue
+            console.error(`Stock restore failed for product ${item.product_id}:`, stockErr)
+          }
+        }
+      }
+    }
+
+    // 5. Log activity for audit trail
     try {
       await client.from('admin_activity_logs').insert({
-        admin_id: user.id, // User is acting on their own order
+        admin_id: user.id,
         action: `User cancelled order: ${order.order_number}`,
         entity_type: 'order',
         entity_id: orderId,
-        metadata: { reason }
+        details: { reason: reason.trim(), cancelled_at: now }
       })
     } catch (e) {
       console.error('Silent log failure:', e)
     }
 
-    return { success: true, message: 'Your order has been cancelled successfully.' }
+    // 6. Notify user via push notification
+    try {
+      const { notifyOrderStatusChange } = await import('./push-actions')
+      await notifyOrderStatusChange(user.id, order.order_number, 'cancelled')
+    } catch (e) {
+      console.error('Push notification failed for cancellation:', e)
+    }
+
+    // Build refund message based on payment method
+    const refundMessage = order.payment_id && order.payment_method !== 'cod'
+      ? ` If any amount was debited, ₹${order.total?.toLocaleString('en-IN')} will be refunded to your original payment method within 5-7 business days.`
+      : ''
+
+    return {
+      success: true,
+      message: `Order #${order.order_number} has been cancelled successfully.${refundMessage}`
+    }
   } catch (err: any) {
     console.error('Cancel order crash:', err)
     return { success: false, error: 'Internal server error occurred during cancellation.' }
@@ -1862,6 +1913,127 @@ export async function getRepairs() {
 
   if (error) return []
   return data
+}
+
+// ============================================
+// RETURN / EXCHANGE REQUEST (Best Practice: linked to specific order)
+// ============================================
+
+export async function requestReturn(orderId: string, formData: {
+  reason: string
+  issueType: 'defective' | 'wrong_product' | 'damaged_in_transit'
+  description: string
+}) {
+  try {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+
+    if (!user) {
+      return { success: false, error: 'Authorization required' }
+    }
+
+    // Input validation
+    if (!formData.reason?.trim() || !formData.description?.trim()) {
+      return { success: false, error: 'Please fill in all required fields' }
+    }
+
+    // Strict issue type validation — only 3 valid reasons accepted
+    const validIssueTypes = ['defective', 'wrong_product', 'damaged_in_transit']
+    if (!formData.issueType || !validIssueTypes.includes(formData.issueType)) {
+      return { success: false, error: 'Invalid issue type. Returns are only accepted for: Defective Product, Wrong Product, or Damaged in Transit.' }
+    }
+
+    // 1. Fetch order and verify ownership + status
+    const { data: order, error: fetchError } = await client
+      .from('orders')
+      .select('id, user_id, status, order_number, total, created_at, updated_at, order_items(product_name, product_image, quantity, price)')
+      .eq('id', orderId)
+      .eq('user_id', user.id)
+      .single()
+
+    if (fetchError || !order) {
+      return { success: false, error: 'Order not found or access denied' }
+    }
+
+    // 2. Only delivered orders can be returned
+    if (order.status !== 'delivered') {
+      return {
+        success: false,
+        error: `Returns are only available for delivered orders. Your order is currently "${order.status}".`
+      }
+    }
+
+    // 3. Check 24-hour return window (from delivery, approximated by updated_at)
+    const deliveredAt = new Date(order.updated_at).getTime()
+    const now = Date.now()
+    const hoursElapsed = (now - deliveredAt) / (1000 * 60 * 60)
+
+    if (hoursElapsed > 24) {
+      return {
+        success: false,
+        error: 'The 24-hour return window has expired for this order. Please contact support for further assistance.'
+      }
+    }
+
+    // 4. Check for duplicate return request (prevent spam)
+    const { data: existingTickets } = await client
+      .from('tickets')
+      .select('id')
+      .eq('user_id', user.id)
+      .ilike('subject', `%${order.order_number}%`)
+      .in('status', ['open', 'in_progress'])
+
+    if (existingTickets && existingTickets.length > 0) {
+      return {
+        success: false,
+        error: 'A return request already exists for this order. Please check your support tickets for updates.'
+      }
+    }
+
+    // 5. Create a return ticket in the tickets table (reuses existing support infra)
+    const { data: ticket, error: ticketError } = await client
+      .from('tickets')
+      .insert({
+        user_id: user.id,
+        subject: `Return Request - Order #${order.order_number}`,
+        message: `Issue Type: ${formData.issueType.replace(/_/g, ' ')}\nReason: ${formData.reason.trim()}\n\nDescription:\n${formData.description.trim()}\n\nOrder Total: ₹${order.total?.toLocaleString('en-IN')}\nItems: ${order.order_items?.map((i: any) => `${i.product_name} x${i.quantity}`).join(', ')}`,
+        status: 'open',
+        urgency: 'high'
+      })
+      .select('id')
+      .single()
+
+    if (ticketError) {
+      console.error('Return request ticket creation error:', ticketError)
+      return { success: false, error: 'Failed to submit return request. Please try again or contact support.' }
+    }
+
+    // 6. Log activity
+    try {
+      await client.from('admin_activity_logs').insert({
+        admin_id: user.id,
+        action: `Return request for order: ${order.order_number}`,
+        entity_type: 'ticket',
+        entity_id: ticket?.id || orderId,
+        details: {
+          order_number: order.order_number,
+          issue_type: formData.issueType,
+          reason: formData.reason.trim()
+        }
+      })
+    } catch (e) {
+      console.error('Silent log failure:', e)
+    }
+
+    return {
+      success: true,
+      message: 'Your return request has been submitted. Our team will review it and contact you within 24 hours.',
+      ticketId: ticket?.id
+    }
+  } catch (err: any) {
+    console.error('Return request crash:', err)
+    return { success: false, error: 'An unexpected error occurred. Please try again.' }
+  }
 }
 
 // ============================================
