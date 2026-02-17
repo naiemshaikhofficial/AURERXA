@@ -4,7 +4,8 @@ import { useEffect, useRef } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { ShoppingBag, PackageCheck, Truck, XCircle } from 'lucide-react'
+import { ShoppingBag, PackageCheck } from 'lucide-react'
+import { getOrdersPollingData } from '@/app/admin/actions'
 
 export function RealtimeNotifications() {
     const router = useRouter()
@@ -13,20 +14,26 @@ export function RealtimeNotifications() {
     })
     const isFirstPoll = useRef(true)
 
-    // 🎯 PRIMARY: Polling-based realtime (works 100% without Supabase Realtime config)
+    // 🎯 PRIMARY: Polling-based realtime
     useEffect(() => {
         let intervalId: ReturnType<typeof setInterval>
 
         const pollForChanges = async () => {
             try {
-                const { getOrdersPollingData } = await import('@/app/admin/actions')
+                console.log('🔄 Polling for order changes...')
                 const data = await getOrdersPollingData()
-                if (!data) return
+                console.log('📊 Poll result:', data)
+
+                if (!data) {
+                    console.warn('⚠️ Poll returned null (admin check may have failed)')
+                    return
+                }
 
                 const prev = lastKnownRef.current
 
-                // First poll — just set baseline, don't notify
+                // First poll — just set baseline
                 if (isFirstPoll.current) {
+                    console.log('📌 Setting baseline:', data)
                     lastKnownRef.current = {
                         id: data.latestId,
                         timestamp: data.latestTimestamp,
@@ -36,20 +43,19 @@ export function RealtimeNotifications() {
                     return
                 }
 
-                // Detect new order (new ID or count increased)
+                // Detect changes
                 const isNewOrder = data.latestId !== prev.id && data.totalOrders > (prev.total || 0)
-                // Detect order update (same count but timestamp changed)
                 const isUpdate = !isNewOrder && data.latestTimestamp !== prev.timestamp
 
                 if (isNewOrder) {
-                    // 🛍️ New Order notification
+                    console.log('🛍️ NEW ORDER DETECTED!')
                     try {
                         const audio = new Audio('/notification.mp3')
                         audio.play().catch(() => { })
                     } catch (e) { /* ignore */ }
 
                     toast('🛍️ New Order Received!', {
-                        description: `A new order has been placed. Check the orders page.`,
+                        description: 'A new order has been placed.',
                         duration: 15000,
                         action: {
                             label: 'View Orders',
@@ -61,7 +67,7 @@ export function RealtimeNotifications() {
 
                     router.refresh()
                 } else if (isUpdate) {
-                    // 📦 Order status update
+                    console.log('📦 ORDER UPDATED!')
                     try {
                         const audio = new Audio('/notification.mp3')
                         audio.play().catch(() => { })
@@ -79,6 +85,8 @@ export function RealtimeNotifications() {
                     })
 
                     router.refresh()
+                } else {
+                    console.log('✅ No changes detected')
                 }
 
                 // Update baseline
@@ -88,17 +96,18 @@ export function RealtimeNotifications() {
                     total: data.totalOrders
                 }
             } catch (e) {
-                // Silently ignore
+                console.error('❌ Polling error:', e)
             }
         }
 
+        // Start polling
         pollForChanges()
         intervalId = setInterval(pollForChanges, 5000)
 
         return () => { clearInterval(intervalId) }
     }, [router])
 
-    // 🔌 BONUS: Supabase Realtime (instant when enabled in dashboard)
+    // 🔌 BONUS: Supabase Realtime
     useEffect(() => {
         const supabase = createBrowserClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -107,11 +116,12 @@ export function RealtimeNotifications() {
 
         const channel = supabase
             .channel('admin_orders_realtime')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+                console.log('⚡ Supabase Realtime event:', payload)
                 router.refresh()
             })
             .subscribe((status) => {
-                console.log('🔌 Supabase Realtime:', status)
+                console.log('🔌 Supabase Realtime status:', status)
             })
 
         return () => { supabase.removeChannel(channel) }
@@ -119,4 +129,3 @@ export function RealtimeNotifications() {
 
     return null
 }
-

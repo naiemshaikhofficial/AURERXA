@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { updateOrderStatus, exportOrdersCsv, deleteOrder, getShipmentLabel } from '../actions'
+import { updateOrderStatus, exportOrdersCsv, deleteOrder, getShipmentLabel, getOrdersPollingData } from '../actions'
 import { getOrderTracking } from '../../actions'
 import {
     Search, Filter, ChevronDown, Package, MapPin, CreditCard,
@@ -50,7 +50,7 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
         }
     }, [initialOrders])
 
-    // 🔴 REALTIME: Polling + Supabase Realtime hybrid for guaranteed instant updates
+    // 🔴 REALTIME: Polling for guaranteed instant updates
     useEffect(() => {
         let lastKnownTimestamp: string | null = null
         let lastKnownTotal: number | null = null
@@ -58,41 +58,37 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
 
         const checkForUpdates = async () => {
             try {
-                const { getOrdersPollingData } = await import('../actions')
                 const data = await getOrdersPollingData()
+                console.log('🔄 OrdersClient poll:', data)
                 if (!data) return
 
-                // If this is the first check, just set the baseline
+                // First check — set baseline
                 if (lastKnownTimestamp === null) {
                     lastKnownTimestamp = data.latestTimestamp
                     lastKnownTotal = data.totalOrders
                     return
                 }
 
-                // Detect changes: new/updated orders or count change
+                // Detect changes
                 const hasChanged =
                     data.latestTimestamp !== lastKnownTimestamp ||
                     data.totalOrders !== lastKnownTotal
 
                 if (hasChanged) {
-                    console.log('📦 Orders changed! Refreshing...',
-                        { prev: lastKnownTimestamp, now: data.latestTimestamp, prevCount: lastKnownTotal, nowCount: data.totalOrders })
+                    console.log('📦 Orders changed! Refreshing list...')
                     lastKnownTimestamp = data.latestTimestamp
                     lastKnownTotal = data.totalOrders
                     router.refresh()
                 }
             } catch (e) {
-                // Silently ignore polling errors
+                console.error('❌ OrdersClient poll error:', e)
             }
         }
 
-        // Poll every 5 seconds for changes
         checkForUpdates()
         intervalId = setInterval(checkForUpdates, 5000)
 
-        return () => {
-            clearInterval(intervalId)
-        }
+        return () => { clearInterval(intervalId) }
     }, [router])
 
     // Fetch tracking and label when order is selected
