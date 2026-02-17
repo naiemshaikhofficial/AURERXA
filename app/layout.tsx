@@ -1,6 +1,6 @@
 import React, { Suspense } from "react"
 import type { Metadata, Viewport } from 'next'
-import { Geist, Playfair_Display } from 'next/font/google'
+import { Geist, Cormorant_Garamond } from 'next/font/google'
 import { SmoothScroll } from '@/components/smooth-scroll'
 import { Toaster } from "@/components/ui/sonner"
 import dynamic from 'next/dynamic'
@@ -20,9 +20,10 @@ const geist = Geist({
   display: 'swap',
 })
 
-const playfair = Playfair_Display({
+const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
-  variable: '--font-playfair',
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-cormorant',
   display: 'swap'
 })
 
@@ -71,7 +72,7 @@ export default async function RootLayout({
 }>) {
   const profile = await getCurrentUserProfile()
   return (
-    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${playfair.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${geist.variable} ${cormorant.variable}`}>
       <head>
         <link rel="preconnect" href="https://xquczexikijzbzcuvmqh.supabase.co" crossOrigin="" />
         <link rel="dns-prefetch" href="https://xquczexikijzbzcuvmqh.supabase.co" />
