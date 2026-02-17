@@ -32,6 +32,7 @@ interface DashboardClientProps {
     initialTopProducts: any[]
     initialActivity: any[]
     initialCancelled: any[]
+    initialFlaggedNotes: any[]
     adminRole: string
 }
 
@@ -44,6 +45,7 @@ export function DashboardClient({
     initialTopProducts,
     initialActivity,
     initialCancelled,
+    initialFlaggedNotes,
     adminRole: initialAdminRole
 }: DashboardClientProps) {
     const [stats, setStats] = useState<any>(initialStats)
@@ -259,32 +261,36 @@ export function DashboardClient({
             )}
 
             {/* Revenue Cards - Row 1 */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                <ClickableStatCard
-                    active={activePanel === 'confirmed'}
-                    onClick={() => openPanel('confirmed')}
-                    imgSrc="https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000"
-                    label="Confirmed Revenue" value={formatCurrency(stats?.confirmedRevenue || 0)}
-                    sub={`${formatCurrency(stats?.filteredRevenue || 0)} this period`}
-                    color="text-[#D4AF37]" bg="bg-[#D4AF37]/10" activeBorder="border-[#D4AF37]/50"
-                    growth={stats?.revenueGrowth}
-                />
-                <ClickableStatCard
-                    active={activePanel === 'pending'}
-                    onClick={() => openPanel('pending')}
-                    imgSrc="https://img.icons8.com/?size=100&id=102455&format=png&color=000000"
-                    label="Pending Revenue" value={formatCurrency(stats?.pendingRevenue || 0)}
-                    sub={`${stats?.pendingOrders || 0} orders awaiting`}
-                    color="text-amber-400" bg="bg-amber-400/10" activeBorder="border-amber-400/50"
-                />
-                <ClickableStatCard
-                    active={activePanel === 'cancelled'}
-                    onClick={() => openPanel('cancelled')}
-                    imgSrc="https://img.icons8.com/?size=100&id=ec5nnM2s1CdY&format=png&color=000000"
-                    label="Lost Revenue" value={formatCurrency(stats?.cancelledRevenue || 0)}
-                    sub={`${stats?.cancelledOrders || 0} cancelled`}
-                    color="text-red-400" bg="bg-red-400/10" activeBorder="border-red-400/50"
-                />
+            <div className={`grid grid-cols-1 ${isMainAdmin ? 'grid-cols-2 lg:grid-cols-4' : 'lg:grid-cols-1'} gap-3 md:gap-4`}>
+                {isMainAdmin && (
+                    <>
+                        <ClickableStatCard
+                            active={activePanel === 'confirmed'}
+                            onClick={() => openPanel('confirmed')}
+                            imgSrc="https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000"
+                            label="Confirmed Revenue" value={formatCurrency(stats?.confirmedRevenue || 0)}
+                            sub={`${formatCurrency(stats?.filteredRevenue || 0)} this period`}
+                            color="text-[#D4AF37]" bg="bg-[#D4AF37]/10" activeBorder="border-[#D4AF37]/50"
+                            growth={stats?.revenueGrowth}
+                        />
+                        <ClickableStatCard
+                            active={activePanel === 'pending'}
+                            onClick={() => openPanel('pending')}
+                            imgSrc="https://img.icons8.com/?size=100&id=102455&format=png&color=000000"
+                            label="Pending Revenue" value={formatCurrency(stats?.pendingRevenue || 0)}
+                            sub={`${stats?.pendingOrders || 0} orders awaiting`}
+                            color="text-amber-400" bg="bg-amber-400/10" activeBorder="border-amber-400/50"
+                        />
+                        <ClickableStatCard
+                            active={activePanel === 'cancelled'}
+                            onClick={() => openPanel('cancelled')}
+                            imgSrc="https://img.icons8.com/?size=100&id=ec5nnM2s1CdY&format=png&color=000000"
+                            label="Lost Revenue" value={formatCurrency(stats?.cancelledRevenue || 0)}
+                            sub={`${stats?.cancelledOrders || 0} cancelled`}
+                            color="text-red-400" bg="bg-red-400/10" activeBorder="border-red-400/50"
+                        />
+                    </>
+                )}
                 <ClickableStatCard
                     active={activePanel === 'orders'}
                     onClick={() => openPanel('orders')}
@@ -317,46 +323,48 @@ export function DashboardClient({
                 />
             )}
 
-            {/* KPI Analytics Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
-                <KPICard
-                    icon={<DollarSign className="w-4 h-4" />}
-                    label="Average Order Value"
-                    value={formatCurrency(analytics?.aov || 0)}
-                    color="text-[#D4AF37]"
-                    bg="bg-[#D4AF37]/10"
-                />
-                <KPICard
-                    icon={<Target className="w-4 h-4" />}
-                    label="Conversion Rate"
-                    value={`${analytics?.conversionRate || 0}%`}
-                    color="text-emerald-400"
-                    bg="bg-emerald-400/10"
-                    donut={analytics?.conversionRate || 0}
-                />
-                <KPICard
-                    icon={<Repeat className="w-4 h-4" />}
-                    label="Repeat Customers"
-                    value={`${analytics?.repeatCustomerRate || 0}%`}
-                    color="text-purple-400"
-                    bg="bg-purple-400/10"
-                    donut={analytics?.repeatCustomerRate || 0}
-                />
-                <KPICard
-                    icon={<Layers className="w-4 h-4" />}
-                    label="Avg Items / Order"
-                    value={`${analytics?.avgItemsPerOrder || 0}`}
-                    color="text-blue-400"
-                    bg="bg-blue-400/10"
-                />
-                <KPICard
-                    icon={<BarChart3 className="w-4 h-4" />}
-                    label="Top Payment"
-                    value={analytics?.topPaymentMethod || 'N/A'}
-                    color="text-amber-400"
-                    bg="bg-amber-400/10"
-                />
-            </div>
+            {/* KPI Analytics Row - Only for Main Admin */}
+            {isMainAdmin && (
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
+                    <KPICard
+                        icon={<DollarSign className="w-4 h-4" />}
+                        label="Average Order Value"
+                        value={formatCurrency(analytics?.aov || 0)}
+                        color="text-[#D4AF37]"
+                        bg="bg-[#D4AF37]/10"
+                    />
+                    <KPICard
+                        icon={<Target className="w-4 h-4" />}
+                        label="Conversion Rate"
+                        value={`${analytics?.conversionRate || 0}%`}
+                        color="text-emerald-400"
+                        bg="bg-emerald-400/10"
+                        donut={analytics?.conversionRate || 0}
+                    />
+                    <KPICard
+                        icon={<Repeat className="w-4 h-4" />}
+                        label="Repeat Customers"
+                        value={`${analytics?.repeatCustomerRate || 0}%`}
+                        color="text-purple-400"
+                        bg="bg-purple-400/10"
+                        donut={analytics?.repeatCustomerRate || 0}
+                    />
+                    <KPICard
+                        icon={<Layers className="w-4 h-4" />}
+                        label="Avg Items / Order"
+                        value={`${analytics?.avgItemsPerOrder || 0}`}
+                        color="text-blue-400"
+                        bg="bg-blue-400/10"
+                    />
+                    <KPICard
+                        icon={<BarChart3 className="w-4 h-4" />}
+                        label="Top Payment"
+                        value={analytics?.topPaymentMethod || 'N/A'}
+                        color="text-amber-400"
+                        bg="bg-amber-400/10"
+                    />
+                </div>
+            )}
 
             {/* Secondary Stats - Row 2 */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -418,44 +426,46 @@ export function DashboardClient({
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Revenue Chart */}
-                <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
-                            <div className="w-4 h-4 relative">
-                                <Image src="https://img.icons8.com/?size=100&id=7WvHWmLeJRQB&format=png&color=000000" alt="Revenue Trend" fill className="object-contain" style={{ filter: 'invert(1)' }} unoptimized />
+                {/* Revenue Chart - Only for Main Admin */}
+                {isMainAdmin && (
+                    <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
+                                <div className="w-4 h-4 relative">
+                                    <Image src="https://img.icons8.com/?size=100&id=7WvHWmLeJRQB&format=png&color=000000" alt="Revenue Trend" fill className="object-contain" style={{ filter: 'invert(1)' }} unoptimized />
+                                </div>
+                                Revenue Trend (Confirmed Only)
+                            </h3>
+                            <div className="flex gap-1">
+                                {chartPeriods.map(p => (
+                                    <button
+                                        key={p.value}
+                                        onClick={() => setRevenuePeriod(p.value)}
+                                        className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${revenuePeriod === p.value ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'text-white/30 hover:text-white/50'}`}
+                                    >
+                                        {p.label}
+                                    </button>
+                                ))}
                             </div>
-                            Revenue Trend (Confirmed Only)
-                        </h3>
-                        <div className="flex gap-1">
-                            {chartPeriods.map(p => (
-                                <button
-                                    key={p.value}
-                                    onClick={() => setRevenuePeriod(p.value)}
-                                    className={`px-2 py-1 rounded-md text-[10px] font-medium transition ${revenuePeriod === p.value ? 'bg-[#D4AF37]/20 text-[#D4AF37]' : 'text-white/30 hover:text-white/50'}`}
-                                >
-                                    {p.label}
-                                </button>
-                            ))}
+                        </div>
+                        <div className="h-48 flex items-end gap-1">
+                            {revenueData.length > 0 ? revenueData.map((d, i) => (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                                    <div className="w-full relative group">
+                                        <div className="w-full bg-gradient-to-t from-[#D4AF37]/20 to-[#D4AF37]/60 rounded-t-md transition-all hover:from-[#D4AF37]/30 hover:to-[#D4AF37]/80"
+                                            style={{ height: `${Math.max((d.value / maxRevenue) * 160, 4)}px` }} />
+                                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#1a1a1a] border border-white/10 px-2 py-1 rounded text-[10px] text-white/70 opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
+                                            {formatCurrency(d.value)}
+                                        </div>
+                                    </div>
+                                    <span className="text-[10px] text-white/30 truncate w-full text-center">{d.label}</span>
+                                </div>
+                            )) : (
+                                <div className="flex-1 flex items-center justify-center text-white/20 text-sm">No data</div>
+                            )}
                         </div>
                     </div>
-                    <div className="h-48 flex items-end gap-1">
-                        {revenueData.length > 0 ? revenueData.map((d, i) => (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                                <div className="w-full relative group">
-                                    <div className="w-full bg-gradient-to-t from-[#D4AF37]/20 to-[#D4AF37]/60 rounded-t-md transition-all hover:from-[#D4AF37]/30 hover:to-[#D4AF37]/80"
-                                        style={{ height: `${Math.max((d.value / maxRevenue) * 160, 4)}px` }} />
-                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#1a1a1a] border border-white/10 px-2 py-1 rounded text-[10px] text-white/70 opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
-                                        {formatCurrency(d.value)}
-                                    </div>
-                                </div>
-                                <span className="text-[10px] text-white/30 truncate w-full text-center">{d.label}</span>
-                            </div>
-                        )) : (
-                            <div className="flex-1 flex items-center justify-center text-white/20 text-sm">No data</div>
-                        )}
-                    </div>
-                </div>
+                )}
 
                 {/* Orders Chart - Stacked */}
                 <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
@@ -590,29 +600,52 @@ export function DashboardClient({
                 </div>
             </div>
 
-            {/* Recent Activity */}
-            <div className="bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-semibold">Recent Activity</h3>
-                    <a href="/admin/activity" className="text-xs text-[#D4AF37] hover:underline flex items-center gap-1">View All <ArrowRight className="w-3 h-3" /></a>
+            {/* Flagged Notes & Activity Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Flagged Notes */}
+                <div className="bg-[#111111] border border-red-500/20 rounded-2xl p-4 md:p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-base font-semibold flex items-center gap-2 text-white/90">
+                            <AlertTriangle className="w-4 h-4 text-red-500" /> Priority Notes
+                        </h3>
+                    </div>
+                    <div className="space-y-3">
+                        {initialFlaggedNotes && initialFlaggedNotes.length > 0 ? initialFlaggedNotes.map((note: any) => (
+                            <div key={note.id} className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl">
+                                <p className="text-xs text-red-200/80 line-clamp-2 italic">"{note.content}"</p>
+                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-red-500/10">
+                                    <span className="text-[10px] text-white/40">{note.entity_type} • {new Date(note.created_at).toLocaleDateString()}</span>
+                                    <span className="text-[10px] font-bold text-white/30">{note.author?.full_name || 'Admin'}</span>
+                                </div>
+                            </div>
+                        )) : <p className="text-center text-white/20 text-sm py-8">No flagged notes</p>}
+                    </div>
                 </div>
-                <div className="space-y-0">
-                    {activityLogs.length > 0 ? activityLogs.map((log: any, i: number) => (
-                        <div key={log.id} className="flex gap-4 py-3 border-b border-white/5 last:border-0 last:pb-0 first:pt-0">
-                            <div className="flex flex-col items-center">
-                                <div className="w-2 h-2 rounded-full bg-[#D4AF37] mt-2" />
-                                {i !== activityLogs.length - 1 && <div className="w-px h-full bg-white/5 mt-2" />}
+
+                {/* Recent Activity */}
+                <div className="lg:col-span-2 bg-[#111111] border border-white/5 rounded-2xl p-4 md:p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-base font-semibold">Recent Activity</h3>
+                        <a href="/admin/activity" className="text-xs text-[#D4AF37] hover:underline flex items-center gap-1">View All <ArrowRight className="w-3 h-3" /></a>
+                    </div>
+                    <div className="space-y-0">
+                        {activityLogs.length > 0 ? activityLogs.map((log: any, i: number) => (
+                            <div key={log.id} className="flex gap-4 py-3 border-b border-white/5 last:border-0 last:pb-0 first:pt-0">
+                                <div className="flex flex-col items-center">
+                                    <div className="w-2 h-2 rounded-full bg-[#D4AF37] mt-2" />
+                                    {i !== activityLogs.length - 1 && <div className="w-px h-full bg-white/5 mt-2" />}
+                                </div>
+                                <div>
+                                    <p className="text-sm text-white/80">
+                                        <span className="font-medium text-white">{log.profiles?.full_name || 'Admin'}</span> {log.action}
+                                    </p>
+                                    <p className="text-xs text-white/30 mt-0.5">
+                                        {new Date(log.created_at).toLocaleString()} • {log.entity_type}
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-sm text-white/80">
-                                    <span className="font-medium text-white">{log.profiles?.full_name || 'Admin'}</span> {log.action}
-                                </p>
-                                <p className="text-xs text-white/30 mt-0.5">
-                                    {new Date(log.created_at).toLocaleString()} • {log.entity_type}
-                                </p>
-                            </div>
-                        </div>
-                    )) : <p className="text-center text-white/20 text-sm py-4">No recent activity</p>}
+                        )) : <p className="text-center text-white/20 text-sm py-4">No recent activity</p>}
+                    </div>
                 </div>
             </div>
         </div>

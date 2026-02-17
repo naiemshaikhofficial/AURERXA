@@ -38,7 +38,7 @@ export async function checkAdminRole() {
         .single()
 
     if (!data) return null
-    return { userId: user.id, email: user.email, role: data.role as 'main_admin' | 'support_admin' | 'staff' }
+    return { userId: user.id, email: user.email, role: data.role as 'main_admin' | 'support_admin' | 'staff' | 'product_manager' }
 }
 
 // ============================================
@@ -429,8 +429,15 @@ export async function updateOrderStatus(orderId: string, status: string, trackin
     const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return { success: false, error: 'Unauthorized' }
+
+    // Role Restrictions
+    // Staff: Can only mark 'shipped' or 'packed'
     if (admin.role === 'staff' && !['shipped', 'packed'].includes(status)) {
         return { success: false, error: 'Staff can only update shipping status' }
+    }
+    // Product Manager: Cannot update orders at all
+    if (admin.role === 'product_manager') {
+        return { success: false, error: 'Unauthorized. Product Managers cannot manage orders.' }
     }
 
     const updates: any = { status, updated_at: new Date().toISOString() }
@@ -503,10 +510,64 @@ export async function getAdminAllProducts(search?: string, page: number = 1, lim
     return { products: data || [], total: count || 0 }
 }
 
+// ============================================
+// INTERNAL NOTES (AMAZON-STYLE COLLABORATION)
+// ============================================
+
+export async function addInternalNote(entityType: 'order' | 'user' | 'product' | 'general', entityId: string, content: string, isFlagged: boolean = false) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    const { error } = await client.from('internal_notes').insert({
+        entity_type: entityType,
+        entity_id: entityId,
+        author_id: admin.userId,
+        content,
+        is_flagged: isFlagged
+    })
+
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+}
+
+export async function getInternalNotes(entityType: string, entityId: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    const { data } = await client
+        .from('internal_notes')
+        .select('*, author:profiles(full_name, avatar_url)')
+        .eq('entity_type', entityType)
+        .eq('entity_id', entityId)
+        .order('created_at', { ascending: false })
+
+    return data || []
+}
+
+export async function getFlaggedNotes() {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    const { data } = await client
+        .from('internal_notes')
+        .select('*, author:profiles(full_name)')
+        .eq('is_flagged', true)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+    return data || []
+}
+
+
+
 export async function deleteProduct(productId: string) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
-    if (!admin || admin.role === 'staff') return { success: false, error: 'Unauthorized' }
+    // STRICT CHECK: Only Main Admin can delete products
+    if (!admin || admin.role !== 'main_admin') return { success: false, error: 'Unauthorized. Only Main Admin can delete products.' }
 
     const { error } = await client.from('products').delete().eq('id', productId)
     if (error) return { success: false, error: error.message }

@@ -90,6 +90,36 @@ async function getAuthClient() {
   }
 }
 
+// Check if user has a pending order for a specific product
+export async function checkPendingOrder(productId: string) {
+  try {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return false
+
+    // Check orders that are NOT cancelled or delivered (i.e., active/pending/processing/shipped)
+    // We want to prevent duplicate PURCHASE of the same item if one is already in progress.
+    // Adjust logic based on user request: "pending mai ho" -> usually means not yet delivered/cancelled.
+    const { data, error } = await client
+      .from('orders')
+      .select('order_items!inner(product_id)')
+      .eq('user_id', user.id)
+      .in('status', ['pending', 'processing', 'packed', 'shipped'])
+      .eq('order_items.product_id', productId)
+      .limit(1)
+
+    if (error) {
+      console.error('Error checking pending orders:', error)
+      return false
+    }
+
+    return data && data.length > 0
+  } catch (err) {
+    console.error('Error checking pending orders:', err)
+    return false
+  }
+}
+
 export async function getCurrentUserProfile() {
   try {
     const client = await getAuthClient()
@@ -3076,6 +3106,7 @@ export async function verifyCashfreePayment(orderId: string) {
 export type PaymentResult =
   | { success: true; gateway: 'razorpay'; keyId: string; amount: number; currency: string; razorpayOrderId: string; productName: string; customer: { name: string; email: string; contact: string }; mode?: string; paymentSessionId?: never }
   | { success: true; gateway: 'cashfree'; paymentSessionId: string; cfOrderId: string; mode: string; keyId?: never; amount?: never }
+  | { success: true; gateway: 'free'; orderId: string; keyId?: never; amount?: never; paymentSessionId?: never }
   | { success: false; error: string; gateway?: never; keyId?: never };
 
 export async function getPaymentGatewayConfig() {
@@ -3091,6 +3122,40 @@ export async function initiatePayment(orderId: string, gatewayOverride?: 'cashfr
   const config = await getPaymentGatewayConfig()
   const gateway = gatewayOverride || config.gateway
   console.log('initiatePayment: Target gateway is', gateway)
+
+  // --- ZERO-AMOUNT ORDER: Auto-confirm without hitting payment gateway ---
+  try {
+    const client = await getAuthClient()
+    const { data: order } = await client
+      .from('orders')
+      .select('total, coupon_code')
+      .eq('id', orderId)
+      .single()
+
+    if (order && Number(order.total) <= 0) {
+      console.log('initiatePayment: Zero-amount order detected, auto-confirming...')
+
+      await client.from('orders').update({
+        status: 'confirmed',
+        payment_status: 'paid',
+        payment_method: 'Free (100% Discount)',
+        payment_id: `FREE_${Date.now()}`,
+        updated_at: new Date().toISOString()
+      }).eq('id', orderId)
+
+      // Increment coupon usage
+      if (order.coupon_code) {
+        await client.rpc('increment_coupon_usage', { coupon_code: order.coupon_code })
+      }
+
+      // Clear cart
+      await clearCart()
+
+      return { success: true, gateway: 'free', orderId }
+    }
+  } catch (e) {
+    console.error('Zero-amount check failed, proceeding to gateway:', e)
+  }
 
   if (gateway === 'razorpay') {
     if (!process.env.RAZORPAY_KEY_ID) {

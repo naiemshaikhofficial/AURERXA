@@ -94,6 +94,10 @@ export default function PaymentRetryPage() {
                 }
                 const rzp = new (window as any).Razorpay(options)
                 rzp.open()
+            } else if (paymentResult.gateway === 'free') {
+                // Zero-amount order — already confirmed server-side
+                toast.success('Order confirmed! No payment required.')
+                router.push(`/account/orders/${orderId}?success=true`)
             } else if (paymentResult.gateway === 'cashfree') {
                 const cf = paymentResult as any
                 if (!(window as any).Cashfree) {

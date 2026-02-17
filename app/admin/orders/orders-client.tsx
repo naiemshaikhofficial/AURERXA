@@ -11,6 +11,7 @@ import {
     Truck, Clock, CheckCircle, XCircle, X, Download, User as UserIcon, Trash2, ShieldAlert, Copy, Check, Phone, FileText, Printer
 } from 'lucide-react'
 import { InvoiceTemplate } from '@/components/invoice-template'
+import { InternalNotes } from '@/components/admin/internal-notes'
 
 const STATUS_COLORS: Record<string, string> = {
     pending: 'bg-amber-400/10 text-amber-400',
@@ -616,6 +617,9 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                             <div className="text-center text-xs text-white/20 pt-2 pb-6">
                                 Order placed: {new Date(selectedOrder.created_at).toLocaleString('en-IN')}
                             </div>
+
+                            {/* Internal Notes */}
+                            <InternalNotes entityType="order" entityId={selectedOrder.id} />
 
                             {/* Danger Zone */}
                             {adminRole === 'main_admin' && (

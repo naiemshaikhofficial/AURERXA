@@ -360,6 +360,9 @@ export default function CheckoutPage() {
                 // @ts-ignore
                 const rzp = new window.Razorpay(options);
                 rzp.open();
+            } else if (paymentResult.gateway === 'free') {
+                // Zero-amount order — already confirmed server-side
+                router.push(`/account/orders/${result.orderId}?success=true`);
             } else if (paymentResult.gateway === 'cashfree') {
                 const cf = paymentResult as any;
 

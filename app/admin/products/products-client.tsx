@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { ImageUpload } from '@/components/admin/image-upload'
 import supabaseLoader from '@/lib/supabase-loader'
 import { getSubCategories } from '@/app/actions'
+import { InternalNotes } from '@/components/admin/internal-notes'
 import { useRouter } from 'next/navigation'
 
 export function ProductsClient({ initialProducts, initialCategories = [], adminRole }: { initialProducts: any[], initialCategories?: any[], adminRole?: string }) {
@@ -168,29 +169,31 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                         >
                             Test Broadcast
                         </Button>
-                        <Button
-                            onClick={() => setEditingProduct({
-                                name: '',
-                                price: 0,
-                                image_url: '',
-                                images: [],
-                                category_id: products[0]?.category_id,
-                                stock: 0,
-                                description: '',
-                                dimensions_unit: 'mm',
-                                featured: false,
-                                bestseller: false,
-                                gender: 'Unisex',
-                                sizes: [],
-                                weight_grams: 0,
-                                purity: '',
-                                slug: '',
-                                sub_category_id: null
-                            })}
-                            className="bg-[#D4AF37] text-black hover:bg-[#D4AF37]/80 text-xs px-4 h-10 rounded-xl"
-                        >
-                            <Plus className="w-4 h-4 mr-2" /> New Product
-                        </Button>
+                        {(adminRole === 'main_admin' || adminRole === 'product_manager') && (
+                            <Button
+                                onClick={() => setEditingProduct({
+                                    name: '',
+                                    price: 0,
+                                    image_url: '',
+                                    images: [],
+                                    category_id: products[0]?.category_id,
+                                    stock: 0,
+                                    description: '',
+                                    dimensions_unit: 'mm',
+                                    featured: false,
+                                    bestseller: false,
+                                    gender: 'Unisex',
+                                    sizes: [],
+                                    weight_grams: 0,
+                                    purity: '',
+                                    slug: '',
+                                    sub_category_id: null
+                                })}
+                                className="bg-[#D4AF37] text-black hover:bg-[#D4AF37]/80 text-xs px-4 h-10 rounded-xl"
+                            >
+                                <Plus className="w-4 h-4 mr-2" /> New Product
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -503,13 +506,26 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                             </button>
                                         </div>
                                     </div>
-                                    <Button onClick={handleSave} disabled={saving} className="w-full bg-[#D4AF37] text-black font-bold h-12 rounded-xl">
-                                        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                            <div className="flex items-center gap-2">
-                                                <Save className="w-4 h-4" /> Save Master Piece
-                                            </div>
-                                        )}
-                                    </Button>
+                                    {adminRole === 'main_admin' || adminRole === 'product_manager' ? (
+                                        <Button onClick={handleSave} disabled={saving} className="w-full bg-[#D4AF37] text-black font-bold h-12 rounded-xl">
+                                            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                                <div className="flex items-center gap-2">
+                                                    <Save className="w-4 h-4" /> Save Master Piece
+                                                </div>
+                                            )}
+                                        </Button>
+                                    ) : (
+                                        <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-center">
+                                            <p className="text-white/40 text-xs uppercase tracking-widest font-bold">Read-Only Mode</p>
+                                        </div>
+                                    )}
+
+                                    {/* Internal Notes for Product */}
+                                    {editingProduct.id && (
+                                        <div className="pt-4 border-t border-white/5">
+                                            <InternalNotes entityType="product" entityId={editingProduct.id} />
+                                        </div>
+                                    )}
 
                                     {editingProduct.id && adminRole === 'main_admin' && (
                                         <Button
@@ -534,29 +550,31 @@ export function ProductsClient({ initialProducts, initialCategories = [], adminR
                                     <h3 className="text-lg font-medium">Select a product to edit</h3>
                                     <p className="text-white/40 text-sm max-w-xs mx-auto">Click on any product from the list to update its details or create a new one.</p>
                                 </div>
-                                <Button
-                                    onClick={() => setEditingProduct({
-                                        name: '',
-                                        price: 0,
-                                        image_url: '',
-                                        images: [],
-                                        category_id: products[0]?.category_id,
-                                        stock: 0,
-                                        description: '',
-                                        dimensions_unit: 'mm',
-                                        featured: false,
-                                        bestseller: false,
-                                        gender: 'Unisex',
-                                        sizes: [],
-                                        weight_grams: 0,
-                                        purity: '',
-                                        slug: '',
-                                        sub_category_id: null
-                                    })}
-                                    className="bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/10"
-                                >
-                                    Start Fresh Project
-                                </Button>
+                                {(adminRole === 'main_admin' || adminRole === 'product_manager') && (
+                                    <Button
+                                        onClick={() => setEditingProduct({
+                                            name: '',
+                                            price: 0,
+                                            image_url: '',
+                                            images: [],
+                                            category_id: products[0]?.category_id,
+                                            stock: 0,
+                                            description: '',
+                                            dimensions_unit: 'mm',
+                                            featured: false,
+                                            bestseller: false,
+                                            gender: 'Unisex',
+                                            sizes: [],
+                                            weight_grams: 0,
+                                            purity: '',
+                                            slug: '',
+                                            sub_category_id: null
+                                        })}
+                                        className="bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/10"
+                                    >
+                                        Start Fresh Project
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </div>

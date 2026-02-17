@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
-import { addToWishlist } from '@/app/actions'
+import { addToWishlist, checkPendingOrder } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
 import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play, Ruler } from 'lucide-react'
@@ -339,13 +339,30 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             if (!customSizeInput.trim()) {
                 setMessage('Please enter custom size')
                 setTimeout(() => setMessage(null), 3000)
-                // Shake effect or highlight input could be added here
                 return
             }
             finalSize = `Custom: ${customSizeInput}`
         }
 
         setAddingToCart(true)
+
+        // CHECK FOR PENDING ORDERS
+        try {
+            const hasPending = await checkPendingOrder(product.id)
+            if (hasPending) {
+                // User has this item in a pending order!
+                setAddingToCart(false)
+
+                // Show specific message and redirect confirmation
+                if (confirm("Active Order Found!\n\nYou already have this item in an active order. duplicates are restricted to ensure fair access.\n\nWould you like to view your existing order?")) {
+                    router.push('/account/orders')
+                }
+                return
+            }
+        } catch (e) {
+            console.error(e) // Fail safe: proceed if check fails
+        }
+
         await addItem(product.id, finalSize || 'One Size', quantity, product)
         setMessage('Added to your cart')
         setAddingToCart(false)
@@ -367,6 +384,20 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
         }
 
         setAddingToCart(true)
+
+        // CHECK FOR PENDING ORDERS
+        try {
+            const hasPending = await checkPendingOrder(product.id)
+            if (hasPending) {
+                setAddingToCart(false)
+                if (confirm("Active Order Found!\n\nYou already have this item in an active order. duplicates are restricted to ensure fair access.\n\nWould you like to view your existing order?")) {
+                    router.push('/account/orders')
+                }
+                return
+            }
+        } catch (e) {
+            console.error(e)
+        }
 
         // Add to cart (handles guest/user automatically via CartContext)
         await addItem(product.id, finalSize || 'One Size', 1, product)

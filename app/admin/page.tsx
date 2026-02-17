@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { getDashboardStats, getRevenueChart, getOrdersChart, getRecentOrders, getTopProducts, getActivityLogs, getCancelledOrderDetails, checkAdminRole, getAnalyticsSummary } from './actions'
+import { getDashboardStats, getRevenueChart, getOrdersChart, getRecentOrders, getTopProducts, getActivityLogs, getCancelledOrderDetails, checkAdminRole, getAnalyticsSummary, getFlaggedNotes } from './actions'
 import { DashboardClient } from './dashboard-client'
 import { DashboardSkeleton } from './dashboard-skeleton'
 
@@ -18,6 +18,11 @@ async function DashboardContent() {
     const to = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59).toISOString()
 
     // 2. Fetch all data in parallel on SERVER
+    // 2. Check Role FIRST to determine data visibility
+    const admin = await checkAdminRole()
+    const isRevenueVisible = admin?.role === 'main_admin' // Only Main Admin sees revenue
+
+    // 3. Fetch data in parallel on SERVER (Revenue dependent on role)
     const [
         stats,
         revenueData,
@@ -26,18 +31,18 @@ async function DashboardContent() {
         topProducts,
         activity,
         cancelledDetails,
-        admin,
-        analytics
+        analytics,
+        flaggedNotes
     ] = await Promise.all([
         getDashboardStats(from, to),
-        getRevenueChart('monthly'),
+        isRevenueVisible ? getRevenueChart('monthly') : Promise.resolve([]), // Hide if not privileged
         getOrdersChart('monthly'),
         getRecentOrders(),
         getTopProducts(),
         getActivityLogs(1, 'all', '', '', ''),
         getCancelledOrderDetails(),
-        checkAdminRole(),
-        getAnalyticsSummary(from, to)
+        isRevenueVisible ? getAnalyticsSummary(from, to) : Promise.resolve(null), // Hide detailed analytics
+        getFlaggedNotes()
     ])
 
     // 3. Render Client Component with initial data
@@ -52,6 +57,7 @@ async function DashboardContent() {
             initialCancelled={cancelledDetails as any[]}
             adminRole={admin?.role || ''}
             initialAnalytics={analytics}
+            initialFlaggedNotes={flaggedNotes as any[]}
         />
     )
 }

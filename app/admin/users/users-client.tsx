@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { getUserDetails, toggleUserBan, deleteUser, toggleAdminRole } from '../actions'
-import { Search, User as UserIcon, Mail, Phone, MapPin, Calendar, Trash2, ShoppingBag, CreditCard, X, Ban, ShieldCheck, ShieldAlert, Crown } from 'lucide-react'
+import { getUserDetails, toggleUserBan, deleteUser, toggleAdminRole, updateAdminRole, removeAdmin } from '@/app/admin/actions'
+import { Search, MapPin, Phone, ShoppingBag, CreditCard, Ban, Trash2, Crown, ShieldCheck, UserCog, User as UserIcon, Mail, X } from 'lucide-react'
+import { InternalNotes } from '@/components/admin/internal-notes'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: any[], total: number, adminRole: string | null }) {
     const router = useRouter()
@@ -242,25 +244,57 @@ export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: 
                                         </div>
                                     </div>
                                 )}
+                                {/* Internal Notes */}
+                                <div className="pt-6 border-t border-white/5 is-internal-notes">
+                                    <InternalNotes entityType="user" entityId={userDetails.profile.id} />
+                                </div>
+
                                 {/* Danger Zone & Admin Management */}
                                 <div className="pt-6 border-t border-white/5 space-y-3">
                                     {adminRole === 'main_admin' && (
                                         <>
-                                            <button
-                                                onClick={handleAdminToggle}
-                                                disabled={isPromoting}
-                                                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition text-sm font-medium ${userDetails.isAdmin
-                                                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                                                    : 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20'
-                                                    }`}
-                                            >
-                                                {isPromoting ? (
-                                                    <div className="w-4 h-4 border-2 border-t-transparent animate-spin" />
-                                                ) : (
-                                                    <Crown className="w-4 h-4" />
-                                                )}
-                                                {userDetails.isAdmin ? 'Remove Admin Privileges' : 'Promote to Admin'}
-                                            </button>
+                                            <div className="space-y-3 p-4 bg-white/5 border border-white/10 rounded-xl">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <UserCog className="w-4 h-4 text-[#D4AF37]" />
+                                                    <span className="text-sm font-bold text-white uppercase tracking-widest">Role Assignment</span>
+                                                </div>
+
+                                                <Select
+                                                    value={userDetails.adminRole || 'user'}
+                                                    onValueChange={async (val) => {
+                                                        setIsPromoting(true)
+                                                        try {
+                                                            if (val === 'user') {
+                                                                const res = await removeAdmin(userDetails.profile.id)
+                                                                if (!res.success) alert(res.error)
+                                                            } else {
+                                                                // check if updating or promoting
+                                                                const res = await updateAdminRole(userDetails.profile.id, val)
+                                                                if (!res.success) alert(res.error)
+                                                            }
+                                                            // Refresh data (hacky reload for now, ideally update state)
+                                                            window.location.reload()
+                                                        } catch (e) {
+                                                            console.error(e)
+                                                            alert('Failed to update role')
+                                                        } finally {
+                                                            setIsPromoting(false)
+                                                        }
+                                                    }}
+                                                    disabled={isPromoting}
+                                                >
+                                                    <SelectTrigger className="w-full bg-[#111] border-white/10 text-white h-11">
+                                                        <SelectValue placeholder="Select Role" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                                                        <SelectItem value="user">No Admin Access (User)</SelectItem>
+                                                        <SelectItem value="staff">Staff (Logistics & Orders)</SelectItem>
+                                                        <SelectItem value="support_admin">Support Admin (Tickets)</SelectItem>
+                                                        <SelectItem value="product_manager">Product Manager (Catalog)</SelectItem>
+                                                        <SelectItem value="main_admin" className="text-amber-500 font-bold">Main Admin (Owner)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
 
                                             <button onClick={handleBanToggle} disabled={isBanning} className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition text-sm font-medium ${userDetails.profile.is_banned ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
                                                 {isBanning ? <div className="w-4 h-4 border-2 border-t-transparent animate-spin" /> : userDetails.profile.is_banned ? <ShieldCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
