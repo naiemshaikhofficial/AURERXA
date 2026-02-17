@@ -1,10 +1,16 @@
 'use server'
 
-import { cookies, headers } from 'next/headers'
+import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
-import fs from 'fs'
-import path from 'path'
+import { unstable_cache } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { createDelhiveryShipment } from '../actions'
+
+// UUID validation to prevent injection
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+function isValidUUID(id: string): boolean {
+    return UUID_REGEX.test(id)
+}
 
 async function getAuthClient() {
     const cookieStore = await cookies()
@@ -55,44 +61,50 @@ export async function checkAdminRole() {
 // ============================================
 
 export async function getDashboardStats(dateFrom?: string, dateTo?: string) {
-    const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return null
 
     const from = dateFrom || new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
     const to = dateTo || new Date().toISOString()
 
-    // RPC Call for optimized performance
-    const { data, error } = await client.rpc('get_dashboard_stats', {
-        date_from: from,
-        date_to: to
-    })
+    const fetchStats = unstable_cache(
+        async (fromDate: string, toDate: string) => {
+            const client = await getAuthClient()
+            const { data, error } = await client.rpc('get_dashboard_stats', {
+                date_from: fromDate,
+                date_to: toDate
+            })
 
-    if (error || !data) {
-        // Fallback to minimal query if RPC fails (e.g., function not created yet)
-        console.error('RPC get_dashboard_stats failed, falling back to legacy fetch:', error)
-        return await getDashboardStatsLegacy(client, from, to)
-    }
+            if (error || !data) {
+                console.error('RPC get_dashboard_stats failed, falling back to legacy fetch:', error)
+                return await getDashboardStatsLegacy(client, fromDate, toDate)
+            }
 
-    return {
-        confirmedRevenue: Number(data.confirmedRevenue) || 0,
-        filteredRevenue: Number(data.filteredRevenue) || 0,
-        pendingRevenue: Number(data.pendingRevenue) || 0,
-        cancelledRevenue: Number(data.cancelledRevenue) || 0,
-        revenueGrowth: data.prevRevenue > 0 ? ((data.filteredRevenue - data.prevRevenue) / data.prevRevenue) * 100 : 0,
-        ordersGrowth: 0, // Simplified for RPC to avoid complexity, or calculate if filteredOrders vs prev exists
-        prevRevenue: Number(data.prevRevenue) || 0,
-        totalOrders: Number(data.totalOrders) || 0,
-        filteredOrders: Number(data.filteredOrders) || 0,
-        pendingOrders: Number(data.pendingOrders) || 0,
-        packedOrders: Number(data.packedOrders) || 0,
-        shippedOrders: Number(data.shippedOrders) || 0,
-        deliveredOrders: Number(data.deliveredOrders) || 0,
-        cancelledOrders: Number(data.cancelledOrders) || 0,
-        totalProducts: Number(data.totalProducts) || 0,
-        totalUsers: Number(data.totalUsers) || 0,
-        lowStockProducts: data.lowStockProducts || [],
-    }
+            return {
+                confirmedRevenue: Number(data.confirmedRevenue) || 0,
+                filteredRevenue: Number(data.filteredRevenue) || 0,
+                pendingRevenue: Number(data.pendingRevenue) || 0,
+                cancelledRevenue: Number(data.cancelledRevenue) || 0,
+                revenueGrowth: data.prevRevenue > 0 ? ((data.filteredRevenue - data.prevRevenue) / data.prevRevenue) * 100 : 0,
+                ordersGrowth: 0,
+                prevRevenue: Number(data.prevRevenue) || 0,
+                totalOrders: Number(data.totalOrders) || 0,
+                filteredOrders: Number(data.filteredOrders) || 0,
+                pendingOrders: Number(data.pendingOrders) || 0,
+                packedOrders: Number(data.packedOrders) || 0,
+                shippedOrders: Number(data.shippedOrders) || 0,
+                deliveredOrders: Number(data.deliveredOrders) || 0,
+                cancelledOrders: Number(data.cancelledOrders) || 0,
+                totalProducts: Number(data.totalProducts) || 0,
+                totalUsers: Number(data.totalUsers) || 0,
+                lowStockProducts: data.lowStockProducts || [],
+            }
+        },
+        ['admin-dashboard-stats', from, to],
+        { revalidate: 60, tags: ['admin-stats'] }
+    )
+
+    return fetchStats(from, to)
 }
 
 // Fallback legacy function (Optimized to NOT fetch all fields)
@@ -142,40 +154,48 @@ async function getDashboardStatsLegacy(client: any, from: string, to: string) {
 }
 
 export async function getRevenueChart(period: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'monthly') {
-    const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return []
 
-    let daysBack = 30
-    if (period === 'daily') daysBack = 7
-    if (period === 'weekly') daysBack = 90
-    if (period === 'yearly') daysBack = 365
+    const fetchRevenue = unstable_cache(
+        async (p: string) => {
+            const client = await getAuthClient()
+            let daysBack = 30
+            if (p === 'daily') daysBack = 7
+            if (p === 'weekly') daysBack = 90
+            if (p === 'yearly') daysBack = 365
 
-    const fromDate = new Date()
-    fromDate.setDate(fromDate.getDate() - daysBack)
+            const fromDate = new Date()
+            fromDate.setDate(fromDate.getDate() - daysBack)
 
-    const { data: orders } = await client
-        .from('orders')
-        .select('total, status, created_at')
-        .gte('created_at', fromDate.toISOString())
-        .in('status', ['delivered', 'shipped', 'packed'])
-        .order('created_at', { ascending: true })
+            const { data: orders } = await client
+                .from('orders')
+                .select('total, status, created_at')
+                .gte('created_at', fromDate.toISOString())
+                .in('status', ['delivered', 'shipped', 'packed'])
+                .order('created_at', { ascending: true })
 
-    if (!orders) return []
+            if (!orders) return []
 
-    const grouped: Record<string, number> = {}
-    orders.forEach(o => {
-        const d = new Date(o.created_at)
-        let key = ''
-        if (period === 'daily') key = d.toLocaleDateString('en-IN', { weekday: 'short' })
-        else if (period === 'weekly') key = `W${Math.ceil(d.getDate() / 7)} ${d.toLocaleDateString('en-IN', { month: 'short' })}`
-        else if (period === 'monthly') key = d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })
-        else key = d.toLocaleDateString('en-IN', { month: 'short' })
+            const grouped: Record<string, number> = {}
+            orders.forEach(o => {
+                const d = new Date(o.created_at)
+                let key = ''
+                if (p === 'daily') key = d.toLocaleDateString('en-IN', { weekday: 'short' })
+                else if (p === 'weekly') key = `W${Math.ceil(d.getDate() / 7)} ${d.toLocaleDateString('en-IN', { month: 'short' })}`
+                else if (p === 'monthly') key = d.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })
+                else key = d.toLocaleDateString('en-IN', { month: 'short' })
 
-        grouped[key] = (grouped[key] || 0) + Number(o.total || 0)
-    })
+                grouped[key] = (grouped[key] || 0) + o.total
+            })
 
-    return Object.entries(grouped).map(([label, value]) => ({ label, value }))
+            return Object.entries(grouped).map(([name, revenue]) => ({ name, revenue }))
+        },
+        ['admin-revenue-chart', period],
+        { revalidate: 120, tags: ['admin-stats'] }
+    )
+
+    return fetchRevenue(period)
 }
 
 export async function getOrdersChart(period: 'daily' | 'weekly' | 'monthly' = 'monthly') {
@@ -284,56 +304,70 @@ export async function getAnalyticsSummary(dateFrom?: string, dateTo?: string) {
 // ============================================
 
 export async function getRecentOrders(limit: number = 5) {
-    const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return []
 
-    const { data } = await client
-        .from('orders')
-        .select('id, order_number, total, status, created_at, profiles(full_name)')
-        .order('created_at', { ascending: false })
-        .limit(limit)
+    const fetchRecent = unstable_cache(
+        async (lim: number) => {
+            const client = await getAuthClient()
+            const { data } = await client
+                .from('orders')
+                .select('id, order_number, total, status, created_at, profiles(full_name)')
+                .order('created_at', { ascending: false })
+                .limit(lim)
+            return data || []
+        },
+        ['admin-recent-orders', String(limit)],
+        { revalidate: 30, tags: ['admin-orders'] }
+    )
 
-    return data || []
+    return fetchRecent(limit)
 }
 
 export async function getTopProducts(limit: number = 5) {
-    const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return []
 
-    const { data: items } = await client
-        .from('order_items')
-        .select('product_id, quantity, orders!inner(status)')
+    const fetchTopProds = unstable_cache(
+        async (lim: number) => {
+            const client = await getAuthClient()
+            const { data: items } = await client
+                .from('order_items')
+                .select('product_id, quantity, orders!inner(status)')
 
-    if (!items?.length) return []
+            if (!items?.length) return []
 
-    // Aggregate sales (exclude cancelled)
-    const productSales: Record<string, number> = {}
-    items.forEach((item: any) => {
-        if (item.orders?.status !== 'cancelled') {
-            productSales[item.product_id] = (productSales[item.product_id] || 0) + item.quantity
-        }
-    })
+            const productSales: Record<string, number> = {}
+            items.forEach((item: any) => {
+                if (item.orders?.status !== 'cancelled') {
+                    productSales[item.product_id] = (productSales[item.product_id] || 0) + item.quantity
+                }
+            })
 
-    const topIds = Object.entries(productSales)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, limit)
-        .map(([id]) => id)
+            const topIds = Object.entries(productSales)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, lim)
+                .map(([id]) => id)
 
-    if (topIds.length === 0) return []
+            if (topIds.length === 0) return []
 
-    const { data: products } = await client
-        .from('products')
-        .select('id, name, price, image_url, stock')
-        .in('id', topIds)
+            const { data: products } = await client
+                .from('products')
+                .select('id, name, price, image_url, stock')
+                .in('id', topIds)
 
-    if (!products) return []
+            if (!products) return []
 
-    return products.map(p => ({
-        ...p,
-        sales: productSales[p.id] || 0
-    })).sort((a, b) => b.sales - a.sales)
+            return products.map(p => ({
+                ...p,
+                sales: productSales[p.id] || 0
+            })).sort((a, b) => b.sales - a.sales)
+        },
+        ['admin-top-products', String(limit)],
+        { revalidate: 120, tags: ['admin-products'] }
+    )
+
+    return fetchTopProds(limit)
 }
 
 export async function getCancelledOrderDetails(limit: number = 10) {
@@ -545,6 +579,8 @@ export async function updateOrderStatus(orderId: string, status: string, trackin
         }
     }
 
+    if (!isValidUUID(orderId)) return { success: false, error: 'Invalid order ID' }
+
     const { error } = await client.from('orders').update(updates).eq('id', orderId)
     if (error) return { success: false, error: error.message }
 
@@ -557,6 +593,10 @@ export async function updateOrderStatus(orderId: string, status: string, trackin
         details: { status, trackingNumber },
     })
 
+    // Bust caches
+    revalidateTag('admin-stats')
+    revalidateTag('admin-orders')
+
     return { success: true }
 }
 
@@ -564,6 +604,7 @@ export async function deleteOrder(orderId: string) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin || admin.role !== 'main_admin') return { success: false, error: 'Unauthorized. Only Main Admins can delete orders.' }
+    if (!isValidUUID(orderId)) return { success: false, error: 'Invalid order ID' }
 
     const { error } = await client.from('orders').delete().eq('id', orderId)
     if (error) return { success: false, error: error.message }
@@ -575,6 +616,10 @@ export async function deleteOrder(orderId: string) {
         entity_type: 'order',
         entity_id: orderId,
     })
+
+    // Bust caches
+    revalidateTag('admin-stats')
+    revalidateTag('admin-orders')
 
     return { success: true }
 }
@@ -971,12 +1016,20 @@ export async function getAdminCustomOrders(page: number = 1) {
 // ============================================
 
 export async function getAdminGoldRates() {
-    const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return []
 
-    const { data } = await client.from('gold_rates').select('*').order('purity')
-    return data || []
+    const fetchRates = unstable_cache(
+        async () => {
+            const client = await getAuthClient()
+            const { data } = await client.from('gold_rates').select('*').order('purity')
+            return data || []
+        },
+        ['admin-gold-rates'],
+        { revalidate: 60, tags: ['admin-settings'] }
+    )
+
+    return fetchRates()
 }
 
 export async function updateGoldRate(id: string, rate: number) {
@@ -993,16 +1046,25 @@ export async function updateGoldRate(id: string, rate: number) {
         entity_id: id,
     })
 
+    revalidateTag('admin-settings')
     return { success: true }
 }
 
 export async function getAdminCoupons() {
-    const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return []
 
-    const { data } = await client.from('coupons').select('id, code, discount_type, discount_value, used_count, usage_limit, is_active, created_at').order('created_at', { ascending: false })
-    return data || []
+    const fetchCoupons = unstable_cache(
+        async () => {
+            const client = await getAuthClient()
+            const { data } = await client.from('coupons').select('id, code, discount_type, discount_value, used_count, usage_limit, is_active, created_at').order('created_at', { ascending: false })
+            return data || []
+        },
+        ['admin-coupons'],
+        { revalidate: 60, tags: ['admin-settings'] }
+    )
+
+    return fetchCoupons()
 }
 
 export async function createCoupon(couponData: any) {
@@ -1012,6 +1074,7 @@ export async function createCoupon(couponData: any) {
 
     const { error } = await client.from('coupons').insert(couponData)
     if (error) return { success: false, error: error.message }
+    revalidateTag('admin-settings')
     return { success: true }
 }
 
@@ -1021,6 +1084,7 @@ export async function deleteCoupon(couponId: string) {
     if (!admin || admin.role === 'staff') return { success: false }
 
     await client.from('coupons').delete().eq('id', couponId)
+    revalidateTag('admin-settings')
     return { success: true }
 }
 

@@ -1043,6 +1043,12 @@ export async function createOrder(
     return { success: false, error: 'Please login' }
   }
 
+  // --- SECURITY: UUID Validation ---
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!UUID_RE.test(addressId)) {
+    return { success: false, error: 'Invalid address selected.' }
+  }
+
   // --- SECURITY: Rate Limiting ---
   const { count: pendingOrders } = await client
     .from('orders')
@@ -1051,7 +1057,7 @@ export async function createOrder(
     .eq('status', 'pending')
     .gt('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString())
 
-  if (pendingOrders !== null && pendingOrders >= 3) {
+  if (pendingOrders !== null && pendingOrders >= 2) {
     return { success: false, error: 'Too many pending orders. Please complete or wait before creating a new one.' }
   }
 
@@ -1114,9 +1120,12 @@ export async function createOrder(
   const giftWrapCost = options?.giftWrap ? 199 : 0
   const total = subtotal + shipping + giftWrapCost - couponDiscount
 
-  // SECURITY: Prevent negative or zero totals (except if business logic allows)
-  if (total < 0) {
+  // SECURITY: Prevent negative, zero, or absurdly high totals
+  if (total <= 0) {
     return { success: false, error: 'Invalid order total calculated.' }
+  }
+  if (total > 1000000) {
+    return { success: false, error: 'Order total exceeds maximum limit. Please contact support.' }
   }
 
   // Generate order number
