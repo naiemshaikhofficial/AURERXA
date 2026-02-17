@@ -1,7 +1,9 @@
 'use server'
 
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import fs from 'fs'
+import path from 'path'
 import { createDelhiveryShipment } from '../actions'
 
 async function getAuthClient() {
@@ -31,13 +33,16 @@ export async function checkAdminRole() {
     const { data: { user } } = await client.auth.getUser()
     if (!user) return null
 
-    const { data } = await client
+    const { data, error: roleError } = await client
         .from('admin_users')
         .select('role')
         .eq('id', user.id)
         .single()
 
-    if (!data) return null
+    if (roleError || !data) {
+        console.log('DEBUG: checkAdminRole - No role found for user', user.id);
+        return null
+    }
     return { userId: user.id, email: user.email, role: data.role as 'main_admin' | 'support_admin' | 'staff' | 'product_manager' }
 }
 
@@ -398,11 +403,12 @@ export async function getAdminOrders(
     const offset = (page - 1) * limit
     query = query.order('created_at', { ascending: false }).range(offset, offset + limit - 1)
 
-    const { data, count, error } = await query
+    let { data: ordersData, count, error } = await query
+
     if (error) { console.error('Admin orders error:', error); return { orders: [], total: 0 } }
 
     // Manually join profiles to avoid complex FK constraints
-    const orders = data || []
+    const orders = ordersData || []
     const userIds = Array.from(new Set(orders.map((o: any) => o.user_id).filter(Boolean)))
 
     let profilesMap: Record<string, any> = {}
@@ -429,7 +435,10 @@ export async function getAdminOrders(
 export async function getOrdersPollingData() {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
-    if (!admin) return null
+
+    if (!admin) {
+        return null
+    }
 
     // Get the absolute latest order with items and product names
     const { data, error } = await client
@@ -453,21 +462,58 @@ export async function getOrdersPollingData() {
         .single()
 
     if (error) {
-        console.error('Polling error:', error)
-        return null
+        console.error('DEBUG: Polling error:', error.message)
+        // If error is "JSON object requested, multiple (or no) rows returned", it means table is likely empty
+        // Return 0 count but null latestOrder
     }
 
     // Also get total count to detect new orders specifically
-    const { count } = await client
+    const { count, error: countError } = await client
         .from('orders')
         .select('*', { count: 'exact', head: true })
 
-    return {
+    if (countError) console.error('DEBUG: Count error:', countError.message);
+
+    const res = {
         latestOrder: data || null,
         latestId: data?.id || null,
         latestTimestamp: data?.updated_at || data?.created_at || null,
         totalOrders: count || 0,
     }
+
+    return res
+}
+
+export async function getSingleOrderForNotification(orderId: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return null
+
+    const { data, error } = await client
+        .from('orders')
+        .select(`
+            id, 
+            order_number, 
+            status, 
+            total, 
+            updated_at, 
+            created_at,
+            order_items (
+                quantity,
+                products (
+                    name
+                )
+            )
+        `)
+        .eq('id', orderId)
+        .single()
+
+    if (error) {
+        console.error('Error fetching single order:', error.message)
+        return null
+    }
+
+    return data
 }
 
 export async function updateOrderStatus(orderId: string, status: string, trackingNumber?: string) {

@@ -85,7 +85,7 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                 }
 
                 // 2. Detect New Order/Update
-                const isNewOrder = data.latestId !== prev.id && data.totalOrders > (prev.total || 0)
+                const isNewOrder = data.latestId !== prev.id && data.latestId !== null
                 const isUpdate = !isNewOrder && data.latestTimestamp !== prev.timestamp
 
                 if (isNewOrder || isUpdate) {

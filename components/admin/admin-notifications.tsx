@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { supabase } from '@/lib/supabase'
 import { ShoppingBag, PackageCheck, ShoppingCart, XCircle, AlertCircle } from 'lucide-react'
-import { getOrdersPollingData } from '@/app/admin/actions'
+import { getOrdersPollingData, getSingleOrderForNotification } from '@/app/admin/actions'
 import { cn } from '@/lib/utils'
 
 export function AdminNotifications() {
@@ -80,9 +80,9 @@ export function AdminNotifications() {
                     router.refresh()
                 }
 
-                // 2. Detect New Order
-                const isNewOrder = data.latestId !== prev.id && data.totalOrders > (prev.total || 0)
-                // 3. Detect Update
+                // 2. Detect New Order (ID changed and it's not the first poll)
+                const isNewOrder = data.latestId !== prev.id && data.latestId !== null
+                // 3. Detect Update (Same ID but timestamp changed)
                 const isUpdate = !isNewOrder && data.latestTimestamp !== prev.timestamp && latest
 
                 if (isNewOrder || isUpdate) {
@@ -106,17 +106,17 @@ export function AdminNotifications() {
                     // Also show toast
                     if (isNewOrder) {
                         toast.success(
-                            <div className="flex flex-col gap-1 text-black">
-                                <span className="font-bold">🛍️ New Order: #{latest.order_number}</span>
-                                <span className="text-xs">{productNames}</span>
+                            <div className="flex flex-col gap-1">
+                                <span className="font-bold text-[#D4AF37]">🛍️ New Order: #{latest.order_number}</span>
+                                <span className="text-xs opacity-80">{productNames}</span>
                             </div>,
                             { duration: 8000 }
                         )
                     } else if (latest.status === 'cancelled') {
                         toast.error(
-                            <div className="flex flex-col gap-1 text-black">
-                                <span className="font-bold">❌ Order Cancelled: #{latest.order_number}</span>
-                                <span className="text-xs">Status: {latest.status}</span>
+                            <div className="flex flex-col gap-1">
+                                <span className="font-bold text-red-400">❌ Order Cancelled: #{latest.order_number}</span>
+                                <span className="text-xs opacity-80">Status: {latest.status}</span>
                             </div>,
                             { duration: 8000 }
                         )
@@ -137,30 +137,103 @@ export function AdminNotifications() {
         }
 
         pollForChanges()
-        intervalId = setInterval(pollForChanges, 6000) // Slightly different interval than OrdersClient
+        intervalId = setInterval(pollForChanges, 10000) // Poll less frequently, Realtime will catch most
         return () => clearInterval(intervalId)
     }, [router])
 
-    // Supabase Realtime as backup
+    // 🔌 PRIMARY: Supabase Realtime for INSTANT "Attack" notifications
     useEffect(() => {
+        const handleOrderChange = async (payload: any) => {
+            console.log('⚡ Realtime Order Change:', payload)
+
+            if (payload.eventType === 'INSERT') {
+                const latest = await getSingleOrderForNotification(payload.new.id)
+                if (latest) {
+                    const productNames = latest.order_items?.map((item: any) => item.products?.name).join(', ') || 'Various items'
+
+                    const notification = {
+                        id: latest.id,
+                        order_number: latest.order_number,
+                        type: 'new_order',
+                        status: latest.status,
+                        title: '🛍️ New Order',
+                        message: `Order #${latest.order_number} • ${productNames}`,
+                        detail: `Total: ₹${latest.total.toLocaleString('en-IN')}`,
+                        time: new Date(),
+                        timestamp: latest.updated_at || latest.created_at,
+                        read: false
+                    }
+
+                    addNotification(notification)
+
+                    toast.success(
+                        <div className="flex flex-col gap-1">
+                            <span className="font-bold text-[#D4AF37]">🛍️ New Order: #{latest.order_number}</span>
+                            <span className="text-xs text-white/90">{productNames}</span>
+                        </div>,
+                        { duration: 10000 }
+                    )
+                }
+            } else if (payload.eventType === 'UPDATE') {
+                if (payload.old.status !== payload.new.status) {
+                    const latest = await getSingleOrderForNotification(payload.new.id)
+                    if (latest) {
+                        const productNames = latest.order_items?.map((item: any) => item.products?.name).join(', ') || 'Various items'
+                        const isCancelled = latest.status === 'cancelled'
+
+                        const notification = {
+                            id: latest.id,
+                            order_number: latest.order_number,
+                            type: latest.status,
+                            status: latest.status,
+                            title: isCancelled ? '❌ Order Cancelled' : `📦 Order ${latest.status}`,
+                            message: `Order #${latest.order_number} • ${productNames}`,
+                            detail: `Total: ₹${latest.total.toLocaleString('en-IN')}`,
+                            time: new Date(),
+                            timestamp: latest.updated_at,
+                            read: false
+                        }
+
+                        addNotification(notification)
+
+                        if (isCancelled) {
+                            toast.error(
+                                <div className="flex flex-col gap-1">
+                                    <span className="font-bold text-red-400">❌ Order Cancelled: #{latest.order_number}</span>
+                                    <span className="text-xs text-white/90">Click to view details</span>
+                                </div>,
+                                { duration: 10000 }
+                            )
+                        } else {
+                            toast.info(
+                                <div className="flex flex-col gap-1">
+                                    <span className="font-bold text-sky-400">📦 Order Update: #{latest.order_number}</span>
+                                    <span className="text-xs text-white/90">Status changed to {latest.status}</span>
+                                </div>,
+                                { duration: 8000 }
+                            )
+                        }
+                    }
+                }
+            } else if (payload.eventType === 'DELETE') {
+                addNotification({
+                    id: `del-${Date.now()}`,
+                    type: 'deleted',
+                    title: '🗑️ Order Deleted',
+                    message: 'An order was just removed.',
+                    detail: 'Database record deleted.',
+                    time: new Date(),
+                    timestamp: Date.now().toString(),
+                    read: false
+                })
+            }
+
+            router.refresh()
+        }
+
         const channel = supabase
             .channel('admin-notifications-realtime')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-                // If it's a delete event, show notification immediately
-                if (payload.eventType === 'DELETE') {
-                    addNotification({
-                        id: `del-${Date.now()}`,
-                        type: 'deleted',
-                        title: '🗑️ Order Deleted',
-                        message: 'An order was just deleted.',
-                        detail: 'Database record removed.',
-                        time: new Date(),
-                        timestamp: Date.now().toString(),
-                        read: false
-                    })
-                }
-                router.refresh()
-            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, handleOrderChange)
             .subscribe()
 
         return () => {
