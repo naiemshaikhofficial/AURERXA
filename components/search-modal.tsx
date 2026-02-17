@@ -129,10 +129,10 @@ export function SearchModal() {
                                 <div>
                                     <h4 className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-6">Popular Collections</h4>
                                     <div className="flex flex-col gap-4">
-                                        {['Gold', 'Silver', 'Diamond', 'Platinum'].map((cat) => (
+                                        {['Gold', 'Silver', 'Diamond', 'Platinum', 'Kids'].map((cat) => (
                                             <Link
                                                 key={cat}
-                                                href={`/collections?category=${cat.toLowerCase()}`}
+                                                href={cat === 'Kids' ? '/collections?gender=Kids' : `/collections?category=${cat.toLowerCase()}`}
                                                 onClick={onClose}
                                                 className="group flex items-center justify-between text-xl font-serif text-white/60 hover:text-white transition-all"
                                             >

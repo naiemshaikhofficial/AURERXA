@@ -11,6 +11,7 @@ export type FilterState = {
     gender: string
     priceRange: { label: string, min: number, max: number | null }
     sortBy: string
+    search?: string
 }
 
 export const PRODUCT_TYPES = [
@@ -23,12 +24,14 @@ export const PRODUCT_TYPES = [
     { label: 'Pendants', value: 'Pendant', iconId: '110325' },
     { label: 'Chains', value: 'Chain', iconId: 'FWr93WQ0Gm9Q' },
     { label: 'Mangalsutras', value: 'Mangalsutra', iconId: '/947771-200.png' },
+    { label: 'Kids', value: 'Kids', iconId: 'J2uuDL01xwUL' },
 ]
 
 export const GENDERS = [
     { label: 'All Genders', value: 'all' },
     { label: 'Women', value: 'Women' },
     { label: 'Men', value: 'Men' },
+    { label: 'Kids', value: 'Kids' },
     { label: 'Unisex', value: 'Unisex' },
 ]
 
@@ -253,10 +256,16 @@ export function CinematicFilter({
                                                     {PRODUCT_TYPES.map((type) => (
                                                         <button
                                                             key={type.value}
-                                                            onClick={() => handleFilterUpdate('type', type.value)}
+                                                            onClick={() => {
+                                                                if (type.value === 'Kids') {
+                                                                    handleFilterUpdate('gender', 'Kids')
+                                                                } else {
+                                                                    handleFilterUpdate('type', type.value)
+                                                                }
+                                                            }}
                                                             className={cn(
                                                                 "h-32 rounded-none border flex flex-col items-center justify-center gap-4 transition-all duration-500 group relative overflow-hidden",
-                                                                filters.type === type.value
+                                                                (type.value === 'Kids' ? filters.gender === 'Kids' : filters.type === type.value)
                                                                     ? "bg-foreground text-background border-foreground"
                                                                     : "bg-transparent border-border hover:border-foreground/30 hover:bg-muted"
                                                             )}

@@ -32,9 +32,9 @@ export function Footer() {
           <div className="space-y-10">
             <h2 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Shop by Category</h2>
             <ul className="grid grid-cols-2 gap-x-8 gap-y-4">
-              {['Earrings', 'Rings', 'Pendants', 'Bangles', 'Necklaces', 'Mangalsutra', 'Bracelets', 'Gold Coins'].map((item) => (
+              {['Earrings', 'Rings', 'Pendants', 'Bangles', 'Necklaces', 'Mangalsutra', 'Bracelets', 'Gold Coins', 'Kids Collection'].map((item) => (
                 <li key={item}>
-                  <Link href={`/collections?type=${item}`} className="text-[11px] text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase luxe-underline">
+                  <Link href={item === 'Kids Collection' ? '/collections?gender=Kids' : `/collections?type=${item}`} className="text-[11px] text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase luxe-underline">
                     {item}
                   </Link>
                 </li>

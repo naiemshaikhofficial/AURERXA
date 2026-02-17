@@ -9,6 +9,7 @@ import { getFilteredProducts } from '@/app/actions'
 import { HeritageHighlights } from '@/components/heritage-highlights'
 import { CinematicFilter, FilterState, PRICE_RANGES } from '@/components/cinematic-filter'
 import { ProductCard, Product } from '@/components/product-card'
+import { cn } from '@/lib/utils'
 
 interface CollectionsClientProps {
     initialProducts: Product[]
@@ -22,6 +23,7 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
     const [filters, setFilters] = useState<FilterState>(initialFilters)
     const [loading, setLoading] = useState(false)
     const [products, setProducts] = useState<Product[]>(initialProducts)
+    const [searchQuery, setSearchQuery] = useState(initialFilters.search || '')
 
     // Filters are initialized from props, no need for effect on mount
 
@@ -35,7 +37,8 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                 gender: newFilters.gender === 'all' ? undefined : newFilters.gender,
                 type: newFilters.type === 'all' ? undefined : newFilters.type,
                 minPrice: newFilters.priceRange.min,
-                maxPrice: newFilters.priceRange.max || undefined
+                maxPrice: newFilters.priceRange.max || undefined,
+                search: newFilters.search || undefined
             })
             // Cast through unknown to resolve type overlap issue
             setProducts(data as unknown as Product[])
@@ -45,6 +48,16 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
             setLoading(false)
         }
     }
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchQuery !== (filters.search || '')) {
+                handleFilterChange({ ...filters, search: searchQuery })
+            }
+        }, 500)
+        return () => clearTimeout(timer)
+    }, [searchQuery])
 
     return (
         <div className="min-h-screen bg-background text-foreground relative">
@@ -78,6 +91,28 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                     productCount={products.length}
                 />
 
+                {/* In-Page Search Bar */}
+                <div className="mb-8 max-w-2xl mx-auto">
+                    <div className="relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="SEARCH WITHIN COLLECTION..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-card/40 border border-border focus:border-primary/50 rounded-full py-4 pl-12 pr-4 text-[10px] font-premium-sans tracking-[0.2em] outline-none transition-all placeholder:text-muted-foreground/20 uppercase"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
+                            >
+                                <Loader2 className={cn("w-3 h-3 text-muted-foreground/40", loading && "animate-spin")} />
+                            </button>
+                        )}
+                    </div>
+                </div>
+
                 {/* Product Grid */}
                 {loading ? (
                     <div className="min-h-[50vh] flex flex-col items-center justify-center gap-6">
@@ -90,13 +125,17 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                         <p className="text-xs text-muted-foreground/30 font-premium-sans tracking-widest uppercase">No artifacts found in this specific curation.</p>
                         <button
                             // Reset to default state
-                            onClick={() => handleFilterChange({
-                                category: 'all',
-                                type: 'all',
-                                gender: 'all',
-                                priceRange: { label: 'All Prices', min: 0, max: null },
-                                sortBy: 'newest'
-                            })}
+                            onClick={() => {
+                                setSearchQuery('')
+                                handleFilterChange({
+                                    category: 'all',
+                                    type: 'all',
+                                    gender: 'all',
+                                    priceRange: { label: 'All Prices', min: 0, max: null },
+                                    sortBy: 'newest',
+                                    search: ''
+                                })
+                            }}
                             className="text-muted-foreground/40 underline underline-offset-8 hover:text-foreground transition-colors text-xs uppercase tracking-widest"
                         >
                             Clear Filters
