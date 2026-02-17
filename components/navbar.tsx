@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield } from 'lucide-react'
+import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield, Loader2 } from 'lucide-react'
 import { useCart } from '@/context/cart-context'
 import { useSearch } from '@/context/search-context'
 import {
@@ -43,9 +43,21 @@ export function Navbar() {
   }, [])
 
   useEffect(() => {
+    let isMounted = true
+
     const getUser = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user }, error: authError } = await supabase.auth.getUser()
+        if (!isMounted) return
+
+        if (authError) {
+          if (authError.message.includes('signal is aborted') || authError.name === 'AbortError') {
+            // Silently ignore abort errors during navigation/mount
+            return
+          }
+          console.error('Navbar getUser error:', authError)
+        }
+
         setUser(user)
 
         if (user) {
@@ -54,25 +66,29 @@ export function Navbar() {
             .select('*')
             .eq('id', user.id)
             .single()
-          if (profileData) setProfile(profileData)
+          if (isMounted && profileData) setProfile(profileData)
 
           const { data: adminData } = await supabase
             .from('admin_users')
             .select('role')
             .eq('id', user.id)
             .single()
-          if (adminData) setIsAdmin(true)
+          if (isMounted && adminData) setIsAdmin(true)
         }
-      } catch (err) {
-        console.error('Navbar session check error:', err)
+      } catch (err: any) {
+        if (err.name !== 'AbortError' && !err.message?.includes('aborted')) {
+          console.error('Navbar session check error:', err)
+        }
       } finally {
-        setAuthLoading(false)
+        if (isMounted) setAuthLoading(false)
       }
     }
 
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isMounted) return
+
       if (event === 'SIGNED_OUT' || (event === 'USER_UPDATED' && !session)) {
         setUser(null)
         setProfile(null)
@@ -82,24 +98,32 @@ export function Navbar() {
 
       if (session?.user) {
         setUser(session.user)
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single()
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
 
-        if (profileData) {
-          setProfile(profileData)
-        } else {
-          setProfile({ full_name: session.user.user_metadata?.full_name || session.user.email })
+          if (isMounted) {
+            if (profileData) {
+              setProfile(profileData)
+            } else {
+              setProfile({ full_name: session.user.user_metadata?.full_name || session.user.email })
+            }
+          }
+
+          const { data: adminData } = await supabase
+            .from('admin_users')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          if (isMounted) setIsAdmin(!!adminData)
+        } catch (e: any) {
+          if (e.name !== 'AbortError' && !e.message?.includes('aborted')) {
+            console.error('Navbar onAuthStateChange error:', e)
+          }
         }
-
-        const { data: adminData } = await supabase
-          .from('admin_users')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
-        setIsAdmin(!!adminData)
       } else {
         setUser(null)
         setProfile(null)
@@ -108,6 +132,7 @@ export function Navbar() {
     })
 
     return () => {
+      isMounted = false
       subscription.unsubscribe()
     }
   }, [])
@@ -208,7 +233,7 @@ export function Navbar() {
           <div className="flex justify-between items-start md:items-center h-full">
             <Link href="/" className="flex-shrink-0 group relative z-50" aria-label="AURERXA Home">
               <img
-                src="/logo.png"
+                src="https://imagizer.imageshack.com/img922/5651/qYeLiy.png"
                 alt="AURERXA Logo"
                 className="h-10 md:h-20 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
               />

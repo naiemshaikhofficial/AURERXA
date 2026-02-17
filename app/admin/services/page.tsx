@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { updateServiceStatus, deleteServiceRequest } from '../actions'
-import { createBrowserClient } from '@supabase/ssr'
+import { supabase } from '@/lib/supabase'
 import { Eye, Trash2, X, Sparkles, Gem, Wrench as WrenchIcon, Store, Search, Clock, CheckCircle } from 'lucide-react'
 
 type Tab = 'try-on' | 'harvest' | 'care' | 'boutique'
@@ -31,12 +31,6 @@ const STATUS_COLORS: Record<string, string> = {
     cancelled: 'bg-red-400/10 text-red-400',
 }
 
-function getSupabaseClient() {
-    return createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
-}
 
 export default function ServicesAdminPage() {
     const [tab, setTab] = useState<Tab>('try-on')
@@ -51,7 +45,6 @@ export default function ServicesAdminPage() {
 
     const loadData = async () => {
         setLoading(true)
-        const supabase = getSupabaseClient()
 
         const [tryOn, goldHarvest, jewelryCare, boutique] = await Promise.all([
             supabase.from('virtual_try_on_requests').select('*').order('created_at', { ascending: false }),

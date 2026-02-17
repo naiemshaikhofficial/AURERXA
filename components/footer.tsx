@@ -13,14 +13,14 @@ export function Footer() {
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
           {/* Brand Info */}
           <div className="space-y-10">
             <Link href="/" className="inline-block group" aria-label="AURERXA Home">
               <img
-                src="/logo.webp"
+                src="https://imagizer.imageshack.com/img922/5651/qYeLiy.png"
                 alt="AURERXA Logo"
-                className="h-12 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700 invert dark:invert-0"
+                className="h-16 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700"
               />
             </Link>
             <p className="text-xs text-muted-foreground font-light leading-loose tracking-widest uppercase">
@@ -109,6 +109,37 @@ export function Footer() {
                 <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase luxe-underline">Search Our Heritage</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Social Media Row */}
+        <div className="mb-20 pt-12 border-t border-white/5 flex flex-wrap justify-center md:justify-start gap-8 items-center">
+          <span className="text-[10px] font-premium-sans text-primary/60 uppercase tracking-[0.2em] w-full md:w-auto mb-4 md:mb-0 text-center md:text-left">Follow the Legacy</span>
+          <div className="flex gap-10 items-center">
+            {[
+              { id: '59780', label: 'Facebook', href: 'https://facebook.com/aurerxa' },
+              { id: '32309', label: 'Instagram', href: 'https://instagram.com/aurerxa' },
+              { id: '37326', label: 'YouTube', href: 'https://youtube.com/@aurerxa' },
+              { id: '8808', label: 'LinkedIn', href: 'https://linkedin.com/company/aurerxa' }
+            ].map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative flex items-center justify-center transition-all duration-500"
+                aria-label={social.label}
+              >
+                <img
+                  src={`https://img.icons8.com/?size=100&id=${social.id}&format=png&color=BF9B65`}
+                  alt={social.label}
+                  className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110"
+                />
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[8px] opacity-0 group-hover:opacity-100 transition-opacity tracking-widest text-primary/60 uppercase pointer-events-none">
+                  {social.label}
+                </div>
+              </a>
+            ))}
           </div>
         </div>
 

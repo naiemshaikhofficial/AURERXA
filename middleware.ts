@@ -91,7 +91,14 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith('/signup')
 
     // Always call getUser to ensure session is refreshed
-    const { data: { user } } = await supabase.auth.getUser()
+    // Wrap in try-catch to satisfy Next.js 16/experimental abort behaviors
+    let user = null
+    try {
+        const { data } = await supabase.auth.getUser()
+        user = data.user
+    } catch (e) {
+        console.error('Middleware Auth Error:', e)
+    }
 
     // 1. Auth Page Redirection: Authenticated users visiting /login or /signup
     if (user && isAuthRoute) {

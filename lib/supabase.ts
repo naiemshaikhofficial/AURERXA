@@ -10,5 +10,12 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        // @ts-ignore - lock is a valid property in newer versions of @supabase/auth-js/ssr
+        // Overriding the lock function fixes the persistent "AbortError: signal is aborted" 
+        // common in Next.js 14+ environments with Web Locks contention.
+        // It bypasses the navigator.locks implementation entirely by executing the acquire callback immediately.
+        lock: async (name: string, acquire: () => Promise<any>) => {
+            return await acquire()
+        }
     }
 })
