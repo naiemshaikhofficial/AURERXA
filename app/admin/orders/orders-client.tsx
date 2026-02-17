@@ -50,6 +50,51 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
         }
     }, [initialOrders])
 
+    // 🔴 REALTIME: Polling + Supabase Realtime hybrid for guaranteed instant updates
+    useEffect(() => {
+        let lastKnownTimestamp: string | null = null
+        let lastKnownTotal: number | null = null
+        let intervalId: ReturnType<typeof setInterval>
+
+        const checkForUpdates = async () => {
+            try {
+                const { getOrdersPollingData } = await import('../actions')
+                const data = await getOrdersPollingData()
+                if (!data) return
+
+                // If this is the first check, just set the baseline
+                if (lastKnownTimestamp === null) {
+                    lastKnownTimestamp = data.latestTimestamp
+                    lastKnownTotal = data.totalOrders
+                    return
+                }
+
+                // Detect changes: new/updated orders or count change
+                const hasChanged =
+                    data.latestTimestamp !== lastKnownTimestamp ||
+                    data.totalOrders !== lastKnownTotal
+
+                if (hasChanged) {
+                    console.log('📦 Orders changed! Refreshing...',
+                        { prev: lastKnownTimestamp, now: data.latestTimestamp, prevCount: lastKnownTotal, nowCount: data.totalOrders })
+                    lastKnownTimestamp = data.latestTimestamp
+                    lastKnownTotal = data.totalOrders
+                    router.refresh()
+                }
+            } catch (e) {
+                // Silently ignore polling errors
+            }
+        }
+
+        // Poll every 5 seconds for changes
+        checkForUpdates()
+        intervalId = setInterval(checkForUpdates, 5000)
+
+        return () => {
+            clearInterval(intervalId)
+        }
+    }, [router])
+
     // Fetch tracking and label when order is selected
     useEffect(() => {
         if (selectedOrder?.tracking_number) {

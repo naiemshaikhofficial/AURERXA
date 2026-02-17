@@ -425,6 +425,33 @@ export async function getAdminOrders(
     return { orders: ordersWithProfiles, total: count || 0 }
 }
 
+// Lightweight polling endpoint for realtime change detection
+export async function getOrdersPollingData() {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return null
+
+    const { data, error } = await client
+        .from('orders')
+        .select('id, updated_at, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+    if (error) return null
+
+    // Also get total count of pending orders
+    const { count } = await client
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+
+    return {
+        latestId: data?.id || null,
+        latestTimestamp: data?.updated_at || data?.created_at || null,
+        totalOrders: count || 0,
+    }
+}
+
 export async function updateOrderStatus(orderId: string, status: string, trackingNumber?: string) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
