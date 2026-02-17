@@ -34,7 +34,7 @@ export function Footer() {
             <ul className="grid grid-cols-2 gap-x-8 gap-y-4">
               {['Earrings', 'Rings', 'Pendants', 'Bangles', 'Necklaces', 'Mangalsutra', 'Bracelets', 'Gold Coins'].map((item) => (
                 <li key={item}>
-                  <Link href={`/collections?type=${item}`} className="text-[11px] text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase">
+                  <Link href={`/collections?type=${item}`} className="text-[11px] text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase luxe-underline">
                     {item}
                   </Link>
                 </li>
@@ -55,7 +55,7 @@ export function Footer() {
                 { name: 'Virtual Try-On', href: '/try-on' }
               ].map((service) => (
                 <li key={service.name}>
-                  <Link href={service.href} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase">
+                  <Link href={service.href} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase luxe-underline">
                     {service.name}
                   </Link>
                 </li>
@@ -100,13 +100,13 @@ export function Footer() {
                 />
                 <a href="mailto:care@aurerxa.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Email us at care@aurerxa.com">care@aurerxa.com</a>
               </div>
-              <div className="flex items-center gap-4 group cursor-pointer" onClick={openSearch}>
+              <div className="flex items-center gap-4 group cursor-pointer tactile-press" onClick={openSearch}>
                 <img
                   src="https://img.icons8.com/?size=100&id=132&format=png&color=BF9B65"
                   alt="Search"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase">Search Our Heritage</span>
+                <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase luxe-underline">Search Our Heritage</span>
               </div>
             </div>
           </div>

@@ -7,7 +7,6 @@ import { useCart } from '@/context/cart-context'
 import { cn } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { useSearch } from '@/context/search-context'
-import { SearchModal } from './search-modal'
 
 export function BottomNav() {
     const pathname = usePathname()
@@ -105,7 +104,6 @@ export function BottomNav() {
                     )
                 })}
             </nav>
-            <SearchModal />
         </div>
     )
 }

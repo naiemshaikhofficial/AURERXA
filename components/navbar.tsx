@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield } from 'lucide-react'
 import { useCart } from '@/context/cart-context'
+import { useSearch } from '@/context/search-context'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +24,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import { Menu } from "lucide-react"
-import { SearchModal } from './search-modal'
 import { ModeToggle } from './mode-toggle'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
@@ -31,9 +31,9 @@ import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-consta
 export function Navbar() {
   const router = useRouter()
   const { cartCount, openCart } = useCart()
+  const { openSearch } = useSearch()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
-  const [searchOpen, setSearchOpen] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -117,7 +117,7 @@ export function Navbar() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
-        setSearchOpen(true)
+        openSearch()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -217,7 +217,7 @@ export function Navbar() {
 
             {/* Mobile Cart & Search Actions (Visible only on mobile) */}
             <div className="flex gap-4 items-center md:hidden relative z-50 pt-1">
-              <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-background/50 rounded-full backdrop-blur-sm border border-border group" aria-label={`Cart with ${cartCount} items`}>
+              <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-background/50 rounded-full backdrop-blur-sm border border-border group tactile-press" aria-label={`Cart with ${cartCount} items`}>
                 <img
                   src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=BF9B65"
                   alt="Cart"
@@ -333,7 +333,7 @@ export function Navbar() {
                 <Link
                   key={item}
                   href={item === 'Home' ? '/' : item === 'Our Story' ? '/our-story' : `/${item.toLowerCase().replace(' ', '-')}`}
-                  className="text-[11px] font-premium-sans text-muted-foreground hover:text-primary transition-colors duration-500 tracking-[0.2em]"
+                  className="text-[11px] font-premium-sans text-muted-foreground hover:text-primary transition-colors duration-500 tracking-[0.2em] luxe-underline"
                 >
                   {item}
                 </Link>
@@ -341,8 +341,8 @@ export function Navbar() {
 
               {/* Search */}
               <button
-                onClick={() => setSearchOpen(true)}
-                className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 group"
+                onClick={openSearch}
+                className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 group tactile-press"
                 aria-label="Search products"
               >
                 <Search className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
@@ -350,12 +350,12 @@ export function Navbar() {
               </button>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group" aria-label="Wishlist">
+              <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group tactile-press" aria-label="Wishlist">
                 <Heart className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
               </Link>
 
               {/* Cart */}
-              <Link href="/cart" className="relative text-muted-foreground hover:text-primary transition-colors group" aria-label={`Shopping Cart with ${cartCount} items`}>
+              <Link href="/cart" className="relative text-muted-foreground hover:text-primary transition-colors group tactile-press" aria-label={`Shopping Cart with ${cartCount} items`}>
                 <ShoppingBag className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
                 {cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-medium rounded-full flex items-center justify-center">
@@ -422,7 +422,6 @@ export function Navbar() {
         </div>
       </motion.nav>
 
-      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   )
 }

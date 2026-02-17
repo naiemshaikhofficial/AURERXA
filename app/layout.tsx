@@ -63,6 +63,7 @@ import { CookieConsent } from '@/components/cookie-consent'
 import { TrackingScripts } from '@/components/scripts/tracking'
 import { BehaviorTracker } from '@/components/behavior-tracker'
 import { getCurrentUserProfile } from '@/app/actions'
+import { SearchModal } from '@/components/search-modal'
 
 
 export default async function RootLayout({
@@ -124,6 +125,7 @@ export default async function RootLayout({
 
                 <CookieConsent />
                 <TrackingScripts />
+                <SearchModal />
                 <Suspense fallback={null}>
                   <BehaviorTracker />
                 </Suspense>
