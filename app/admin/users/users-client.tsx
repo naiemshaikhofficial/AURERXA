@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { getUserDetails, toggleUserBan, deleteUser } from '../actions'
-import { Search, User as UserIcon, Mail, Phone, MapPin, Calendar, Trash2, ShoppingBag, CreditCard, X, Ban, ShieldCheck, ShieldAlert } from 'lucide-react'
+import { getUserDetails, toggleUserBan, deleteUser, toggleAdminRole } from '../actions'
+import { Search, User as UserIcon, Mail, Phone, MapPin, Calendar, Trash2, ShoppingBag, CreditCard, X, Ban, ShieldCheck, ShieldAlert, Crown } from 'lucide-react'
 
 export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: any[], total: number, adminRole: string | null }) {
     const router = useRouter()
@@ -17,6 +17,7 @@ export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: 
     const [loadingDetails, setLoadingDetails] = useState(false)
     const [isBanning, setIsBanning] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
+    const [isPromoting, setIsPromoting] = useState(false)
 
     // Sync Props
     useEffect(() => {
@@ -68,6 +69,27 @@ export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: 
             setSelectedUser(null)
             setUserDetails(null)
             router.refresh()
+        } else {
+            alert('Failed: ' + res.error)
+        }
+
+
+    }
+
+    const handleAdminToggle = async () => {
+        if (!selectedUser || !userDetails) return
+
+        const isCurrentlyAdmin = userDetails.isAdmin
+        const action = confirm(`Are you sure you want to ${isCurrentlyAdmin ? 'REMOVE' : 'GRANT'} Admin privileges for ${userDetails.profile.full_name}?`)
+        if (!action) return
+
+        setIsPromoting(true)
+        const res = await toggleAdminRole(selectedUser.id, !isCurrentlyAdmin)
+        setIsPromoting(false)
+
+        if (res.success) {
+            setUserDetails((prev: any) => ({ ...prev, isAdmin: !isCurrentlyAdmin }))
+            alert(isCurrentlyAdmin ? 'Admin privileges removed.' : 'User promoted to Admin.')
         } else {
             alert('Failed: ' + res.error)
         }
@@ -220,18 +242,37 @@ export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: 
                                         </div>
                                     </div>
                                 )}
-                                {/* Danger Zone */}
-                                {adminRole === 'main_admin' && (
-                                    <div className="pt-6 border-t border-white/5 space-y-3">
-                                        <button onClick={handleBanToggle} disabled={isBanning} className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition text-sm font-medium ${userDetails.profile.is_banned ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'}`}>
-                                            {isBanning ? <div className="w-4 h-4 border-2 border-t-transparent animate-spin" /> : userDetails.profile.is_banned ? <ShieldCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
-                                            {userDetails.profile.is_banned ? 'Unban User' : 'Ban User'}
-                                        </button>
-                                        <button onClick={handleDelete} disabled={isDeleting} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-500 rounded-xl transition text-sm font-medium">
-                                            {isDeleting ? <div className="w-4 h-4 border-2 border-t-transparent animate-spin" /> : <Trash2 className="w-4 h-4" />} Delete User Account
-                                        </button>
-                                    </div>
-                                )}
+                                {/* Danger Zone & Admin Management */}
+                                <div className="pt-6 border-t border-white/5 space-y-3">
+                                    {adminRole === 'main_admin' && (
+                                        <>
+                                            <button
+                                                onClick={handleAdminToggle}
+                                                disabled={isPromoting}
+                                                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition text-sm font-medium ${userDetails.isAdmin
+                                                    ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+                                                    : 'bg-[#D4AF37]/10 text-[#D4AF37] border border-[#D4AF37]/20'
+                                                    }`}
+                                            >
+                                                {isPromoting ? (
+                                                    <div className="w-4 h-4 border-2 border-t-transparent animate-spin" />
+                                                ) : (
+                                                    <Crown className="w-4 h-4" />
+                                                )}
+                                                {userDetails.isAdmin ? 'Remove Admin Privileges' : 'Promote to Admin'}
+                                            </button>
+
+                                            <button onClick={handleBanToggle} disabled={isBanning} className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl transition text-sm font-medium ${userDetails.profile.is_banned ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                                                {isBanning ? <div className="w-4 h-4 border-2 border-t-transparent animate-spin" /> : userDetails.profile.is_banned ? <ShieldCheck className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
+                                                {userDetails.profile.is_banned ? 'Unban User' : 'Ban User'}
+                                            </button>
+
+                                            <button onClick={handleDelete} disabled={isDeleting} className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-500 rounded-xl transition text-sm font-medium">
+                                                {isDeleting ? <div className="w-4 h-4 border-2 border-t-transparent animate-spin" /> : <Trash2 className="w-4 h-4" />} Delete User Account
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         ) : <div className="text-center py-12 text-white/30">Failed to load details</div>}
                     </div>

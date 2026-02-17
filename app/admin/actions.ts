@@ -595,6 +595,8 @@ export async function getUserDetails(userId: string) {
         .eq('user_id', userId)
         .order('is_default', { ascending: false })
 
+    const { data: adminUser } = await client.from('admin_users').select('role').eq('id', userId).single()
+
     return {
         profile,
         orders: orders || [],
@@ -602,7 +604,9 @@ export async function getUserDetails(userId: string) {
         stats: {
             totalOrders: validOrders.length,
             totalSpent
-        }
+        },
+        isAdmin: !!adminUser,
+        adminRole: adminUser?.role
     }
 }
 
@@ -643,6 +647,38 @@ export async function deleteUser(userId: string) {
         entity_type: 'user',
         entity_id: userId,
     })
+
+    return { success: true }
+}
+
+export async function toggleAdminRole(userId: string, makeAdmin: boolean) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin || admin.role !== 'main_admin') return { success: false, error: 'Unauthorized. Only Main Admins can manage roles.' }
+
+    if (makeAdmin) {
+        // Promote to admin (default role: staff)
+        const { error } = await client.from('admin_users').insert({ id: userId, role: 'staff' })
+        if (error) return { success: false, error: 'Failed to promote: ' + error.message }
+
+        await client.from('admin_activity_logs').insert({
+            admin_id: admin.userId,
+            action: 'Promoted user to Admin',
+            entity_type: 'user',
+            entity_id: userId
+        })
+    } else {
+        // Demote from admin
+        const { error } = await client.from('admin_users').delete().eq('id', userId)
+        if (error) return { success: false, error: 'Failed to demote: ' + error.message }
+
+        await client.from('admin_activity_logs').insert({
+            admin_id: admin.userId,
+            action: 'Demoted Admin to User',
+            entity_type: 'user',
+            entity_id: userId
+        })
+    }
 
     return { success: true }
 }
