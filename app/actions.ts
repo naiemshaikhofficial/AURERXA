@@ -1120,8 +1120,8 @@ export async function createOrder(
   const giftWrapCost = options?.giftWrap ? 199 : 0
   const total = subtotal + shipping + giftWrapCost - couponDiscount
 
-  // SECURITY: Prevent negative, zero, or absurdly high totals
-  if (total <= 0) {
+  // SECURITY: Prevent negative or absurdly high totals (₹0 allowed for free/coupon orders)
+  if (total < 0) {
     return { success: false, error: 'Invalid order total calculated.' }
   }
   if (total > 1000000) {
