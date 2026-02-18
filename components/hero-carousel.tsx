@@ -26,7 +26,15 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
     const [isHovered, setIsHovered] = useState(false)
     const [direction, setDirection] = useState(0)
     const [isMounted, setIsMounted] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
     const containerRef = useRef<HTMLElement>(null)
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768)
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
 
     useEffect(() => {
         setIsMounted(true)
@@ -119,8 +127,8 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                     opacity: isMain ? 1 : 0.35,
                                     scale: isMain ? (isHovered ? 1.08 : 1.05) : 0.75,
                                     z: isMain ? (isHovered ? 200 : 100) : -400,
-                                    x: offset * 65 + "%", // Overlap side slides
-                                    rotateY: offset * -20, // Subtle tilt for depth
+                                    x: offset * (isMobile ? 55 : 65) + "%", // Overlap side slides
+                                    rotateY: offset * (isMobile ? -10 : -20), // Subtle tilt for depth
                                     y: isMain ? (isHovered ? -20 : 0) : 0, // Lift when hovered
                                 }}
                                 exit={{
@@ -186,14 +194,14 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                                 >
                                                     {slide.subtitle && (
                                                         <p
-                                                            className="font-premium-sans text-xs md:text-sm tracking-[0.5em] uppercase mb-2"
+                                                            className="font-premium-sans text-[10px] md:text-sm tracking-[0.5em] uppercase mb-2"
                                                             style={{ color: slide.text_color || 'rgba(251, 191, 36, 0.9)' }} // amber-200/90 default
                                                         >
                                                             {slide.subtitle}
                                                         </p>
                                                     )}
                                                     <h2
-                                                        className="text-4xl md:text-7xl font-serif font-medium leading-tight drop-shadow-2xl"
+                                                        className="text-2xl md:text-7xl font-serif font-medium leading-tight drop-shadow-2xl"
                                                         style={{ color: slide.text_color || 'white' }}
                                                     >
                                                         {slide.title}
@@ -206,7 +214,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                                     transition={{ duration: 0.6, delay: 0.6 }}
                                                 >
                                                     <div
-                                                        className="inline-block px-12 py-4 font-semibold text-xs md:text-sm tracking-[0.3em] uppercase hover:bg-black hover:text-white transition-all duration-500 shadow-xl border border-transparent hover:border-white"
+                                                        className="inline-block px-8 md:px-12 py-3 md:py-4 font-semibold text-[10px] md:text-sm tracking-[0.3em] uppercase hover:bg-black hover:text-white transition-all duration-500 shadow-xl border border-transparent hover:border-white"
                                                         style={{
                                                             backgroundColor: slide.button_bg || 'white',
                                                             color: slide.button_text_color || 'black'

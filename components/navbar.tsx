@@ -266,7 +266,7 @@ export function Navbar() {
         }}
         className="fixed top-0 left-0 right-0 z-50 md:backdrop-blur-md flex items-center p-4 md:p-0"
       >
-        <div className="max-w-7xl mx-auto px-0 md:px-6 lg:px-12 w-full">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
             <Link href="/" className="flex-shrink-0 group relative z-50" aria-label="AURERXA Home">
               <img
