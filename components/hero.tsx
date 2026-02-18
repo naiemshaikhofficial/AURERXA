@@ -2,6 +2,7 @@
 
 import React, { useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 
@@ -98,10 +99,10 @@ export function Hero() {
             transition={{ duration: 1, delay: 0.5, ease: PREMIUM_EASE }}
             className="pt-8 md:pt-16"
           >
-            <button className="group relative px-8 sm:px-12 py-4 sm:py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[10px] sm:text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl" aria-label="Discover the Collection">
+            <Link href="/collections" className="group relative inline-block px-8 sm:px-12 py-4 sm:py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[10px] sm:text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl" aria-label="Discover the Collection">
               <span className="relative z-10">Discover Collection</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-[1500ms] ease-in-out" />
-            </button>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform [transition-duration:1500ms] ease-in-out" />
+            </Link>
           </motion.div>
         </div>
       </div>

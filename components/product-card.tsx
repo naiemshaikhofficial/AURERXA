@@ -228,7 +228,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 </div>
 
                 {/* Modern Slide-up Buttons */}
-                <div className="hidden md:block absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] z-20">
+                <div className="hidden md:block absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] z-20">
                     <div className="grid grid-cols-2 gap-px bg-white/5 backdrop-blur-md border-t border-white/10">
                         <Button
                             onClick={handleAddToCart}

@@ -46,7 +46,7 @@ function CollectionCard({ category, parentScrollProgress }: { category: any, par
         <div
           className="absolute inset-0 z-10 p-10 flex flex-col justify-end"
         >
-          <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
+          <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)]">
             <p className="text-primary/80 text-[9px] uppercase tracking-[0.4em] font-bold mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-700">Explore</p>
             <h3 className="text-2xl md:text-3xl font-serif font-bold text-white italic tracking-tighter leading-none mb-8 group-hover:text-primary transition-colors duration-300">
               {category.name}
@@ -109,9 +109,12 @@ export function FeaturedCollections({ categories: initialCategories }: { categor
                 </h2>
                 <div className="w-16 h-[0.5px] mx-auto bg-primary/20" />
               </motion.div>
-              <p className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic max-w-2xl mx-auto leading-relaxed">
-                Each piece is a testament to our legacy of precision, crafted from the world's most precious elements.
-              </p>
+              <Link href="/collections" className="group block">
+                <div className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic max-w-2xl mx-auto leading-relaxed group-hover:text-primary transition-colors inline-flex items-center gap-2">
+                  Each piece is a testament to our legacy of precision, crafted from the world's most precious elements.
+                  <div className="w-8 h-[1px] bg-primary/30 group-hover:w-12 group-hover:bg-primary transition-all duration-700 hidden md:block" />
+                </div>
+              </Link>
             </motion.div>
 
             {/* Collections Grid */}

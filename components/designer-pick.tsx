@@ -29,7 +29,7 @@ export function DesignerPick() {
                                 src="/pexels-the-glorious-studio-3584518-29245554.webp"
                                 alt="Designer's Pick"
                                 fill
-                                className="object-cover transition-transform duration-[2s] group-hover:scale-110"
+                                className="object-cover transition-transform [transition-duration:2s] group-hover:scale-110"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-transparent" />
                         </div>

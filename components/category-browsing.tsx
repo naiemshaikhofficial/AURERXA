@@ -57,15 +57,18 @@ export function CategoryBrowsing() {
                         <div className="w-16 h-[0.5px] mx-auto bg-primary/20" />
                     </motion.div>
 
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.2 }}
-                        className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic"
-                    >
-                        Shop by Categories
-                    </motion.p>
+                    <Link href="/collections" className="group block">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            whileInView={{ opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.2 }}
+                            className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic group-hover:text-primary transition-colors inline-flex items-center gap-2"
+                        >
+                            Shop by Categories
+                            <div className="w-8 h-[1px] bg-primary/30 group-hover:w-12 group-hover:bg-primary transition-all duration-700" />
+                        </motion.div>
+                    </Link>
                 </div>
 
                 {/* Categories Grid */}

@@ -10,7 +10,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
-    optimizeCss: true, // Attempt to inline critical CSS
+    optimizeCss: false, // Disabling to prevent Turbopack panic
   },
   async headers() {
     return [

@@ -183,7 +183,7 @@ export function Lookbook() {
                                 src={item.image}
                                 alt={item.title}
                                 fill
-                                className="object-cover transition-transform duration-[3s] group-hover:scale-105"
+                                className="object-cover transition-transform [transition-duration:3s] group-hover:scale-105"
                             />
                             <div className="absolute inset-0 bg-black/20 transition-opacity duration-700 group-hover:bg-black/10" />
 
