@@ -62,6 +62,15 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
         return () => clearTimeout(timer)
     }, [searchQuery])
 
+    const formatTitle = (text: string) => {
+        if (!text) return ''
+        return decodeURIComponent(text)
+            .replace(/[-_]/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ')
+    }
+
     return (
         <div className="min-h-screen bg-background text-foreground relative">
             {/* Hero Header - Matte Luxury Edition */}
@@ -79,14 +88,14 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                         </div>
                         <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4 uppercase">
                             {filters.tag
-                                ? `${filters.tag} Collection`
+                                ? `${formatTitle(filters.tag)} Collection`
                                 : filters.category !== 'all'
                                     ? categories.find(c => c.slug === filters.category)?.name || 'Collections'
                                     : 'Collections'}
                         </h1>
                         <p className="max-w-xl mx-auto text-muted-foreground font-light text-sm tracking-widest uppercase leading-loose">
                             {filters.tag
-                                ? `Curated pieces from our ${filters.tag} series.`
+                                ? `Curated pieces from our ${formatTitle(filters.tag)} series.`
                                 : 'Curated masterpieces for the modern connoisseur.'}
                         </p>
                     </div>

@@ -69,13 +69,6 @@ export function SearchModal() {
 
             <div className="relative w-full max-w-4xl px-4 md:px-6">
                 {/* Close Button */}
-                <button
-                    onClick={onClose}
-                    className="absolute -top-12 right-4 md:right-0 p-2 text-white/40 hover:text-primary transition-colors"
-                    aria-label="Close search"
-                >
-                    <X className="w-6 h-6" />
-                </button>
 
                 {/* Search Header */}
                 <div className="relative mb-12 animate-in slide-in-from-bottom-8 duration-500">
@@ -91,9 +84,25 @@ export function SearchModal() {
                             placeholder="SEARCH OUR HERITAGE..."
                             className="w-full bg-transparent border-none text-2xl md:text-5xl font-serif text-white placeholder:text-white/10 focus:outline-none uppercase tracking-widest"
                         />
-                        {loading && (
-                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                        )}
+                        <div className="flex items-center gap-4">
+                            {loading && (
+                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                            )}
+                            {query && !loading && (
+                                <button
+                                    onClick={() => setQuery('')}
+                                    className="p-2 text-white/20 hover:text-white transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            )}
+                            <button
+                                onClick={onClose}
+                                className="p-2 text-white/40 hover:text-primary transition-colors border-l border-white/10 pl-4"
+                            >
+                                <X className="w-8 h-8" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
