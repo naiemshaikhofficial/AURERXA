@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PREMIUM_EASE } from '@/lib/animation-constants'
 
@@ -20,121 +20,140 @@ interface Slide {
 export function HeroCarousel({ slides }: { slides: Slide[] }) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
+    const containerRef = useRef<HTMLElement>(null)
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start start", "end start"]
+    })
+
+    const yParallax = useTransform(scrollYProgress, [0, 1], ["0%", "30%"])
 
     // Auto-advance
     useEffect(() => {
         if (isHovered) return
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % slides.length)
-        }, 6000) // 6s per slide
+        }, 6000)
         return () => clearInterval(timer)
     }, [isHovered, slides.length])
 
-    const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % slides.length)
-    const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length)
+    const nextSlide = (e?: React.MouseEvent) => {
+        e?.preventDefault()
+        e?.stopPropagation()
+        setCurrentIndex((prev) => (prev + 1) % slides.length)
+    }
+
+    const prevSlide = (e?: React.MouseEvent) => {
+        e?.preventDefault()
+        e?.stopPropagation()
+        setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length)
+    }
 
     if (!slides || slides.length === 0) return null
 
+    const currentSlide = slides[currentIndex]
+
     return (
         <section
-            className="relative h-[80vh] md:h-screen w-full overflow-hidden bg-background group"
+            ref={containerRef}
+            className="relative h-[50vh] md:h-[75vh] w-full overflow-hidden bg-background group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                    key={currentIndex}
-                    initial={{ opacity: 0, scale: 1.1 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1.5, ease: PREMIUM_EASE }}
-                    className="absolute inset-0"
-                >
-                    {/* Background Image */}
-                    <div className="relative h-full w-full">
-                        <Image
-                            src={slides[currentIndex].image_url}
-                            alt={slides[currentIndex].title}
-                            fill
-                            priority={currentIndex === 0}
-                            className="object-cover object-center hidden md:block"
-                            sizes="100vw"
-                        />
-                        <Image
-                            src={slides[currentIndex].mobile_image_url || slides[currentIndex].image_url}
-                            alt={slides[currentIndex].title}
-                            fill
-                            priority={currentIndex === 0}
-                            className="object-cover object-center md:hidden"
-                            sizes="100vw"
-                        />
-                        {/* Gradient Overlay for Text Readability */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
-                    </div>
+            <Link href={currentSlide.cta_link || '/collections'} className="block w-full h-full cursor-pointer">
+                <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                        key={currentIndex}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.2, ease: "easeInOut" }}
+                        className="absolute inset-0"
+                    >
+                        {/* Parallax Background Image */}
+                        <motion.div style={{ y: yParallax }} className="relative w-full h-[120%] -top-[10%]">
+                            <Image
+                                src={currentSlide.image_url}
+                                alt={currentSlide.title}
+                                fill
+                                priority={currentIndex === 0}
+                                className="object-cover object-center hidden md:block"
+                                sizes="100vw"
+                            />
+                            <Image
+                                src={currentSlide.mobile_image_url || currentSlide.image_url}
+                                alt={currentSlide.title}
+                                fill
+                                priority={currentIndex === 0}
+                                className="object-cover object-center md:hidden"
+                                sizes="100vw"
+                            />
+                        </motion.div>
 
-                    {/* Content */}
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="max-w-7xl mx-auto px-6 w-full">
-                            <div className="max-w-xl space-y-6 md:space-y-8">
-                                <motion.div
-                                    initial={{ opacity: 0, y: 30 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.8, delay: 0.5, ease: PREMIUM_EASE }}
-                                >
-                                    {slides[currentIndex].subtitle && (
-                                        <p className="text-amber-200/80 font-premium-sans text-xs md:text-sm tracking-[0.3em] uppercase mb-4">
-                                            {slides[currentIndex].subtitle}
-                                        </p>
-                                    )}
-                                    <h2 className="text-4xl md:text-7xl font-serif font-medium text-white leading-tight">
-                                        {slides[currentIndex].title}
-                                    </h2>
-                                </motion.div>
+                        {/* Gradient Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
 
-                                <motion.div
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.8, delay: 0.7, ease: PREMIUM_EASE }}
-                                >
-                                    <Link
-                                        href={slides[currentIndex].cta_link || '/collections'}
-                                        className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 transition-all duration-300"
+                        {/* Content */}
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="max-w-7xl mx-auto px-6 w-full">
+                                <div className="max-w-xl space-y-4 md:space-y-6">
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
                                     >
-                                        <span className="text-white font-premium-sans text-xs tracking-[0.2em] uppercase">
-                                            {slides[currentIndex].cta_text || 'Explore'}
-                                        </span>
-                                        <span className="w-8 h-[1px] bg-white/50 group-hover:w-12 transition-all duration-300" />
-                                    </Link>
-                                </motion.div>
+                                        {currentSlide.subtitle && (
+                                            <p className="text-amber-200/90 font-premium-sans text-[10px] md:text-xs tracking-[0.3em] uppercase mb-2 md:mb-4">
+                                                {currentSlide.subtitle}
+                                            </p>
+                                        )}
+                                        <h2 className="text-3xl md:text-6xl font-serif font-medium text-white leading-tight drop-shadow-md">
+                                            {currentSlide.title}
+                                        </h2>
+                                    </motion.div>
+
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.8, delay: 0.5 }}
+                                    >
+                                        <div className="inline-flex items-center gap-2 text-white border-b border-white/50 pb-1 hover:border-white transition-colors">
+                                            <span className="font-premium-sans text-[10px] md:text-xs tracking-[0.2em] uppercase">
+                                                {currentSlide.cta_text || 'Explore'}
+                                            </span>
+                                            <ChevronRight size={14} />
+                                        </div>
+                                    </motion.div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </motion.div>
-            </AnimatePresence>
+                    </motion.div>
+                </AnimatePresence>
+            </Link>
 
-            {/* Navigation Controls */}
-            <div className="absolute bottom-12 right-6 md:right-12 flex items-center gap-4 z-20">
+            {/* Navigation Controls - Prevent bubbling to Link */}
+            <div className="absolute bottom-6 md:bottom-12 right-6 md:right-12 flex items-center gap-4 z-20 pointer-events-auto">
                 <button
                     onClick={prevSlide}
-                    className="p-3 rounded-full border border-white/20 bg-black/20 backdrop-blur-sm text-white hover:bg-white hover:text-black transition-all duration-300"
+                    className="p-2 md:p-3 rounded-full border border-white/20 bg-black/20 backdrop-blur-sm text-white hover:bg-white hover:text-black transition-all duration-300"
                     aria-label="Previous Slide"
                 >
-                    <ChevronLeft size={20} />
+                    <ChevronLeft size={16} />
                 </button>
                 <div className="flex gap-2">
                     {slides.map((_, idx) => (
                         <div
                             key={idx}
-                            className={`h-[2px] transition-all duration-500 ${idx === currentIndex ? 'w-8 bg-white' : 'w-4 bg-white/30'}`}
+                            className={`h-[2px] transition-all duration-500 ${idx === currentIndex ? 'w-6 md:w-8 bg-white' : 'w-3 md:w-4 bg-white/30'}`}
                         />
                     ))}
                 </div>
                 <button
                     onClick={nextSlide}
-                    className="p-3 rounded-full border border-white/20 bg-black/20 backdrop-blur-sm text-white hover:bg-white hover:text-black transition-all duration-300"
+                    className="p-2 md:p-3 rounded-full border border-white/20 bg-black/20 backdrop-blur-sm text-white hover:bg-white hover:text-black transition-all duration-300"
                     aria-label="Next Slide"
                 >
-                    <ChevronRight size={20} />
+                    <ChevronRight size={16} />
                 </button>
             </div>
         </section>
