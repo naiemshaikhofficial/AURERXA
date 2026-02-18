@@ -69,13 +69,18 @@ export function SearchModal() {
 
             <div className="relative w-full max-w-4xl px-4 md:px-6">
                 {/* Close Button */}
+                <button
+                    onClick={onClose}
+                    className="absolute -top-12 right-4 md:right-0 p-2 text-white/40 hover:text-primary transition-colors"
+                    aria-label="Close search"
+                >
+                    <X className="w-6 h-6" />
+                </button>
 
                 {/* Search Header */}
                 <div className="relative mb-12 animate-in slide-in-from-bottom-8 duration-500">
                     <div className="flex items-center gap-6 border-b border-neutral-800 pb-4 group focus-within:border-primary transition-colors">
-                        <Search
-                            className="w-6 h-6 text-neutral-500 group-focus-within:text-primary transition-colors"
-                        />
+                        <Search className="w-6 h-6 text-neutral-500 group-focus-within:text-primary transition-colors" />
                         <input
                             ref={inputRef}
                             type="text"
@@ -84,25 +89,9 @@ export function SearchModal() {
                             placeholder="SEARCH OUR HERITAGE..."
                             className="w-full bg-transparent border-none text-2xl md:text-5xl font-serif text-white placeholder:text-white/10 focus:outline-none uppercase tracking-widest"
                         />
-                        <div className="flex items-center gap-4">
-                            {loading && (
-                                <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                            )}
-                            {query && !loading && (
-                                <button
-                                    onClick={() => setQuery('')}
-                                    className="p-2 text-white/20 hover:text-white transition-colors"
-                                >
-                                    <X className="w-5 h-5" />
-                                </button>
-                            )}
-                            <button
-                                onClick={onClose}
-                                className="p-2 text-white/40 hover:text-primary transition-colors border-l border-white/10 pl-4"
-                            >
-                                <X className="w-8 h-8" />
-                            </button>
-                        </div>
+                        {loading && (
+                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                        )}
                     </div>
                 </div>
 
@@ -186,7 +175,7 @@ export function SearchModal() {
                                         <Link
                                             href="/collections"
                                             onClick={onClose}
-                                            className="inline-block text-[10px] text-amber-500 uppercase tracking-widest border-b border-amber-500/30 pb-1 hover:border-amber-500 transition-colors"
+                                            className="inline-block text-[10px] text-primary uppercase tracking-widest border-b border-primary/30 pb-1 hover:border-primary transition-colors"
                                         >
                                             Explore Complete Vault
                                         </Link>

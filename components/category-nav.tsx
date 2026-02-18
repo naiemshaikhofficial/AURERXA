@@ -3,22 +3,22 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 
 const categories = [
-    { label: 'All Jewellery', href: '/collections', iconId: 'aCPWW0PJ102K' }, // All
-    { label: 'Gold', href: '/collections?material=gold', iconId: '16356' }, // Gold bar
-    { label: 'Diamond', href: '/collections?material=diamond', iconId: 'FrcEOQDge9Hy' }, // Diamond
-    { label: 'Kids', href: '/collections?gender=Kids', iconId: 'J2uuDL01xwUL' }, // Rocking Horse (Kids)
-    { label: 'Earrings', href: '/collections?type=Earring', iconId: 'ksXSIChGyK69' }, // Earring
-    { label: 'Rings', href: '/collections?type=Ring', iconId: '5z5Rvj2F4jZB' }, // Ring
-    { label: 'Daily Wear', href: '/collections?occasion=daily', iconId: '9960' }, // Sparkle/Daily
-    { label: 'Collections', href: '/collections', iconId: '121367' }, // Shop/Box
-    { label: 'Wedding', href: '/collections?occasion=wedding', iconId: 'GUr9QmddhC6I' }, // Heart
-    { label: 'Gifting', href: '/collections?occasion=gift', iconId: '337' }, // Star/Gift
+    { label: 'All Jewellery', href: '/collections', iconId: 'aCPWW0PJ102K' },
+    { label: 'Gold', href: '/collections/gold', iconId: '16356' },
+    { label: 'Diamond', href: '/collections/diamond', iconId: 'FrcEOQDge9Hy' },
+    { label: 'Kids', href: '/collections/kids', iconId: 'J2uuDL01xwUL' },
+    { label: 'Earrings', href: '/collections/earrings', iconId: 'ksXSIChGyK69' },
+    { label: 'Rings', href: '/collections/rings', iconId: '5z5Rvj2F4jZB' },
+    { label: 'Daily Wear', href: '/collections/daily', iconId: '9960' },
+    { label: 'Collections', href: '/collections', iconId: '121367' },
+    { label: 'Wedding', href: '/collections/wedding', iconId: 'GUr9QmddhC6I' },
+    { label: 'Gifting', href: '/collections/gift', iconId: '337' },
 ]
 
 export function CategoryNav() {
@@ -70,7 +70,7 @@ export function CategoryNav() {
                     <div className="max-w-7xl mx-auto px-4 md:px-6 w-full overflow-x-auto no-scrollbar">
                         <div className="flex items-center justify-between min-w-max md:min-w-0 gap-6 md:gap-8">
                             {categories.map((cat) => {
-                                const isActive = pathname === cat.href
+                                const isActive = pathname === cat.href || (cat.href !== '/collections' && pathname.startsWith(cat.href))
 
                                 return (
                                     <Link
