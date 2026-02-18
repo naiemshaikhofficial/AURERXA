@@ -70,6 +70,7 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
             purity: product.purity || '',
             slug: product.slug || product.name.toLowerCase().replace(/ /g, '-'),
             sub_category_id: product.sub_category_id || null,
+            tags: Array.isArray(product.tags) ? product.tags : [],
         })
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -109,6 +110,7 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                 sizes: editingProduct.sizes,
                 slug: editingProduct.slug,
                 sub_category_id: editingProduct.sub_category_id,
+                tags: Array.isArray(editingProduct.tags) ? editingProduct.tags : [],
             })
         } else {
             result = await addNewProduct({
@@ -132,6 +134,7 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                 gender: editingProduct.gender || 'Unisex',
                 sizes: editingProduct.sizes || [],
                 sub_category_id: editingProduct.sub_category_id || null,
+                tags: Array.isArray(editingProduct.tags) ? editingProduct.tags : [],
             })
         }
 
@@ -201,7 +204,8 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                                     weight_grams: 0,
                                     purity: '',
                                     slug: '',
-                                    sub_category_id: null
+                                    sub_category_id: null,
+                                    tags: []
                                 })}
                                 className="bg-[#D4AF37] text-black hover:bg-[#D4AF37]/80 text-xs px-4 h-10 rounded-xl"
                             >
@@ -475,6 +479,16 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                                         />
                                     </div>
 
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] text-white/20 uppercase ml-1">Collections / Tags (Comma separated)</p>
+                                        <Input
+                                            value={Array.isArray(editingProduct.tags) ? editingProduct.tags.join(', ') : ''}
+                                            onChange={(e) => setEditingProduct({ ...editingProduct, tags: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                                            className="bg-white/5 border-white/10 rounded-xl"
+                                            placeholder="e.g. Soulmate, Valentines, Hip Hop"
+                                        />
+                                    </div>
+
                                     <div className="flex gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">
                                         <div className="flex-1 space-y-2">
                                             <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Visibility</p>
@@ -646,7 +660,8 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                                             weight_grams: 0,
                                             purity: '',
                                             slug: '',
-                                            sub_category_id: null
+                                            sub_category_id: null,
+                                            tags: []
                                         })}
                                         className="bg-white/10 hover:bg-white/20 text-white rounded-xl border border-white/10"
                                     >

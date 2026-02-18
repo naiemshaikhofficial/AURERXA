@@ -203,6 +203,7 @@ export async function addNewProduct(productData: any) {
     .from('products')
     .insert({
       ...productData,
+      tags: productData.tags || [],
       created_at: new Date().toISOString()
     })
     .select()
@@ -421,7 +422,7 @@ export async function getProducts(categorySlug?: string, sortBy?: string) {
     async () => {
       let query = supabaseServer
         .from('products')
-        .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+        .select('id, name, price, image_url, images, slug, weight_grams, tags, categories(id, name, slug), sub_categories(id, name, slug)')
 
       if (categorySlug) {
         const { data: cat } = await supabaseServer
@@ -489,7 +490,7 @@ export const getProductBySlug = cache(async (slug: string) => {
           id, name, description, price, image_url, images, stock, 
           sizes, featured, bestseller, slug, purity, gender, 
           weight_grams, dimensions_width, dimensions_height, 
-          dimensions_length, dimensions_unit, video_url, created_at,
+          dimensions_length, dimensions_unit, video_url, tags, created_at,
           categories(slug, name), 
           sub_categories(slug, name)
         `)
@@ -1754,7 +1755,7 @@ export async function searchProducts(query: string) {
     // This utilizes the GIN functional index if defined on name/description.
     const { data: ftsResults, error: ftsError } = await supabaseServer
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, tags, categories(id, name, slug), sub_categories(id, name, slug)')
       .textSearch('name', query, {
         type: 'websearch',
         config: 'english'
@@ -1768,7 +1769,7 @@ export async function searchProducts(query: string) {
     // 2. Fallback to ILIKE if FTS fails or yields no results
     const { data: ilikeResults, error: ilikeError } = await supabaseServer
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, tags, categories(id, name, slug), sub_categories(id, name, slug)')
       .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
       .limit(12)
 
@@ -1977,6 +1978,7 @@ export async function signOut() {
 
 export async function getFilteredProducts(options: {
   category?: string
+  tag?: string
   minPrice?: number
   maxPrice?: number
   sortBy?: string
@@ -1992,7 +1994,7 @@ export async function getFilteredProducts(options: {
           .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
 
         // Category filter
-        if (options.category) {
+        if (options.category && options.category !== 'all') {
           const { data: cat } = await supabaseServer
             .from('categories')
             .select('id')
@@ -2001,6 +2003,23 @@ export async function getFilteredProducts(options: {
           if (cat) {
             query = query.eq('category_id', cat.id)
           }
+        }
+
+        // Tag filter (Theme Collections)
+        if (options.tag) {
+          const t = options.tag.toLowerCase()
+          const variations = Array.from(new Set([
+            t,
+            t.charAt(0).toUpperCase() + t.slice(1),
+            options.tag,
+            t === 'bride' ? 'bridal' : null,
+            t === 'bride' ? 'Bridal' : null,
+            t === 'bridal' ? 'bride' : null,
+            t === 'bridal' ? 'Bridal' : null,
+          ].filter(Boolean) as string[]))
+
+          const orFilter = variations.map(v => `tags.cs.{"${v}"}`).join(',')
+          query = query.or(orFilter)
         }
 
         // Gender filter

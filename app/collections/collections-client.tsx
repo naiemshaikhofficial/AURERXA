@@ -34,6 +34,7 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
             const data = await getFilteredProducts({
                 sortBy: newFilters.sortBy,
                 category: newFilters.category === 'all' ? undefined : newFilters.category,
+                tag: newFilters.tag || undefined,
                 gender: newFilters.gender === 'all' ? undefined : newFilters.gender,
                 type: newFilters.type === 'all' ? undefined : newFilters.type,
                 minPrice: newFilters.priceRange.min,
@@ -131,6 +132,7 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                                     category: 'all',
                                     type: 'all',
                                     gender: 'all',
+                                    tag: undefined, // Added tag reset
                                     priceRange: { label: 'All Prices', min: 0, max: null },
                                     sortBy: 'newest',
                                     search: ''
