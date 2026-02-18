@@ -7,10 +7,9 @@ import { useSearch } from '@/context/search-context'
 export function Footer() {
   const { openSearch } = useSearch()
   return (
-    <footer className="hidden md:block py-24 px-6 lg:px-12 bg-background text-foreground relative border-t border-border overflow-hidden">
+    <footer className="hidden md:block py-24 px-6 lg:px-12 bg-background text-foreground relative overflow-hidden">
       {/* Black Edition Background Effect - Subtle Noise */}
 
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
@@ -113,7 +112,7 @@ export function Footer() {
         </div>
 
         {/* Social Media Row */}
-        <div className="mb-20 pt-12 border-t border-white/5 flex flex-wrap justify-center md:justify-start gap-8 items-center">
+        <div className="mb-20 pt-12 flex flex-wrap justify-center md:justify-start gap-8 items-center">
           <span className="text-[10px] font-premium-sans text-primary/60 uppercase tracking-[0.2em] w-full md:w-auto mb-4 md:mb-0 text-center md:text-left">Follow the Legacy</span>
           <div className="flex gap-10 items-center">
             {[
@@ -144,7 +143,7 @@ export function Footer() {
         </div>
 
         {/* Bottom copyright section */}
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 text-white/20 text-[10px] uppercase tracking-widest">
+        <div className="pt-12 flex flex-col md:flex-row justify-between items-center gap-8 text-white/20 text-[10px] uppercase tracking-widest">
           <span>© {new Date().getFullYear()} AURERXA. All Rights Reserved.</span>
           <div className="flex gap-12">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>

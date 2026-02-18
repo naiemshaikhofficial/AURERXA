@@ -1,11 +1,26 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, Info, RefreshCw, Loader2 } from 'lucide-react'
+import React, { useEffect, useState, useRef } from 'react'
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
+import { TrendingUp, RefreshCw, Loader2 } from 'lucide-react'
 import { getGoldRates, forceSyncGoldRates } from '@/app/actions'
 import { toast } from 'sonner'
 export function GoldRateCard() {
+    const sectionRef = useRef<HTMLElement>(null)
+    const { scrollYProgress } = useScroll({
+        target: sectionRef,
+        offset: ["start end", "end start"]
+    })
+
+    const smoothProgress = useSpring(scrollYProgress, {
+        stiffness: 100,
+        damping: 30,
+        restDelta: 0.001
+    })
+
+    const yCard = useTransform(smoothProgress, [0, 1], [100, -100])
+    const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+
     const [rates, setRates] = useState<Record<string, number>>({
         '24K': 15660,
         '22K': 14355,
@@ -60,14 +75,11 @@ export function GoldRateCard() {
     }
 
     return (
-        <section className="py-24 bg-background overflow-hidden relative border-y border-border">
+        <section ref={sectionRef} className="py-24 bg-background overflow-hidden relative">
             <div className="max-w-4xl mx-auto px-6 relative z-10">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, ease: [0.32, 0.72, 0, 1] }}
-                    className="bg-card/40 backdrop-blur-md border border-border p-10 md:p-12 rounded-[2rem] overflow-hidden"
+                    style={{ y: yCard, opacity }}
+                    className="bg-card/40 backdrop-blur-md border border-white/5 p-10 md:p-12 rounded-[2rem] overflow-hidden shadow-2xl"
                 >
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6 text-center md:text-left">
                         <div className="space-y-4 mx-auto md:mx-0">
@@ -78,9 +90,8 @@ export function GoldRateCard() {
                                 Market Valuation<span className="text-primary/80">.</span>
                             </h2>
                         </div>
-                        <div className="hidden md:block h-12 w-[1px] bg-border mx-8" />
                         <div className="flex flex-col items-center md:items-end gap-4 mx-auto md:mx-0">
-                            <p className="text-muted-foreground text-[11px] font-light tracking-widest uppercase leading-relaxed text-center md:text-right">
+                            <p className="text-muted-foreground text-[11px] font-light tracking-widest uppercase leading-relaxed text-center md:text-right opacity-60">
                                 Rates updated every 8 hours via Global Bullion Market
                             </p>
                             <button
@@ -95,12 +106,12 @@ export function GoldRateCard() {
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex justify-center md:justify-start gap-8 mb-12 border-b border-border pb-1 w-full overflow-x-auto scrollbar-hide">
+                    <div className="flex justify-center md:justify-start gap-8 mb-12 w-full overflow-x-auto scrollbar-hide">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`relative pb-4 px-2 transition-all duration-700 group/tab flex flex-col items-center text-center min-w-[80px]`}
+                                className="relative pb-4 px-2 transition-all duration-700 group/tab flex flex-col items-center text-center min-w-[80px]"
                             >
                                 <span className={`text-[11px] tracking-[0.2em] uppercase transition-colors duration-500 ${activeTab === tab.id ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
                                     }`}>
@@ -129,16 +140,16 @@ export function GoldRateCard() {
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={activeTab}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
                                 className="contents"
                             >
                                 {getDisplayRates().map(([purity, rate], idx) => (
                                     <motion.div
                                         key={purity}
-                                        className="group p-8 flex flex-col items-center space-y-5 border border-border bg-card/20 hover:bg-card/40 transition-colors duration-700 rounded-xl"
+                                        className="group p-8 flex flex-col items-center space-y-5 border border-white/5 bg-card/20 hover:bg-card/40 transition-colors duration-700 rounded-xl"
                                     >
                                         <span className="text-muted-foreground text-[10px] tracking-[0.3em] uppercase group-hover:text-primary transition-colors duration-500">
                                             {purity === 'Silver' || purity === 'Platinum' ? purity : `${purity} Gold`}
@@ -156,12 +167,10 @@ export function GoldRateCard() {
                     </div>
 
                     {/* Disclosure */}
-                    <div className="mt-16 flex items-center justify-center gap-3 opacity-30 mix-blend-plus-lighter">
-                        <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-border" />
-                        <span className="text-[9px] uppercase tracking-[0.3em] text-muted-foreground font-light">
+                    <div className="mt-16 flex items-center justify-center gap-4 opacity-20">
+                        <span className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-light">
                             Indicative Market Rates
                         </span>
-                        <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-border" />
                     </div>
                 </motion.div>
             </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -150,14 +150,25 @@ export function CustomOrderForm() {
     }
   }
 
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  })
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  })
+
+  const yHeader = useTransform(smoothProgress, [0, 1], [100, -100])
+  const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
+
   return (
-    <section ref={sectionRef} id="custom" className="py-16 md:py-32 px-6 lg:px-12 bg-background relative overflow-hidden transition-colors duration-500">
+    <section ref={sectionRef} id="custom" className="py-24 md:py-48 px-6 lg:px-12 bg-background relative overflow-hidden">
 
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+        style={{ y: yHeader, opacity }}
         className="max-w-3xl mx-auto relative z-10"
       >
         <div className="text-center mb-16 md:mb-24">
@@ -167,7 +178,6 @@ export function CustomOrderForm() {
           <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-foreground tracking-widest italic">
             Custom <span className="text-primary">Jewelry</span>
           </h2>
-          <div className="w-24 h-[1px] mx-auto bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-8" />
           <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto font-light leading-relaxed tracking-widest italic">
             Bring your vision to life. Our master craftsmen will create a bespoke piece just for you.
           </p>

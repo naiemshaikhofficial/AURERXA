@@ -18,7 +18,7 @@ export function CraftsmanshipStory() {
     const yIcon3 = useTransform(scrollYProgress, [0.5, 0.8], [50, -50])
 
     return (
-        <section ref={containerRef} className="bg-neutral-950 py-32 border-t border-white/5 relative overflow-hidden">
+        <section ref={containerRef} className="bg-neutral-950 py-32 md:py-48 relative overflow-hidden">
             {/* Background Ambience with Parallax */}
             <motion.div
                 style={{ y: yBackground }}
@@ -56,7 +56,6 @@ export function CraftsmanshipStory() {
                             <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-amber-900/20 group-hover:border-amber-500/30 transition-all duration-700 relative z-10">
                                 <Gem className="w-6 h-6 text-white/40 group-hover:text-amber-400 transition-colors duration-500" strokeWidth={1} />
                             </div>
-                            <div className="h-full w-px bg-gradient-to-b from-white/10 to-transparent mx-auto mt-8 hidden md:block" />
                         </motion.div>
                         <div className="md:w-2/3 space-y-6">
                             <h3 className="text-2xl md:text-3xl font-serif text-white/80 italic">Fairness Rooted in Reality</h3>
@@ -84,7 +83,6 @@ export function CraftsmanshipStory() {
                                 <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-amber-900/20 group-hover:border-amber-500/30 transition-all duration-700 mx-auto md:ml-auto md:mr-0 relative z-10">
                                     <Hammer className="w-6 h-6 text-white/40 group-hover:text-amber-400 transition-colors duration-500" strokeWidth={1} />
                                 </div>
-                                <div className="h-full w-px bg-gradient-to-b from-white/10 to-transparent mx-auto mt-8 hidden md:block" />
                             </motion.div>
                             <div className="md:w-2/3 space-y-6 md:text-right">
                                 <h3 className="text-2xl md:text-3xl font-serif text-white/80 italic">The Human Touch</h3>
@@ -112,7 +110,6 @@ export function CraftsmanshipStory() {
                             <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-amber-900/20 group-hover:border-amber-500/30 transition-all duration-700 relative z-10">
                                 <Hourglass className="w-6 h-6 text-white/40 group-hover:text-amber-400 transition-colors duration-500" strokeWidth={1} />
                             </div>
-                            <div className="h-full w-px bg-gradient-to-b from-white/10 to-transparent mx-auto mt-8 hidden md:block" />
                         </motion.div>
                         <div className="md:w-2/3 space-y-6">
                             <h3 className="text-2xl md:text-3xl font-serif text-white/80 italic">The Gift of Time</h3>

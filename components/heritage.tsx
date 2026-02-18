@@ -24,6 +24,8 @@ export function Heritage() {
     const scaleBg = useTransform(smoothProgress, [0, 1], [1.1, 1.3])
     const opacityBg = useTransform(smoothProgress, [0, 0.5, 1], [0.4, 0.6, 0.4])
 
+    const yContent = useTransform(smoothProgress, [0, 1], [50, -50])
+
     return (
         <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center bg-background py-12 md:py-0">
 
@@ -45,7 +47,7 @@ export function Heritage() {
 
             {/* Content */}
             <div className="relative z-10 text-center text-white px-6 max-w-7xl mx-auto">
-                <div className="space-y-8 md:space-y-16">
+                <motion.div style={{ y: yContent }} className="space-y-8 md:space-y-16">
                     {/* Subtitle */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -75,7 +77,7 @@ export function Heritage() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 1, delay: 0.4, ease: PREMIUM_EASE }}
-                        className="max-w-3xl mx-auto space-y-8 md:space-y-12 border-l-2 md:border-l-4 border-primary pl-6 md:pl-12 text-left bg-gradient-to-r from-black/50 to-transparent p-6 md:p-8 backdrop-blur-sm"
+                        className="max-w-3xl mx-auto space-y-8 md:space-y-12 text-center bg-gradient-to-b from-black/50 to-transparent p-6 md:p-8 backdrop-blur-sm"
                     >
                         <p className="text-base sm:text-lg md:text-2xl font-medium text-white/90 leading-relaxed tracking-wide">
                             "We don't just craft jewelry. We forge <span className="text-primary">respect</span>."
@@ -87,7 +89,7 @@ export function Heritage() {
                             Every spark is rooted in respect.
                         </p>
                     </motion.div>
-                </div>
+                </motion.div>
             </div>
 
         </section>

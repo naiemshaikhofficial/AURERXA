@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { subscribeNewsletter } from '@/app/actions'
@@ -19,8 +19,14 @@ export function Newsletter() {
     offset: ['start end', 'end start']
   })
 
-  // Very subtle background drift
-  const yBg = useTransform(scrollYProgress, [0, 1], [-20, 20])
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  })
+
+  const yContent = useTransform(smoothProgress, [0, 1], [100, -100])
+  const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,13 +49,10 @@ export function Newsletter() {
   }
 
   return (
-    <section ref={sectionRef} className="py-16 md:py-32 px-6 lg:px-12 bg-card relative overflow-hidden border-y border-border">
+    <section ref={sectionRef} className="py-24 md:py-48 px-6 lg:px-12 bg-card relative overflow-hidden">
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+        style={{ y: yContent, opacity }}
         className="max-w-xl mx-auto text-center relative z-10"
       >
         <div className="space-y-8 md:space-y-12">
@@ -57,7 +60,6 @@ export function Newsletter() {
             <p className="text-primary/80 text-[10px] font-premium-sans">
               Private Membership
             </p>
-            <div className="w-12 h-[1px] bg-primary/30 mx-auto" />
           </div>
 
           <h2 className="text-3xl md:text-6xl font-serif font-light text-foreground tracking-widest italic">
