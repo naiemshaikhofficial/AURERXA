@@ -1485,3 +1485,30 @@ export async function exportUsersToCSV() {
     const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n')
     return { success: true, csv: csvContent, filename: `users_report_${new Date().toISOString().split('T')[0]}.csv` }
 }
+
+// ============================================
+// SYSTEM MAINTENANCE
+// ============================================
+
+export async function triggerDatabaseMaintenance() {
+    const admin = await checkAdminRole()
+    if (!admin || admin.role !== 'main_admin') return { success: false, error: 'Unauthorized. Only Main Admin can perform maintenance.' }
+
+    const client = await getAuthClient()
+    const { data, error } = await client.rpc('perform_database_maintenance')
+
+    if (error) {
+        console.error('Maintenance RPC failed:', error)
+        return { success: false, error: error.message }
+    }
+
+    // Log the maintenance action
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: 'System Maintenance Performed',
+        entity_type: 'system',
+        details: data
+    })
+
+    return { success: true, results: data }
+}

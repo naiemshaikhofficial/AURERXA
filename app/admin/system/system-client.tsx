@@ -3,7 +3,8 @@
 import React, { useState } from 'react'
 import { format } from 'date-fns'
 import { AlertCircle, Trash2, ExternalLink, ShieldAlert, Cpu, Globe } from 'lucide-react'
-import { deleteErrorLog, getErrorLogs } from '../actions'
+import { deleteErrorLog, getErrorLogs, triggerDatabaseMaintenance } from '../actions'
+import { CheckCircle, Database } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface Log {
@@ -39,6 +40,22 @@ export function SystemClient({ initialLogs }: { initialLogs: Log[] }) {
         setLogs(newLogs)
         setLoading(false)
         toast.success('Logs refreshed')
+    }
+
+    const handleMaintenance = async () => {
+        const confirm = window.confirm('This will purge visitor and error logs older than 30 days. Continue?')
+        if (!confirm) return
+
+        setLoading(true)
+        const res = await triggerDatabaseMaintenance()
+        setLoading(false)
+
+        if (res.success) {
+            toast.success(`Maintenance Finished! Purged ${res.results.purged_visitor_logs} visitor logs and ${res.results.purged_error_logs} error logs.`)
+            refreshLogs()
+        } else {
+            toast.error(res.error || 'Maintenance failed')
+        }
     }
 
     return (
@@ -80,13 +97,23 @@ export function SystemClient({ initialLogs }: { initialLogs: Log[] }) {
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-xs font-medium text-white/60">Live Error Stream</span>
                 </div>
-                <button
-                    onClick={refreshLogs}
-                    disabled={loading}
-                    className="text-xs bg-white/5 hover:bg-white/10 text-white/80 px-4 py-2 rounded-lg transition disabled:opacity-50"
-                >
-                    {loading ? 'Refreshing...' : 'Refresh Logs'}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleMaintenance}
+                        disabled={loading}
+                        className="text-xs flex items-center gap-2 bg-[#D4AF37]/10 hover:bg-[#D4AF37]/20 text-[#D4AF37] px-4 py-2 rounded-lg transition disabled:opacity-50 font-semibold"
+                    >
+                        <Database className="w-3 h-3" />
+                        {loading ? 'Optimizing...' : 'Optimize DB'}
+                    </button>
+                    <button
+                        onClick={refreshLogs}
+                        disabled={loading}
+                        className="text-xs bg-white/5 hover:bg-white/10 text-white/80 px-4 py-2 rounded-lg transition disabled:opacity-50"
+                    >
+                        {loading ? 'Refreshing...' : 'Refresh Logs'}
+                    </button>
+                </div>
             </div>
 
             {/* Logs List */}

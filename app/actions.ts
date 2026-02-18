@@ -461,9 +461,18 @@ export async function getProducts(categorySlug?: string, sortBy?: string) {
 export const getProductBySlug = cache(async (slug: string) => {
   return unstable_cache(
     async () => {
+      // PERFORMANCE: Narrowing selection to avoid fetching heavy/unnecessary columns.
+      // This reduces memory overhead and improves caching efficiency.
       const { data, error } = await supabaseServer
         .from('products')
-        .select('*, categories(slug, name), sub_categories(slug, name)')
+        .select(`
+          id, name, description, price, image_url, images, stock, 
+          sizes, featured, bestseller, slug, purity, gender, 
+          weight_grams, dimensions_width, dimensions_height, 
+          dimensions_length, dimensions_unit, video_url, created_at,
+          categories(slug, name), 
+          sub_categories(slug, name)
+        `)
         .eq('slug', slug)
         .single()
       if (error) return null
@@ -3454,3 +3463,30 @@ export async function checkAbandonedCarts() {
   }
 }
 
+
+// ============================================
+// SYSTEM MAINTENANCE
+// ============================================
+
+/**
+ * Triggers database maintenance (cleanup of old logs)
+ * to keep storage within free-tier limits.
+ */
+export async function triggerDatabaseMaintenance() {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
+  try {
+    const { data, error } = await supabaseServer.rpc('perform_database_maintenance')
+
+    if (error) {
+      console.error('Maintenance RPC failed:', error)
+      return { success: false, error: error.message }
+    }
+
+    return { success: true, results: data }
+  } catch (err: any) {
+    console.error('Crash in triggerDatabaseMaintenance:', err)
+    return { success: false, error: err.message }
+  }
+}
