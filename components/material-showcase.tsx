@@ -30,7 +30,8 @@ function SectionRow({ title, subtitle, products, materialType, accentColor }: Ma
 
     const yHeader = useTransform(smoothProgress, [0, 1], [50, -50])
 
-    if (!products || products.length === 0) return null
+    // If this component is rendered, it MUST return the ref-bound element
+    // to avoid framer-motion hydration errors ("Target ref is defined but not hydrated").
 
     return (
         <section ref={sectionRef} className="relative py-24 overflow-hidden bg-neutral-950">
@@ -103,27 +104,33 @@ export function MaterialShowcase({
 }) {
     return (
         <div className="space-y-0">
-            <SectionRow
-                title="The Fine Jewelry"
-                subtitle="Authentic 22K Hallmarked Masterpieces"
-                products={realGoldProducts}
-                materialType="real_gold"
-                accentColor="bg-amber-500"
-            />
-            <SectionRow
-                title="The Guilded Era"
-                subtitle="Premium Gold Plated Collections"
-                products={goldPlatedProducts}
-                materialType="gold_plated"
-                accentColor="bg-orange-500"
-            />
-            <SectionRow
-                title="Artisanal Fashion"
-                subtitle="High-Octane Bentex & Imitation Series"
-                products={bentexProducts}
-                materialType="bentex"
-                accentColor="bg-slate-500"
-            />
+            {realGoldProducts && realGoldProducts.length > 0 && (
+                <SectionRow
+                    title="The Fine Jewelry"
+                    subtitle="Authentic 22K Hallmarked Masterpieces"
+                    products={realGoldProducts}
+                    materialType="real_gold"
+                    accentColor="bg-amber-500"
+                />
+            )}
+            {goldPlatedProducts && goldPlatedProducts.length > 0 && (
+                <SectionRow
+                    title="The Guilded Era"
+                    subtitle="Premium Gold Plated Collections"
+                    products={goldPlatedProducts}
+                    materialType="gold_plated"
+                    accentColor="bg-orange-500"
+                />
+            )}
+            {bentexProducts && bentexProducts.length > 0 && (
+                <SectionRow
+                    title="Artisanal Fashion"
+                    subtitle="High-Octane Bentex & Imitation Series"
+                    products={bentexProducts}
+                    materialType="bentex"
+                    accentColor="bg-slate-500"
+                />
+            )}
         </div>
     )
 }
