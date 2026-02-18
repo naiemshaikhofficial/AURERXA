@@ -3,7 +3,7 @@
 import React, { useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 
 export function Hero() {
@@ -13,13 +13,18 @@ export function Hero() {
     offset: ['start start', 'end start'],
   })
 
-  // Deep Parallax - Optimized (No Spring)
-  // const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
-  // Boosted Intensities for "Aur Jyada" feel
-  // FIXED: Using Percentages to prevent Top Gap on scroll
-  const yBg = useTransform(scrollYProgress, [0, 1], ['0%', '50%'])
-  const yText = useTransform(scrollYProgress, [0, 1], ['0%', '25%']) // Strong foreground separation
-  const opacityFade = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  // Low-pass filter for scroll noise (Anti-Jitter)
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    mass: 0.5,
+    restDelta: 0.0001
+  })
+
+  // Deep Parallax - Optimized with Smoothing
+  const yBg = useTransform(smoothProgress, [0, 1], ['0vh', '50vh'])
+  const yText = useTransform(smoothProgress, [0, 1], ['0vh', '25vh']) // Strong foreground separation
+  const opacityFade = useTransform(smoothProgress, [0, 0.5], [1, 0])
 
   // Spotlight Parallax
   const ySpotlight = useTransform(scrollYProgress, [0, 1], [0, -300]) // Increased 2x
@@ -28,7 +33,7 @@ export function Hero() {
     <section ref={ref} className="relative h-screen flex items-center justify-center overflow-hidden bg-background text-foreground">
       {/* 1. Cinematic Background Layer */}
       <motion.div
-        style={{ y: yBg }}
+        style={{ y: yBg, translateZ: 0 }}
         className="absolute inset-0 z-0 will-change-transform"
       >
         <div className="absolute inset-0 bg-background/70 z-10" /> {/* Matte Dimmer */}
@@ -54,8 +59,11 @@ export function Hero() {
 
       </div>
 
-      {/* 3. Main Content - Refined Typography */}
-      <div className="relative z-10 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center">
+      {/* 3. Main Content - Refined Typography with Parallax */}
+      <motion.div
+        style={{ y: yText, opacity: opacityFade, translateZ: 0 }}
+        className="relative z-10 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center will-change-transform"
+      >
         <div className="space-y-10">
           {/* Logo Brand Mark - Removed motion wrapper for instant LCP */}
           <div className="mb-6 relative inline-block">
@@ -79,7 +87,7 @@ export function Hero() {
               className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] font-serif font-black tracking-tighter text-foreground leading-[0.85] md:leading-[0.8]"
             >
               PURE<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200/40 via-amber-500/60 to-amber-700/40 italic drop-shadow-2xl">PRESTIGE</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200/40 via-amber-500/60 to-amber-700/40 italic">PRESTIGE</span>
             </motion.h1>
           </div>
 
@@ -105,7 +113,7 @@ export function Hero() {
             </Link>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 4. Scroll Indicator */}
       <motion.div

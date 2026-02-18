@@ -97,11 +97,16 @@ export async function middleware(request: NextRequest) {
         const { data } = await supabase.auth.getUser()
         user = data.user
     } catch (e: any) {
-        // Handle potential AbortError from getUser() or AuthSessionMissingError
-        if (e.name === 'AbortError' || e.message?.includes('signal is aborted') || e.name === 'AuthSessionMissingError' || e.message?.includes('Auth session missing')) {
-            // These errors are expected during rapid navigation or initial load
-            // Treat as "no user" and allow safe failure
-        } else {
+        // Handle potential AbortError/ECONNRESET from getUser() or AuthSessionMissingError
+        const isIgnorable =
+            e.code === 'ECONNRESET' ||
+            e.name === 'AbortError' ||
+            e.message?.includes('signal is aborted') ||
+            e.name === 'AuthSessionMissingError' ||
+            e.message?.includes('Auth session missing') ||
+            e.message?.includes('fetch failed')
+
+        if (!isIgnorable) {
             console.error('Middleware Auth Error:', e)
         }
     }

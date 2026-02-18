@@ -40,7 +40,52 @@ async function FeaturedCollectionsSection() {
 async function HeroCarouselSection() {
   const { getHeroSlides } = await import('./actions')
   const { HeroCarousel } = await import('@/components/hero-carousel')
-  const slides = await getHeroSlides()
+  let slides = await getHeroSlides()
+
+  if (!slides || slides.length === 0) {
+    console.log('DEBUG: No hero slides found, providing mock data for verification')
+    slides = [
+      {
+        id: 'mock-1',
+        image_url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=2000&auto=format&fit=crop',
+        title: 'The Bride Collection',
+        subtitle: 'Where Tradition Meets Eternity',
+        cta_text: 'Discover More',
+        cta_link: '/collections/bride',
+        text_color: '#FBBF24', // Gold
+        button_bg: '#FFFFFF',
+        button_text_color: '#000000',
+        overlay_opacity: 0.4
+      },
+      {
+        id: 'mock-2',
+        image_url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=2000&auto=format&fit=crop',
+        title: 'Midnight Elegance',
+        subtitle: 'Nocturnal Brilliance',
+        cta_text: 'Shop The Look',
+        cta_link: '/collections/midnight',
+        text_color: '#E5E7EB', // Silver
+        button_bg: '#111827',
+        button_text_color: '#FFFFFF',
+        overlay_opacity: 0.6
+      },
+      {
+        id: 'mock-3',
+        image_url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=2000&auto=format&fit=crop',
+        title: 'Rose Gold Love',
+        subtitle: 'Subtle. Sophisticated.',
+        cta_text: 'View Collection',
+        cta_link: '/collections/rose-gold',
+        text_color: '#FDA4AF', // Rose Pink
+        button_bg: '#FDA4AF',
+        button_text_color: '#FFFFFF',
+        overlay_opacity: 0.3
+      }
+    ]
+  } else {
+    console.log(`DEBUG: Found ${slides.length} hero slides`)
+  }
+
   return <HeroCarousel slides={slides} />
 }
 

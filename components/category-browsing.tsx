@@ -85,12 +85,12 @@ export function CategoryBrowsing() {
                                 href={`/collections?type=${encodeURIComponent(cat.slug)}`}
                                 className="group block relative"
                             >
-                                <div className="relative aspect-[4/5] overflow-hidden border border-border bg-card group-hover:border-primary/30 transition-all duration-700 shadow-2xl">
+                                <div className="relative aspect-[4/5] overflow-hidden border border-border bg-card group-hover:border-primary/30 transition-[border-color,box-shadow] duration-700 shadow-2xl will-change-transform">
                                     <Image
                                         src={cat.image}
                                         alt={cat.name}
                                         fill
-                                        className="object-cover transition-all duration-1000 scale-105 group-hover:scale-110"
+                                        className="object-cover transition-transform duration-1000 scale-105 group-hover:scale-110 will-change-transform"
                                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                     />
 

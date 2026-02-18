@@ -129,7 +129,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 setCurrentImageIndex(0) // Optional: reset to main image on leave
             }}
             className={cn(
-                "group relative bg-card border border-border overflow-hidden flex flex-col hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-all duration-700 will-change-transform",
+                "group relative bg-card border border-border overflow-hidden flex flex-col hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-shadow duration-700 will-change-transform",
                 viewMode === 'list' ? 'md:flex-row md:items-center' : '',
                 className
             )}
@@ -177,7 +177,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                             animate={{ x: '0%' }}
                             exit={{ x: '20%' }}
                             transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-                            className="absolute inset-[-8%] will-change-transform"
+                            className="absolute inset-[-8%] will-change-transform pointer-events-none"
                         >
                             <Image
                                 src={sanitizeImagePath(allImages[currentImageIndex])}

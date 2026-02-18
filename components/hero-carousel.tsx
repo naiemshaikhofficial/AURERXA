@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PREMIUM_EASE } from '@/lib/animation-constants'
 
@@ -15,20 +15,38 @@ interface Slide {
     subtitle?: string
     cta_text?: string
     cta_link?: string
+    text_color?: string
+    button_bg?: string
+    button_text_color?: string
+    overlay_opacity?: number
 }
 
 export function HeroCarousel({ slides }: { slides: Slide[] }) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
-    const [direction, setDirection] = useState(0) // -1 for prev, 1 for next
-    const [containerRef, setContainerRef] = useState<HTMLElement | null>(null)
+    const [direction, setDirection] = useState(0)
+    const [isMounted, setIsMounted] = useState(false)
+    const containerRef = useRef<HTMLElement>(null)
+
+    useEffect(() => {
+        setIsMounted(true)
+        console.log('HeroCarousel mounted with slides:', slides?.length)
+    }, [slides?.length])
 
     const { scrollYProgress } = useScroll({
-        target: containerRef ? { current: containerRef } : undefined,
+        target: isMounted ? containerRef : undefined,
         offset: ["start start", "end start"]
     })
 
-    const yParallax = useTransform(scrollYProgress, [0, 1], ["0%", "40%"])
+    // Low-pass filter for scroll noise (Anti-Jitter)
+    const smoothProgress = useSpring(scrollYProgress, {
+        stiffness: 100,
+        damping: 30,
+        mass: 0.5,
+        restDelta: 0.0001
+    })
+
+    const yParallax = useTransform(smoothProgress, [0, 1], ["0vh", "20vh"])
 
     const nextSlide = useCallback((e?: React.MouseEvent) => {
         e?.preventDefault()
@@ -46,14 +64,17 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
 
     // Auto-advance
     useEffect(() => {
-        if (isHovered) return
+        if (isHovered || slides.length <= 1) return
         const timer = setInterval(() => {
             nextSlide()
-        }, 4000) // Faster auto-advance
+        }, 5000)
         return () => clearInterval(timer)
-    }, [isHovered, nextSlide])
+    }, [isHovered, nextSlide, slides.length])
 
-    if (!slides || slides.length === 0) return null
+    if (!slides || slides.length === 0) {
+        console.log('HeroCarousel: Render skipped (no slides)')
+        return null
+    }
 
     // Get indices for the stacked effect
     const getSlideIndex = (offset: number) => {
@@ -62,9 +83,16 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
 
     const visibleIndices = [-1, 0, 1] // Previous, Current, Next
 
+    const hexToRgb = (hex: string) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ?
+            `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` :
+            '139, 0, 0';
+    }
+
     return (
         <section
-            ref={(node) => setContainerRef(node)}
+            ref={containerRef}
             className="relative h-[65vh] md:h-[90vh] w-full overflow-hidden bg-background group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -105,15 +133,23 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                     duration: 0.9,
                                     ease: [0.33, 1, 0.68, 1], // Custom premium ease
                                 }}
-                                className={`absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none ${isMain ? 'z-10 pointer-events-auto' : 'z-0'}`}
+                                className={`absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none ${isMain ? 'z-10 pointer-events-auto' : 'z-0'} will-change-transform`}
                                 style={{ transformStyle: 'preserve-3d' }}
                             >
                                 <Link
                                     href={slide.cta_link || '/collections'}
-                                    className={`relative w-[92%] md:w-[85%] h-[85%] md:h-[90%] rounded-[2rem] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.6)] block border border-white/20 transition-all duration-700 ${isMain ? 'shadow-amber-900/10' : ''}`}
+                                    className={`relative w-[92%] md:w-[85%] h-[85%] md:h-[90%] rounded-[2rem] overflow-hidden block border border-white/20 ${isMain ? 'z-10' : ''}`}
+                                    style={{
+                                        boxShadow: isMain
+                                            ? `0 50px 100px -20px rgba(${hexToRgb(slide.text_color || '#000000')}, 0.15), 0 0 80px -10px rgba(0,0,0,0.8)`
+                                            : '0 20px 40px -10px rgba(0,0,0,0.5)'
+                                    }}
                                 >
-                                    {/* Image Container with Parallax */}
-                                    <motion.div style={{ y: isMain ? yParallax : 0 }} className="absolute inset-0 w-full h-[120%] -top-[10%]">
+                                    {/* Image Container with Parallax - Forced GPU Layer */}
+                                    <motion.div
+                                        style={{ y: isMain ? yParallax : 0, translateZ: 0 }}
+                                        className="absolute inset-0 w-full h-[120%] -top-[10%] will-change-transform flex items-center justify-center overflow-hidden"
+                                    >
                                         <Image
                                             src={slide.image_url}
                                             alt={slide.title}
@@ -133,7 +169,10 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                     </motion.div>
 
                                     {/* Gradient Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                    <div
+                                        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-700"
+                                        style={{ opacity: slide.overlay_opacity ?? 1 }}
+                                    />
 
                                     {/* Content (only for main slide) */}
                                     {isMain && (
@@ -146,11 +185,17 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                                     className="space-y-4"
                                                 >
                                                     {slide.subtitle && (
-                                                        <p className="text-amber-200/90 font-premium-sans text-xs md:text-sm tracking-[0.5em] uppercase mb-2">
+                                                        <p
+                                                            className="font-premium-sans text-xs md:text-sm tracking-[0.5em] uppercase mb-2"
+                                                            style={{ color: slide.text_color || 'rgba(251, 191, 36, 0.9)' }} // amber-200/90 default
+                                                        >
                                                             {slide.subtitle}
                                                         </p>
                                                     )}
-                                                    <h2 className="text-4xl md:text-7xl font-serif font-medium text-white leading-tight drop-shadow-2xl">
+                                                    <h2
+                                                        className="text-4xl md:text-7xl font-serif font-medium leading-tight drop-shadow-2xl"
+                                                        style={{ color: slide.text_color || 'white' }}
+                                                    >
                                                         {slide.title}
                                                     </h2>
                                                 </motion.div>
@@ -160,7 +205,13 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     transition={{ duration: 0.6, delay: 0.6 }}
                                                 >
-                                                    <div className="inline-block px-12 py-4 bg-white text-black font-semibold text-xs md:text-sm tracking-[0.3em] uppercase hover:bg-black hover:text-white transition-all duration-500 shadow-xl border border-transparent hover:border-white">
+                                                    <div
+                                                        className="inline-block px-12 py-4 font-semibold text-xs md:text-sm tracking-[0.3em] uppercase hover:bg-black hover:text-white transition-all duration-500 shadow-xl border border-transparent hover:border-white"
+                                                        style={{
+                                                            backgroundColor: slide.button_bg || 'white',
+                                                            color: slide.button_text_color || 'black'
+                                                        }}
+                                                    >
                                                         {slide.cta_text || 'KNOW MORE'}
                                                     </div>
                                                 </motion.div>
@@ -188,13 +239,22 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                     >
                         <div
                             className={`h-2.5 w-2.5 rotate-45 transition-all duration-500 rounded-sm ${idx === currentIndex
-                                ? 'bg-[#8B0000] scale-125 shadow-[0_0_10px_rgba(139,0,0,0.5)]'
+                                ? 'scale-125'
                                 : 'bg-white/40 hover:bg-white/70'
                                 }`}
+                            style={{
+                                backgroundColor: idx === currentIndex
+                                    ? (slides[currentIndex].text_color || '#8B0000')
+                                    : undefined,
+                                boxShadow: idx === currentIndex
+                                    ? `0 0 20px rgba(${hexToRgb(slides[currentIndex].text_color || '#8B0000')}, 0.5)`
+                                    : undefined
+                            }}
                         />
                     </button>
                 ))}
             </div>
+
         </section>
     )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import Image from 'next/image'
 import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 
@@ -12,17 +12,23 @@ export function Heritage() {
         offset: ['start end', 'end start'],
     })
 
-    // Optimized - No Spring
-    // const springConfig = { stiffness: 40, damping: 30, mass: 1, restDelta: 0.001 }
-    const yBg = useTransform(scrollYProgress, [0, 1], ['-40%', '40%']) // Doubled range for "More Parallax"
-    const scaleBg = useTransform(scrollYProgress, [0, 1], [1.1, 1.3])
-    const opacityBg = useTransform(scrollYProgress, [0, 0.5, 1], [0.4, 0.6, 0.4])
+    // Low-pass filter for scroll noise (Anti-Jitter)
+    const smoothProgress = useSpring(scrollYProgress, {
+        stiffness: 100,
+        damping: 30,
+        mass: 0.5,
+        restDelta: 0.0001
+    })
+
+    const yBg = useTransform(smoothProgress, [0, 1], ['-20vh', '20vh'])
+    const scaleBg = useTransform(smoothProgress, [0, 1], [1.1, 1.3])
+    const opacityBg = useTransform(smoothProgress, [0, 0.5, 1], [0.4, 0.6, 0.4])
 
     return (
         <section ref={ref} className="relative min-h-[50vh] md:h-screen overflow-hidden flex items-center justify-center bg-background py-12 md:py-0">
 
-            {/* Background Image with Cinematic Parallax */}
-            <motion.div style={{ y: yBg, scale: scaleBg, opacity: opacityBg }} className="absolute inset-0 z-0 will-change-transform">
+            {/* Background Image with Cinematic Parallax - Forced GPU Layer */}
+            <motion.div style={{ y: yBg, scale: scaleBg, opacity: opacityBg, translateZ: 0 }} className="absolute inset-0 z-0 will-change-transform">
                 <Image
                     src="/photo_6066572646712807057_y.webp"
                     alt="Heritage Background"
