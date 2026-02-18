@@ -10,6 +10,7 @@ interface PageProps {
         occasion?: string
         gender?: string
         type?: string
+        material_type?: string
         minPrice?: string
         maxPrice?: string
         sortBy?: string
@@ -28,6 +29,7 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
         occasion: params.occasion || 'all',
         gender: params.gender || 'all',
         type: params.type || 'all',
+        material_type: params.material_type || 'all',
         sortBy: params.sortBy || 'newest',
         search: params.search || '',
         priceRange: {
@@ -44,6 +46,7 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
         occasion: initialFilters.occasion === 'all' ? undefined : initialFilters.occasion,
         gender: initialFilters.gender === 'all' ? undefined : initialFilters.gender,
         type: initialFilters.type === 'all' ? undefined : initialFilters.type,
+        material_type: initialFilters.material_type === 'all' ? undefined : initialFilters.material_type,
         sortBy: initialFilters.sortBy,
         search: initialFilters.search || undefined,
         minPrice: initialFilters.priceRange.min,

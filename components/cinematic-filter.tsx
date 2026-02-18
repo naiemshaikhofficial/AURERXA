@@ -12,6 +12,7 @@ export type FilterState = {
     occasion: string
     type: string
     gender: string
+    material_type: string
     priceRange: { label: string, min: number, max: number | null }
     sortBy: string
     search?: string
@@ -53,6 +54,15 @@ export const SORT_OPTIONS = [
     { label: 'Price: High to Low', value: 'price_desc' },
 ]
 
+export const MATERIAL_TYPES = [
+    { label: 'All Materials', value: 'all', dot: 'bg-white/30' },
+    { label: '22K Real Gold', value: 'real_gold', dot: 'bg-amber-400' },
+    { label: 'Gold Plated', value: 'gold_plated', dot: 'bg-orange-400' },
+    { label: 'Fashion / Bentex', value: 'bentex', dot: 'bg-slate-400' },
+    { label: 'Silver', value: 'silver', dot: 'bg-blue-300' },
+    { label: 'Diamond', value: 'diamond', dot: 'bg-cyan-400' },
+]
+
 interface CinematicFilterProps {
     categories: any[]
     initialFilters: FilterState
@@ -68,7 +78,7 @@ export function CinematicFilter({
 }: CinematicFilterProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [filters, setFilters] = useState<FilterState>(initialFilters)
-    const [activeTab, setActiveTab] = useState<'type' | 'gender' | 'price' | 'sort'>('type')
+    const [activeTab, setActiveTab] = useState<'type' | 'gender' | 'price' | 'sort' | 'material'>('type')
 
     // Lock Body Scroll when Filter is Open
     useEffect(() => {
@@ -101,12 +111,12 @@ export function CinematicFilter({
         onFiltersChange(newFilters)
     }
 
-    // Clear All Non-Category Filters
     const clearFilters = () => {
         const newFilters = {
             ...filters,
             type: 'all',
             gender: 'all',
+            material_type: 'all',
             priceRange: PRICE_RANGES[0],
             sortBy: 'newest'
         }
@@ -118,7 +128,8 @@ export function CinematicFilter({
     const activeFilterCount = [
         filters.type !== 'all',
         filters.gender !== 'all',
-        filters.priceRange.min > 0
+        filters.priceRange.min > 0,
+        filters.material_type && filters.material_type !== 'all',
     ].filter(Boolean).length
 
     return (
@@ -221,6 +232,7 @@ export function CinematicFilter({
                                 <div className="w-1/3 md:w-1/4 bg-card border-r border-border flex flex-col">
                                     {[
                                         { id: 'type', label: 'Type' },
+                                        { id: 'material', label: 'Material' },
                                         { id: 'gender', label: 'Gender' },
                                         { id: 'price', label: 'Price Range' },
                                         { id: 'sort', label: 'Sort Order' },
@@ -288,6 +300,31 @@ export function CinematicFilter({
                                                                 )}
                                                             />
                                                             <span className="text-[10px] uppercase tracking-[0.2em]">{type.label}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {activeTab === 'material' && (
+                                                <div className="space-y-4">
+                                                    {MATERIAL_TYPES.map((mat) => (
+                                                        <button
+                                                            key={mat.value}
+                                                            onClick={() => handleFilterUpdate('material_type', mat.value)}
+                                                            className={cn(
+                                                                "w-full flex items-center justify-between p-6 rounded-none border transition-all",
+                                                                filters.material_type === mat.value
+                                                                    ? "bg-foreground text-background border-foreground"
+                                                                    : "bg-transparent border-border text-muted-foreground hover:text-foreground"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <span className={`w-2 h-2 rounded-full ${mat.dot} ${filters.material_type === mat.value ? 'opacity-0' : ''}`} />
+                                                                <span className="text-xs uppercase tracking-[0.2em]">{mat.label}</span>
+                                                            </div>
+                                                            {filters.material_type === mat.value && (
+                                                                <Check className="w-4 h-4" />
+                                                            )}
                                                         </button>
                                                     ))}
                                                 </div>

@@ -516,6 +516,7 @@ export const getProductBySlug = cache(async (slug: string) => {
           sizes, featured, bestseller, slug, purity, gender, 
           weight_grams, dimensions_width, dimensions_height, 
           dimensions_length, dimensions_unit, video_url, tags, created_at,
+          material_type,
           categories(slug, name), 
           sub_categories(slug, name)
         `)
@@ -2047,6 +2048,7 @@ export async function getFilteredProducts(options: {
   tag?: string
   occasion?: string
   material?: string
+  material_type?: string
   minPrice?: number
   maxPrice?: number
   sortBy?: string
@@ -2059,7 +2061,7 @@ export async function getFilteredProducts(options: {
       try {
         let query = supabaseServer
           .from('products')
-          .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
+          .select('id, name, price, description, image_url, images, slug, weight_grams, material_type, categories(id, name, slug)')
 
         // Category filter
         const categorySlug = options.category || options.material
@@ -2148,6 +2150,11 @@ export async function getFilteredProducts(options: {
         if (options.occasion && options.occasion !== 'all') {
           const o = options.occasion.toLowerCase()
           query = query.or(`tags.cs.{"${o}"},tags.cs.{"${options.occasion}"},description.ilike.%${o}%`)
+        }
+
+        // Material Type filter
+        if (options.material_type && options.material_type !== 'all') {
+          query = query.eq('material_type', options.material_type)
         }
 
         // Price filters

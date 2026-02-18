@@ -17,6 +17,7 @@ const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => m
 const Footer = dynamic(() => import('@/components/footer').then(mod => mod.Footer))
 const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-story').then(mod => mod.CraftsmanshipStory))
 const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
+const MaterialShowcase = dynamic(() => import('@/components/material-showcase').then(mod => mod.MaterialShowcase))
 import { SectionSkeleton } from '@/components/skeletons'
 
 async function NewReleasesSection() {
@@ -29,6 +30,25 @@ async function BestsellersSection() {
   const { getBestsellers } = await import('./actions')
   const bestsellers = await getBestsellers()
   return <Bestsellers products={bestsellers as any} />
+}
+
+async function MaterialShowcaseSection() {
+  const { getFilteredProducts } = await import('./actions')
+
+  // Parallel fetch for grouped collections
+  const [realGold, goldPlated, bentex] = await Promise.all([
+    getFilteredProducts({ material_type: 'real_gold' }),
+    getFilteredProducts({ material_type: 'gold_plated' }),
+    getFilteredProducts({ material_type: 'bentex' })
+  ])
+
+  return (
+    <MaterialShowcase
+      realGoldProducts={realGold as any}
+      goldPlatedProducts={goldPlated as any}
+      bentexProducts={bentex as any}
+    />
+  )
 }
 
 async function FeaturedCollectionsSection() {
@@ -117,6 +137,10 @@ export default function HomePage() {
 
       <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
         <BestsellersSection />
+      </Suspense>
+
+      <Suspense fallback={<div className="h-screen w-full bg-neutral-950 animate-pulse" />}>
+        <MaterialShowcaseSection />
       </Suspense>
 
       <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="blog" columns={3} /></div>}>

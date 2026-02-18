@@ -21,6 +21,7 @@ import { SizeGuide } from '@/components/size-guide'
 import { formatPurity, formatWeight, formatDimensions } from '@/lib/material-intelligence'
 import { PairItWith } from '@/components/pair-it-with'
 import { RecentlyViewed } from '@/components/recently-viewed'
+import { MATERIAL_CONFIG, MaterialBadge } from '@/components/product-card'
 
 
 interface ProductClientProps {
@@ -666,6 +667,20 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                         <p className="text-xs md:text-sm font-serif italic text-white/80">{product.sku}</p>
                                     </div>
                                 )}
+                                {product.material_type && (
+                                    <div className="space-y-1">
+                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Material Quality</p>
+                                        <div className="flex flex-col gap-1">
+                                            <MaterialBadge type={product.material_type} />
+                                            <p className="text-[8px] text-white/30 uppercase tracking-[0.1em] mt-1">
+                                                {product.material_type === 'real_gold' ? 'BIS Hallmarked Solid Gold' :
+                                                    product.material_type === 'gold_plated' ? 'Premium Plating / Brass Base' :
+                                                        product.material_type === 'bentex' ? 'High Quality Fashion Alloy' :
+                                                            'Authentic Premium Material'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -684,8 +699,18 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                     <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">Handmade Artisan</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Material</p>
-                                    <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">{formatPurity(product.purity).label}</p>
+                                    <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Material Integrity</p>
+                                    <div className="flex flex-col">
+                                        <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">
+                                            {product.material_type ? MATERIAL_CONFIG[product.material_type]?.label : formatPurity(product.purity).label}
+                                        </p>
+                                        {product.material_type === 'gold_plated' && (
+                                            <p className="text-[7px] text-white/30 uppercase tracking-widest mt-0.5 italic">Durable Gold Overlay</p>
+                                        )}
+                                        {product.material_type === 'bentex' && (
+                                            <p className="text-[7px] text-white/30 uppercase tracking-widest mt-0.5 italic">High Fashion Finish</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

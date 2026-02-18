@@ -71,6 +71,7 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
             slug: product.slug || product.name.toLowerCase().replace(/ /g, '-'),
             sub_category_id: product.sub_category_id || null,
             tags: Array.isArray(product.tags) ? product.tags : [],
+            material_type: product.material_type || null,
         })
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -111,6 +112,7 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                 slug: editingProduct.slug,
                 sub_category_id: editingProduct.sub_category_id,
                 tags: Array.isArray(editingProduct.tags) ? editingProduct.tags : [],
+                material_type: editingProduct.material_type || null,
             })
         } else {
             result = await addNewProduct({
@@ -135,6 +137,7 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                 sizes: editingProduct.sizes || [],
                 sub_category_id: editingProduct.sub_category_id || null,
                 tags: Array.isArray(editingProduct.tags) ? editingProduct.tags : [],
+                material_type: editingProduct.material_type || null,
             })
         }
 
@@ -436,6 +439,27 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                                                 placeholder="Weight"
                                             />
                                         </div>
+                                    </div>
+
+                                    {/* Material Type */}
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] text-white/20 uppercase ml-1">Material Type</p>
+                                        <Select
+                                            value={editingProduct.material_type || 'none'}
+                                            onValueChange={(val) => setEditingProduct({ ...editingProduct, material_type: val === 'none' ? null : val })}
+                                        >
+                                            <SelectTrigger className="bg-white/5 border-white/10 rounded-xl text-xs md:text-sm">
+                                                <SelectValue placeholder="Select Material" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">Not Set</SelectItem>
+                                                <SelectItem value="real_gold">🟡 22K Real Gold</SelectItem>
+                                                <SelectItem value="gold_plated">🟠 Gold Plated</SelectItem>
+                                                <SelectItem value="bentex">⚪ Fashion / Bentex</SelectItem>
+                                                <SelectItem value="silver">🔵 Silver</SelectItem>
+                                                <SelectItem value="diamond">💎 Diamond</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-3">

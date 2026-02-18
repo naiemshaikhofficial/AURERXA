@@ -39,6 +39,7 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                 occasion: newFilters.occasion === 'all' ? undefined : newFilters.occasion,
                 gender: newFilters.gender === 'all' ? undefined : newFilters.gender,
                 type: newFilters.type === 'all' ? undefined : newFilters.type,
+                material_type: newFilters.material_type === 'all' ? undefined : newFilters.material_type,
                 minPrice: newFilters.priceRange.min,
                 maxPrice: newFilters.priceRange.max || undefined,
                 search: newFilters.search || undefined

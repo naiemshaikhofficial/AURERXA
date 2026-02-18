@@ -12,6 +12,27 @@ import supabaseLoader from '@/lib/supabase-loader'
 import { fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 import { formatWeight } from '@/lib/material-intelligence'
 
+export type MaterialType = 'real_gold' | 'gold_plated' | 'bentex' | 'silver' | 'diamond' | null
+
+export const MATERIAL_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
+    real_gold: { label: '22K Gold', color: 'text-amber-300', bg: 'bg-amber-500/20 border-amber-400/30', dot: 'bg-amber-400' },
+    gold_plated: { label: 'Gold Plated', color: 'text-orange-300', bg: 'bg-orange-500/20 border-orange-400/30', dot: 'bg-orange-400' },
+    bentex: { label: 'Fashion', color: 'text-slate-300', bg: 'bg-slate-500/20 border-slate-400/30', dot: 'bg-slate-400' },
+    silver: { label: 'Silver', color: 'text-blue-200', bg: 'bg-blue-500/20 border-blue-400/30', dot: 'bg-blue-300' },
+    diamond: { label: 'Diamond', color: 'text-cyan-300', bg: 'bg-cyan-500/20 border-cyan-400/30', dot: 'bg-cyan-400' },
+}
+
+export function MaterialBadge({ type }: { type: MaterialType }) {
+    if (!type || !MATERIAL_CONFIG[type]) return null
+    const cfg = MATERIAL_CONFIG[type]
+    return (
+        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full border backdrop-blur-md text-[8px] font-bold uppercase tracking-[0.15em] ${cfg.bg} ${cfg.color}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+            {cfg.label}
+        </div>
+    )
+}
+
 export interface Product {
     id: string
     name: string
@@ -25,6 +46,7 @@ export interface Product {
     weight_grams?: number
     gender?: string
     stock?: number
+    material_type?: MaterialType
 }
 
 interface ProductCardProps {
@@ -139,6 +161,13 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 viewMode === 'grid' ? 'aspect-[4/5] w-full' : 'aspect-square md:aspect-[3/4] md:w-1/3' // Portfolio aspect ratio
             )}>
                 <Link href={`/products/${product.slug}`} className="absolute inset-0 z-30 block" onClick={onClose} aria-label={`View details for ${product.name}`} />
+
+                {/* Material Badge */}
+                {product.material_type && (
+                    <div className="absolute top-3 left-3 z-40">
+                        <MaterialBadge type={product.material_type} />
+                    </div>
+                )}
 
                 {/* Progress Segments */}
                 {allImages.length > 1 && (
