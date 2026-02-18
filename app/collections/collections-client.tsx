@@ -153,8 +153,9 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                                     sub_category: 'all',
                                     type: 'all',
                                     gender: 'all',
-                                    tag: undefined, // Added tag reset
+                                    tag: undefined,
                                     occasion: 'all',
+                                    material_type: 'all',
                                     priceRange: { label: 'All Prices', min: 0, max: null },
                                     sortBy: 'newest',
                                     search: ''

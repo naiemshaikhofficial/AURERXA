@@ -3,7 +3,7 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import Image from 'next/image'
-import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
+import { fadeInUp, staggerContainer, PREMIUM_EASE } from '../lib/animation-constants'
 
 export function Heritage() {
     const ref = useRef(null)
