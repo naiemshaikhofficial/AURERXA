@@ -232,7 +232,15 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 viewMode === 'list' ? 'md:p-8 md:justify-center' : ''
             )}>
                 <div className="flex flex-col gap-1">
-                    <div className="flex flex-wrap items-center gap-2 mb-1 opacity-60">
+                    <div className="flex flex-wrap items-center gap-2 mb-1 opacity-70">
+                        {product.material_type && (
+                            <>
+                                <p className="text-[9px] text-primary font-bold tracking-[0.2em] uppercase">
+                                    {MATERIAL_CONFIG[product.material_type].label}
+                                </p>
+                                <span className="w-1 h-1 rounded-full bg-white/20" />
+                            </>
+                        )}
                         <p className="text-[9px] text-muted-foreground font-premium-sans tracking-[0.2em] uppercase truncate">
                             {product.categories?.name || 'Collection'}
                         </p>

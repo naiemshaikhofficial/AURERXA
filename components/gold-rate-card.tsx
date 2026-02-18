@@ -106,12 +106,12 @@ export function GoldRateCard() {
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex justify-center md:justify-start gap-8 mb-12 w-full overflow-x-auto scrollbar-hide">
+                    <div className="flex flex-wrap justify-center md:justify-start gap-x-8 gap-y-4 mb-12 w-full">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className="relative pb-4 px-2 transition-all duration-700 group/tab flex flex-col items-center text-center min-w-[80px]"
+                                className="relative pb-4 px-2 transition-all duration-700 group/tab flex flex-col items-center text-center"
                             >
                                 <span className={`text-[11px] tracking-[0.2em] uppercase transition-colors duration-500 ${activeTab === tab.id ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
                                     }`}>
@@ -119,7 +119,7 @@ export function GoldRateCard() {
                                 </span>
                                 {activeTab === tab.id && (
                                     <motion.div
-                                        layoutId="activeTab"
+                                        layoutId="activeTabIndicator"
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         transition={{ duration: 0.5 }}

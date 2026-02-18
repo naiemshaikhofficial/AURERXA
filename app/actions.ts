@@ -1814,20 +1814,27 @@ export async function searchProducts(query: string) {
 
 export async function getSearchSuggestions(query: string) {
   try {
-    if (!query || query.length < 2) return { categories: [], tags: [] }
+    if (!query || query.length < 2) return { categories: [], tags: [], materials: [] }
 
     const t = query.toLowerCase()
 
-    // 1. Fetch matching categories
+    // 1. Match against Material Types
+    const materialMatches = [
+      { label: 'Real Gold', value: 'real_gold', keywords: ['gold', 'purity', '22k', '24k', '18k', 'solid gold'] },
+      { label: 'Gold Plated', value: 'gold_plated', keywords: ['plated', 'polishing', 'cover gold', 'guarantee'] },
+      { label: 'Fashion / Bentex', value: 'bentex', keywords: ['bentex', 'fashion', 'imitation', 'artificial'] },
+      { label: 'Silver', value: 'silver', keywords: ['silver', '925', 'sterling'] },
+      { label: 'Diamond', value: 'diamond', keywords: ['diamond', 'ad', 'cz', 'stone'] }
+    ].filter(m => m.keywords.some(k => k.includes(t) || t.includes(k)))
+
+    // 2. Fetch matching categories
     const { data: categories } = await supabaseServer
       .from('categories')
       .select('name, slug')
       .or(`name.ilike.%${query}%,slug.ilike.%${query}%`)
       .limit(5)
 
-    // 2. Fetch all products to extract tags (not ideal for performance, but good for small catalogs)
-    // Actually, let's use a smarter approach: filter by tags directly if possible
-    // Since tags is an array, we can use ilike on the whole array string or just filter in JS
+    // 3. Fetch matching tags from products
     const { data: tagResults } = await supabaseServer
       .from('products')
       .select('tags')
@@ -1842,11 +1849,12 @@ export async function getSearchSuggestions(query: string) {
 
     return {
       categories: categories || [],
-      tags: matchingTags
+      tags: matchingTags,
+      materials: materialMatches.map(m => ({ label: m.label, value: m.value }))
     }
   } catch (err) {
     console.error('Search suggestions error:', err)
-    return { categories: [], tags: [] }
+    return { categories: [], tags: [], materials: [] }
   }
 }
 

@@ -16,7 +16,7 @@ export function SearchModal() {
     const { isSearchOpen: isOpen, closeSearch: onClose } = useSearch()
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<any[]>([])
-    const [suggestions, setSuggestions] = useState<{ categories: any[], tags: string[] }>({ categories: [], tags: [] })
+    const [suggestions, setSuggestions] = useState<{ categories: any[], tags: string[], materials?: any[] }>({ categories: [], tags: [], materials: [] })
     const [usedTags, setUsedTags] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -99,31 +99,57 @@ export function SearchModal() {
                 <div className="min-h-[200px]">
                     {query.trim().length >= 2 ? (
                         <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-                            {/* Suggestions Header */}
-                            {(suggestions.categories.length > 0 || suggestions.tags.length > 0) && (
-                                <div className="flex flex-wrap gap-4 mb-8">
-                                    {suggestions.categories.map(cat => (
-                                        <Link
-                                            key={cat.slug}
-                                            href={`/collections/${cat.slug}`}
-                                            onClick={onClose}
-                                            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-sm font-serif italic"
-                                        >
-                                            <Compass className="w-3 h-3 text-primary" />
-                                            {cat.name}
-                                        </Link>
-                                    ))}
-                                    {suggestions.tags.map(tag => (
-                                        <Link
-                                            key={tag}
-                                            href={`/collections/${tag.toLowerCase()}`}
-                                            onClick={onClose}
-                                            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-sm uppercase tracking-widest font-light"
-                                        >
-                                            <TagIcon className="w-3 h-3 text-primary" />
-                                            {tag}
-                                        </Link>
-                                    ))}
+                            {/* Category & Tag Suggestions Area */}
+                            {(suggestions.categories.length > 0 || suggestions.tags.length > 0 || (suggestions.materials && suggestions.materials.length > 0)) && (
+                                <div className="space-y-6 mb-12">
+                                    {/* Material Suggestions - Targeted */}
+                                    {suggestions.materials && suggestions.materials.length > 0 && (
+                                        <div className="flex flex-wrap gap-3">
+                                            {suggestions.materials.map(mat => (
+                                                <Link
+                                                    key={mat.value}
+                                                    href={`/collections?material_type=${mat.value}`}
+                                                    onClick={onClose}
+                                                    className="flex items-center gap-2.5 px-5 py-2.5 bg-white/5 border border-white/10 hover:border-primary/40 rounded-full transition-all group"
+                                                >
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${mat.value === 'real_gold' ? 'bg-amber-400' :
+                                                            mat.value === 'gold_plated' ? 'bg-orange-400' :
+                                                                mat.value === 'bentex' ? 'bg-slate-400' :
+                                                                    mat.value === 'silver' ? 'bg-blue-300' : 'bg-cyan-400'
+                                                        } group-hover:scale-125 transition-transform`} />
+                                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/60 group-hover:text-white font-bold">
+                                                        Shop in {mat.label}
+                                                    </span>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* Standard Categories & Tags */}
+                                    <div className="flex flex-wrap gap-4">
+                                        {suggestions.categories.map(cat => (
+                                            <Link
+                                                key={cat.slug}
+                                                href={`/collections/${cat.slug}`}
+                                                onClick={onClose}
+                                                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-sm font-serif italic"
+                                            >
+                                                <Compass className="w-3 h-3 text-primary" />
+                                                {cat.name}
+                                            </Link>
+                                        ))}
+                                        {suggestions.tags.map(tag => (
+                                            <Link
+                                                key={tag}
+                                                href={`/collections/${tag.toLowerCase()}`}
+                                                onClick={onClose}
+                                                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-sm uppercase tracking-widest font-light"
+                                            >
+                                                <TagIcon className="w-3 h-3 text-primary" />
+                                                {tag}
+                                            </Link>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
