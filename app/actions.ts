@@ -241,28 +241,30 @@ export const getCategories = unstable_cache(
   { revalidate: 86400, tags: ['categories'] }
 )
 
-export const getSubCategories = unstable_cache(
-  async (categoryId?: string) => {
-    let query = supabaseServer
-      .from('sub_categories')
-      .select('id, name, slug, category_id, description')
-      .order('name')
+export async function getSubCategories(categoryId?: string) {
+  return unstable_cache(
+    async () => {
+      let query = supabaseServer
+        .from('sub_categories')
+        .select('id, name, slug, category_id, description')
+        .order('name')
 
-    if (categoryId) {
-      query = query.eq('category_id', categoryId)
-    }
+      if (categoryId) {
+        query = query.eq('category_id', categoryId)
+      }
 
-    const { data, error } = await query
+      const { data, error } = await query
 
-    if (error) {
-      console.error('Error fetching sub-categories:', error)
-      return []
-    }
-    return data
-  },
-  ['sub-categories'],
-  { revalidate: 86400, tags: ['sub-categories'] }
-)
+      if (error) {
+        console.error('Error fetching sub-categories:', error)
+        return []
+      }
+      return data
+    },
+    ['sub-categories', categoryId || 'all'],
+    { revalidate: 86400, tags: ['sub-categories'] }
+  )()
+}
 
 export async function addSubCategory(subCategoryData: any) {
   const isAdmin = await checkIsAdmin()
@@ -365,7 +367,6 @@ export const getGoldRates = unstable_cache(
 
     if (isStale) {
       console.log('DEBUG: Gold rates stale, triggering background sync')
-      // FIRE AND FORGET - Don't await in the main flow to keep TTFB low
       syncLiveGoldRates().catch(err => console.error('Background sync failed:', err))
     }
 
@@ -374,6 +375,7 @@ export const getGoldRates = unstable_cache(
   ['gold-rates'],
   { revalidate: 3600, tags: ['gold-rates'] } // Reduced cache time for safer sync checks
 )
+
 
 export const getBestsellers = unstable_cache(
   async () => {
@@ -394,69 +396,66 @@ export const getBestsellers = unstable_cache(
   { revalidate: 60, tags: ['products', 'bestsellers'] }
 )
 
-export const getNewReleases = unstable_cache(
-  async (limit: number = 8) => {
-    const { data, error } = await supabaseServer
-      .from('products')
-      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
-      .order('created_at', { ascending: false })
-      .limit(limit)
+export async function getNewReleases(limit: number = 8) {
+  return unstable_cache(
+    async () => {
+      const { data, error } = await supabaseServer
+        .from('products')
+        .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+        .order('created_at', { ascending: false })
+        .limit(limit)
 
-    if (error) {
-      console.error('Error fetching new releases:', error)
-      return []
-    }
-    console.log('New releases fetch result:', data?.length)
-    return data || []
-  },
-  ['new-releases'],
-  { revalidate: 86400, tags: ['products', 'new-releases'] }
-)
-
-export const getProducts = unstable_cache(
-  async (categorySlug?: string, sortBy?: string) => {
-    let query = supabaseServer
-      .from('products')
-      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
-
-    if (categorySlug) {
-      // Since it's a join, we filter by the related table's field
-      const { data: cat } = await supabaseServer
-        .from('categories')
-        .select('id')
-        .eq('slug', categorySlug)
-        .single()
-
-      if (cat) {
-        query = query.eq('category_id', cat.id)
+      if (error) {
+        console.error('Error fetching new releases:', error)
+        return []
       }
-    }
+      return data || []
+    },
+    ['new-releases', limit.toString()],
+    { revalidate: 86400, tags: ['products', 'new-releases'] }
+  )()
+}
 
-    // Sorting
-    if (sortBy === 'price-low') {
-      query = query.order('price', { ascending: true })
-    } else if (sortBy === 'price-high') {
-      query = query.order('price', { ascending: false })
-    } else {
-      query = query.order('created_at', { ascending: false })
-    }
+export async function getProducts(categorySlug?: string, sortBy?: string) {
+  return unstable_cache(
+    async () => {
+      let query = supabaseServer
+        .from('products')
+        .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
 
-    const { data, error } = await query
+      if (categorySlug) {
+        const { data: cat } = await supabaseServer
+          .from('categories')
+          .select('id')
+          .eq('slug', categorySlug)
+          .single()
 
-    if (error) {
-      console.error('❌ Error fetching products:', error)
-      return []
-    }
+        if (cat) {
+          query = query.eq('category_id', cat.id)
+        }
+      }
 
-    if (!data || data.length === 0) {
-      console.log('⚠️ No products found in database or blocked by RLS')
-    }
+      if (sortBy === 'price-low') {
+        query = query.order('price', { ascending: true })
+      } else if (sortBy === 'price-high') {
+        query = query.order('price', { ascending: false })
+      } else {
+        query = query.order('created_at', { ascending: false })
+      }
 
-    return data || []
-  },
-  ['products-list'],
-  { revalidate: 86400, tags: ['products'] }
-)
+      const { data, error } = await query
+
+      if (error) {
+        console.error('❌ Error fetching products:', error)
+        return []
+      }
+
+      return data || []
+    },
+    ['products-list', categorySlug || 'all', sortBy || 'default'],
+    { revalidate: 86400, tags: ['products'] }
+  )()
+}
 
 // Product Actions
 export const getProductBySlug = cache(async (slug: string) => {
@@ -1722,36 +1721,35 @@ export async function searchProducts(query: string) {
   try {
     if (!query || query.length < 2) return []
 
-    // 1. Try ILIKE search first for better reliability on name/description
+    // 1. Try Optimized TextSearch first (Fastest for large catalogs)
+    // This utilizes the GIN functional index if defined on name/description.
+    const { data: ftsResults, error: ftsError } = await supabaseServer
+      .from('products')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+      .textSearch('name', query, {
+        type: 'websearch',
+        config: 'english'
+      })
+      .limit(12)
+
+    if (!ftsError && ftsResults && ftsResults.length > 0) {
+      return ftsResults
+    }
+
+    // 2. Fallback to ILIKE if FTS fails or yields no results
     const { data: ilikeResults, error: ilikeError } = await supabaseServer
       .from('products')
       .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
       .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-      .limit(10)
+      .limit(12)
 
-    if (!ilikeError && ilikeResults && ilikeResults.length > 0) {
-      return ilikeResults
+    if (ilikeError) {
+      console.error('Fallback search error:', ilikeError)
+      return []
     }
-
-    // 2. Fallback to FTS if ILIKE yields no results (handles more complex term matching)
-    const { data: ftsResults, error: ftsError } = await supabaseServer
-      .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
-      .textSearch('fts_vector', query, {
-        type: 'plain',
-        config: 'english'
-      })
-      .limit(10)
-
-    if (ftsError) {
-      // If FTS fails (e.g. column missing), just log it and return empty or ILIKE results
-      console.warn('FTS Search fallback failed (likely missing index):', ftsError.message)
-      return ilikeResults || []
-    }
-
-    return ftsResults || []
+    return ilikeResults || []
   } catch (err) {
-    console.error('Search error:', err)
+    console.error('Search crash:', err)
     return []
   }
 }
@@ -3378,53 +3376,24 @@ export async function upsertVisitorIntelligence(payload: {
 
 export async function logVisitorEvent(sessionId: string, eventName: string, metadata: any = {}) {
   try {
-    const client = await getAuthClient()
-
-    // Fetch current behavior summary
-    const { data: current } = await client
-      .from('visitor_intelligence')
-      .select('behavior_summary')
-      .eq('session_id', sessionId)
-      .single()
-
-    const summary = current?.behavior_summary || { page_views: [], interaction_count: 0, interests: {} }
-
-    // Add event to history (limit to last 50 for database health)
-    const newPageViews = [...(summary.page_views || [])]
-    newPageViews.push({
-      event: eventName,
-      timestamp: new Date().toISOString(),
-      ...metadata
+    // SECURITY & PERFORMANCE: 
+    // Uses a database RPC (stored procedure) for atomic updates.
+    // This avoids "Read-before-Write" race conditions and minimizes DB trips.
+    // We use the public supabaseServer client to avoid cookie overhead for pure logging.
+    const { error } = await supabaseServer.rpc('log_visitor_event_v2', {
+      p_session_id: sessionId,
+      p_event_name: eventName,
+      p_metadata: metadata
     })
 
-    if (newPageViews.length > 50) newPageViews.shift()
-
-    // Update Interests (Behavioral Segmentation)
-    const newInterests = { ...(summary.interests || {}) }
-    if (metadata.interest) {
-      newInterests[metadata.interest] = (newInterests[metadata.interest] || 0) + 1
-    }
-
-    const { error } = await client
-      .from('visitor_intelligence')
-      .update({
-        behavior_summary: {
-          page_views: newPageViews,
-          interaction_count: (summary.interaction_count || 0) + 1,
-          interests: newInterests
-        },
-        last_active: new Date().toISOString()
-      })
-      .eq('session_id', sessionId)
-
     if (error) {
-      console.error('Error logging visitor event:', error)
+      console.error('Error logging visitor event via RPC:', error)
       return { success: false }
     }
 
     return { success: true }
   } catch (err) {
-    console.error('Crash in logVisitorEvent:', err)
+    console.error('Crash in logVisitorEvent RPC:', err)
     return { success: false }
   }
 }
