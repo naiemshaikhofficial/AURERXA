@@ -21,10 +21,10 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
     const [direction, setDirection] = useState(0) // -1 for prev, 1 for next
-    const containerRef = useRef<HTMLElement>(null)
+    const [containerRef, setContainerRef] = useState<HTMLElement | null>(null)
 
     const { scrollYProgress } = useScroll({
-        target: containerRef,
+        target: containerRef ? { current: containerRef } : undefined,
         offset: ["start start", "end start"]
     })
 
@@ -64,7 +64,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
 
     return (
         <section
-            ref={containerRef}
+            ref={(node) => setContainerRef(node)}
             className="relative h-[65vh] md:h-[90vh] w-full overflow-hidden bg-background group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -94,7 +94,6 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                     x: offset * 65 + "%", // Overlap side slides
                                     rotateY: offset * -20, // Subtle tilt for depth
                                     y: isMain ? (isHovered ? -20 : 0) : 0, // Lift when hovered
-                                    filter: isMain ? "brightness(1.1)" : "brightness(0.7)",
                                 }}
                                 exit={{
                                     opacity: 0,

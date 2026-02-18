@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, ReactNode } from 'react'
+import { useRef, ReactNode, useState } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 
 interface ParallaxScrollProps {
@@ -24,10 +24,10 @@ export function ParallaxScroll({
     scaleOffset = 0,
     opacityOffset = 0
 }: ParallaxScrollProps) {
-    const ref = useRef(null)
+    const [elementRef, setElementRef] = useState<HTMLElement | null>(null)
 
     const { scrollYProgress } = useScroll({
-        target: ref,
+        target: elementRef ? { current: elementRef } : undefined,
         offset: ['start end', 'end start']
     })
 
@@ -49,7 +49,7 @@ export function ParallaxScroll({
 
     return (
         <motion.div
-            ref={ref}
+            ref={(node) => setElementRef(node)}
             style={{ y, scale, opacity }}
             className={`${className} will-change-transform`}
         >

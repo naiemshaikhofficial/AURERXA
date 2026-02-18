@@ -10,9 +10,6 @@ const NewReleases = dynamic(() => import('@/components/new-releases').then(mod =
 const CategoryBrowsing = dynamic(() => import('@/components/category-browsing').then(mod => mod.CategoryBrowsing))
 const ShopByGender = dynamic(() => import('@/components/shop-by-gender').then(mod => mod.ShopByGender))
 const OccasionBrowsing = dynamic(() => import('@/components/occasion-browsing').then(mod => mod.OccasionBrowsing))
-const ConciergeServices = dynamic(() => import('@/components/concierge').then(mod => mod.ConciergeServices))
-const FloatingConcierge = dynamic(() => import('@/components/concierge').then(mod => mod.FloatingConcierge))
-const ServicesSection = dynamic(() => import('@/components/services-section').then(mod => mod.ServicesSection))
 const FeaturedCollections = dynamic(() => import('@/components/featured-collections').then(mod => mod.FeaturedCollections))
 const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod => mod.Bestsellers))
 const CustomOrderForm = dynamic(() => import('@/components/custom-order-form').then(mod => mod.CustomOrderForm))
@@ -62,8 +59,6 @@ export default function HomePage() {
       <CategoryBrowsing />
       <ShopByGender />
       <OccasionBrowsing />
-      <ConciergeServices />
-      <ServicesSection />
 
       <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
         <NewReleasesSection />
@@ -85,7 +80,7 @@ export default function HomePage() {
 
       <CustomOrderForm />
       <Newsletter />
-      <FloatingConcierge />
+
       <Footer />
     </div>
   )

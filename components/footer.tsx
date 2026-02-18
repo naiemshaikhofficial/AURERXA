@@ -47,12 +47,12 @@ export function Footer() {
             <h2 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Services</h2>
             <ul className="space-y-4">
               {[
-                { name: 'Book an Appointment', href: '/appointment' },
-                { name: 'Gold Harvest Scheme', href: '/schemes' },
-                { name: 'Jewellery Care', href: '/care' },
+                { name: 'Personalized Visit', href: '/services/personalized-visit' },
+                { name: 'Gold Harvest Scheme', href: '/services/gold-harvest' },
+                { name: 'Jewellery Care', href: '/services/jewelry-care' },
                 { name: 'Bulk Orders', href: '/bulk-order' },
                 { name: 'Find a Boutique', href: '/stores' },
-                { name: 'Virtual Try-On', href: '/try-on' }
+                { name: 'Virtual Try-On', href: '/services/virtual-try-on' }
               ].map((service) => (
                 <li key={service.name}>
                   <Link href={service.href} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase luxe-underline">
