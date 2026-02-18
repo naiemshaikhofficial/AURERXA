@@ -40,11 +40,23 @@ async function FeaturedCollectionsSection() {
   return <FeaturedCollections categories={categories} />
 }
 
+async function HeroCarouselSection() {
+  const { getHeroSlides } = await import('./actions')
+  const { HeroCarousel } = await import('@/components/hero-carousel')
+  const slides = await getHeroSlides()
+  return <HeroCarousel slides={slides} />
+}
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <Hero />
       <Heritage />
+
+      {/* Dynamic Hero Carousel (Bridal Series & More) */}
+      <Suspense fallback={<div className="h-[80vh] w-full bg-background animate-pulse" />}>
+        <HeroCarouselSection />
+      </Suspense>
 
       <TrustBar />
       <CategoryBrowsing />

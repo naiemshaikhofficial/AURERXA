@@ -457,6 +457,26 @@ export async function getProducts(categorySlug?: string, sortBy?: string) {
   )()
 }
 
+export async function getHeroSlides() {
+  return unstable_cache(
+    async () => {
+      const { data, error } = await supabaseServer
+        .from('hero_slides')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+
+      if (error) {
+        console.error('Error fetching hero slides:', error)
+        return []
+      }
+      return data || []
+    },
+    ['hero-slides'],
+    { revalidate: 3600, tags: ['hero-slides'] }
+  )()
+}
+
 // Product Actions
 export const getProductBySlug = cache(async (slug: string) => {
   return unstable_cache(
