@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, X, Loader2, ArrowRight } from 'lucide-react'
-import { searchProducts } from '@/app/actions'
+import { searchProducts, getUsedTags } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
@@ -16,12 +16,15 @@ export function SearchModal() {
     const { isSearchOpen: isOpen, closeSearch: onClose } = useSearch()
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<any[]>([])
+    const [usedTags, setUsedTags] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
 
     useEffect(() => {
-        if (isOpen && inputRef.current) {
-            inputRef.current.focus()
+        if (isOpen) {
+            if (inputRef.current) inputRef.current.focus()
+            // Fetch used tags on open
+            getUsedTags().then(setUsedTags)
         }
     }, [isOpen])
 
@@ -129,10 +132,10 @@ export function SearchModal() {
                                 <div>
                                     <h4 className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-6">Popular Collections</h4>
                                     <div className="flex flex-col gap-4">
-                                        {['Gold', 'Silver', 'Diamond', 'Platinum', 'Kids'].map((cat) => (
+                                        {(usedTags.length > 0 ? usedTags : ['Gold', 'Silver', 'Diamond', 'Platinum']).map((cat) => (
                                             <Link
                                                 key={cat}
-                                                href={cat === 'Kids' ? '/collections?gender=Kids' : `/collections?category=${cat.toLowerCase()}`}
+                                                href={`/collections/${cat.toLowerCase()}`}
                                                 onClick={onClose}
                                                 className="group flex items-center justify-between text-xl font-serif text-white/60 hover:text-white transition-all"
                                             >

@@ -18,7 +18,7 @@ function CollectionCard({ category, parentScrollProgress }: { category: any, par
       variants={fadeInUp}
     >
       <Link
-        href={`/collections?material=${category.slug}`}
+        href={`/collections/${category.slug}`}
         className="group relative block aspect-[4/5] overflow-hidden bg-card transition-all duration-300 hover:z-20 hover:scale-[1.02] border border-border"
       >
         {/* Image with Parallax & Scale Effect */}

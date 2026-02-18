@@ -65,7 +65,7 @@ export function OccasionBrowsing() {
                             <div className="absolute inset-0 bg-black/60 group-hover:bg-black/20 transition-all duration-500" />
 
                             <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                                <Link href={`/collections?occasion=${occ.slug}`} className="space-y-2">
+                                <Link href={`/collections/${occ.slug}`} className="space-y-2">
                                     <h3 className="text-white font-serif text-3xl md:text-4xl italic tracking-tight group-hover:text-primary transition-colors">
                                         {occ.name}
                                     </h3>

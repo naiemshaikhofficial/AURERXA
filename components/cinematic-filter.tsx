@@ -7,7 +7,9 @@ import { cn } from '@/lib/utils'
 
 export type FilterState = {
     category: string
+    sub_category: string
     tag?: string
+    occasion: string
     type: string
     gender: string
     priceRange: { label: string, min: number, max: number | null }

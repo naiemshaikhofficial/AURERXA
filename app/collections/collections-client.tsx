@@ -34,7 +34,9 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
             const data = await getFilteredProducts({
                 sortBy: newFilters.sortBy,
                 category: newFilters.category === 'all' ? undefined : newFilters.category,
+                sub_category: newFilters.sub_category === 'all' ? undefined : newFilters.sub_category,
                 tag: newFilters.tag || undefined,
+                occasion: newFilters.occasion === 'all' ? undefined : newFilters.occasion,
                 gender: newFilters.gender === 'all' ? undefined : newFilters.gender,
                 type: newFilters.type === 'all' ? undefined : newFilters.type,
                 minPrice: newFilters.priceRange.min,
@@ -70,14 +72,22 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both">
                         <div className="inline-flex items-center gap-6 mb-8 opacity-60">
                             <div className="h-[1px] w-16 bg-foreground/20" />
-                            <span className="text-foreground font-premium-sans text-[10px] tracking-[0.4em] uppercase">The Archive</span>
+                            <span className="text-foreground font-premium-sans text-[10px] tracking-[0.4em] uppercase">
+                                {filters.tag ? 'The Collection' : 'The Archive'}
+                            </span>
                             <div className="h-[1px] w-16 bg-foreground/20" />
                         </div>
-                        <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4">
-                            COLLECTIONS
+                        <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4 uppercase">
+                            {filters.tag
+                                ? `${filters.tag} Collection`
+                                : filters.category !== 'all'
+                                    ? categories.find(c => c.slug === filters.category)?.name || 'Collections'
+                                    : 'Collections'}
                         </h1>
                         <p className="max-w-xl mx-auto text-muted-foreground font-light text-sm tracking-widest uppercase leading-loose">
-                            Curated masterpieces for the modern connoisseur.
+                            {filters.tag
+                                ? `Curated pieces from our ${filters.tag} series.`
+                                : 'Curated masterpieces for the modern connoisseur.'}
                         </p>
                     </div>
                 </div>
@@ -130,9 +140,11 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                                 setSearchQuery('')
                                 handleFilterChange({
                                     category: 'all',
+                                    sub_category: 'all',
                                     type: 'all',
                                     gender: 'all',
                                     tag: undefined, // Added tag reset
+                                    occasion: 'all',
                                     priceRange: { label: 'All Prices', min: 0, max: null },
                                     sortBy: 'newest',
                                     search: ''

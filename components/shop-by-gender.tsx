@@ -64,7 +64,7 @@ export function ShopByGender() {
                             transition={{ delay: idx * 0.1, duration: 0.6 }}
                         >
                             <Link
-                                href={`/collections?gender=${gender.slug}`}
+                                href={`/collections/${gender.slug}`}
                                 className="group block relative"
                             >
                                 <div className="relative aspect-[3/4] overflow-hidden border border-border bg-card group-hover:border-primary/30 transition-colors duration-500">

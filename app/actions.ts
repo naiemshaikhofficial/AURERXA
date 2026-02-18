@@ -242,6 +242,31 @@ export const getCategories = unstable_cache(
   { revalidate: 86400, tags: ['categories'] }
 )
 
+export const getUsedTags = unstable_cache(
+  async () => {
+    try {
+      const { data, error } = await supabaseServer
+        .from('products')
+        .select('tags')
+        .not('tags', 'is', null)
+
+      if (error) throw error
+
+      const allTags = data.flatMap(p => p.tags || [])
+      const uniqueTags = Array.from(new Set(allTags.map(t => t.toLowerCase())))
+        .map(t => t.charAt(0).toUpperCase() + t.slice(1))
+        .sort()
+
+      return uniqueTags
+    } catch (err) {
+      console.error('Error fetching used tags:', err)
+      return []
+    }
+  },
+  ['used-tags'],
+  { revalidate: 3600, tags: ['products'] }
+)
+
 export async function getSubCategories(categoryId?: string) {
   return unstable_cache(
     async () => {
@@ -1784,6 +1809,44 @@ export async function searchProducts(query: string) {
   }
 }
 
+export async function getSearchSuggestions(query: string) {
+  try {
+    if (!query || query.length < 2) return { categories: [], tags: [] }
+
+    const t = query.toLowerCase()
+
+    // 1. Fetch matching categories
+    const { data: categories } = await supabaseServer
+      .from('categories')
+      .select('name, slug')
+      .or(`name.ilike.%${query}%,slug.ilike.%${query}%`)
+      .limit(5)
+
+    // 2. Fetch all products to extract tags (not ideal for performance, but good for small catalogs)
+    // Actually, let's use a smarter approach: filter by tags directly if possible
+    // Since tags is an array, we can use ilike on the whole array string or just filter in JS
+    const { data: tagResults } = await supabaseServer
+      .from('products')
+      .select('tags')
+      .not('tags', 'is', null)
+      .limit(100)
+
+    const matchingTags = Array.from(new Set(
+      (tagResults || [])
+        .flatMap(p => p.tags)
+        .filter(tag => tag.toLowerCase().includes(t))
+    )).slice(0, 5)
+
+    return {
+      categories: categories || [],
+      tags: matchingTags
+    }
+  } catch (err) {
+    console.error('Search suggestions error:', err)
+    return { categories: [], tags: [] }
+  }
+}
+
 // ============================================
 // COUPONS
 // ============================================
@@ -1978,7 +2041,10 @@ export async function signOut() {
 
 export async function getFilteredProducts(options: {
   category?: string
+  sub_category?: string
   tag?: string
+  occasion?: string
+  material?: string
   minPrice?: number
   maxPrice?: number
   sortBy?: string
@@ -1994,31 +2060,57 @@ export async function getFilteredProducts(options: {
           .select('id, name, price, description, image_url, images, slug, weight_grams, categories(id, name, slug)')
 
         // Category filter
-        if (options.category && options.category !== 'all') {
+        const categorySlug = options.category || options.material
+        if (categorySlug && categorySlug !== 'all') {
           const { data: cat } = await supabaseServer
             .from('categories')
             .select('id')
-            .eq('slug', options.category)
+            .eq('slug', categorySlug)
             .single()
           if (cat) {
             query = query.eq('category_id', cat.id)
           }
         }
 
+        // Sub-category filter
+        if (options.sub_category && options.sub_category !== 'all') {
+          const { data: subCat } = await supabaseServer
+            .from('sub_categories')
+            .select('id')
+            .eq('slug', options.sub_category)
+            .single()
+          if (subCat) {
+            query = query.eq('sub_category_id', subCat.id)
+          }
+        }
+
         // Tag filter (Theme Collections)
         if (options.tag) {
           const t = options.tag.toLowerCase()
+          const words = t.split(/[- ]/)
+          const lastWord = words[words.length - 1]
+          const singularLast = lastWord.endsWith('s') ? lastWord.slice(0, -1) : lastWord
+
           const variations = Array.from(new Set([
             t,
-            t.charAt(0).toUpperCase() + t.slice(1),
-            options.tag,
+            t.replace(/-/g, ' '),
+            lastWord,
+            singularLast,
+            lastWord === 'ring' ? 'rings' : null,
+            lastWord === 'earring' ? 'earrings' : null,
+            lastWord === 'necklace' ? 'necklaces' : null,
             t === 'bride' ? 'bridal' : null,
-            t === 'bride' ? 'Bridal' : null,
             t === 'bridal' ? 'bride' : null,
-            t === 'bridal' ? 'Bridal' : null,
           ].filter(Boolean) as string[]))
 
-          const orFilter = variations.map(v => `tags.cs.{"${v}"}`).join(',')
+          const allVariations = [...variations]
+          variations.forEach(v => {
+            allVariations.push(v.charAt(0).toUpperCase() + v.slice(1))
+          })
+
+          const orFilter = Array.from(new Set(allVariations))
+            .map(v => `tags.cs.{"${v}"}`)
+            .join(',')
           query = query.or(orFilter)
         }
 
@@ -2027,10 +2119,33 @@ export async function getFilteredProducts(options: {
           query = query.eq('gender', options.gender)
         }
 
-        // Type filter
+        // Type filter (Holistic match for legacy or flexible links)
         if (options.type && options.type !== 'all') {
-          const singularType = options.type.endsWith('s') ? options.type.slice(0, -1) : options.type
-          query = query.ilike('name', `%${singularType}%`)
+          const t = options.type.toLowerCase()
+          const words = t.split(/[- ]/)
+          const lastWord = words[words.length - 1]
+          const singularLast = lastWord.endsWith('s') ? lastWord.slice(0, -1) : lastWord
+
+          // 1. Try to match as a category
+          const { data: cat } = await supabaseServer.from('categories').select('id').eq('slug', t).single()
+          if (cat) {
+            query = query.eq('category_id', cat.id)
+          } else {
+            // 2. Try to match as a sub-category
+            const { data: subCat } = await supabaseServer.from('sub_categories').select('id').eq('slug', t).single()
+            if (subCat) {
+              query = query.eq('sub_category_id', subCat.id)
+            } else {
+              // 3. Try to match as a tag or in the name
+              query = query.or(`tags.cs.{"${t}"},tags.cs.{"${lastWord}"},tags.cs.{"${singularLast}"},name.ilike.%${singularLast}%`)
+            }
+          }
+        }
+
+        // Occasion filter (Treated as Tags)
+        if (options.occasion && options.occasion !== 'all') {
+          const o = options.occasion.toLowerCase()
+          query = query.or(`tags.cs.{"${o}"},tags.cs.{"${options.occasion}"},description.ilike.%${o}%`)
         }
 
         // Price filters

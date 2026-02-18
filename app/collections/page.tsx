@@ -5,7 +5,9 @@ import { Navbar } from '@/components/navbar'
 interface PageProps {
     searchParams: Promise<{
         category?: string
+        sub_category?: string
         tag?: string
+        occasion?: string
         gender?: string
         type?: string
         minPrice?: string
@@ -21,7 +23,9 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
 
     const initialFilters = {
         category: params.category || 'all',
+        sub_category: params.sub_category || 'all',
         tag: params.tag || '',
+        occasion: params.occasion || 'all',
         gender: params.gender || 'all',
         type: params.type || 'all',
         sortBy: params.sortBy || 'newest',
@@ -35,7 +39,9 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
 
     const products = await getFilteredProducts({
         category: initialFilters.category === 'all' ? undefined : initialFilters.category,
+        sub_category: initialFilters.sub_category === 'all' ? undefined : initialFilters.sub_category,
         tag: initialFilters.tag || undefined,
+        occasion: initialFilters.occasion === 'all' ? undefined : initialFilters.occasion,
         gender: initialFilters.gender === 'all' ? undefined : initialFilters.gender,
         type: initialFilters.type === 'all' ? undefined : initialFilters.type,
         sortBy: initialFilters.sortBy,
