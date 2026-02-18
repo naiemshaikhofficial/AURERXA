@@ -19,6 +19,8 @@ import { VTOModal } from '@/components/vto-modal'
 import { ProductCard } from '@/components/product-card'
 import { SizeGuide } from '@/components/size-guide'
 import { formatPurity, formatWeight, formatDimensions } from '@/lib/material-intelligence'
+import { PairItWith } from '@/components/pair-it-with'
+import { RecentlyViewed } from '@/components/recently-viewed'
 
 
 interface ProductClientProps {
@@ -784,27 +786,11 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                 </div>
             </div>
 
-            {/* Related Products - Cinematic Strip */}
-            {related && related.length > 0 && (
-                <div className="py-32 border-t border-white/5 relative bg-neutral-950">
-                    <div className="max-w-7xl mx-auto px-6">
-                        <div className="flex flex-col items-center mb-20 text-center">
-                            <span className="text-amber-200/60 text-[9px] uppercase tracking-[0.4em] mb-6">Complete The Set</span>
-                            <h2 className="text-4xl md:text-5xl font-serif text-white/90 italic">Curated Pairings</h2>
-                        </div>
+            {/* Smart Recommendations - Curated Pairings */}
+            <PairItWith productId={product.id} />
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 md:gap-x-8 gap-y-12 md:gap-y-16">
-                            {related?.map((item, idx) => (
-                                <ProductCard
-                                    key={item.id}
-                                    product={item}
-                                    index={idx}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Recently Viewed - User Journey */}
+            <RecentlyViewed />
 
             {message && (
                 <div className="fixed bottom-8 right-8 z-50 bg-neutral-900 border border-white/10 text-white px-8 py-4 flex items-center gap-4 shadow-2xl animate-in slide-in-from-bottom-5">

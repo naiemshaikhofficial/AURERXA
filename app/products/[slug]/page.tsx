@@ -81,7 +81,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         )
     }
 
-    const related = await getRelatedProducts(product.category_id, product.id)
     const isWishlisted = await isInWishlist(product.id)
 
     const jsonLd = {
@@ -112,7 +111,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             />
             <ProductClient
                 product={product}
-                related={related || []}
                 isWishlisted={isWishlisted}
             />
         </>

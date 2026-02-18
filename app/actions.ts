@@ -627,6 +627,8 @@ export async function getProductById(id: string) {
 }
 
 export async function getRelatedProducts(categoryId: string, excludeId: string) {
+  if (!categoryId) return [] // Safety guard for products without categories
+
   try {
     const { data, error } = await supabaseServer
       .from('products')
@@ -3623,8 +3625,53 @@ export async function checkAbandonedCarts() {
 // ============================================
 
 /**
- * Triggers database maintenance (cleanup of old logs)
- * to keep storage within free-tier limits.
+ * RECOMENDATIONS ENGINE
+ * Finds products that pair well with the current product based on tags and categories.
+ */
+export async function getRecommendedProducts(productId: string) {
+  return unstable_cache(
+    async () => {
+      try {
+        // 1. Get the source product to see its tags and category
+        const { data: source, error: sourceError } = await supabaseServer
+          .from('products')
+          .select('id, category_id, tags')
+          .eq('id', productId)
+          .single()
+
+        if (sourceError || !source) return []
+
+        // 2. Build recommendations query
+        let query = supabaseServer
+          .from('products')
+          .select('*, categories(*)')
+          .limit(6)
+          .neq('id', productId) // Don't recommend itself
+
+        // 3. Logic: Match by tags FIRST, then by category
+        if (source.tags && source.tags.length > 0) {
+          const tagFilters = source.tags.map((t: string) => `tags.cs.{"${t}"}`).join(',')
+          query = query.or(`${tagFilters},category_id.eq.${source.category_id}`)
+        } else {
+          query = query.eq('category_id', source.category_id)
+        }
+
+        const { data, error } = await query
+        if (error) throw error
+
+        return data || []
+      } catch (err) {
+        console.error('Recommendations error:', err)
+        return []
+      }
+    },
+    [`recommendations-${productId}`],
+    { revalidate: 3600, tags: ['products'] }
+  )()
+}
+
+/**
+ * Maintenance: Vacuum and cleanup
  */
 export async function triggerDatabaseMaintenance() {
   const isAdmin = await checkIsAdmin()
