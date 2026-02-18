@@ -5,7 +5,8 @@ import { getNewReleases } from './actions'
 
 // Lazy load ALL below-hero components to reduce initial JS bundle and TBT
 const Heritage = dynamic(() => import('@/components/heritage').then(mod => mod.Heritage))
-const TrustBar = dynamic(() => import('@/components/trust-bar').then(mod => mod.TrustBar))
+
+const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
 const CategoryBrowsing = dynamic(() => import('@/components/category-browsing').then(mod => mod.CategoryBrowsing))
 const ShopByGender = dynamic(() => import('@/components/shop-by-gender').then(mod => mod.ShopByGender))
 const OccasionBrowsing = dynamic(() => import('@/components/occasion-browsing').then(mod => mod.OccasionBrowsing))
@@ -18,7 +19,6 @@ const CustomOrderForm = dynamic(() => import('@/components/custom-order-form').t
 const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => mod.Newsletter))
 const Footer = dynamic(() => import('@/components/footer').then(mod => mod.Footer))
 const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-story').then(mod => mod.CraftsmanshipStory))
-const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
 const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
 import { SectionSkeleton } from '@/components/skeletons'
 
@@ -58,7 +58,7 @@ export default function HomePage() {
         <HeroCarouselSection />
       </Suspense>
 
-      <TrustBar />
+
       <CategoryBrowsing />
       <ShopByGender />
       <OccasionBrowsing />
