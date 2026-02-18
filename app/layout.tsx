@@ -101,25 +101,23 @@ export default async function RootLayout({
                 <SmoothScroll>
                   <AdminRouteGuard>
                     <Navbar />
-                  </AdminRouteGuard>
-                  <AdminRouteGuard>
                     <div className="pt-20 md:pt-24">
                       <CategoryNav />
                       <main>
                         {children}
                       </main>
                     </div>
-                  </AdminRouteGuard>
-                  <AdminOnlyWrapper>
-                    {children}
-                  </AdminOnlyWrapper>
-                  <Toaster />
-                  <AdminRouteGuard>
                     <CartSheet />
                     <BottomNav />
                     <MobileInstallPrompt />
                     <NotificationManager />
                   </AdminRouteGuard>
+
+                  <AdminOnlyWrapper>
+                    {children}
+                  </AdminOnlyWrapper>
+
+                  <Toaster />
                   <SpeedInsights />
                   <Analytics />
                 </SmoothScroll>

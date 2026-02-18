@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, X, Loader2, ArrowRight } from 'lucide-react'
-import { searchProducts, getUsedTags } from '@/app/actions'
+import { Search, X, Loader2, ArrowRight, Compass, Tag as TagIcon } from 'lucide-react'
+import { searchProducts, getUsedTags, getSearchSuggestions } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
@@ -16,6 +16,7 @@ export function SearchModal() {
     const { isSearchOpen: isOpen, closeSearch: onClose } = useSearch()
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<any[]>([])
+    const [suggestions, setSuggestions] = useState<{ categories: any[], tags: string[] }>({ categories: [], tags: [] })
     const [usedTags, setUsedTags] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -35,8 +36,12 @@ export function SearchModal() {
                 return
             }
             setLoading(true)
-            const data = await searchProducts(query)
-            setResults(data)
+            const [productData, suggestionData] = await Promise.all([
+                searchProducts(query),
+                getSearchSuggestions(query)
+            ])
+            setResults(productData)
+            setSuggestions(suggestionData)
             setLoading(false)
         }
 
@@ -66,23 +71,17 @@ export function SearchModal() {
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute -top-12 right-4 md:right-0 p-2 text-white/40 hover:text-amber-500 transition-colors"
+                    className="absolute -top-12 right-4 md:right-0 p-2 text-white/40 hover:text-primary transition-colors"
                     aria-label="Close search"
                 >
-                    <img
-                        src="https://img.icons8.com/?size=100&id=82732&format=png&color=999999"
-                        alt=""
-                        className="w-5 h-5"
-                    />
+                    <X className="w-6 h-6" />
                 </button>
 
                 {/* Search Header */}
                 <div className="relative mb-12 animate-in slide-in-from-bottom-8 duration-500">
-                    <div className="flex items-center gap-6 border-b border-neutral-800 pb-4 group focus-within:border-amber-500 transition-colors">
-                        <img
-                            src="https://img.icons8.com/?size=100&id=VNGluvySmxmA&format=png&color=333333"
-                            alt="Search"
-                            className="w-5 h-5 group-focus-within:brightness-200 transition-all opacity-40 group-focus-within:opacity-100"
+                    <div className="flex items-center gap-6 border-b border-neutral-800 pb-4 group focus-within:border-primary transition-colors">
+                        <Search
+                            className="w-6 h-6 text-neutral-500 group-focus-within:text-primary transition-colors"
                         />
                         <input
                             ref={inputRef}
@@ -93,11 +92,7 @@ export function SearchModal() {
                             className="w-full bg-transparent border-none text-2xl md:text-5xl font-serif text-white placeholder:text-white/10 focus:outline-none uppercase tracking-widest"
                         />
                         {loading && (
-                            <img
-                                src="https://img.icons8.com/?size=100&id=82738&format=png&color=F59E0B"
-                                alt="Loading"
-                                className="w-6 h-6 animate-spin"
-                            />
+                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
                         )}
                     </div>
                 </div>
@@ -106,6 +101,34 @@ export function SearchModal() {
                 <div className="min-h-[200px]">
                     {query.trim().length >= 2 ? (
                         <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+                            {/* Suggestions Header */}
+                            {(suggestions.categories.length > 0 || suggestions.tags.length > 0) && (
+                                <div className="flex flex-wrap gap-4 mb-8">
+                                    {suggestions.categories.map(cat => (
+                                        <Link
+                                            key={cat.slug}
+                                            href={`/collections/${cat.slug}`}
+                                            onClick={onClose}
+                                            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-sm font-serif italic"
+                                        >
+                                            <Compass className="w-3 h-3 text-primary" />
+                                            {cat.name}
+                                        </Link>
+                                    ))}
+                                    {suggestions.tags.map(tag => (
+                                        <Link
+                                            key={tag}
+                                            href={`/collections/${tag.toLowerCase()}`}
+                                            onClick={onClose}
+                                            className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-sm uppercase tracking-widest font-light"
+                                        >
+                                            <TagIcon className="w-3 h-3 text-primary" />
+                                            {tag}
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+
                             {results.length > 0 ? (
                                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {results.map((product, idx) => (
@@ -140,10 +163,8 @@ export function SearchModal() {
                                                 className="group flex items-center justify-between text-xl font-serif text-white/60 hover:text-white transition-all"
                                             >
                                                 <span className="group-hover:translate-x-4 transition-transform duration-300 italic">{cat} Collection</span>
-                                                <img
-                                                    src="https://img.icons8.com/?size=100&id=82731&format=png&color=F59E0B"
-                                                    alt="Arrow"
-                                                    className="w-5 h-5 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all"
+                                                <ArrowRight
+                                                    className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all"
                                                 />
                                             </Link>
                                         ))}
