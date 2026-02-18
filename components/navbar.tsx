@@ -50,13 +50,10 @@ export function Navbar() {
 
     const fetchUser = async () => {
       try {
-        // Use getSession first as it's less prone to throwing AuthSessionMissingError
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
         if (!isMounted) return
 
         if (sessionError) {
-          if (sessionError.message.includes('signal is aborted') || sessionError.name === 'AbortError') return
-          // Only log real errors, not session missing
           if (!sessionError.message.includes('Auth session missing')) {
             console.error('Navbar getSession error:', sessionError)
           }
@@ -65,30 +62,25 @@ export function Navbar() {
         }
 
         const currentUser = session?.user || null
+        if (!currentUser) {
+          setAuthLoading(false)
+          return
+        }
+
         setUser(currentUser)
 
-        if (currentUser) {
-          // Re-validate with getUser for security if we have a session
-          const { data: { user: validatedUser } } = await supabase.auth.getUser()
-          if (validatedUser) setUser(validatedUser)
+        // Parallel fetch for profile and admin status
+        const [{ data: profileData }, { data: adminData }] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', currentUser.id).single(),
+          supabase.from('admin_users').select('role').eq('id', currentUser.id).single()
+        ])
 
-          const userToProcess = validatedUser || currentUser
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', userToProcess.id)
-            .single()
-          if (isMounted && profileData) setProfile(profileData)
-
-          const { data: adminData } = await supabase
-            .from('admin_users')
-            .select('role')
-            .eq('id', userToProcess.id)
-            .single()
-          if (isMounted && adminData) setIsAdmin(true)
+        if (isMounted) {
+          if (profileData) setProfile(profileData)
+          if (adminData) setIsAdmin(true)
         }
       } catch (err: any) {
-        if (err.name !== 'AbortError' && !err.message?.includes('aborted') && !err.message?.includes('Auth session missing')) {
+        if (err.name !== 'AbortError' && !err.message?.includes('aborted')) {
           console.error('Navbar session check error:', err)
         }
       } finally {

@@ -16,7 +16,7 @@ export function TrackingScripts() {
             {/* Replace PIXEL_ID with actual ID when available */}
             <Script
                 id="fb-pixel"
-                strategy="afterInteractive"
+                strategy="lazyOnload"
                 dangerouslySetInnerHTML={{
                     __html: `
                         !function(f,b,e,v,n,t,s)
@@ -37,7 +37,7 @@ export function TrackingScripts() {
             {/* Replace GTM_ID with actual ID when available */}
             <Script
                 id="gtm-script"
-                strategy="afterInteractive"
+                strategy="lazyOnload"
                 dangerouslySetInnerHTML={{
                     __html: `
                         (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':

@@ -42,7 +42,7 @@ export function Hero() {
             priority
             fetchPriority="high"
             quality={75}
-            className="object-cover object-center scale-105 dark:opacity-70 opacity-30"
+            className="object-cover object-center scale-100 dark:opacity-70 opacity-30"
             sizes="100vw"
           />
         </div>

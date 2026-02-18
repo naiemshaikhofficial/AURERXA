@@ -77,6 +77,7 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href="https://xquczexikijzbzcuvmqh.supabase.co" crossOrigin="" />
         <link rel="dns-prefetch" href="https://xquczexikijzbzcuvmqh.supabase.co" />
+        <link rel="preconnect" href="https://img.icons8.com" />
         {/* Preload critical fonts for smooth FCP/LCP */}
         <link
           rel="preload"
