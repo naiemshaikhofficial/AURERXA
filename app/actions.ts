@@ -3214,7 +3214,14 @@ export async function createDelhiveryReturnShipment(returnId: string) {
       body: JSON.stringify(payload)
     })
 
-    const data = await response.json()
+    const responseText = await response.text()
+    let data: any
+    try {
+      data = JSON.parse(responseText)
+    } catch {
+      console.error('Delhivery return API non-JSON response:', responseText.slice(0, 300))
+      return { success: false, error: 'Delhivery API returned an invalid response. Pickup can be scheduled manually.' }
+    }
 
     if (data.success && data.packages && data.packages.length > 0) {
       const pkg = data.packages[0]

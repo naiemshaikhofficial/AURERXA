@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { getAdminReturnRequests, updateReturnStatus } from '@/app/admin/actions'
+import { getAdminReturnRequests, updateReturnStatus, checkAdminRole } from '@/app/admin/actions'
 import {
     RefreshCw, CheckCircle, XCircle, Clock, Truck,
     MessageSquare, User, Hash, IndianRupee,
-    ArrowLeftRight, ExternalLink, Loader2, Search, Filter
+    ArrowLeftRight, ExternalLink, Loader2, Search, Filter,
+    BookOpen, ShieldCheck, ChevronDown
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -22,9 +23,15 @@ export default function AdminReturnsPage() {
         requestId: '',
         reason: ''
     })
+    const [adminRole, setAdminRole] = useState<string>('')
+    const [showGuide, setShowGuide] = useState(false)
 
     useEffect(() => {
         loadData()
+        // Fetch admin role
+        checkAdminRole().then(admin => {
+            if (admin) setAdminRole(admin.role)
+        })
 
         // ⚡ Supabase Realtime Listener
         const channel = supabase
@@ -49,7 +56,7 @@ export default function AdminReturnsPage() {
         setLoading(false)
     }
 
-    const handleStatusUpdate = async (requestId: string, status: 'approved' | 'rejected' | 'completed', notes?: string) => {
+    const handleStatusUpdate = async (requestId: string, status: string, notes?: string) => {
         setUpdating(requestId)
         const res = await updateReturnStatus(requestId, status, notes)
         if (res.success) {
@@ -108,6 +115,73 @@ export default function AdminReturnsPage() {
                     <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                     Refresh
                 </button>
+            </div>
+
+            {/* Admin Return Handling Guide */}
+            <div className="bg-[#111111] border border-white/5 rounded-2xl overflow-hidden">
+                <button
+                    onClick={() => setShowGuide(!showGuide)}
+                    className="w-full p-4 flex items-center justify-between text-left hover:bg-white/5 transition-all"
+                >
+                    <div className="flex items-center gap-3">
+                        <BookOpen className="w-5 h-5 text-[#D4AF37]" />
+                        <span className="text-sm font-bold text-white uppercase tracking-widest">Return Handling Guide</span>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-white/40 transition-transform ${showGuide ? 'rotate-180' : ''}`} />
+                </button>
+                <AnimatePresence>
+                    {showGuide && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="p-6 pt-0 space-y-4 text-sm text-white/60">
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="p-4 bg-white/5 rounded-xl space-y-2">
+                                        <h4 className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest">✅ When to Approve</h4>
+                                        <ul className="space-y-1 text-xs">
+                                            <li>• Customer has unboxing video proof</li>
+                                            <li>• Product is confirmed defective / wrong / damaged</li>
+                                            <li>• Return is within 24-hour delivery window</li>
+                                            <li>• HUID and hallmark stamps are intact</li>
+                                        </ul>
+                                    </div>
+                                    <div className="p-4 bg-white/5 rounded-xl space-y-2">
+                                        <h4 className="text-[10px] font-bold text-red-400 uppercase tracking-widest">❌ When to Reject</h4>
+                                        <ul className="space-y-1 text-xs">
+                                            <li>• No unboxing video or edited/partial video</li>
+                                            <li>• Return window expired (24h from delivery)</li>
+                                            <li>• Product seal broken / tampered before delivery</li>
+                                            <li>• Weight mismatch / HUID mismatch detected</li>
+                                            <li>• Buyer's remorse (not a valid return reason)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                                    <h4 className="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-2">⚠️ Steps Before Approval</h4>
+                                    <ol className="space-y-1 text-xs list-decimal pl-4">
+                                        <li>Verify unboxing video is continuous and uncut</li>
+                                        <li>Cross-check HUID on product with dispatch records</li>
+                                        <li>Verify weight matches dispatch weight (±0.01g tolerance)</li>
+                                        <li>Confirm issue type matches video evidence</li>
+                                        <li>Approve → Delhivery reverse pickup auto-scheduled</li>
+                                    </ol>
+                                </div>
+                                {adminRole === 'main_admin' && (
+                                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                                        <h4 className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">
+                                            <ShieldCheck className="w-3.5 h-3.5 inline mr-1" />
+                                            Main Admin: Re-Approve Power
+                                        </h4>
+                                        <p className="text-xs">You can override a rejection and re-approve a return if the customer provides additional evidence or the initial rejection was in error. This action is logged.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Filters */}
@@ -239,12 +313,22 @@ export default function AdminReturnsPage() {
                                         )}
                                         {req.status === 'approved' && (
                                             <button
-                                                onClick={() => handleStatusUpdate(req.id, 'completed')}
+                                                onClick={() => handleStatusUpdate(req.id, 'received')}
                                                 disabled={updating === req.id}
                                                 className="flex-1 lg:w-40 py-2.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-emerald-500/30 transition-all flex items-center justify-center gap-2"
                                             >
                                                 <CheckCircle className="w-3.5 h-3.5" />
                                                 Mark Received
+                                            </button>
+                                        )}
+                                        {req.status === 'rejected' && adminRole === 'main_admin' && (
+                                            <button
+                                                onClick={() => handleStatusUpdate(req.id, 'approved', 'Re-approved by Main Admin after review')}
+                                                disabled={updating === req.id}
+                                                className="flex-1 lg:w-40 py-2.5 bg-[#D4AF37]/20 border border-[#D4AF37]/30 text-[#D4AF37] text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-[#D4AF37]/30 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                {updating === req.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                                                Re-Approve
                                             </button>
                                         )}
                                         <a

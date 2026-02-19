@@ -1300,7 +1300,14 @@ export async function getShipmentLabel(waybill: string) {
         const response = await fetch(`${delhiveryUrl}/api/p/packing_slip?waybills=${waybill}`, {
             headers: { 'Authorization': `Token ${delhiveryToken}` }
         })
-        const data = await response.json()
+        const responseText = await response.text()
+        let data: any
+        try {
+            data = JSON.parse(responseText)
+        } catch {
+            console.error('Delhivery non-JSON response:', responseText.slice(0, 500))
+            return { success: false, error: 'Delhivery API returned an invalid response. Please try scheduling pickup manually.' }
+        }
         return data.packages?.[0]?.pdf_url || null
     } catch (e) {
         return null
@@ -1723,14 +1730,18 @@ export async function updateReturnStatus(requestId: string, status: string, admi
     const updates: any = { status, updated_at: new Date().toISOString() }
     if (adminNotes) updates.admin_notes = adminNotes
 
-    // If approved, trigger Delhivery Return Shipment
+    // If approved, trigger Delhivery Return Shipment (non-blocking — approval still succeeds)
     if (status === 'approved') {
-        const { createDelhiveryReturnShipment } = await import('../actions')
-        const shipmentRes = await createDelhiveryReturnShipment(requestId)
-        if (!shipmentRes.success) {
-            return { success: false, error: `Approved, but Delhivery pickup failed: ${shipmentRes.error}` }
+        try {
+            const { createDelhiveryReturnShipment } = await import('../actions')
+            const shipmentRes = await createDelhiveryReturnShipment(requestId)
+            if (shipmentRes.success && shipmentRes.trackingNumber) {
+                updates.tracking_number = shipmentRes.trackingNumber
+            }
+            // If Delhivery fails, we still approve — admin can schedule pickup manually
+        } catch (e) {
+            console.error('Delhivery pickup scheduling failed (non-blocking):', e)
         }
-        updates.tracking_number = shipmentRes.trackingNumber
     }
 
     const { error } = await client

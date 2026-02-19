@@ -306,66 +306,203 @@ export default function OrderDetailPage() {
                         </div>
                     )}
 
-                    {/* Return Request Status Banner */}
-                    {returnRequest && (
-                        <div className={cn(
-                            "mb-8 p-6 border",
-                            returnRequest.status === 'requested' ? "bg-amber-500/10 border-amber-500/30" :
-                                returnRequest.status === 'approved' ? "bg-emerald-500/10 border-emerald-500/30" :
-                                    returnRequest.status === 'rejected' ? "bg-red-500/10 border-red-500/30" :
-                                        "bg-primary/10 border-primary/30"
-                        )}>
-                            <div className="flex items-start gap-4">
-                                <div className={cn(
-                                    "p-3 rounded-full",
-                                    returnRequest.status === 'requested' ? "bg-amber-500/20" :
-                                        returnRequest.status === 'approved' ? "bg-emerald-500/20" :
-                                            returnRequest.status === 'rejected' ? "bg-red-500/20" :
-                                                "bg-primary/20"
-                                )}>
-                                    <RotateCcw className={cn(
-                                        "w-6 h-6",
-                                        returnRequest.status === 'requested' ? "text-amber-500" :
-                                            returnRequest.status === 'approved' ? "text-emerald-500" :
-                                                returnRequest.status === 'rejected' ? "text-red-500" :
-                                                    "text-primary"
-                                    )} />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
-                                        <h2 className="text-xl font-bold text-foreground capitalize">
-                                            Return {returnRequest.status.replace('_', ' ')}
-                                        </h2>
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                                            Ref: {returnRequest.id.split('-')[0].toUpperCase()}
-                                        </span>
-                                    </div>
-                                    <p className="text-muted-foreground text-sm mb-4">
-                                        {returnRequest.status === 'requested' && "Your return request has been received and is currently under review by our quality team."}
-                                        {returnRequest.status === 'approved' && "Great! Your return has been approved. A reverse pickup will be scheduled shortly."}
-                                        {returnRequest.status === 'rejected' && "Unfortunately, your return request was not approved based on the information provided."}
-                                        {returnRequest.status === 'pickup_scheduled' && `Pickup has been scheduled. Courier will contact you on ${returnRequest.pickup_date ? new Date(returnRequest.pickup_date).toLocaleDateString() : 'shortly'}.`}
-                                    </p>
+                    {/* Return Journey Timeline */}
+                    {returnRequest && (() => {
+                        const STATUS_STEPS = [
+                            {
+                                key: 'requested',
+                                label: 'Return Requested',
+                                icon: RotateCcw,
+                                desc: 'Your return request has been received and is under review.',
+                            },
+                            {
+                                key: 'approved',
+                                label: 'Request Approved',
+                                icon: CheckCircle,
+                                desc: 'Our team has approved your return request.',
+                            },
+                            {
+                                key: 'pickup_scheduled',
+                                label: 'Pickup Scheduled',
+                                icon: Clock,
+                                desc: 'Delhivery reverse pickup has been scheduled.',
+                            },
+                            {
+                                key: 'picked_up',
+                                label: 'Item Picked Up',
+                                icon: PackageCheck,
+                                desc: 'The courier has collected your item.',
+                            },
+                            {
+                                key: 'received',
+                                label: 'Received at Warehouse',
+                                icon: Package,
+                                desc: 'We have received the returned item at our facility.',
+                            },
+                            {
+                                key: 'inspected',
+                                label: 'Quality Inspection',
+                                icon: ShieldAlert,
+                                desc: 'Our experts are inspecting the returned item.',
+                            },
+                            {
+                                key: 'refunded',
+                                label: 'Refund Processed',
+                                icon: CreditCard,
+                                desc: 'Refund has been initiated to your original payment method.',
+                            },
+                        ]
 
-                                    {returnRequest.admin_notes && (
-                                        <div className="p-4 bg-background/50 border border-border/50 rounded-lg">
-                                            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Message from Aurerxa:</p>
-                                            <p className="text-sm italic text-foreground/80">"{returnRequest.admin_notes}"</p>
-                                        </div>
-                                    )}
+                        const rejectedFlow = returnRequest.status === 'rejected'
+                        const ORDER = STATUS_STEPS.map(s => s.key)
+                        const currentIdx = ORDER.indexOf(returnRequest.status)
 
-                                    {returnRequest.status === 'approved' && returnRequest.tracking_number && (
-                                        <div className="mt-4 flex items-center gap-4">
-                                            <div className="px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                                                <Truck className="w-4 h-4" />
-                                                Reverse Tracking: {returnRequest.tracking_number}
+                        const colorMap: Record<string, string> = {
+                            requested: 'text-amber-400',
+                            approved: 'text-emerald-400',
+                            pickup_scheduled: 'text-sky-400',
+                            picked_up: 'text-blue-400',
+                            received: 'text-violet-400',
+                            inspected: 'text-orange-400',
+                            refunded: 'text-emerald-400',
+                            rejected: 'text-red-400',
+                        }
+                        const bgMap: Record<string, string> = {
+                            requested: 'bg-amber-400/10 border-amber-400/30',
+                            approved: 'bg-emerald-400/10 border-emerald-400/30',
+                            pickup_scheduled: 'bg-sky-400/10 border-sky-400/30',
+                            picked_up: 'bg-blue-400/10 border-blue-400/30',
+                            received: 'bg-violet-400/10 border-violet-400/30',
+                            inspected: 'bg-orange-400/10 border-orange-400/30',
+                            refunded: 'bg-emerald-400/10 border-emerald-400/30',
+                            rejected: 'bg-red-400/10 border-red-400/30',
+                        }
+
+                        const activeColor = colorMap[returnRequest.status] || 'text-primary'
+                        const activeBg = bgMap[returnRequest.status] || 'bg-primary/10 border-primary/30'
+                        const formattedDate = (d: string) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+
+                        return (
+                            <div className={`mb-8 border ${activeBg} overflow-hidden`}>
+                                {/* Header */}
+                                <div className="p-6 border-b border-white/5">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2.5 rounded-full ${activeBg}`}>
+                                                <RotateCcw className={`w-5 h-5 ${activeColor}`} />
+                                            </div>
+                                            <div>
+                                                <h2 className="font-bold text-foreground text-lg">
+                                                    {rejectedFlow ? 'Return Not Approved' : `Return ${returnRequest.status.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}`}
+                                                </h2>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Ref #{returnRequest.id.split('-')[0].toUpperCase()} · Submitted {formattedDate(returnRequest.created_at)}
+                                                </p>
                                             </div>
                                         </div>
-                                    )}
+                                        {returnRequest.tracking_number && (
+                                            <div className={`px-3 py-1.5 border text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${activeBg} ${activeColor}`}>
+                                                <Truck className="w-3.5 h-3.5" />
+                                                Tracking: {returnRequest.tracking_number}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
+
+                                {/* Admin Message */}
+                                {returnRequest.admin_notes && (
+                                    <div className="px-6 py-4 bg-background/30 border-b border-white/5">
+                                        <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Message from AURERXA:</p>
+                                        <p className="text-sm italic text-foreground/80">"{returnRequest.admin_notes}"</p>
+                                    </div>
+                                )}
+
+                                {/* Timeline */}
+                                {!rejectedFlow ? (
+                                    <div className="p-6">
+                                        <div className="space-y-0">
+                                            {STATUS_STEPS.map((step, idx) => {
+                                                const isCompleted = currentIdx > idx
+                                                const isCurrent = currentIdx === idx
+                                                const isPending = currentIdx < idx
+                                                const StepIcon = step.icon
+
+                                                return (
+                                                    <div key={step.key} className="flex gap-4">
+                                                        {/* Icon + Line */}
+                                                        <div className="flex flex-col items-center">
+                                                            <div className={cn(
+                                                                'w-9 h-9 rounded-full flex items-center justify-center border-2 shrink-0 transition-all',
+                                                                isCompleted ? 'bg-emerald-500/20 border-emerald-500/50' :
+                                                                    isCurrent ? `${activeBg} border-current` :
+                                                                        'bg-white/5 border-white/10'
+                                                            )}>
+                                                                {isCompleted
+                                                                    ? <CheckCircle className="w-4 h-4 text-emerald-400" />
+                                                                    : <StepIcon className={cn('w-4 h-4', isCurrent ? activeColor : 'text-white/20', isCurrent && 'animate-pulse')} />
+                                                                }
+                                                            </div>
+                                                            {idx < STATUS_STEPS.length - 1 && (
+                                                                <div className={`w-0.5 flex-1 my-1 ${isCompleted ? 'bg-emerald-500/40' : 'bg-white/10'}`} style={{ minHeight: '24px' }} />
+                                                            )}
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        <div className={`pb-5 flex-1 ${idx < STATUS_STEPS.length - 1 ? '' : ''}`}>
+                                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                                                <p className={cn(
+                                                                    'text-sm font-bold',
+                                                                    isCompleted ? 'text-emerald-400' :
+                                                                        isCurrent ? activeColor :
+                                                                            'text-white/25'
+                                                                )}>
+                                                                    {step.label}
+                                                                </p>
+                                                                {isCurrent && (
+                                                                    <span className="text-[10px] text-muted-foreground">
+                                                                        {formattedDate(returnRequest.updated_at)}
+                                                                    </span>
+                                                                )}
+                                                                {isCompleted && idx === 0 && (
+                                                                    <span className="text-[10px] text-muted-foreground">
+                                                                        {formattedDate(returnRequest.created_at)}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {(isCurrent || isCompleted) && (
+                                                                <p className="text-xs text-muted-foreground mt-0.5">{step.desc}</p>
+                                                            )}
+                                                            {/* Refund details */}
+                                                            {step.key === 'refunded' && isCurrent && (
+                                                                <div className="mt-2 p-3 bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400">
+                                                                    Refund of ₹{Number(order?.total || 0).toLocaleString('en-IN')} will be credited within 5–7 business days to your original payment method.
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    /* Rejected state — simple message */
+                                    <div className="p-6">
+                                        <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20">
+                                            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />
+                                            <div>
+                                                <p className="text-sm font-bold text-red-400 mb-1">Return Not Approved</p>
+                                                <p className="text-xs text-muted-foreground">Your return request could not be approved based on the information provided. If you believe this is incorrect, please contact our support team with your unboxing video and order details.</p>
+                                                <a href="/help" className="inline-block mt-3 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/30 px-4 py-1.5 hover:bg-primary/10 transition-all">
+                                                    Contact Support →
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    )}
+                        )
+                    })()}
+
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left: Order Info */}

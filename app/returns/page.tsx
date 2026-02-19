@@ -22,7 +22,45 @@ export default function ReturnsShippingPage() {
                     </p>
                 </section>
 
-                {/* Shipping & Delivery Section */}
+                {/* Step-by-Step Easy Return Guide */}
+                <section className="space-y-6">
+                    <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
+                        <Gem className="w-6 h-6 text-primary" />
+                        How to Return — Step by Step
+                    </h2>
+                    <p className="text-sm text-muted-foreground">Follow these simple steps for a hassle-free return experience.</p>
+
+                    <div className="grid gap-4">
+                        {[
+                            { step: 1, title: 'Record Unboxing Video', desc: 'Film a continuous, uncut video showing the sealed parcel, unboxing, and the issue clearly. This is mandatory for all return claims.' },
+                            { step: 2, title: 'Go to Your Order', desc: 'Navigate to Account → Orders → Select the delivered order you want to return.' },
+                            { step: 3, title: 'Click "Request Return"', desc: 'Select the issue type (Defective, Wrong Product, or Damaged in Transit), provide details, and submit within 24 hours of delivery.' },
+                            { step: 4, title: 'Wait for Review', desc: 'Our quality team will review your request within 24 hours. You\'ll see the status update on your order page in real-time.' },
+                            { step: 5, title: 'Reverse Pickup', desc: 'If approved, a Delhivery pickup will be auto-scheduled. Keep the product ready in its original packaging.' },
+                            { step: 6, title: 'Refund Processed', desc: 'After inspection, refund is credited to your original payment method within 5-7 business days.' }
+                        ].map((item) => (
+                            <div key={item.step} className="flex items-start gap-4 p-5 bg-card border border-border hover:border-primary/30 transition-all group">
+                                <div className="w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center font-serif font-bold text-lg group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                    {item.step}
+                                </div>
+                                <div>
+                                    <p className="font-medium text-foreground mb-1">{item.title}</p>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="bg-primary/5 border border-primary/20 p-6 text-center">
+                        <p className="text-sm text-muted-foreground mb-3">Ready to start a return?</p>
+                        <Link href="/account/orders" className="inline-block px-8 py-3 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all">
+                            Go to My Orders →
+                        </Link>
+                    </div>
+                </section>
+
+                <hr className="border-border" />
+
                 <section className="space-y-8">
                     <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
                         <Truck className="w-6 h-6 text-primary" />
