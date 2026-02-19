@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PREMIUM_EASE } from '@/lib/animation-constants'
+import { sanitizeImagePath } from '@/lib/utils'
 
 interface Slide {
     id: string
@@ -150,7 +151,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                 style={{ transformStyle: 'preserve-3d' }}
                             >
                                 <Link
-                                    href={slide.cta_link || '/collections'}
+                                    href={(slide.cta_link || '/collections').replace('/collection/', '/collections/').replace('/mordern', '/modern')}
                                     className={`relative w-[92%] md:w-[85%] h-[85%] md:h-[90%] rounded-[2rem] overflow-hidden block border border-white/20 ${isMain ? 'z-10' : ''}`}
                                     style={{
                                         boxShadow: isMain
@@ -164,20 +165,20 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                         className="absolute inset-0 w-full h-[120%] -top-[10%] will-change-transform flex items-center justify-center overflow-hidden"
                                     >
                                         <Image
-                                            src={slide.image_url}
+                                            src={sanitizeImagePath(slide.image_url)}
                                             alt={slide.title}
                                             fill
                                             priority={isMain}
-                                            unoptimized={slide.image_url.startsWith('blob:')}
+                                            unoptimized={slide.image_url.startsWith('blob:') || slide.image_url.includes('imageshack.com')}
                                             className="object-cover object-center hidden md:block"
                                             sizes="100vw"
                                         />
                                         <Image
-                                            src={slide.mobile_image_url || slide.image_url}
+                                            src={sanitizeImagePath(slide.mobile_image_url || slide.image_url)}
                                             alt={slide.title}
                                             fill
                                             priority={isMain}
-                                            unoptimized={(slide.mobile_image_url || slide.image_url).startsWith('blob:')}
+                                            unoptimized={(slide.mobile_image_url || slide.image_url).startsWith('blob:') || (slide.mobile_image_url || slide.image_url).includes('imageshack.com')}
                                             className="object-cover object-center md:hidden"
                                             sizes="100vw"
                                         />

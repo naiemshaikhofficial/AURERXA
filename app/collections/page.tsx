@@ -1,5 +1,5 @@
 import { CollectionsClient } from './collections-client'
-import { getFilteredProducts, getCategories } from '@/app/actions'
+import { getFilteredProducts, getCategories, getUsedTags } from '@/app/actions'
 import { Navbar } from '@/components/navbar'
 
 interface PageProps {
@@ -21,6 +21,7 @@ interface PageProps {
 export default async function CollectionsPage({ searchParams }: PageProps) {
     const params = await searchParams
     const categories = await getCategories()
+    const tags = await getUsedTags()
 
     const initialFilters = {
         category: params.category || 'all',
@@ -59,6 +60,7 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
             <CollectionsClient
                 initialProducts={products as any}
                 categories={categories}
+                tags={tags}
                 initialFilters={initialFilters as any}
             />
         </main>

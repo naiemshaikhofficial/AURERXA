@@ -90,50 +90,62 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'images.pexels.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'encrypted-tbn0.gstatic.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'encrypted-tbn1.gstatic.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'encrypted-tbn2.gstatic.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'encrypted-tbn3.gstatic.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'm.media-amazon.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'xquczexikijzbzcuvmqh.supabase.co',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'img.icons8.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'imagizer.imageshack.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'imageshack.com',
+        pathname: '**',
       },
       {
         protocol: 'https',
         hostname: 'web.telegram.org',
+        pathname: '**',
       }
     ],
   },

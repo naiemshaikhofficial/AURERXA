@@ -494,7 +494,7 @@ export async function getOrdersPollingData() {
         `)
         .order('updated_at', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
 
     if (error) {
         console.error('DEBUG: Polling error:', error.message)

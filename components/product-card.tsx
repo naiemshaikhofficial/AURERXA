@@ -220,7 +220,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                                 priority={priority || index < 2}
                                 fetchPriority={priority || index < 2 ? "high" : "auto"}
                                 loader={supabaseLoader}
-                                unoptimized={allImages[currentImageIndex]?.startsWith('blob:')}
+                                unoptimized={allImages[currentImageIndex]?.startsWith('blob:') || allImages[currentImageIndex]?.includes('imageshack.com')}
                             />
                         </motion.div>
                     </motion.div>

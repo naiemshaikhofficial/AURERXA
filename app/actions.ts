@@ -254,7 +254,11 @@ export const getUsedTags = unstable_cache(
 
       const allTags = data.flatMap(p => p.tags || [])
       const uniqueTags = Array.from(new Set(allTags.map(t => t.toLowerCase())))
-        .map(t => t.charAt(0).toUpperCase() + t.slice(1))
+        .map(t => {
+          if (t === 'genz') return 'GENZ'
+          if (t === 'mordern') return 'Modern'
+          return t.charAt(0).toUpperCase() + t.slice(1)
+        })
         .sort()
 
       return uniqueTags

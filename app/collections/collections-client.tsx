@@ -14,10 +14,11 @@ import { cn } from '@/lib/utils'
 interface CollectionsClientProps {
     initialProducts: Product[]
     categories: any[]
+    tags: string[]
     initialFilters: FilterState
 }
 
-export function CollectionsClient({ initialProducts, categories, initialFilters }: CollectionsClientProps) {
+export function CollectionsClient({ initialProducts, categories, tags, initialFilters }: CollectionsClientProps) {
     const { openSearch } = useSearch()
     const [viewMode] = useState<'grid' | 'list'>('grid')
     const [filters, setFilters] = useState<FilterState>(initialFilters)
@@ -107,6 +108,7 @@ export function CollectionsClient({ initialProducts, categories, initialFilters 
                 <h2 className="sr-only">Product Catalog</h2>
                 <CinematicFilter
                     categories={categories}
+                    tags={tags}
                     initialFilters={filters}
                     onFiltersChange={handleFilterChange}
                     productCount={products.length}

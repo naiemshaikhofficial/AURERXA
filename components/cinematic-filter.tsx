@@ -65,6 +65,7 @@ export const MATERIAL_TYPES = [
 
 interface CinematicFilterProps {
     categories: any[]
+    tags: string[]
     initialFilters: FilterState
     onFiltersChange: (filters: FilterState) => void
     productCount: number
@@ -72,13 +73,14 @@ interface CinematicFilterProps {
 
 export function CinematicFilter({
     categories,
+    tags,
     initialFilters,
     onFiltersChange,
     productCount
 }: CinematicFilterProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [filters, setFilters] = useState<FilterState>(initialFilters)
-    const [activeTab, setActiveTab] = useState<'type' | 'gender' | 'price' | 'sort' | 'material'>('type')
+    const [activeTab, setActiveTab] = useState<'type' | 'gender' | 'price' | 'sort' | 'material' | 'tags'>('type')
 
     // Lock Body Scroll when Filter is Open
     useEffect(() => {
@@ -232,6 +234,7 @@ export function CinematicFilter({
                                 <div className="w-1/3 md:w-1/4 bg-card border-r border-border flex flex-col">
                                     {[
                                         { id: 'type', label: 'Type' },
+                                        { id: 'tags', label: 'Style' },
                                         { id: 'material', label: 'Material' },
                                         { id: 'gender', label: 'Gender' },
                                         { id: 'price', label: 'Price Range' },
@@ -266,6 +269,36 @@ export function CinematicFilter({
                                             transition={{ duration: 0.3, ease: "easeOut" }}
                                             className="h-full"
                                         >
+                                            {activeTab === 'tags' && (
+                                                <div className="flex flex-wrap gap-3">
+                                                    <button
+                                                        onClick={() => handleFilterUpdate('tag', undefined)}
+                                                        className={cn(
+                                                            "px-6 py-4 rounded-none border text-[10px] uppercase tracking-[0.2em] transition-all",
+                                                            !filters.tag
+                                                                ? "bg-foreground text-background border-foreground font-bold"
+                                                                : "bg-transparent border-border text-muted-foreground hover:text-foreground"
+                                                        )}
+                                                    >
+                                                        All Styles
+                                                    </button>
+                                                    {tags.map((tag) => (
+                                                        <button
+                                                            key={tag}
+                                                            onClick={() => handleFilterUpdate('tag', tag)}
+                                                            className={cn(
+                                                                "px-6 py-4 rounded-none border text-[10px] uppercase tracking-[0.2em] transition-all",
+                                                                filters.tag === tag
+                                                                    ? "bg-foreground text-background border-foreground font-bold shadow-lg"
+                                                                    : "bg-transparent border-border text-muted-foreground hover:text-foreground hover:bg-muted"
+                                                            )}
+                                                        >
+                                                            {tag}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+
                                             {activeTab === 'type' && (
                                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                                     {PRODUCT_TYPES.map((type) => (
