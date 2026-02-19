@@ -7,8 +7,8 @@ import { getNewReleases } from './actions'
 const Heritage = dynamic(() => import('@/components/heritage').then(mod => mod.Heritage))
 
 const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
-const CategoryBrowsing = dynamic(() => import('@/components/category-browsing').then(mod => mod.CategoryBrowsing))
-const ShopByGender = dynamic(() => import('@/components/shop-by-gender').then(mod => mod.ShopByGender))
+const CategoryBrowsing = dynamic<CategoryBrowsingProps>(() => import('@/components/category-browsing').then(mod => mod.CategoryBrowsing))
+const ShopByGender = dynamic<ShopByGenderProps>(() => import('@/components/shop-by-gender').then(mod => mod.ShopByGender))
 const OccasionBrowsing = dynamic(() => import('@/components/occasion-browsing').then(mod => mod.OccasionBrowsing))
 const FeaturedCollections = dynamic(() => import('@/components/featured-collections').then(mod => mod.FeaturedCollections))
 const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod => mod.Bestsellers))
@@ -19,6 +19,8 @@ const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-stor
 const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
 const MaterialShowcase = dynamic(() => import('@/components/material-showcase').then(mod => mod.MaterialShowcase))
 import { SectionSkeleton } from '@/components/skeletons'
+import type { CategoryBrowsingProps } from '@/components/category-browsing'
+import type { ShopByGenderProps } from '@/components/shop-by-gender'
 
 async function NewReleasesSection() {
   const { getNewReleases } = await import('./actions')

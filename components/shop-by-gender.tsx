@@ -27,7 +27,7 @@ const genderCategories = [
     }
 ]
 
-interface ShopByGenderProps {
+export interface ShopByGenderProps {
     genderStats?: Record<string, number>
 }
 

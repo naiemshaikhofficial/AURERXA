@@ -2188,10 +2188,25 @@ export async function getFilteredProducts(options: {
           }
         }
 
-        // Occasion filter (Treated as Tags)
+        // Occasion filter (Treated as Tags with robust variations)
         if (options.occasion && options.occasion !== 'all') {
           const o = options.occasion.toLowerCase()
-          query = query.or(`tags.cs.{"${o}"},tags.cs.{"${options.occasion}"},description.ilike.%${o}%`)
+          const occasionVariations = Array.from(new Set([
+            o,
+            o.toUpperCase(),
+            o.charAt(0).toUpperCase() + o.slice(1),
+            o === 'daily' ? 'daily wear' : null,
+            o === 'daily wear' ? 'daily' : null,
+            o === 'daily' ? 'Daily Wear' : null,
+            o === 'wedding' ? 'Bridal' : null,
+            o === 'wedding' ? 'bridal' : null,
+          ].filter(Boolean) as string[]))
+
+          const occasionOrFilter = Array.from(new Set(occasionVariations))
+            .map(v => `tags.cs.{"${v}"}`)
+            .join(',')
+
+          query = query.or(`${occasionOrFilter},description.ilike.%${o}%`)
         }
 
         // Material Type filter

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 
-interface CategoryBrowsingProps {
+export interface CategoryBrowsingProps {
     categories: any[]
 }
 
