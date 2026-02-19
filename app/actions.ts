@@ -2407,62 +2407,59 @@ export async function requestReturn(orderId: string, formData: {
       }
     }
 
-    // 5. Create a return ticket in the tickets table (reuses existing support infra)
-    const { data: ticket, error: ticketError } = await client
-      .from('tickets')
+    // 5. Create a return record in the new return_requests table
+    const { data: returnReq, error: returnError } = await client
+      .from('return_requests')
       .insert({
+        order_id: orderId,
         user_id: user.id,
-        subject: `Return Request - Order #${order.order_number}`,
-        message: `Issue Type: ${formData.issueType.replace(/_/g, ' ')}\nReason: ${formData.reason.trim()}\n\nDescription:\n${formData.description.trim()}\n\nOrder Total: ₹${order.total?.toLocaleString('en-IN')}\nItems: ${order.order_items?.map((i: any) => `${i.product_name} x${i.quantity}`).join(', ')}`,
-        status: 'open',
-        urgency: 'high'
+        issue_type: formData.issueType,
+        reason: formData.reason.trim(),
+        description: formData.description.trim(),
+        status: 'requested'
       })
       .select('id')
       .single()
 
-    if (ticketError) {
-      console.error('Return request ticket creation error:', ticketError)
-      return { success: false, error: 'Failed to submit return request. Please try again or contact support.' }
-    }
-
-    // 4. Update order with detailed return tracking
-    await client
-      .from('orders')
-      .update({
-        status: 'return_requested',
-        return_status: 'requested',
-        return_reason: `${formData.issueType}: ${formData.reason}`,
-        returned_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', orderId)
-
-    // 6. Log activity
-    try {
-      await client.from('admin_activity_logs').insert({
-        admin_id: user.id,
-        action: `Return request for order: ${order.order_number}`,
-        entity_type: 'ticket',
-        entity_id: ticket?.id || orderId,
-        details: {
-          order_number: order.order_number,
-          issue_type: formData.issueType,
-          reason: formData.reason.trim()
-        }
-      })
-    } catch (e) {
-      console.error('Silent log failure:', e)
+    if (returnError) {
+      console.error('Return Request table error:', returnError)
+      // Fallback to ticket if table doesn't exist yet (to avoid breaking during transition)
+      await client
+        .from('tickets')
+        .insert({
+          user_id: user.id,
+          subject: `Return Request - Order #${order.order_number}`,
+          message: `Issue Type: ${formData.issueType}\nReason: ${formData.reason.trim()}\nDescription: ${formData.description.trim()}`,
+          status: 'open',
+          urgency: 'high'
+        })
+      return { success: true, message: 'Return request submitted via support ticket.' }
     }
 
     return {
       success: true,
-      message: 'Your return request has been submitted. Our team will review it and contact you within 24 hours.',
-      ticketId: ticket?.id
+      message: 'Return request submitted successfully. Our team will review it within 24 hours.',
+      requestId: returnReq.id
     }
-  } catch (err: any) {
-    console.error('Return request crash:', err)
-    return { success: false, error: 'An unexpected error occurred. Please try again.' }
+  } catch (error: any) {
+    console.error('Request Return Error:', error)
+    return { success: false, error: 'An unexpected error occurred. Please try again later.' }
   }
+}
+
+export async function getReturnRequests() {
+  const client = await getAuthClient()
+  const { data: { user } } = await client.auth.getUser()
+  if (!user) return []
+
+  const { data, error } = await client
+    .from('return_requests')
+    .select('*, orders(order_number, total, created_at)')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+
+  if (error) return []
+  return data
 }
 
 // ============================================
@@ -3133,6 +3130,97 @@ export async function getOrderTracking(trackingNumber: string) {
   } catch (error) {
     console.error('Tracking API error:', error)
     return { success: false, error: 'Unable to fetch tracking updates' }
+  }
+}
+
+export async function createDelhiveryReturnShipment(returnId: string) {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
+  try {
+    const client = await getAuthClient()
+    const delhiveryToken = process.env.DELHIVERY_API_TOKEN
+    const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
+
+    if (!delhiveryToken) {
+      return { success: false, error: 'Delhivery token not configured' }
+    }
+
+    // 1. Fetch Return Request and Order
+    const { data: returnReq, error: reqError } = await client
+      .from('return_requests')
+      .select('*, orders(*, order_items(*))')
+      .eq('id', returnId)
+      .single()
+
+    if (reqError || !returnReq) return { success: false, error: 'Return request not found' }
+    if (returnReq.tracking_number) return { success: true, trackingNumber: returnReq.tracking_number, message: 'Return shipment already exists' }
+
+    const order = returnReq.orders
+    const addr = order.shipping_address
+
+    // REVERSE PICKUP PAYLOAD
+    // Pickup: Customer Address
+    // Delivery (ShipTo): AURERXA Warehouse
+    const payload = {
+      shipments: [
+        {
+          add: "AURERXA JEWELS, Main Road, Sangamner", // Destination (Warehouse)
+          address_type: "office",
+          phone: "9123456789",
+          payment_mode: "Pre-paid", // Reverse is usually pre-paid by company
+          name: "AURERXA RETURNS",
+          pincode: "422605",
+          order: `RET-${order.order_number}`,
+          total_amount: 0,
+          quantity: order.order_items.reduce((s: number, i: any) => s + i.quantity, 0),
+          waybill: "",
+          client: "AURERXA",
+          seller_name: addr.full_name || addr.name, // Source is Customer
+          shipping_mode: "Surface"
+        }
+      ],
+      pickup_location: {
+        name: addr.full_name || addr.name,
+        add: addr.street_address,
+        phone: addr.phone,
+        pincode: addr.pincode
+      }
+    }
+
+    const response = await fetch(`${delhiveryUrl}/api/cgm/packages/json/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${delhiveryToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const data = await response.json()
+
+    if (data.success && data.packages && data.packages.length > 0) {
+      const pkg = data.packages[0]
+      const waybill = pkg.waybill
+
+      // Update Return Request with tracking number
+      await client
+        .from('return_requests')
+        .update({
+          tracking_number: waybill,
+          status: 'pickup_scheduled',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', returnId)
+
+      return { success: true, trackingNumber: waybill }
+    }
+
+    return { success: false, error: data.rmk || 'Return shipment creation failed' }
+
+  } catch (error: any) {
+    console.error('Delhivery Return Shipment Error:', error)
+    return { success: false, error: error.message }
   }
 }
 

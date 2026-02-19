@@ -14,6 +14,8 @@ import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard,
 import { InvoiceTemplate } from '@/components/invoice-template'
 import { toast } from 'sonner'
 import { OrderCancellationDialog } from '@/components/order-cancellation-dialog'
+import { ShipmentTimeline } from '@/components/shipment-timeline'
+import { DigitalCertificate } from '@/components/digital-certificate'
 
 export default function OrderDetailPage() {
     const params = useParams()
@@ -37,6 +39,8 @@ export default function OrderDetailPage() {
         issueType: '' as 'defective' | 'wrong_product' | 'damaged_in_transit' | '',
         description: ''
     })
+    const [activeCertificate, setActiveCertificate] = useState<any>(null)
+    const [isCertPrinting, setIsCertPrinting] = useState(false)
 
     useEffect(() => {
         async function load() {
@@ -159,6 +163,15 @@ export default function OrderDetailPage() {
         setTimeout(() => {
             window.print()
             setIsPrinting(false)
+        }, 800)
+    }
+
+    const handlePrintCertificate = (item: any) => {
+        setActiveCertificate(item)
+        setIsCertPrinting(true)
+        setTimeout(() => {
+            window.print()
+            setIsCertPrinting(false)
         }, 800)
     }
 
@@ -354,29 +367,27 @@ export default function OrderDetailPage() {
 
                                         {/* Live Tracking Timeline */}
                                         {trackingData && trackingData.scans && (
-                                            <div className="border border-border bg-card p-4 rounded-sm">
-                                                <h3 className="text-sm font-medium text-foreground mb-4 flex items-center gap-2">
+                                            <div className="border border-border bg-card p-6">
+                                                <h3 className="text-sm font-serif font-bold text-foreground mb-6 flex items-center gap-2">
                                                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                                    Live Tracking Updates
+                                                    Live Shipment Tracking
                                                 </h3>
-                                                <div className="space-y-6 relative pl-2">
-                                                    {/* Vertical Line */}
-                                                    <div className="absolute top-2 left-[11px] h-full w-[1px] bg-border" />
 
-                                                    {trackingData.scans.slice(0, 3).map((scan: any, i: number) => (
-                                                        <div key={i} className="relative pl-6">
-                                                            <div className={`absolute left-[7px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-background ${i === 0 ? 'bg-primary' : 'bg-muted-foreground'}`} />
-                                                            <p className="text-sm font-medium text-foreground">{scan.status}</p>
-                                                            <p className="text-xs text-muted-foreground">{scan.location}</p>
-                                                            <p className="text-[10px] text-muted-foreground/50 mt-0.5">
-                                                                {new Date(scan.timestamp).toLocaleString('en-IN')}
-                                                            </p>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                                <div className="mt-4 pt-3 border-t border-border text-center">
-                                                    <a href={`https://www.delhivery.com/track/package/${order.tracking_number}`} target="_blank" rel="noreferrer" className="text-xs text-primary hover:text-primary/80 uppercase tracking-wider">
-                                                        View Full Tracking History
+                                                <ShipmentTimeline
+                                                    scans={trackingData.scans}
+                                                    currentStatus={order.status}
+                                                    estimatedDelivery={trackingData.estimatedDelivery}
+                                                />
+
+                                                <div className="mt-8 pt-4 border-t border-border/50 text-center">
+                                                    <a
+                                                        href={`https://www.delhivery.com/track/package/${order.tracking_number}`}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="text-[10px] text-muted-foreground hover:text-primary uppercase tracking-widest font-bold flex items-center justify-center gap-2 transition-colors group"
+                                                    >
+                                                        Detailed History on Delhivery
+                                                        <ExternalLink className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                                                     </a>
                                                 </div>
                                             </div>
@@ -521,7 +532,19 @@ export default function OrderDetailPage() {
                                                     {item.size && <p className="text-sm text-muted-foreground">Size: {item.size}</p>}
                                                     <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                                 </div>
-                                                <p className="font-medium text-primary">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                                                <div className="text-right flex flex-col items-end gap-2">
+                                                    <p className="font-medium text-primary">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                                                    {order.status === 'delivered' && (
+                                                        <button
+                                                            onClick={() => setActiveCertificate(item)}
+                                                            className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground hover:text-primary flex items-center gap-1.5 transition-colors border border-border px-2 py-1 hover:border-primary/30"
+                                                            title="Digital Authenticity Certificate"
+                                                        >
+                                                            <ShieldAlert className="w-3 h-3" />
+                                                            Certificate
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
                                         )
                                     })}
@@ -734,6 +757,73 @@ export default function OrderDetailPage() {
                     </div>
                 </div>,
                 document.body
+            )}
+
+            {isCertPrinting && activeCertificate && typeof document !== 'undefined' && createPortal(
+                <div id="print-root" className="fixed left-[-9999px] top-0 z-[99999] pointer-events-none overflow-hidden print:left-0 print:static print:w-full print:opacity-100">
+                    <div className="flex flex-col items-center justify-start bg-white min-h-screen pt-12">
+                        <DigitalCertificate
+                            orderNumber={order.order_number}
+                            productName={activeCertificate.product_name}
+                            purity={activeCertificate.products?.purity || '18K Gold'}
+                            weight={activeCertificate.products?.weight_grams?.toString()}
+                            purchaseDate={order.created_at}
+                            customerId={order.user_id}
+                        />
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Certificate Preview Modal */}
+            {activeCertificate && !isCertPrinting && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300 px-4 py-8 overflow-y-auto">
+                    <div className="relative w-full max-w-4xl min-h-full flex flex-col items-center">
+                        <div className="w-full flex justify-end mb-4">
+                            <button
+                                onClick={() => setActiveCertificate(null)}
+                                className="text-white/60 hover:text-white flex items-center gap-2 text-xs uppercase tracking-widest font-bold"
+                            >
+                                Close Preview ✕
+                            </button>
+                        </div>
+
+                        <div className="bg-white p-4 shadow-2xl relative group">
+                            <DigitalCertificate
+                                orderNumber={order.order_number}
+                                productName={activeCertificate.product_name}
+                                purity={activeCertificate.products?.purity || '18K Gold'}
+                                weight={activeCertificate.products?.weight_grams?.toString()}
+                                purchaseDate={order.created_at}
+                                customerId={order.user_id}
+                            />
+
+                            {/* Hover Print Overlay (Desktop) */}
+                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                <div className="bg-white text-slate-900 px-8 py-4 shadow-xl flex items-center gap-3 font-bold uppercase tracking-widest text-sm">
+                                    <Printer className="w-5 h-5" />
+                                    Digital Authenticity Link Verified
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-12 flex flex-col md:flex-row gap-4 w-full justify-center pb-12">
+                            <button
+                                onClick={() => handlePrintCertificate(activeCertificate)}
+                                className="px-12 py-4 bg-primary text-primary-foreground text-xs font-bold uppercase tracking-[0.2em] hover:bg-primary/90 transition-all shadow-xl flex items-center justify-center gap-3"
+                            >
+                                <Printer className="w-4 h-4" />
+                                Download / Print Certificate
+                            </button>
+                            <button
+                                onClick={() => setActiveCertificate(null)}
+                                className="px-12 py-4 bg-white/10 text-white text-xs font-bold uppercase tracking-[0.2em] border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center gap-3"
+                            >
+                                Back to Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             {/* Cancellation Dialog */}
