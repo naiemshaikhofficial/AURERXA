@@ -1708,19 +1708,26 @@ export async function getSingleReturnRequestForNotification(requestId: string) {
     return { ...data, profiles: profile || { full_name: 'Customer', email: '' } }
 }
 
-export async function updateReturnStatus(requestId: string, status: string, adminNotes?: string) {
+async function sendReturnStatusNotification(requestId: string, status: string, orderNumber: string) {
+    // Placeholder: Trigger Email/WhatsApp via Resend or generic notification service
+    console.log(`[Notification] Return ${requestId} for Order ${orderNumber} updated to ${status}`)
+}
+
+export async function updateReturnStatus(requestId: string, status: string, adminNotes?: string, restockInventory: boolean = false) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return { success: false, error: 'Unauthorized' }
 
-    // Fetch current status to determine if this is a re-approve
+    // Fetch current status and order items
     const { data: current } = await client
         .from('return_requests')
-        .select('status')
+        .select('status, order_id, orders(order_number, order_items(product_id, quantity))')
         .eq('id', requestId)
         .single()
 
-    // Only main_admin can re-approve a rejected return
+    const orderNumber = (current?.orders as any)?.order_number || 'Unknown'
+
+    // Role check for re-approval
     if (current?.status === 'rejected' && status === 'approved') {
         if (admin.role !== 'main_admin') {
             return { success: false, error: 'Only Main Admin can re-approve rejected returns.' }
@@ -1730,7 +1737,23 @@ export async function updateReturnStatus(requestId: string, status: string, admi
     const updates: any = { status, updated_at: new Date().toISOString() }
     if (adminNotes) updates.admin_notes = adminNotes
 
-    // If approved, trigger Delhivery Return Shipment (non-blocking — approval still succeeds)
+    // Auto-Restock Logic
+    if (restockInventory && current?.orders) {
+        const order = Array.isArray(current.orders) ? current.orders[0] : current.orders
+        const orderItems = (order as any)?.order_items
+        if (orderItems) {
+            for (const item of orderItems as any[]) {
+                if (item.product_id && item.quantity) {
+                    await client.rpc('increment_product_stock', {
+                        p_id: item.product_id,
+                        p_qty: item.quantity
+                    })
+                }
+            }
+        }
+    }
+
+    // Delhivery Reverse Pickup Trigger
     if (status === 'approved') {
         try {
             const { createDelhiveryReturnShipment } = await import('../actions')
@@ -1738,9 +1761,8 @@ export async function updateReturnStatus(requestId: string, status: string, admi
             if (shipmentRes.success && shipmentRes.trackingNumber) {
                 updates.tracking_number = shipmentRes.trackingNumber
             }
-            // If Delhivery fails, we still approve — admin can schedule pickup manually
         } catch (e) {
-            console.error('Delhivery pickup scheduling failed (non-blocking):', e)
+            console.error('Delhivery pickup scheduling failed:', e)
         }
     }
 
@@ -1753,7 +1775,10 @@ export async function updateReturnStatus(requestId: string, status: string, admi
 
     if (error) return { success: false, error: error.message }
 
-    // Best Practice: Synchronize parent Order status
+    // Trigger Notification
+    await sendReturnStatusNotification(requestId, status, orderNumber)
+
+    // Synchronize parent Order status
     if (updatedReq?.order_id) {
         let orderStatus = ''
         if (status === 'approved') orderStatus = 'returning'
@@ -1763,13 +1788,10 @@ export async function updateReturnStatus(requestId: string, status: string, admi
         if (orderStatus) {
             await client
                 .from('orders')
-                .update({
-                    status: orderStatus,
-                    updated_at: new Date().toISOString()
-                })
+                .update({ status: orderStatus, updated_at: new Date().toISOString() })
                 .eq('id', updatedReq.order_id)
 
-            // Bust relevant caches if revenue/orders impacted
+            // Bust relevant caches
             bustCache('stats', 'recent-orders', 'revenue')
         }
     }
@@ -1780,7 +1802,7 @@ export async function updateReturnStatus(requestId: string, status: string, admi
         action: `Updated return request ${requestId} to ${status}`,
         entity_type: 'return_request',
         entity_id: requestId,
-        details: { status, adminNotes }
+        details: { status, adminNotes, restockInventory }
     })
 
     return { success: true }

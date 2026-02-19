@@ -6,7 +6,8 @@ import {
     RefreshCw, CheckCircle, XCircle, Clock, Truck,
     MessageSquare, User, Hash, IndianRupee,
     ArrowLeftRight, ExternalLink, Loader2, Search, Filter,
-    BookOpen, ShieldCheck, ChevronDown, Package, ShieldAlert
+    BookOpen, ShieldCheck, ChevronDown, Package, ShieldAlert,
+    PlayCircle
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -25,6 +26,15 @@ export default function AdminReturnsPage() {
     })
     const [adminRole, setAdminRole] = useState<string>('')
     const [showGuide, setShowGuide] = useState(false)
+    const [restockEnabled, setRestockEnabled] = useState(false)
+
+    // Quick Analytics Calculation
+    const analytics = {
+        total: requests.length,
+        pending: requests.filter(r => r.status === 'requested').length,
+        approved: requests.filter(r => ['approved', 'pickup_scheduled', 'received', 'inspected'].includes(r.status)).length,
+        rejected: requests.filter(r => r.status === 'rejected').length
+    }
 
     useEffect(() => {
         loadData()
@@ -58,9 +68,10 @@ export default function AdminReturnsPage() {
 
     const handleStatusUpdate = async (requestId: string, status: string, notes?: string) => {
         setUpdating(requestId)
-        const res = await updateReturnStatus(requestId, status, notes)
+        const res = await updateReturnStatus(requestId, status, notes, restockEnabled)
         if (res.success) {
             toast.success(`Return request ${status} successfully`)
+            setRestockEnabled(false) // Reset after use
             loadData()
             if (status === 'rejected') setRejectionModal({ isOpen: false, requestId: '', reason: '' })
         } else {
@@ -118,6 +129,24 @@ export default function AdminReturnsPage() {
                     <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                     Refresh
                 </button>
+            </div>
+
+            {/* Analytics Dashboard */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                    { label: 'Total Requests', value: analytics.total, icon: ArrowLeftRight, color: 'text-[#D4AF37]' },
+                    { label: 'Pending Review', value: analytics.pending, icon: Clock, color: 'text-amber-400' },
+                    { label: 'Approved/Active', value: analytics.approved, icon: CheckCircle, color: 'text-emerald-400' },
+                    { label: 'Rejected', value: analytics.rejected, icon: XCircle, color: 'text-red-400' }
+                ].map((stat, i) => (
+                    <div key={i} className="bg-[#111111] border border-white/5 p-4 rounded-2xl">
+                        <div className="flex items-center gap-3 mb-2">
+                            <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">{stat.label}</span>
+                        </div>
+                        <p className="text-2xl font-bold text-white">{stat.value}</p>
+                    </div>
+                ))}
             </div>
 
             {/* Admin Return Handling Guide */}
@@ -282,6 +311,42 @@ export default function AdminReturnsPage() {
                                             </div>
                                         )}
 
+                                        {/* Evidence Section */}
+                                        {(req.evidence_photos?.length > 0 || req.video_link) && (
+                                            <div className="pt-4 mt-4 border-t border-white/5">
+                                                <label className="text-[10px] uppercase tracking-widest text-white/30 font-bold block mb-3">Evidence & Verification</label>
+                                                <div className="flex flex-wrap gap-4">
+                                                    {req.evidence_photos?.length > 0 && (
+                                                        <div className="flex gap-2">
+                                                            {req.evidence_photos.map((url: string, i: number) => (
+                                                                <a
+                                                                    key={i}
+                                                                    href={url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="w-16 h-16 rounded-lg border border-white/10 overflow-hidden hover:border-[#D4AF37] transition-all"
+                                                                >
+                                                                    <img src={url} alt={`Evidence ${i}`} className="w-full h-full object-cover" />
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    {req.video_link && (
+                                                        <a
+                                                            href={req.video_link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center gap-2 px-4 py-2 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-xl text-[#D4AF37] hover:bg-[#D4AF37]/20 transition-all"
+                                                        >
+                                                            <PlayCircle className="w-4 h-4" />
+                                                            <span className="text-[10px] font-bold uppercase tracking-widest">Unboxing Video</span>
+                                                            <ExternalLink className="w-3 h-3" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+
                                         {req.tracking_number && (
                                             <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg">
                                                 <Truck className="w-4 h-4 text-blue-400" />
@@ -294,6 +359,22 @@ export default function AdminReturnsPage() {
 
                                     {/* Right: Actions */}
                                     <div className="flex flex-row lg:flex-col justify-end gap-2 shrink-0">
+                                        {/* Status Specific Actions */}
+                                        {(req.status === 'received' || req.status === 'inspected') && (
+                                            <div className="flex items-center gap-2 mb-2 p-2 bg-white/5 rounded-lg border border-white/5">
+                                                <input
+                                                    type="checkbox"
+                                                    id={`restock-${req.id}`}
+                                                    checked={restockEnabled}
+                                                    onChange={(e) => setRestockEnabled(e.target.checked)}
+                                                    className="w-4 h-4 rounded border-white/20 bg-transparent text-[#D4AF37] focus:ring-0 focus:ring-offset-0"
+                                                />
+                                                <label htmlFor={`restock-${req.id}`} className="text-[10px] font-bold text-white/60 uppercase tracking-widest cursor-pointer">
+                                                    Restock Inventory?
+                                                </label>
+                                            </div>
+                                        )}
+
                                         {req.status === 'requested' && (
                                             <>
                                                 <button

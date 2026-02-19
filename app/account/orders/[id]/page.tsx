@@ -10,13 +10,14 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
 import { getOrderById, getOrderTracking, verifyPayment, getOrderPaymentSession, initiatePayment, requestReturn, getReturnByOrderId } from '@/app/actions'
-import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle, LifeBuoy, RotateCcw, ExternalLink, ShoppingBag, PackageCheck, HelpCircle, XCircle } from 'lucide-react'
+import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle, LifeBuoy, RotateCcw, ExternalLink, ShoppingBag, PackageCheck, HelpCircle, XCircle, Upload, ShieldCheck, IndianRupee } from 'lucide-react'
 import { InvoiceTemplate } from '@/components/invoice-template'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { OrderCancellationDialog } from '@/components/order-cancellation-dialog'
 import { ShipmentTimeline } from '@/components/shipment-timeline'
 import { DigitalCertificate } from '@/components/digital-certificate'
+import { ReturnLabel } from '@/components/return-label'
 
 export default function OrderDetailPage() {
     const params = useParams()
@@ -38,10 +39,13 @@ export default function OrderDetailPage() {
     const [returnForm, setReturnForm] = useState({
         reason: '',
         issueType: '' as 'defective' | 'wrong_product' | 'damaged_in_transit' | '',
-        description: ''
+        description: '',
+        videoLink: ''
     })
+    const [selectedPhotos, setSelectedPhotos] = useState<File[]>([])
     const [activeCertificate, setActiveCertificate] = useState<any>(null)
     const [isCertPrinting, setIsCertPrinting] = useState(false)
+    const [isReturnLabelPrinting, setIsReturnLabelPrinting] = useState(false)
     const [returnRequest, setReturnRequest] = useState<any>(null)
 
     useEffect(() => {
@@ -143,24 +147,59 @@ export default function OrderDetailPage() {
             toast.error('Please fill in all fields')
             return
         }
+        if (!returnForm.videoLink?.trim()) {
+            toast.error('Unboxing video link is mandatory')
+            return
+        }
+
         setReturnSubmitting(true)
         try {
+            // 1. Upload Photos if any
+            const photoUrls: string[] = []
+            if (selectedPhotos.length > 0) {
+                const { supabase } = await import('@/lib/supabase')
+                for (const photo of selectedPhotos) {
+                    const fileExt = photo.name.split('.').pop()
+                    const fileName = `${order.order_number}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+
+                    const { data, error: uploadError } = await supabase.storage
+                        .from('Return-proof')
+                        .upload(fileName, photo)
+
+                    if (uploadError) {
+                        console.error('Photo upload error:', uploadError)
+                        continue
+                    }
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('Return-proof')
+                        .getPublicUrl(data.path)
+
+                    photoUrls.push(publicUrl)
+                }
+            }
+
             const result = await requestReturn(order.id, {
                 reason: returnForm.reason,
                 issueType: returnForm.issueType as any,
-                description: returnForm.description
+                description: returnForm.description,
+                videoLink: returnForm.videoLink,
+                evidencePhotos: photoUrls
             })
+
             if (result.success) {
                 toast.success(result.message)
                 setIsReturnOpen(false)
-                setReturnForm({ reason: '', issueType: '', description: '' })
+                setReturnForm({ reason: '', issueType: '', description: '', videoLink: '' })
+                setSelectedPhotos([])
                 // Refresh return status
                 const ret = await getReturnByOrderId(order.id)
                 if (ret) setReturnRequest(ret)
             } else {
                 toast.error(result.error)
             }
-        } catch {
+        } catch (error) {
+            console.error('Return Request Error:', error)
             toast.error('An unexpected error occurred')
         } finally {
             setReturnSubmitting(false)
@@ -181,6 +220,14 @@ export default function OrderDetailPage() {
         setTimeout(() => {
             window.print()
             setIsCertPrinting(false)
+        }, 800)
+    }
+
+    const handlePrintReturnLabel = () => {
+        setIsReturnLabelPrinting(true)
+        setTimeout(() => {
+            window.print()
+            setIsReturnLabelPrinting(false)
         }, 800)
     }
 
@@ -420,6 +467,62 @@ export default function OrderDetailPage() {
                                 {/* Timeline */}
                                 {!rejectedFlow ? (
                                     <div className="p-6">
+                                        {/* Instructional Banner */}
+                                        {(() => {
+                                            const s = returnRequest.status
+                                            let icon = <Clock className="w-5 h-5 text-[#D4AF37]" />
+                                            let title = ""
+                                            let desc = ""
+                                            let color = "bg-[#D4AF37]/10 border-[#D4AF37]/20"
+
+                                            if (s === 'requested') {
+                                                title = "Request Under Review"
+                                                desc = "Our quality team is reviewing your evidence (unboxing video & photos). Expect an update within 24-48 business hours."
+                                            } else if (s === 'approved') {
+                                                title = "Return Approved"
+                                                desc = "Please download your Return Label, pack the item securely in its original box, and keep it ready for the courier."
+                                                icon = <CheckCircle className="w-5 h-5 text-emerald-400" />
+                                                color = "bg-emerald-500/10 border-emerald-500/20"
+                                            } else if (s === 'pickup_scheduled') {
+                                                title = "Pickup Scheduled"
+                                                desc = "A courier partner has been assigned for your reverse pickup. Please ensure you handover the correct item with the label attached."
+                                                icon = <Truck className="w-5 h-5 text-sky-400" />
+                                                color = "bg-sky-500/10 border-sky-500/20"
+                                            } else if (s === 'picked_up' || s === 'returning') {
+                                                title = "Item in Transit"
+                                                desc = "Your return has been collected and is on its way to our Surat warehouse for a final quality check."
+                                                icon = <Package className="w-5 h-5 text-blue-400" />
+                                                color = "bg-blue-500/10 border-blue-500/20"
+                                            } else if (s === 'received') {
+                                                title = "Item Received"
+                                                desc = "Your parcel has reached our warehouse. Our experts are currently inspecting the HUID, weight, and condition of the jewelry."
+                                                icon = <ShieldCheck className="w-5 h-5 text-violet-400" />
+                                                color = "bg-violet-500/10 border-violet-500/20"
+                                            } else if (s === 'inspected') {
+                                                title = "Quality Check Complete"
+                                                desc = "Your return has passed all quality checks. Your refund is being processed and will be initiated shortly."
+                                                icon = <ShieldAlert className="w-5 h-5 text-emerald-400" />
+                                                color = "bg-emerald-500/10 border-emerald-500/20"
+                                            } else if (s === 'refunded') {
+                                                title = "Refund Processed"
+                                                desc = "The refund has been successfully initiated. It may take 5-7 business days to reflect in your bank account."
+                                                icon = <IndianRupee className="w-5 h-5 text-emerald-400" />
+                                                color = "bg-emerald-500/10 border-emerald-500/20"
+                                            }
+
+                                            if (!title) return null
+
+                                            return (
+                                                <div className={`mb-8 p-4 border rounded-xl flex items-start gap-4 animate-in slide-in-from-top-2 duration-500 ${color}`}>
+                                                    <div className="mt-1">{icon}</div>
+                                                    <div>
+                                                        <p className="text-sm font-bold uppercase tracking-widest mb-1">{title}</p>
+                                                        <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+                                                    </div>
+                                                </div>
+                                            )
+                                        })()}
+
                                         <div className="space-y-0">
                                             {STATUS_STEPS.map((step, idx) => {
                                                 const isCompleted = currentIdx > idx
@@ -940,6 +1043,17 @@ export default function OrderDetailPage() {
                                         </Link>
                                     )}
 
+                                    {returnRequest && returnRequest.status === 'approved' && (
+                                        <button
+                                            onClick={handlePrintReturnLabel}
+                                            className="flex items-center gap-3 w-full p-3 text-left text-sm bg-emerald-500/10 border border-emerald-500/20 hover:border-emerald-500/30 transition-all group"
+                                        >
+                                            <Printer className="w-4 h-4 text-emerald-500" />
+                                            <span className="flex-1 text-foreground group-hover:text-emerald-500 transition-colors">Download Return Label</span>
+                                            <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                                        </button>
+                                    )}
+
                                     {order.status !== 'pending' && order.status !== 'cancelled' && (
                                         <button
                                             onClick={handlePrint}
@@ -1069,6 +1183,22 @@ export default function OrderDetailPage() {
                 </div>
             )}
 
+            {isReturnLabelPrinting && returnRequest && typeof document !== 'undefined' && createPortal(
+                <div id="print-root" className="fixed left-[-9999px] top-0 z-[99999] pointer-events-none overflow-hidden print:left-0 print:static print:w-full print:opacity-100">
+                    <div className="flex flex-col items-center justify-start">
+                        <div className="w-full max-w-[800px] bg-white text-slate-900 font-sans">
+                            <ReturnLabel
+                                order={order}
+                                requestId={returnRequest.id}
+                                trackingNumber={returnRequest.tracking_number}
+                                customerProfiles={order.profiles || { full_name: 'Customer', email: '' }}
+                            />
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
             {/* Cancellation Dialog */}
             <OrderCancellationDialog
                 isOpen={isCancellationOpen}
@@ -1133,10 +1263,66 @@ export default function OrderDetailPage() {
                                 <textarea
                                     value={returnForm.description}
                                     onChange={(e) => setReturnForm({ ...returnForm, description: e.target.value })}
-                                    placeholder="Please describe the issue in detail. Include when you noticed it, and attach unboxing video if available."
-                                    rows={4}
+                                    placeholder="Please describe the issue in detail. Include when you noticed it."
+                                    rows={3}
                                     className="w-full p-3 bg-background border border-input text-foreground text-sm focus:outline-none focus:border-primary resize-none placeholder:text-muted-foreground"
                                 />
+                            </div>
+
+                            {/* Evidence: Video Link */}
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-2 flex items-center gap-2">
+                                    <PlayCircle className="w-3.5 h-3.5 text-primary" />
+                                    Unboxing Video Link (Google Drive / Cloud)
+                                </label>
+                                <input
+                                    type="url"
+                                    value={returnForm.videoLink}
+                                    onChange={(e) => setReturnForm({ ...returnForm, videoLink: e.target.value })}
+                                    placeholder="Paste shared link (e.g., https://drive.google.com/...)"
+                                    className="w-full p-3 bg-background border border-input text-foreground text-sm focus:outline-none focus:border-primary placeholder:text-muted-foreground"
+                                />
+                                <p className="text-[9px] text-muted-foreground mt-1.5 leading-relaxed">
+                                    Upload your uncut unboxing video to Google Drive/DropBox, enable <strong>"Anyone with link can view"</strong>, and paste the link here.
+                                </p>
+                            </div>
+
+                            {/* Evidence: Photos */}
+                            <div>
+                                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] block mb-2">Evidence Photos (Max 4)</label>
+                                <div className="grid grid-cols-4 gap-2 mb-2">
+                                    {selectedPhotos.map((file, idx) => (
+                                        <div key={idx} className="relative aspect-square border border-border bg-muted/30 group">
+                                            <img
+                                                src={URL.createObjectURL(file)}
+                                                alt="Evidence"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <button
+                                                onClick={() => setSelectedPhotos(selectedPhotos.filter((_, i) => i !== idx))}
+                                                className="absolute top-1 right-1 bg-black/60 text-white p-1 hover:bg-red-500 transition-colors"
+                                            >
+                                                <XCircle className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {selectedPhotos.length < 4 && (
+                                        <label className="aspect-square border border-dashed border-border hover:border-primary/50 transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 bg-muted/10">
+                                            <Upload className="w-4 h-4 text-muted-foreground" />
+                                            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Add Photo</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const files = Array.from(e.target.files || [])
+                                                    setSelectedPhotos([...selectedPhotos, ...files].slice(0, 4))
+                                                }}
+                                            />
+                                        </label>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Policy & Anti-Fraud Reminder */}

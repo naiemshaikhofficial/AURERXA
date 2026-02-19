@@ -2340,6 +2340,8 @@ export async function requestReturn(orderId: string, formData: {
   reason: string
   issueType: 'defective' | 'wrong_product' | 'damaged_in_transit'
   description: string
+  videoLink?: string
+  evidencePhotos?: string[]
 }) {
   try {
     const client = await getAuthClient()
@@ -2416,7 +2418,9 @@ export async function requestReturn(orderId: string, formData: {
         issue_type: formData.issueType,
         reason: formData.reason.trim(),
         description: formData.description.trim(),
-        status: 'requested'
+        status: 'requested',
+        video_link: formData.videoLink,
+        evidence_photos: formData.evidencePhotos || []
       })
       .select('id')
       .single()
