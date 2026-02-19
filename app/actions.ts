@@ -271,6 +271,33 @@ export const getUsedTags = unstable_cache(
   { revalidate: 3600, tags: ['products'] }
 )
 
+export const getGenderStats = unstable_cache(
+  async () => {
+    try {
+      const g = ['men', 'women', 'unisex', 'kids']
+      const counts: Record<string, number> = {}
+
+      for (const gender of g) {
+        const { count, error } = await supabaseServer
+          .from('products')
+          .select('*', { count: 'exact', head: true })
+          .ilike('gender', gender)
+
+        if (!error) {
+          counts[gender] = count || 0
+        }
+      }
+
+      return counts
+    } catch (err) {
+      console.error('Error fetching gender stats:', err)
+      return {}
+    }
+  },
+  ['gender-stats'],
+  { revalidate: 3600, tags: ['products'] }
+)
+
 export async function getSubCategories(categoryId?: string) {
   return unstable_cache(
     async () => {
@@ -2135,7 +2162,7 @@ export async function getFilteredProducts(options: {
 
         // Gender filter
         if (options.gender && options.gender !== 'all') {
-          query = query.eq('gender', options.gender)
+          query = query.ilike('gender', options.gender)
         }
 
         // Type filter (Holistic match for legacy or flexible links)

@@ -32,6 +32,12 @@ async function CategoryBrowsingSection() {
   return <CategoryBrowsing categories={categories} />
 }
 
+async function ShopByGenderSection() {
+  const { getGenderStats } = await import('./actions')
+  const stats = await getGenderStats()
+  return <ShopByGender genderStats={stats} />
+}
+
 async function BestsellersSection() {
   const { getBestsellers } = await import('./actions')
   const bestsellers = await getBestsellers()
@@ -130,7 +136,9 @@ export default function HomePage() {
       <Suspense fallback={<div className="py-24 h-96 bg-background animate-pulse" />}>
         <CategoryBrowsingSection />
       </Suspense>
-      <ShopByGender />
+      <Suspense fallback={<div className="py-24 h-96 bg-background animate-pulse" />}>
+        <ShopByGenderSection />
+      </Suspense>
       <OccasionBrowsing />
 
       <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
