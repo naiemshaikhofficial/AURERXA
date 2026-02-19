@@ -2109,6 +2109,7 @@ export async function getFilteredProducts(options: {
 
           const variations = Array.from(new Set([
             t,
+            t.toUpperCase(), // Support GENZ
             t.replace(/-/g, ' '),
             lastWord,
             singularLast,
@@ -2117,6 +2118,8 @@ export async function getFilteredProducts(options: {
             lastWord === 'necklace' ? 'necklaces' : null,
             t === 'bride' ? 'bridal' : null,
             t === 'bridal' ? 'bride' : null,
+            t === 'modern' || t === 'mordern' ? 'modern' : null,
+            t === 'modern' || t === 'mordern' ? 'mordern' : null,
           ].filter(Boolean) as string[]))
 
           const allVariations = [...variations]

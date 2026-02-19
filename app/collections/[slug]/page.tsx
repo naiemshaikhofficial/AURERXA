@@ -1,5 +1,5 @@
 import { CollectionsClient } from '../collections-client'
-import { getFilteredProducts, getCategories, getSubCategories } from '@/app/actions'
+import { getFilteredProducts, getCategories, getSubCategories, getUsedTags } from '@/app/actions'
 import { Navbar } from '@/components/navbar'
 
 interface PageProps {
@@ -12,6 +12,7 @@ export default async function DynamicCollectionsPage({ params }: PageProps) {
     const { slug } = await params
     const categories = await getCategories()
     const subCategories = await getSubCategories()
+    const tags = await getUsedTags()
 
     // Check if the slug exists as a category, sub-category, gender, or occasion
     const categoryMatch = categories?.find((c: any) => c.slug.toLowerCase() === slug.toLowerCase())
@@ -57,6 +58,7 @@ export default async function DynamicCollectionsPage({ params }: PageProps) {
             <CollectionsClient
                 initialProducts={products as any}
                 categories={categories}
+                tags={tags}
                 initialFilters={initialFilters as any}
             />
         </main>

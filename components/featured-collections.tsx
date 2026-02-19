@@ -110,12 +110,12 @@ export function FeaturedCollections({ categories: initialCategories }: { categor
             <div className="space-y-6">
               <span className="text-primary/60 text-[10px] tracking-[0.8em] font-bold uppercase block">Crafted Excellence</span>
               <h2 className="text-4xl sm:text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none">
-                Discovery by <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Material.</span>
+                The <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Collections.</span>
               </h2>
             </div>
             <Link href="/collections" className="group block">
               <div className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic max-w-2xl mx-auto leading-relaxed group-hover:text-primary transition-colors inline-flex items-center gap-2">
-                Each piece is a testament to our legacy of precision, crafted from the world's most precious elements.
+                Explore our curated series of masterpieces, each with a unique heritage.
                 <div className="w-8 h-[1px] bg-primary/30 group-hover:w-12 group-hover:bg-primary transition-all duration-700 hidden md:block" />
               </div>
             </Link>

@@ -20,10 +20,10 @@ const occasions = [
         title: 'Everyday Luxury'
     },
     {
-        name: 'Special Gift',
-        slug: 'gift',
+        name: 'Celebrate',
+        slug: 'occasions',
         image: '/valentines-day-still-life-design_23-2149246309.avif',
-        title: 'Celebrate Every Moment'
+        title: 'Celebrate Every Occasion'
     }
 ]
 

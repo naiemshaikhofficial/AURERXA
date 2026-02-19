@@ -5,40 +5,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 
-const categories = [
-    {
-        name: 'Earrings',
-        slug: 'Earrings',
-        image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop',
-    },
-    {
-        name: 'Finger Rings',
-        slug: 'finger-rings',
-        image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
-    },
-    {
-        name: 'Pendants',
-        slug: 'pendants',
-        image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
-    },
-    {
-        name: 'Mangalsutra',
-        slug: 'mangalsutra',
-        image: '/mangalsutra-golden-necklace-worn-by-married-hindu-women-arranged-with-traditional-saree-with-huldi-kumkum-mogra-flowers-gajra-selective-focus_466689-60648 (2).avif',
-    },
-    {
-        name: 'Bracelets',
-        slug: 'bracelets',
-        image: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?q=80&w=800&auto=format&fit=crop',
-    },
-    {
-        name: 'Necklaces',
-        slug: 'necklaces',
-        image: '/kateryna-hliznitsova-ceSCZzjTReg-unsplash.jpg',
-    },
-]
+interface CategoryBrowsingProps {
+    categories: any[]
+}
 
-export function CategoryBrowsing() {
+export function CategoryBrowsing({ categories }: CategoryBrowsingProps) {
     const containerRef = useRef<HTMLElement>(null)
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -100,12 +71,12 @@ export function CategoryBrowsing() {
                             transition={{ delay: idx * 0.1, duration: 0.8 }}
                         >
                             <Link
-                                href={`/collections/${cat.slug.toLowerCase()}`}
+                                href={`/collections/${cat.slug}`}
                                 className="group block relative"
                             >
                                 <div className="relative aspect-[4/5] overflow-hidden border border-border bg-card group-hover:border-primary/30 transition-[border-color,box-shadow] duration-700 shadow-2xl will-change-transform">
                                     <Image
-                                        src={cat.image}
+                                        src={cat.image_url || '/placeholder.webp'}
                                         alt={cat.name}
                                         fill
                                         className="object-cover transition-transform duration-1000 scale-105 group-hover:scale-110 will-change-transform"

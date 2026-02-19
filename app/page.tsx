@@ -26,6 +26,12 @@ async function NewReleasesSection() {
   return <NewReleases products={newReleases} />
 }
 
+async function CategoryBrowsingSection() {
+  const { getCategories } = await import('./actions')
+  const categories = await getCategories()
+  return <CategoryBrowsing categories={categories} />
+}
+
 async function BestsellersSection() {
   const { getBestsellers } = await import('./actions')
   const bestsellers = await getBestsellers()
@@ -121,7 +127,9 @@ export default function HomePage() {
       </Suspense>
 
 
-      <CategoryBrowsing />
+      <Suspense fallback={<div className="py-24 h-96 bg-background animate-pulse" />}>
+        <CategoryBrowsingSection />
+      </Suspense>
       <ShopByGender />
       <OccasionBrowsing />
 
