@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield, Loader2 } from 'lucide-react'
 import { useCart } from '@/context/cart-context'
 import { useSearch } from '@/context/search-context'
+import { cn } from '@/lib/utils'
 import { getOrdersPollingData } from '@/app/admin/actions'
 import {
   DropdownMenu,
@@ -31,6 +32,7 @@ import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-consta
 
 export function Navbar() {
   const router = useRouter()
+  const pathname = usePathname()
   const { cartCount, openCart } = useCart()
   const { openSearch } = useSearch()
   const [user, setUser] = useState<any>(null)
@@ -309,28 +311,38 @@ export function Navbar() {
                       </div>
                       <ModeToggle />
                     </SheetHeader>
-                    <div className="flex flex-col py-6 relative">
+                    <div className="flex flex-col py-2 relative flex-1 overflow-y-auto no-scrollbar">
                       <motion.div
                         variants={staggerContainer}
                         initial="initial"
                         animate="animate"
-                        className="flex flex-col"
+                        className="flex flex-col px-4"
                       >
-                        {['Home', 'Shop Collections', 'Custom Jewelry', 'Our Story', 'Blog', 'Contact Us'].map((item, idx) => {
-                          const href = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`
-                          return (
-                            <motion.div key={idx} variants={fadeInUp}>
-                              <Link href={href} className="flex px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all border-b border-border/10">
-                                {item}
-                              </Link>
-                            </motion.div>
-                          )
-                        })}
-                        <motion.div variants={fadeInUp}>
-                          <Link href="/faq" className="px-8 py-5 text-sm uppercase tracking-widest font-light text-foreground/60 hover:bg-muted/10 hover:text-primary transition-all">
-                            FAQs
-                          </Link>
-                        </motion.div>
+                        {[
+                          { name: 'Home', href: '/' },
+                          { name: 'Shop Collections', href: '/collections' },
+                          { name: 'Custom Jewelry', href: '/custom-jewelry' },
+                          { name: 'Our Story', href: '/our-story' },
+                          { name: 'Blog', href: '/blog' },
+                          { name: 'Contact Us', href: '/contact-us' },
+                          { name: 'FAQs', href: '/faq' }
+                        ].map((item, idx) => (
+                          <motion.div key={idx} variants={fadeInUp}>
+                            <Link
+                              href={item.href}
+                              className={cn(
+                                "flex items-center justify-between py-6 group border-b border-border/5 transition-all text-sm uppercase tracking-[0.25em] font-light",
+                                pathname === item.href ? "text-primary ml-2" : "text-foreground/60 hover:text-primary hover:ml-2"
+                              )}
+                            >
+                              <span>{item.name}</span>
+                              <div className={cn(
+                                "h-[1px] w-0 bg-primary/40 transition-all duration-500",
+                                pathname === item.href ? "w-12 ml-4" : "group-hover:w-8 group-hover:ml-4"
+                              )} />
+                            </Link>
+                          </motion.div>
+                        ))}
                       </motion.div>
 
                       {/* User Profile Section in Mobile Menu */}

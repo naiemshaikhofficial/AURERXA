@@ -168,6 +168,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                             alt={slide.title}
                                             fill
                                             priority={isMain}
+                                            unoptimized={slide.image_url.startsWith('blob:')}
                                             className="object-cover object-center hidden md:block"
                                             sizes="100vw"
                                         />
@@ -176,6 +177,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                             alt={slide.title}
                                             fill
                                             priority={isMain}
+                                            unoptimized={(slide.mobile_image_url || slide.image_url).startsWith('blob:')}
                                             className="object-cover object-center md:hidden"
                                             sizes="100vw"
                                         />

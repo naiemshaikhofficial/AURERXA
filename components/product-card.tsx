@@ -220,6 +220,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                                 priority={priority || index < 2}
                                 fetchPriority={priority || index < 2 ? "high" : "auto"}
                                 loader={supabaseLoader}
+                                unoptimized={allImages[currentImageIndex]?.startsWith('blob:')}
                             />
                         </motion.div>
                     </motion.div>
@@ -285,12 +286,13 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 </div>
 
                 {/* Mobile Button (Always Visible) */}
-                <div className="md:hidden mt-auto pt-4">
+                <div className="md:hidden mt-auto pt-4 flex gap-2">
                     <Button
                         onClick={handleBuyNow}
-                        className="w-full bg-secondary/50 backdrop-blur-sm border border-border text-foreground hover:bg-foreground hover:text-background transition-all h-10 text-[10px] uppercase font-premium-sans tracking-widest rounded-none"
+                        className="w-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary hover:text-black transition-all h-10 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none flex items-center justify-center gap-2 group"
                     >
-                        View Selection
+                        <span>Premium Selection</span>
+                        <div className="h-[1px] w-4 bg-primary/40 group-hover:bg-black/40 transition-colors" />
                     </Button>
                 </div>
             </div>

@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function sanitizeImagePath(url: string | null | undefined): string {
   if (!url) return '/logo.png'
-  if (url.startsWith('http')) return url
+  if (url.startsWith('http') || url.startsWith('blob:')) return url
   // Replace all backslashes with forward slashes and collapse multiple slashes
   const normalized = url.replace(/\\+/g, '/').replace(/\/+/g, '/')
   return normalized.startsWith('/') ? normalized : `/${normalized}`

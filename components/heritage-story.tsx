@@ -77,7 +77,7 @@ function StoryStage({ stage, index, total }: { stage: typeof STORY_STAGES[0], in
             <div className={`relative z-10 w-full max-w-7xl mx-auto px-6 flex flex-col ${stage.align === 'right' ? 'md:items-end text-right' : 'md:items-start text-left'}`}>
                 <motion.div
                     style={{ y }}
-                    className="max-w-2xl space-y-6 md:space-y-8"
+                    className="max-w-2xl space-y-4 md:space-y-8"
                 >
                     <div className="space-y-2">
                         <motion.span
@@ -94,7 +94,7 @@ function StoryStage({ stage, index, total }: { stage: typeof STORY_STAGES[0], in
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 1, delay: 0.2, ease: PREMIUM_EASE }}
-                            className="text-5xl md:text-8xl font-serif font-medium text-white italic tracking-tighter"
+                            className="text-4xl xs:text-5xl md:text-8xl font-serif font-medium text-white italic tracking-tighter"
                         >
                             {stage.title}
                         </motion.h2>
@@ -105,7 +105,7 @@ function StoryStage({ stage, index, total }: { stage: typeof STORY_STAGES[0], in
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 1, delay: 0.4, ease: PREMIUM_EASE }}
-                        className="text-base md:text-xl font-light text-white/60 leading-relaxed tracking-wide"
+                        className="text-sm md:text-xl font-light text-white/60 leading-relaxed tracking-wide max-w-md md:max-w-none ml-auto"
                     >
                         {stage.description}
                     </motion.p>
