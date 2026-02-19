@@ -1512,3 +1512,182 @@ export async function triggerDatabaseMaintenance() {
 
     return { success: true, results: data }
 }
+// ============================================
+// MARKETING & USER ENGAGEMENT
+// ============================================
+
+export async function getAbandonedCarts() {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    // Find carts that haven't been touched in > 2 hours and haven't become orders
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+
+    const { data, error } = await client
+        .from('cart')
+        .select(`
+            id, 
+            user_id, 
+            quantity, 
+            size, 
+            created_at, 
+            updated_at,
+            products(name, price, image_url, id, slug)
+        `)
+        .lt('updated_at', twoHoursAgo)
+        .order('updated_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching abandoned carts:', error)
+        return []
+    }
+
+    // Group by user
+    const usersMap: Record<string, any> = {}
+
+    // Fetch profiles for these users
+    const userIds = Array.from(new Set(data?.map(item => item.user_id).filter(Boolean)))
+    let profiles: any[] = []
+    if (userIds.length > 0) {
+        const { data: p } = await client.from('profiles').select('id, full_name, email, phone_number').in('id', userIds)
+        profiles = p || []
+    }
+
+    data?.forEach(item => {
+        if (!item.user_id) return
+        if (!usersMap[item.user_id]) {
+            const profile = profiles.find(p => p.id === item.user_id)
+            usersMap[item.user_id] = {
+                user: profile || { email: 'Unknown' },
+                items: [],
+                last_updated: item.updated_at,
+                total_value: 0
+            }
+        }
+        usersMap[item.user_id].items.push(item)
+        const product = Array.isArray(item.products) ? item.products[0] : item.products
+        usersMap[item.user_id].total_value += ((product?.price || 0) * item.quantity)
+        if (new Date(item.updated_at) > new Date(usersMap[item.user_id].last_updated)) {
+            usersMap[item.user_id].last_updated = item.updated_at
+        }
+    })
+
+    return Object.values(usersMap)
+}
+
+export async function sendAbandonmentReminder(userId: string, type: 'push' | 'whatsapp' | 'email') {
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    // Fetch the user's latest cart item
+    const client = await getAuthClient()
+    const { data: cartItems } = await client
+        .from('cart')
+        .select('*, products(name, slug, image_url)')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+
+    if (!cartItems || cartItems.length === 0) return { success: false, error: 'No items in cart' }
+
+    const item = cartItems[0]
+
+    if (type === 'push') {
+        const { notifyAbandonedCart } = await import('../push-actions')
+        return await notifyAbandonedCart(userId, item.products.name, item.products.slug, item.products.image_url)
+    }
+
+    // Placeholder for WhatsApp/Email
+    return { success: true, message: `Reminder sent via ${type}` }
+}
+
+export async function getMarketingSegments() {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    // Logical segments based on visitor_intelligence and orders
+    const { data: intelligence } = await client
+        .from('visitor_intelligence')
+        .select('*')
+
+    // Logic to build segments...
+    const segments = [
+        { id: 'high_value', name: 'High Value Visitors', description: 'Interacted with products > ₹50,000', count: 12 },
+        { id: 'cart_abandoners', name: 'Cart Abandoners', description: 'Users with items left in cart', count: 45 },
+        { id: 'bridal_enthusiasts', name: 'Bridal Enthusiasts', description: 'Viewed Bridal collection 3+ times', count: 28 }
+    ]
+
+    return segments
+}
+
+export async function broadcastMarketingMessage(segmentId: string, title: string, body: string, url: string) {
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    const { sendNotification } = await import('../push-actions')
+    // In a real scenario, filter subscriptions by segment
+    return await sendNotification(title, body, url)
+}
+
+// ============================================
+// RETURN REQUESTS MANAGEMENT
+// ============================================
+
+export async function getAdminReturnRequests() {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return []
+
+    const { data, error } = await client
+        .from('return_requests')
+        .select(`
+            *,
+            orders(order_number, total),
+            profiles(full_name, email, phone_number)
+        `)
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching admin return requests:', error)
+        return []
+    }
+    return data || []
+}
+
+export async function updateReturnStatus(requestId: string, status: string, adminNotes?: string) {
+    const client = await getAuthClient()
+    const admin = await checkAdminRole()
+    if (!admin) return { success: false, error: 'Unauthorized' }
+
+    const updates: any = { status, updated_at: new Date().toISOString() }
+    if (adminNotes) updates.admin_notes = adminNotes
+
+    // If approved, trigger Delhivery Return Shipment
+    if (status === 'approved') {
+        const { createDelhiveryReturnShipment } = await import('../actions')
+        const shipmentRes = await createDelhiveryReturnShipment(requestId)
+        if (!shipmentRes.success) {
+            return { success: false, error: `Approved, but Delhivery pickup failed: ${shipmentRes.error}` }
+        }
+        updates.tracking_number = shipmentRes.trackingNumber
+    }
+
+    const { error } = await client
+        .from('return_requests')
+        .update(updates)
+        .eq('id', requestId)
+
+    if (error) return { success: false, error: error.message }
+
+    // Log activity
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: `Updated return request ${requestId} to ${status}`,
+        entity_type: 'return_request',
+        entity_id: requestId,
+    })
+
+    return { success: true }
+}

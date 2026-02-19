@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
     LayoutDashboard, ShoppingCart, Package, Users, HeadphonesIcon,
     Settings, ChevronLeft, ChevronRight, Menu, X, LogOut, Activity, Sparkles, Wrench, ShieldAlert,
-    ExternalLink
+    ExternalLink, Megaphone, ShoppingBag, ArrowLeftRight
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
     { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, imgSrc: 'https://img.icons8.com/?size=100&id=ZQ9axxszRfad&format=png&color=000000', roles: ['main_admin', 'support_admin', 'staff'] },
     { label: 'Orders', href: '/admin/orders', icon: ShoppingCart, imgSrc: 'https://img.icons8.com/?size=100&id=nmdLxlZq4cQi&format=png&color=000000', roles: ['main_admin', 'support_admin', 'staff'] },
     { label: 'Bulk Orders', href: '/admin/bulk-orders', icon: Package, imgSrc: 'https://img.icons8.com/?size=100&id=13007&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Return Requests', href: '/admin/returns', icon: ArrowLeftRight, roles: ['main_admin', 'support_admin'] },
     { label: 'Categories', href: '/admin/categories', icon: Sparkles, imgSrc: 'https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
     { label: 'Products', href: '/admin/products', icon: Package, imgSrc: 'https://img.icons8.com/?size=100&id=12091&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
     { label: 'Users', href: '/admin/users', icon: Users, imgSrc: 'https://img.icons8.com/?size=100&id=IbG1lmsRkQI2&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
@@ -23,6 +24,8 @@ const NAV_ITEMS = [
     { label: 'Activity', href: '/admin/activity', icon: Activity, roles: ['main_admin'] },
     { label: 'System', href: '/admin/system', icon: ShieldAlert, roles: ['main_admin'] },
     { label: 'Services', href: '/admin/services', icon: Sparkles, imgSrc: 'https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Marketing Hub', href: '/admin/marketing', icon: Megaphone, roles: ['main_admin'] },
+    { label: 'Abandoned Carts', href: '/admin/marketing/abandoned-carts', icon: ShoppingBag, roles: ['main_admin'] },
     { label: 'Tools', href: '/admin/tools', icon: Wrench, imgSrc: 'https://img.icons8.com/?size=100&id=114321&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
 ]
 
