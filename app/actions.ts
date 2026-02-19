@@ -2436,6 +2436,15 @@ export async function requestReturn(orderId: string, formData: {
       return { success: true, message: 'Return request submitted via support ticket.' }
     }
 
+    // Best Practice: Sync Order Status to return_requested
+    await client
+      .from('orders')
+      .update({
+        status: 'return_requested',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', orderId)
+
     return {
       success: true,
       message: 'Return request submitted successfully. Our team will review it within 24 hours.',

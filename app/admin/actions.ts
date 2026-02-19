@@ -1744,12 +1744,35 @@ export async function updateReturnStatus(requestId: string, status: string, admi
         }
     }
 
-    const { error } = await client
+    const { error, data: updatedReq } = await client
         .from('return_requests')
         .update(updates)
         .eq('id', requestId)
+        .select('order_id')
+        .single()
 
     if (error) return { success: false, error: error.message }
+
+    // Best Practice: Synchronize parent Order status
+    if (updatedReq?.order_id) {
+        let orderStatus = ''
+        if (status === 'approved') orderStatus = 'returning'
+        else if (status === 'refunded') orderStatus = 'refunded'
+        else if (status === 'rejected') orderStatus = 'delivered'
+
+        if (orderStatus) {
+            await client
+                .from('orders')
+                .update({
+                    status: orderStatus,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', updatedReq.order_id)
+
+            // Bust relevant caches if revenue/orders impacted
+            bustCache('stats', 'recent-orders', 'revenue')
+        }
+    }
 
     // Log activity
     await client.from('admin_activity_logs').insert({
@@ -1757,6 +1780,7 @@ export async function updateReturnStatus(requestId: string, status: string, admi
         action: `Updated return request ${requestId} to ${status}`,
         entity_type: 'return_request',
         entity_id: requestId,
+        details: { status, adminNotes }
     })
 
     return { success: true }

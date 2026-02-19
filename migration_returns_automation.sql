@@ -19,14 +19,17 @@ CREATE TABLE IF NOT EXISTS public.return_requests (
 ALTER TABLE public.return_requests ENABLE ROW LEVEL SECURITY;
 
 -- Policies
+DROP POLICY IF EXISTS "Users can view own return requests" ON public.return_requests;
 CREATE POLICY "Users can view own return requests" 
 ON public.return_requests FOR SELECT 
 USING (auth.uid() = user_id OR is_admin());
 
+DROP POLICY IF EXISTS "Users can create own return requests" ON public.return_requests;
 CREATE POLICY "Users can create own return requests" 
 ON public.return_requests FOR INSERT 
 WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Admins can update return requests" ON public.return_requests;
 CREATE POLICY "Admins can update return requests" 
 ON public.return_requests FOR UPDATE 
 USING (is_admin());

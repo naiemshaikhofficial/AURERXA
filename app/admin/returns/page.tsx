@@ -314,7 +314,7 @@ export default function AdminReturnsPage() {
                                                 </button>
                                             </>
                                         )}
-                                        {req.status === 'pickup_scheduled' && (
+                                        {(req.status === 'approved' || req.status === 'pickup_scheduled') && (
                                             <button
                                                 onClick={() => handleStatusUpdate(req.id, 'picked_up')}
                                                 disabled={updating === req.id}
