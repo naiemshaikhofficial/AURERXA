@@ -6,7 +6,7 @@ import {
     RefreshCw, CheckCircle, XCircle, Clock, Truck,
     MessageSquare, User, Hash, IndianRupee,
     ArrowLeftRight, ExternalLink, Loader2, Search, Filter,
-    BookOpen, ShieldCheck, ChevronDown
+    BookOpen, ShieldCheck, ChevronDown, Package, ShieldAlert
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -84,8 +84,11 @@ export default function AdminReturnsPage() {
             case 'requested': return 'text-amber-400 bg-amber-400/10 border-amber-400/20'
             case 'approved': return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20'
             case 'pickup_scheduled': return 'text-sky-400 bg-sky-400/10 border-sky-400/20'
+            case 'picked_up': return 'text-blue-400 bg-blue-400/10 border-blue-400/20'
+            case 'received': return 'text-violet-400 bg-violet-400/10 border-violet-400/20'
+            case 'inspected': return 'text-orange-400 bg-orange-400/10 border-orange-400/20'
             case 'rejected': return 'text-red-400 bg-red-400/10 border-red-400/20'
-            case 'refunded': return 'text-blue-400 bg-blue-400/10 border-blue-400/20'
+            case 'refunded': return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20'
             default: return 'text-white/40 bg-white/5 border-white/10'
         }
     }
@@ -311,15 +314,55 @@ export default function AdminReturnsPage() {
                                                 </button>
                                             </>
                                         )}
-                                        {req.status === 'approved' && (
+                                        {req.status === 'pickup_scheduled' && (
+                                            <button
+                                                onClick={() => handleStatusUpdate(req.id, 'picked_up')}
+                                                disabled={updating === req.id}
+                                                className="flex-1 lg:w-40 py-2.5 bg-sky-500/20 border border-sky-500/30 text-sky-400 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-sky-500/30 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <Truck className="w-3.5 h-3.5" />
+                                                Mark Picked Up
+                                            </button>
+                                        )}
+                                        {req.status === 'picked_up' && (
                                             <button
                                                 onClick={() => handleStatusUpdate(req.id, 'received')}
                                                 disabled={updating === req.id}
-                                                className="flex-1 lg:w-40 py-2.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-emerald-500/30 transition-all flex items-center justify-center gap-2"
+                                                className="flex-1 lg:w-40 py-2.5 bg-blue-500/20 border border-blue-500/30 text-blue-400 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-blue-500/30 transition-all flex items-center justify-center gap-2"
                                             >
-                                                <CheckCircle className="w-3.5 h-3.5" />
+                                                <Package className="w-3.5 h-3.5" />
                                                 Mark Received
                                             </button>
+                                        )}
+                                        {req.status === 'received' && (
+                                            <button
+                                                onClick={() => handleStatusUpdate(req.id, 'inspected')}
+                                                disabled={updating === req.id}
+                                                className="flex-1 lg:w-40 py-2.5 bg-violet-500/20 border border-violet-500/30 text-violet-400 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-violet-500/30 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <ShieldAlert className="w-3.5 h-3.5" />
+                                                Mark Inspected
+                                            </button>
+                                        )}
+                                        {req.status === 'inspected' && (
+                                            <div className="flex gap-2 w-full lg:w-auto">
+                                                <button
+                                                    onClick={() => handleStatusUpdate(req.id, 'refunded')}
+                                                    disabled={updating === req.id}
+                                                    className="flex-1 lg:w-40 py-2.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-emerald-500/30 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <IndianRupee className="w-3.5 h-3.5" />
+                                                    Mark Refunded
+                                                </button>
+                                                <button
+                                                    onClick={() => setRejectionModal({ isOpen: true, requestId: req.id, reason: '' })}
+                                                    disabled={updating === req.id}
+                                                    className="flex-1 lg:w-40 py-2.5 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <XCircle className="w-3.5 h-3.5" />
+                                                    Reject Refund
+                                                </button>
+                                            </div>
                                         )}
                                         {req.status === 'rejected' && adminRole === 'main_admin' && (
                                             <button

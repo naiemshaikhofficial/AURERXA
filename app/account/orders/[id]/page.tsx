@@ -10,7 +10,7 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
 import { getOrderById, getOrderTracking, verifyPayment, getOrderPaymentSession, initiatePayment, requestReturn, getReturnByOrderId } from '@/app/actions'
-import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle, LifeBuoy, RotateCcw, ExternalLink, ShoppingBag, PackageCheck, HelpCircle } from 'lucide-react'
+import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle, LifeBuoy, RotateCcw, ExternalLink, ShoppingBag, PackageCheck, HelpCircle, XCircle } from 'lucide-react'
 import { InvoiceTemplate } from '@/components/invoice-template'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -487,14 +487,35 @@ export default function OrderDetailPage() {
                                 ) : (
                                     /* Rejected state — simple message */
                                     <div className="p-6">
-                                        <div className="flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20">
-                                            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />
-                                            <div>
-                                                <p className="text-sm font-bold text-red-400 mb-1">Return Not Approved</p>
-                                                <p className="text-xs text-muted-foreground">Your return request could not be approved based on the information provided. If you believe this is incorrect, please contact our support team with your unboxing video and order details.</p>
-                                                <a href="/help" className="inline-block mt-3 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/30 px-4 py-1.5 hover:bg-primary/10 transition-all">
-                                                    Contact Support →
-                                                </a>
+                                        <div className="flex items-start gap-4 p-5 bg-red-500/10 border border-red-500/20 rounded-xl">
+                                            <div className="p-2 bg-red-500/20 rounded-lg">
+                                                <XCircle className="w-6 h-6 text-red-400" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-base font-bold text-red-400 mb-1">Return Not Approved</p>
+
+                                                {returnRequest.admin_notes ? (
+                                                    <div className="mb-4">
+                                                        <p className="text-[10px] uppercase tracking-widest font-bold text-red-400/60 mb-1">Rejection Reason:</p>
+                                                        <p className="text-sm text-foreground/90 font-medium py-2 px-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                                                            "{returnRequest.admin_notes}"
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-sm text-muted-foreground mb-4">
+                                                        Your return request could not be approved based on the information provided.
+                                                    </p>
+                                                )}
+
+                                                <div className="space-y-3">
+                                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                                        If you believe this is incorrect, please contact our support team. Make sure you have your <strong>unboxing video</strong> and order details ready for review.
+                                                    </p>
+                                                    <a href="/help" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/30 px-5 py-2.5 hover:bg-primary/10 transition-all rounded-lg">
+                                                        <LifeBuoy className="w-3.5 h-3.5" />
+                                                        Contact Support →
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
