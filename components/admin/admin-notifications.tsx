@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { getOrdersPollingData, getSingleOrderForNotification } from '@/app/admin/actions'
+import { getOrdersPollingData, getSingleOrderForNotification, getSingleReturnRequestForNotification } from '@/app/admin/actions'
 import { cn } from '@/lib/utils'
 
 type Notification = {
@@ -47,6 +47,7 @@ export function AdminNotifications() {
         try {
             const sounds: Record<string, string> = {
                 new_order: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3',
+                return_request: 'https://assets.mixkit.co/active_storage/sfx/2215/2215-preview.mp3', // Alert sound
                 confirmed: 'https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3',
                 cancelled: 'https://assets.mixkit.co/active_storage/sfx/2572/2572-preview.mp3',
                 deleted: 'https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'
@@ -204,9 +205,30 @@ export function AdminNotifications() {
             router.refresh()
         }
 
+        const handleReturnChange = async (payload: any) => {
+            if (payload.eventType === 'INSERT') {
+                const latest = await getSingleReturnRequestForNotification(payload.new.id)
+                if (latest) {
+                    addNotification({
+                        id: latest.id,
+                        order_number: latest.orders?.order_number,
+                        type: 'return_request',
+                        title: '🔄 Return Requested',
+                        message: `${latest.profiles?.full_name || 'Customer'} requested a return for #${latest.orders?.order_number}`,
+                        detail: `Reason: ${latest.reason}`,
+                        time: new Date(),
+                        timestamp: latest.created_at,
+                        read: false
+                    })
+                    router.refresh()
+                }
+            }
+        }
+
         const channel = supabase
             .channel('admin-notifications-realtime')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, handleOrderChange)
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'return_requests' }, handleReturnChange)
             .subscribe()
 
         return () => { supabase.removeChannel(channel) }
@@ -215,6 +237,7 @@ export function AdminNotifications() {
     const getIcon = (type: string) => {
         switch (type) {
             case 'new_order': return '🛍️'
+            case 'return_request': return '🔄'
             case 'cancelled': return '❌'
             case 'deleted': return '🗑️'
             case 'confirmed': return '✅'
@@ -228,6 +251,7 @@ export function AdminNotifications() {
     const getColor = (type: string) => {
         switch (type) {
             case 'new_order': return 'text-[#D4AF37]'
+            case 'return_request': return 'text-amber-400'
             case 'cancelled': return 'text-red-400'
             case 'deleted': return 'text-orange-400'
             case 'confirmed': return 'text-emerald-400'
@@ -240,6 +264,7 @@ export function AdminNotifications() {
     const getDotColor = (type: string) => {
         switch (type) {
             case 'new_order': return 'bg-[#D4AF37] shadow-[0_0_8px_rgba(212,175,55,0.6)]'
+            case 'return_request': return 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]'
             case 'cancelled': return 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'
             case 'deleted': return 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]'
             default: return 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]'
@@ -275,7 +300,7 @@ export function AdminNotifications() {
                     <div className="p-4 border-b border-white/5 bg-gradient-to-r from-[#D4AF37]/5 to-transparent flex justify-between items-center">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse" />
-                            <h3 className="font-bold text-sm text-white tracking-wider uppercase">Live Orders</h3>
+                            <h3 className="font-bold text-sm text-white tracking-wider uppercase">Live Activity</h3>
                         </div>
                         <button
                             onClick={() => { setNotifications([]); setUnreadCount(0) }}
@@ -301,7 +326,11 @@ export function AdminNotifications() {
                                         className="px-4 py-3 hover:bg-white/[0.04] transition-all duration-200 cursor-pointer group/notif"
                                         onClick={() => {
                                             if (n.order_number) {
-                                                router.push(`/admin/orders?highlight=${n.id}`)
+                                                if (n.type === 'return_request') {
+                                                    router.push(`/admin/returns?highlight=${n.id}`)
+                                                } else {
+                                                    router.push(`/admin/orders?highlight=${n.id}`)
+                                                }
                                             }
                                             setIsOpen(false)
                                         }}

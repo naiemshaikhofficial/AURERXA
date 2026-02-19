@@ -2447,6 +2447,23 @@ export async function requestReturn(orderId: string, formData: {
   }
 }
 
+export async function getReturnByOrderId(orderId: string) {
+  try {
+    const client = await getAuthClient()
+    const { data, error } = await client
+      .from('return_requests')
+      .select('*')
+      .eq('order_id', orderId)
+      .maybeSingle()
+
+    if (error) throw error
+    return data
+  } catch (error) {
+    console.error('Error fetching return request:', error)
+    return null
+  }
+}
+
 export async function getReturnRequests() {
   const client = await getAuthClient()
   const { data: { user } } = await client.auth.getUser()

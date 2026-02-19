@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
+import { supabase } from '@/lib/supabase'
 
 export default function AdminReturnsPage() {
     const [requests, setRequests] = useState<any[]>([])
@@ -16,9 +17,29 @@ export default function AdminReturnsPage() {
     const [updating, setUpdating] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
     const [filterStatus, setFilterStatus] = useState('all')
+    const [rejectionModal, setRejectionModal] = useState<{ isOpen: boolean, requestId: string, reason: string }>({
+        isOpen: false,
+        requestId: '',
+        reason: ''
+    })
 
     useEffect(() => {
         loadData()
+
+        // ⚡ Supabase Realtime Listener
+        const channel = supabase
+            .channel('admin-returns-realtime')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'return_requests' }, () => {
+                loadData()
+            })
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'return_requests' }, () => {
+                loadData()
+            })
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
     }, [])
 
     const loadData = async () => {
@@ -28,12 +49,13 @@ export default function AdminReturnsPage() {
         setLoading(false)
     }
 
-    const handleStatusUpdate = async (requestId: string, status: 'approved' | 'rejected' | 'completed') => {
+    const handleStatusUpdate = async (requestId: string, status: 'approved' | 'rejected' | 'completed', notes?: string) => {
         setUpdating(requestId)
-        const res = await updateReturnStatus(requestId, status)
+        const res = await updateReturnStatus(requestId, status, notes)
         if (res.success) {
             toast.success(`Return request ${status} successfully`)
             loadData()
+            if (status === 'rejected') setRejectionModal({ isOpen: false, requestId: '', reason: '' })
         } else {
             toast.error(res.error || `Failed to update status to ${status}`)
         }
@@ -52,10 +74,11 @@ export default function AdminReturnsPage() {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'pending': return 'text-amber-400 bg-amber-400/10 border-amber-400/20'
+            case 'requested': return 'text-amber-400 bg-amber-400/10 border-amber-400/20'
             case 'approved': return 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20'
+            case 'pickup_scheduled': return 'text-sky-400 bg-sky-400/10 border-sky-400/20'
             case 'rejected': return 'text-red-400 bg-red-400/10 border-red-400/20'
-            case 'completed': return 'text-blue-400 bg-blue-400/10 border-blue-400/20'
+            case 'refunded': return 'text-blue-400 bg-blue-400/10 border-blue-400/20'
             default: return 'text-white/40 bg-white/5 border-white/10'
         }
     }
@@ -107,10 +130,11 @@ export default function AdminReturnsPage() {
                         className="bg-transparent text-sm text-white focus:outline-none py-2 cursor-pointer"
                     >
                         <option value="all">All Statuses</option>
-                        <option value="pending">Pending Review</option>
-                        <option value="approved">Approved / In Transit</option>
+                        <option value="requested">Pending Review</option>
+                        <option value="approved">Approved</option>
+                        <option value="pickup_scheduled">Pickup Scheduled</option>
                         <option value="rejected">Rejected</option>
-                        <option value="completed">Completed</option>
+                        <option value="refunded">Refunded</option>
                     </select>
                 </div>
             </div>
@@ -166,9 +190,9 @@ export default function AdminReturnsPage() {
                                             <div>
                                                 <label className="text-[10px] uppercase tracking-widest text-white/30 font-bold block mb-1">Reason</label>
                                                 <p className="text-sm text-white/80 line-clamp-2 italic">"{req.reason}"</p>
-                                                {req.type && (
+                                                {req.issue_type && (
                                                     <span className="text-[10px] text-[#D4AF37] uppercase tracking-widest font-bold mt-1 block">
-                                                        Type: {req.type}
+                                                        Issue: {req.issue_type.replace(/_/g, ' ')}
                                                     </span>
                                                 )}
                                             </div>
@@ -193,7 +217,7 @@ export default function AdminReturnsPage() {
 
                                     {/* Right: Actions */}
                                     <div className="flex flex-row lg:flex-col justify-end gap-2 shrink-0">
-                                        {req.status === 'pending' && (
+                                        {req.status === 'requested' && (
                                             <>
                                                 <button
                                                     onClick={() => handleStatusUpdate(req.id, 'approved')}
@@ -204,7 +228,7 @@ export default function AdminReturnsPage() {
                                                     Approve & Pickup
                                                 </button>
                                                 <button
-                                                    onClick={() => handleStatusUpdate(req.id, 'rejected')}
+                                                    onClick={() => setRejectionModal({ isOpen: true, requestId: req.id, reason: '' })}
                                                     disabled={updating === req.id}
                                                     className="flex-1 lg:w-40 py-2.5 bg-white/5 border border-white/10 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-white/10 transition-all flex items-center justify-center gap-2"
                                                 >
@@ -245,6 +269,50 @@ export default function AdminReturnsPage() {
                     </div>
                 )}
             </div>
+            {/* Rejection Modal */}
+            {rejectionModal.isOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-[#111111] border border-[#D4AF37]/30 rounded-2xl p-6 w-full max-w-md shadow-2xl"
+                    >
+                        <h3 className="text-xl font-bold text-white mb-2">Reject Return Request</h3>
+                        <p className="text-sm text-white/50 mb-6">Please provide a reason for rejection. This will be visible to the customer.</p>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-[10px] uppercase tracking-widest text-white/30 font-bold block mb-1.5">Rejection Reason</label>
+                                <textarea
+                                    autoFocus
+                                    rows={4}
+                                    value={rejectionModal.reason}
+                                    onChange={(e) => setRejectionModal({ ...rejectionModal, reason: e.target.value })}
+                                    placeholder="e.g., Unboxing video is missing or product seal is broken..."
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#D4AF37]/50 transition-all placeholder:text-white/10 resize-none font-medium"
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    onClick={() => setRejectionModal({ isOpen: false, requestId: '', reason: '' })}
+                                    className="flex-1 py-3 text-white/40 hover:text-white font-bold text-xs uppercase tracking-widest transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => handleStatusUpdate(rejectionModal.requestId, 'rejected', rejectionModal.reason)}
+                                    disabled={!rejectionModal.reason.trim() || updating === rejectionModal.requestId}
+                                    className="flex-[2] py-3 bg-red-500/10 border border-red-500/30 text-red-500 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {updating === rejectionModal.requestId ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                                    Confirm Rejection
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
     )
 }

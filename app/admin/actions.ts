@@ -1640,12 +1640,12 @@ export async function getAdminReturnRequests() {
     const admin = await checkAdminRole()
     if (!admin) return []
 
+    // Fetch return requests with order data (profiles join doesn't work because user_id FK points to auth.users, not profiles)
     const { data, error } = await client
         .from('return_requests')
         .select(`
             *,
-            orders(order_number, total),
-            profiles(full_name, email, phone_number)
+            orders(order_number, total)
         `)
         .order('created_at', { ascending: false })
 
@@ -1653,13 +1653,72 @@ export async function getAdminReturnRequests() {
         console.error('Error fetching admin return requests:', error)
         return []
     }
-    return data || []
+
+    if (!data || data.length === 0) return []
+
+    // Batch-fetch profiles for all unique user_ids
+    const userIds = [...new Set(data.map(r => r.user_id).filter(Boolean))]
+    let profilesMap: Record<string, any> = {}
+
+    if (userIds.length > 0) {
+        const { data: profiles } = await client
+            .from('profiles')
+            .select('id, full_name, email, phone_number')
+            .in('id', userIds)
+
+        if (profiles) {
+            profiles.forEach(p => { profilesMap[p.id] = p })
+        }
+    }
+
+    // Attach profile data to each request
+    return data.map(req => ({
+        ...req,
+        profiles: profilesMap[req.user_id] || { full_name: 'Unknown', email: '', phone_number: '' }
+    }))
+}
+
+export async function getSingleReturnRequestForNotification(requestId: string) {
+    const client = await getAuthClient()
+    const { data, error } = await client
+        .from('return_requests')
+        .select(`
+            *,
+            orders(order_number, total)
+        `)
+        .eq('id', requestId)
+        .single()
+
+    if (error || !data) return null
+
+    // Fetch profile separately (user_id FK -> auth.users, not profiles)
+    const { data: profile } = await client
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', data.user_id)
+        .single()
+
+    return { ...data, profiles: profile || { full_name: 'Customer', email: '' } }
 }
 
 export async function updateReturnStatus(requestId: string, status: string, adminNotes?: string) {
     const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return { success: false, error: 'Unauthorized' }
+
+    // Fetch current status to determine if this is a re-approve
+    const { data: current } = await client
+        .from('return_requests')
+        .select('status')
+        .eq('id', requestId)
+        .single()
+
+    // Only main_admin can re-approve a rejected return
+    if (current?.status === 'rejected' && status === 'approved') {
+        if (admin.role !== 'main_admin') {
+            return { success: false, error: 'Only Main Admin can re-approve rejected returns.' }
+        }
+    }
 
     const updates: any = { status, updated_at: new Date().toISOString() }
     if (adminNotes) updates.admin_notes = adminNotes

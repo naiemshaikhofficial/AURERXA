@@ -9,10 +9,11 @@ import Script from 'next/script'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
-import { getOrderById, getOrderTracking, verifyPayment, getOrderPaymentSession, initiatePayment, requestReturn } from '@/app/actions'
+import { getOrderById, getOrderTracking, verifyPayment, getOrderPaymentSession, initiatePayment, requestReturn, getReturnByOrderId } from '@/app/actions'
 import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle, LifeBuoy, RotateCcw, ExternalLink, ShoppingBag, PackageCheck, HelpCircle } from 'lucide-react'
 import { InvoiceTemplate } from '@/components/invoice-template'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 import { OrderCancellationDialog } from '@/components/order-cancellation-dialog'
 import { ShipmentTimeline } from '@/components/shipment-timeline'
 import { DigitalCertificate } from '@/components/digital-certificate'
@@ -41,6 +42,7 @@ export default function OrderDetailPage() {
     })
     const [activeCertificate, setActiveCertificate] = useState<any>(null)
     const [isCertPrinting, setIsCertPrinting] = useState(false)
+    const [returnRequest, setReturnRequest] = useState<any>(null)
 
     useEffect(() => {
         async function load() {
@@ -69,6 +71,10 @@ export default function OrderDetailPage() {
                             setTrackingData(tracking)
                         }
                     }
+
+                    // Fetch return request if any
+                    const ret = await getReturnByOrderId(params.id as string)
+                    if (ret) setReturnRequest(ret)
                 }
             }
             setLoading(false)
@@ -148,6 +154,9 @@ export default function OrderDetailPage() {
                 toast.success(result.message)
                 setIsReturnOpen(false)
                 setReturnForm({ reason: '', issueType: '', description: '' })
+                // Refresh return status
+                const ret = await getReturnByOrderId(order.id)
+                if (ret) setReturnRequest(ret)
             } else {
                 toast.error(result.error)
             }
@@ -290,6 +299,67 @@ export default function OrderDetailPage() {
                                     ) : (
                                         <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm font-bold uppercase tracking-widest text-center">
                                             Payment Window Expired
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Return Request Status Banner */}
+                    {returnRequest && (
+                        <div className={cn(
+                            "mb-8 p-6 border",
+                            returnRequest.status === 'requested' ? "bg-amber-500/10 border-amber-500/30" :
+                                returnRequest.status === 'approved' ? "bg-emerald-500/10 border-emerald-500/30" :
+                                    returnRequest.status === 'rejected' ? "bg-red-500/10 border-red-500/30" :
+                                        "bg-primary/10 border-primary/30"
+                        )}>
+                            <div className="flex items-start gap-4">
+                                <div className={cn(
+                                    "p-3 rounded-full",
+                                    returnRequest.status === 'requested' ? "bg-amber-500/20" :
+                                        returnRequest.status === 'approved' ? "bg-emerald-500/20" :
+                                            returnRequest.status === 'rejected' ? "bg-red-500/20" :
+                                                "bg-primary/20"
+                                )}>
+                                    <RotateCcw className={cn(
+                                        "w-6 h-6",
+                                        returnRequest.status === 'requested' ? "text-amber-500" :
+                                            returnRequest.status === 'approved' ? "text-emerald-500" :
+                                                returnRequest.status === 'rejected' ? "text-red-500" :
+                                                    "text-primary"
+                                    )} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+                                        <h2 className="text-xl font-bold text-foreground capitalize">
+                                            Return {returnRequest.status.replace('_', ' ')}
+                                        </h2>
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                            Ref: {returnRequest.id.split('-')[0].toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <p className="text-muted-foreground text-sm mb-4">
+                                        {returnRequest.status === 'requested' && "Your return request has been received and is currently under review by our quality team."}
+                                        {returnRequest.status === 'approved' && "Great! Your return has been approved. A reverse pickup will be scheduled shortly."}
+                                        {returnRequest.status === 'rejected' && "Unfortunately, your return request was not approved based on the information provided."}
+                                        {returnRequest.status === 'pickup_scheduled' && `Pickup has been scheduled. Courier will contact you on ${returnRequest.pickup_date ? new Date(returnRequest.pickup_date).toLocaleDateString() : 'shortly'}.`}
+                                    </p>
+
+                                    {returnRequest.admin_notes && (
+                                        <div className="p-4 bg-background/50 border border-border/50 rounded-lg">
+                                            <p className="text-[10px] uppercase tracking-widest font-bold text-primary mb-1">Message from Aurerxa:</p>
+                                            <p className="text-sm italic text-foreground/80">"{returnRequest.admin_notes}"</p>
+                                        </div>
+                                    )}
+
+                                    {returnRequest.status === 'approved' && returnRequest.tracking_number && (
+                                        <div className="mt-4 flex items-center gap-4">
+                                            <div className="px-4 py-2 bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                                                <Truck className="w-4 h-4" />
+                                                Reverse Tracking: {returnRequest.tracking_number}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -675,7 +745,7 @@ export default function OrderDetailPage() {
                                         </a>
                                     )}
 
-                                    {order.status === 'delivered' && (
+                                    {order.status === 'delivered' && !returnRequest && (
                                         <button
                                             onClick={() => setIsReturnOpen(true)}
                                             className="flex items-center gap-3 w-full p-3 text-left text-sm bg-muted/50 border border-border hover:border-primary/30 transition-all group"
@@ -684,6 +754,21 @@ export default function OrderDetailPage() {
                                             <span className="flex-1 text-foreground group-hover:text-primary transition-colors">Request Return</span>
                                             <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
                                         </button>
+                                    )}
+                                    {returnRequest && (
+                                        <div className="flex items-center gap-3 w-full p-3 text-left text-sm bg-muted/50 border border-border">
+                                            <RotateCcw className="w-4 h-4 text-primary" />
+                                            <span className="flex-1 text-foreground">Return Status</span>
+                                            <span className={cn(
+                                                "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5",
+                                                returnRequest.status === 'requested' ? "text-amber-500 bg-amber-500/10" :
+                                                    returnRequest.status === 'approved' ? "text-emerald-500 bg-emerald-500/10" :
+                                                        returnRequest.status === 'rejected' ? "text-red-500 bg-red-500/10" :
+                                                            "text-primary bg-primary/10"
+                                            )}>
+                                                {returnRequest.status.replace(/_/g, ' ')}
+                                            </span>
+                                        </div>
                                     )}
 
                                     {order.status === 'cancelled' && (
