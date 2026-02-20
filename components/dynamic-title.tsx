@@ -20,7 +20,7 @@ export function DynamicTitle() {
                     intervalRef.current = setInterval(() => {
                         currentIndex = (currentIndex + 1) % messages.length
                         document.title = messages[currentIndex]
-                    }, 2000)
+                    }, 1000)
                 }
 
                 // Set initial hidden title

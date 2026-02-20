@@ -2,10 +2,13 @@ import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { Hero } from '@/components/hero'
 import { getNewReleases } from './actions'
+import { SectionSkeleton } from '@/components/skeletons'
+import type { CategoryBrowsingProps } from '@/components/category-browsing'
+import type { ShopByGenderProps } from '@/components/shop-by-gender'
+import { Metadata } from 'next'
 
 // Lazy load ALL below-hero components to reduce initial JS bundle and TBT
 const Heritage = dynamic(() => import('@/components/heritage').then(mod => mod.Heritage))
-
 const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
 const CategoryBrowsing = dynamic<CategoryBrowsingProps>(() => import('@/components/category-browsing').then(mod => mod.CategoryBrowsing))
 const ShopByGender = dynamic<ShopByGenderProps>(() => import('@/components/shop-by-gender').then(mod => mod.ShopByGender))
@@ -15,12 +18,10 @@ const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod =>
 const CustomOrderForm = dynamic(() => import('@/components/custom-order-form').then(mod => mod.CustomOrderForm))
 const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => mod.Newsletter))
 const Footer = dynamic(() => import('@/components/footer').then(mod => mod.Footer))
+const RecentlyViewed = dynamic(() => import('@/components/recently-viewed').then(mod => mod.RecentlyViewed))
 const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-story').then(mod => mod.CraftsmanshipStory))
 const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
 const MaterialShowcase = dynamic(() => import('@/components/material-showcase').then(mod => mod.MaterialShowcase))
-import { SectionSkeleton } from '@/components/skeletons'
-import type { CategoryBrowsingProps } from '@/components/category-browsing'
-import type { ShopByGenderProps } from '@/components/shop-by-gender'
 
 async function NewReleasesSection() {
   const { getNewReleases } = await import('./actions')
@@ -144,7 +145,7 @@ async function HeroCarouselSection() {
   return <HeroCarousel slides={slides} />
 }
 
-import { Metadata } from 'next'
+
 
 export const metadata: Metadata = {
   title: 'AURERXA | Buy Premium Jewelry Online - Gold, Diamond, Bridal & Fashion Jewelry',
@@ -261,6 +262,7 @@ export default function HomePage() {
       </Suspense>
 
       <CustomOrderForm />
+      <RecentlyViewed />
       <Newsletter />
 
       <Footer />
