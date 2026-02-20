@@ -55,21 +55,21 @@ export function Bestsellers({ products: initialProducts }: { products?: Product[
   if (bestsellers.length === 0) return null
 
   return (
-    <section ref={sectionRef} className="py-24 md:py-48 bg-background relative overflow-hidden">
+    <section ref={sectionRef} className="py-12 md:py-48 bg-background relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div>
           {/* Section Header */}
           <motion.div
             style={{ y: yHeader, opacity }}
-            className="text-center mb-24 md:mb-40 space-y-8"
+            className="text-center mb-16 md:mb-40 space-y-4 md:space-y-8"
           >
-            <div className="space-y-6">
-              <span className="text-primary/60 text-[10px] tracking-[0.8em] font-bold uppercase block">Timeless Selection</span>
-              <h2 className="text-4xl sm:text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none">
+            <div className="space-y-3 md:space-y-6">
+              <span className="text-primary/60 text-[8px] md:text-[10px] tracking-[0.8em] font-bold uppercase block">Timeless Selection</span>
+              <h2 className="text-3xl sm:text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none">
                 Curated <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Bestsellers.</span>
               </h2>
             </div>
-            <p className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic max-w-2xl mx-auto leading-relaxed">
+            <p className="text-muted-foreground text-[8px] md:text-xs font-light tracking-[0.4em] uppercase italic max-w-2xl mx-auto leading-relaxed opacity-60 md:opacity-100">
               Our most esteemed pieces, celebrated for their exceptional design and unparalleled quality.
             </p>
           </motion.div>

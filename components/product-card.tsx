@@ -236,29 +236,29 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                     <div className="flex flex-wrap items-center gap-2 mb-1 opacity-70">
                         {product.material_type && (
                             <>
-                                <p className="text-[9px] text-primary font-bold tracking-[0.2em] uppercase">
+                                <p className="text-[8px] md:text-[9px] text-primary font-bold tracking-[0.2em] uppercase">
                                     {MATERIAL_CONFIG[product.material_type].label}
                                 </p>
                                 <span className="w-1 h-1 rounded-full bg-white/20" />
                             </>
                         )}
-                        <p className="text-[9px] text-muted-foreground font-premium-sans tracking-[0.2em] uppercase truncate">
+                        <p className="text-[8px] md:text-[9px] text-muted-foreground font-premium-sans tracking-[0.2em] uppercase truncate">
                             {product.categories?.name || 'Collection'}
                         </p>
                     </div>
 
                     <Link href={`/products/${product.slug}`} onClick={onClose}>
-                        <h3 className="text-sm md:text-base font-serif text-foreground/90 font-medium group-hover:text-primary transition-colors duration-500 leading-snug tracking-tight">
+                        <h3 className="text-[11px] md:text-base font-serif text-foreground/90 font-medium group-hover:text-primary transition-colors duration-500 leading-snug tracking-tight">
                             {product.name}
                         </h3>
                     </Link>
 
-                    <div className="flex items-baseline gap-2 pt-1">
-                        <span className="text-sm font-light text-foreground/80">
+                    <div className="flex items-baseline gap-2 pt-0.5">
+                        <span className="text-[11px] md:text-sm font-light text-foreground/80">
                             ₹{product.price.toLocaleString()}
                         </span>
                         {product.weight_grams && (
-                            <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">
+                            <span className="text-[7px] md:text-[9px] text-muted-foreground/50 uppercase tracking-wider">
                                 {formatWeight(product.weight_grams)}
                             </span>
                         )}
@@ -285,14 +285,14 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                     </div>
                 </div>
 
-                {/* Mobile Button (Always Visible) */}
-                <div className="md:hidden mt-auto pt-4 flex gap-2">
+                {/* Mobile Button (Always Visible) - Scaled Down */}
+                <div className="md:hidden mt-auto pt-2 flex gap-2">
                     <Button
                         onClick={handleBuyNow}
-                        className="w-full bg-primary/10 border border-primary/20 text-primary hover:bg-primary hover:text-black transition-all h-10 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none flex items-center justify-center gap-2 group"
+                        className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-8 text-[7px] uppercase font-premium-sans tracking-[0.25em] rounded-none flex items-center justify-center gap-2 group"
                     >
-                        <span>Premium Selection</span>
-                        <div className="h-[1px] w-4 bg-primary/40 group-hover:bg-black/40 transition-colors" />
+                        <span>Select Piece</span>
+                        <div className="h-[0.5px] w-3 bg-primary/30 group-hover:bg-black/40 transition-colors" />
                     </Button>
                 </div>
             </div>

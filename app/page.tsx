@@ -29,8 +29,29 @@ async function NewReleasesSection() {
 }
 
 async function CategoryBrowsingSection() {
-  const { getCategories } = await import('./actions')
-  const categories = await getCategories()
+  // Hardcoded curated categories as requested to restore original experience (Necklaces, Earrings, etc.)
+  const categories = [
+    {
+      name: 'Necklaces',
+      slug: 'necklaces',
+      image_url: '/closeup-shot-female-wearing-beautiful-silver-necklace-with-pendant.jpg'
+    },
+    {
+      name: 'Earrings',
+      slug: 'earrings',
+      image_url: 'https://images.unsplash.com/photo-1635767798638-3e25273a8236?q=80&w=1000&auto=format&fit=crop'
+    },
+    {
+      name: 'Rings',
+      slug: 'rings',
+      image_url: '/closeup-diamond-ring.jpg'
+    },
+    {
+      name: 'Mangalsutra',
+      slug: 'mangalsutra',
+      image_url: '/mangalsutra-golden-necklace-worn-by-married-hindu-women-arranged-with-traditional-saree-with-huldi-kumkum-mogra-flowers-gajra-selective-focus_466689-60648 (2).avif'
+    }
+  ]
   return <CategoryBrowsing categories={categories} />
 }
 

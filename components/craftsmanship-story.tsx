@@ -18,7 +18,7 @@ export function CraftsmanshipStory() {
     const yIcon3 = useTransform(scrollYProgress, [0.5, 0.8], [50, -50])
 
     return (
-        <section ref={containerRef} className="bg-neutral-950 py-32 md:py-48 relative overflow-hidden">
+        <section ref={containerRef} className="bg-neutral-950 py-16 md:py-48 relative overflow-hidden">
             {/* Background Ambience with Parallax */}
             <motion.div
                 style={{ y: yBackground }}
@@ -32,11 +32,11 @@ export function CraftsmanshipStory() {
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    className="text-center mb-32 space-y-6"
+                    className="text-center mb-20 md:mb-32 space-y-4 md:space-y-6"
                 >
-                    <span className="text-amber-500/60 text-[10px] uppercase tracking-[0.4em] font-medium">Why We Are Expensive</span>
-                    <h2 className="text-4xl md:text-6xl font-serif text-white/90 italic">The Price of Perfection</h2>
-                    <p className="text-white/40 max-w-lg mx-auto leading-relaxed font-light text-sm md:text-base">
+                    <span className="text-amber-500/60 text-[8px] md:text-[10px] uppercase tracking-[0.4em] font-medium">Why We Are Expensive</span>
+                    <h2 className="text-3xl md:text-6xl font-serif text-white/90 italic">The Price of Perfection</h2>
+                    <p className="text-white/40 max-w-lg mx-auto leading-relaxed font-light text-[10px] md:text-base">
                         Luxury is not a label. It is a promise of fairness, artistry, and time.
                     </p>
                 </motion.div>

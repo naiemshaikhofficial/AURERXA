@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
@@ -16,23 +16,14 @@ export function CategoryBrowsing({ categories }: CategoryBrowsingProps) {
         offset: ["start end", "center center"]
     })
 
-    const [isMobile, setIsMobile] = useState(false)
-
-    useEffect(() => {
-        const checkMobile = () => setIsMobile(window.innerWidth < 768)
-        checkMobile()
-        window.addEventListener('resize', checkMobile)
-        return () => window.removeEventListener('resize', checkMobile)
-    }, [])
-
     const smoothProgress = useSpring(scrollYProgress, {
         stiffness: 100,
         damping: 30,
         restDelta: 0.001
     })
 
-    const yTitle = useTransform(smoothProgress, [0, 1], [isMobile ? 0 : 150, 0])
-    const ySubtitle = useTransform(smoothProgress, [0, 1], [isMobile ? 0 : 80, 0])
+    const yTitle = useTransform(smoothProgress, [0, 1], [150, 0])
+    const ySubtitle = useTransform(smoothProgress, [0, 1], [80, 0])
     const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 0.4, 0.8, 1])
 
     return (
@@ -70,7 +61,7 @@ export function CategoryBrowsing({ categories }: CategoryBrowsingProps) {
                 </div>
 
                 {/* Categories Grid */}
-                <div className="grid grid-cols-3 lg:grid-cols-4 gap-2 md:gap-12">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-12">
                     {categories.map((cat, idx) => (
                         <motion.div
                             key={cat.name}
@@ -89,7 +80,7 @@ export function CategoryBrowsing({ categories }: CategoryBrowsingProps) {
                                         alt={cat.name}
                                         fill
                                         className="object-cover transition-transform duration-1000 scale-105 group-hover:scale-110 will-change-transform"
-                                        sizes="(max-width: 768px) 33vw, (max-width: 1024px) 50vw, 25vw"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                     />
 
                                     {/* Luxury Overlays */}

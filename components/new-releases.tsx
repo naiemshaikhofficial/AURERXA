@@ -39,34 +39,32 @@ export function NewReleases({ products }: { products: any[] }) {
     return (
         <section ref={sectionRef} className="py-24 bg-background relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-                <motion.div
-                    style={{ y: yHeader, opacity }}
-                    className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6"
-                >
-                    <div className="space-y-4">
-                        <span className="text-primary text-xs tracking-[0.3em] uppercase font-premium-sans">
-                            Just Arrived
-                        </span>
-                        <h2 className="text-4xl md:text-6xl font-serif text-foreground italic">
-                            New <span className="text-foreground/20">Editions</span>
+                <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-16 gap-6">
+                    <motion.div style={{ y: yHeader, opacity }} className="space-y-2 text-left">
+                        <div className="flex items-center gap-4">
+                            <div className="h-px w-8 md:w-12 bg-primary/40" />
+                            <span className="text-primary text-[8px] md:text-[10px] uppercase tracking-[0.4em] font-bold">JUST ARRIVED</span>
+                        </div>
+                        <h2 className="text-3xl md:text-8xl font-serif font-black italic text-foreground tracking-tighter leading-none">
+                            New <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Editions.</span>
                         </h2>
-                    </div>
-                    <div>
+                    </motion.div>
+                    <div className="md:opacity-100 opacity-80">
                         <Link href="/collections?sort=newest" className="group flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                            <span className="text-xs tracking-widest uppercase">View All</span>
+                            <span className="text-[10px] md:text-xs tracking-widest uppercase">View All</span>
                             <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center group-hover:border-foreground/40 transition-colors">
                                 <Plus size={14} />
                             </div>
                         </Link>
                     </div>
-                </motion.div>
+                </div>
 
-                {/* Grid Layout (Replaces Horizontal Scroll on Mobile) */}
+                {/* Grid Layout (Replaces Horizontal Scroll on Mobile) - Tighter Spacing */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 1, ease: PREMIUM_EASE }}
+                    transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
                     className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8"
                 >
                     {products.map((product, i) => (

@@ -108,22 +108,22 @@ export function FeaturedCollections({ categories: initialCategories }: { categor
   const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
   return (
-    <section ref={containerRef} className="py-24 md:py-48 bg-background relative overflow-hidden">
+    <section ref={containerRef} className="py-12 md:py-48 bg-background relative overflow-hidden">
       {categories.length > 0 && (
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           {/* Section Header */}
           <motion.div
             style={{ y: yHeader, opacity }}
-            className="text-center mb-24 md:mb-40 space-y-8"
+            className="text-center mb-12 md:mb-40 space-y-4 md:space-y-8"
           >
-            <div className="space-y-6">
-              <span className="text-primary/60 text-[10px] tracking-[0.8em] font-bold uppercase block">Crafted Excellence</span>
-              <h2 className="text-4xl sm:text-5xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none">
+            <div className="space-y-3 md:space-y-6">
+              <span className="text-primary/60 text-[8px] md:text-[10px] tracking-[0.8em] font-bold uppercase block">Crafted Excellence</span>
+              <h2 className="text-3xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none">
                 The <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Collections.</span>
               </h2>
             </div>
             <Link href="/collections" className="group block">
-              <div className="text-muted-foreground text-[10px] md:text-xs font-light tracking-[0.4em] uppercase italic max-w-2xl mx-auto leading-relaxed group-hover:text-primary transition-colors inline-flex items-center gap-2">
+              <div className="text-muted-foreground text-[8px] md:text-xs font-light tracking-[0.4em] uppercase italic max-w-2xl mx-auto leading-relaxed group-hover:text-primary transition-colors inline-flex items-center gap-2">
                 Explore our curated series of masterpieces, each with a unique heritage.
                 <div className="w-8 h-[1px] bg-primary/30 group-hover:w-12 group-hover:bg-primary transition-all duration-700 hidden md:block" />
               </div>
