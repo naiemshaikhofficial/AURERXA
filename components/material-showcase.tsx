@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { ProductCard, Product } from '@/components/product-card'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { PREMIUM_EASE } from '@/lib/animation-constants'
+import { cn } from '@/lib/utils'
 
 interface MaterialShowcaseProps {
     title: string
@@ -16,11 +17,20 @@ interface MaterialShowcaseProps {
 }
 
 function SectionRow({ title, subtitle, products, materialType, accentColor }: MaterialShowcaseProps) {
-    const sectionRef = useRef<HTMLDivElement>(null)
+    const sectionRef = useRef<HTMLElement>(null)
     const { scrollYProgress } = useScroll({
         target: sectionRef,
         offset: ["start end", "end start"]
     })
+
+    const [isMobile, setIsMobile] = useState(false)
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 1024) // Using 1024 for this section as it's quite wide
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
 
     const smoothProgress = useSpring(scrollYProgress, {
         stiffness: 100,
@@ -28,7 +38,7 @@ function SectionRow({ title, subtitle, products, materialType, accentColor }: Ma
         restDelta: 0.001
     })
 
-    const yHeader = useTransform(smoothProgress, [0, 1], [50, -50])
+    const yHeader = useTransform(smoothProgress, [0, 1], [isMobile ? 0 : 50, isMobile ? 0 : -50])
 
     // If this component is rendered, it MUST return the ref-bound element
     // to avoid framer-motion hydration errors ("Target ref is defined but not hydrated").
@@ -49,7 +59,7 @@ function SectionRow({ title, subtitle, products, materialType, accentColor }: Ma
                             <div className="h-px w-12 bg-amber-500/40" />
                             <span className="text-[10px] uppercase tracking-[0.4em] text-white/40 font-bold">{subtitle}</span>
                         </div>
-                        <h2 className="text-5xl md:text-7xl font-serif text-white/90 leading-none tracking-tight">
+                        <h2 className="text-3xl md:text-7xl font-serif text-white/90 leading-none tracking-tight">
                             {title}
                         </h2>
                     </div>
@@ -63,11 +73,14 @@ function SectionRow({ title, subtitle, products, materialType, accentColor }: Ma
                     </Link>
                 </motion.div>
 
-                {/* Horizontal Scroll Area */}
+                {/* Grid Layout (Replaces Horizontal Scroll on Mobile) */}
                 <div className="relative">
-                    <div className="flex gap-6 overflow-x-auto pb-12 no-scrollbar snap-x snap-mandatory">
+                    <div className={cn(
+                        "grid gap-2 md:gap-6 pb-12",
+                        "grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:flex xl:overflow-x-auto xl:no-scrollbar xl:snap-x xl:snap-mandatory"
+                    )}>
                         {products.map((product, idx) => (
-                            <div key={product.id} className="w-[300px] md:w-[400px] flex-shrink-0 snap-start">
+                            <div key={product.id} className="w-full xl:w-[400px] flex-shrink-0 snap-start">
                                 <ProductCard
                                     product={product}
                                     index={idx}
@@ -79,7 +92,7 @@ function SectionRow({ title, subtitle, products, materialType, accentColor }: Ma
                         {/* Final "View All" Card */}
                         <Link
                             href={`/collections?material_type=${materialType}`}
-                            className="w-[300px] md:w-[400px] flex-shrink-0 aspect-[4/5] md:aspect-auto md:h-full border border-white/5 bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center gap-6 group snap-start"
+                            className="w-full xl:w-[400px] flex-shrink-0 aspect-[4/5] xl:aspect-auto xl:h-full border border-white/5 bg-white/5 hover:bg-white/10 transition-all flex flex-col items-center justify-center gap-6 group snap-start min-h-[400px]"
                         >
                             <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
                                 <ArrowRight className="w-6 h-6 text-white/40 group-hover:text-white" />
@@ -106,7 +119,7 @@ export function MaterialShowcase({
         <div className="space-y-0">
             {/* Branding Header */}
             <div className="bg-neutral-950 pt-24 px-6 md:px-12 text-center space-y-6">
-                <h2 className="text-5xl md:text-9xl font-serif font-black italic text-white tracking-tighter leading-none">
+                <h2 className="text-3xl md:text-9xl font-serif font-black italic text-white tracking-tighter leading-none">
                     Discovery by <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Material.</span>
                 </h2>
                 <p className="max-w-xl mx-auto text-white/40 text-xs md:text-sm font-light tracking-[0.2em] uppercase leading-loose italic">

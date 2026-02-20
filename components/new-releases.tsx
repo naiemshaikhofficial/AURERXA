@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -16,13 +16,22 @@ export function NewReleases({ products }: { products: any[] }) {
         offset: ["start end", "end start"]
     })
 
+    const [isMobile, setIsMobile] = useState(false)
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768)
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
+
     const smoothProgress = useSpring(scrollYProgress, {
         stiffness: 100,
         damping: 30,
         restDelta: 0.001
     })
 
-    const yHeader = useTransform(smoothProgress, [0, 1], [100, -100])
+    const yHeader = useTransform(smoothProgress, [0, 1], [isMobile ? 0 : 100, isMobile ? 0 : -100])
     const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
     if (!products || products.length === 0) return null
@@ -52,16 +61,16 @@ export function NewReleases({ products }: { products: any[] }) {
                     </div>
                 </motion.div>
 
-                {/* Horizontal Scroll Carousel with slide animation */}
+                {/* Grid Layout (Replaces Horizontal Scroll on Mobile) */}
                 <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 1, ease: PREMIUM_EASE }}
-                    className="flex overflow-x-auto pb-8 gap-6 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0"
+                    className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8"
                 >
                     {products.map((product, i) => (
-                        <div key={product.id} className="flex-shrink-0 w-[280px] md:w-[320px] snap-center">
+                        <div key={product.id} className="w-full">
                             <ProductCard
                                 product={product}
                                 index={i}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
@@ -20,10 +20,16 @@ const genderCategories = [
         description: 'Refined craftsmanship for the classic gentleman.'
     },
     {
+        name: 'Kids',
+        slug: 'kids',
+        image: '/kids.jpg',
+        description: 'Dainty treasures for our precious little ones.'
+    },
+    {
         name: 'Unisex',
         slug: 'unisex',
         image: '/Untitled_design_70.webp',
-        description: 'Dainty treasures for our precious little ones.'
+        description: 'Versatile additions to every collection.'
     }
 ]
 
@@ -37,6 +43,15 @@ export function ShopByGender({ genderStats }: ShopByGenderProps) {
         target: sectionRef,
         offset: ["start end", "end start"]
     })
+
+    const [isMobile, setIsMobile] = useState(false)
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768)
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
 
     const smoothProgress = useSpring(scrollYProgress, {
         stiffness: 100,
@@ -68,9 +83,10 @@ export function ShopByGender({ genderStats }: ShopByGenderProps) {
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-12">
                     {genderCategories.map((gender, idx) => {
-                        const yCard = useTransform(smoothProgress, [0, 1], [150 * (idx + 1), -150 * (idx + 1)])
+                        const yCardValue = isMobile ? 0 : 150 * (idx + 1)
+                        const yCard = useTransform(smoothProgress, [0, 1], [yCardValue, -yCardValue])
                         const count = genderStats?.[gender.slug] || 0
 
                         return (
@@ -88,7 +104,7 @@ export function ShopByGender({ genderStats }: ShopByGenderProps) {
                                             alt={gender.name}
                                             fill
                                             className="object-cover transition-transform duration-1000 scale-105 group-hover:scale-115"
-                                            sizes="(max-width: 768px) 100vw, 33vw"
+                                            sizes="(max-width: 768px) 50vw, 25vw"
                                         />
 
                                         {/* Luxury Overlays */}
@@ -97,21 +113,21 @@ export function ShopByGender({ genderStats }: ShopByGenderProps) {
                                         <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
 
                                         {/* Content Over Image */}
-                                        <div className="absolute inset-0 p-10 flex flex-col justify-end">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <span className="text-primary/80 text-[10px] uppercase tracking-[0.4em] font-bold opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
-                                                    Explore Collection
+                                        <div className="absolute inset-0 p-4 md:p-10 flex flex-col justify-end">
+                                            <div className="flex justify-between items-start mb-2 md:mb-4">
+                                                <span className="text-primary/80 text-[8px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.4em] font-bold opacity-0 group-hover:opacity-100 transition-all duration-700 translate-y-4 group-hover:translate-y-0">
+                                                    Explore
                                                 </span>
                                                 {count > 0 && (
-                                                    <span className="text-white/20 text-[9px] uppercase tracking-[0.2em] font-light border border-white/10 px-2 py-1">
+                                                    <span className="hidden md:block text-white/20 text-[9px] uppercase tracking-[0.2em] font-light border border-white/10 px-2 py-1">
                                                         {count}+ Masterpieces
                                                     </span>
                                                 )}
                                             </div>
-                                            <h3 className="text-white font-serif text-4xl md:text-5xl italic tracking-tighter mb-4 group-hover:text-primary transition-colors duration-500">
+                                            <h3 className="text-white font-serif text-lg md:text-5xl italic tracking-tighter mb-1 md:mb-4 group-hover:text-primary transition-colors duration-500">
                                                 {gender.name}
                                             </h3>
-                                            <p className="text-white/40 text-xs font-light tracking-wide leading-relaxed group-hover:text-white/70 transition-colors duration-500">
+                                            <p className="hidden md:block text-white/40 text-xs font-light tracking-wide leading-relaxed group-hover:text-white/70 transition-colors duration-500">
                                                 {gender.description}
                                             </p>
                                         </div>

@@ -25,7 +25,16 @@ export function Bestsellers({ products: initialProducts }: { products?: Product[
     restDelta: 0.001
   })
 
-  const yHeader = useTransform(smoothProgress, [0, 1], [100, -100])
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const yHeader = useTransform(smoothProgress, [0, 1], [isMobile ? 0 : 100, isMobile ? 0 : -100])
   const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
   const [bestsellers, setBestsellers] = useState<Product[]>(initialProducts || [])
@@ -71,7 +80,7 @@ export function Bestsellers({ products: initialProducts }: { products?: Product[
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 1, ease: PREMIUM_EASE }}
-            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-10"
+            className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-10"
           >
             {bestsellers.map((product, index) => (
               <ProductCard

@@ -95,7 +95,16 @@ export function FeaturedCollections({ categories: initialCategories }: { categor
     restDelta: 0.001
   })
 
-  const yHeader = useTransform(smoothProgress, [0, 1], [100, -100])
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  const yHeader = useTransform(smoothProgress, [0, 1], [isMobile ? 0 : 100, isMobile ? 0 : -100])
   const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
   return (
@@ -124,7 +133,7 @@ export function FeaturedCollections({ categories: initialCategories }: { categor
           {/* Collections Grid */}
           <motion.div
             variants={staggerContainer}
-            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+            className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6"
           >
             {categories.map((category) => (
               <CollectionCard key={category.id} category={category} parentScrollProgress={scrollYProgress} />

@@ -322,7 +322,7 @@ export function Navbar() {
                           { name: 'Home', href: '/' },
                           { name: 'Shop Collections', href: '/collections' },
                           { name: 'Custom Jewelry', href: '/custom-jewelry' },
-                          { name: 'Our Story', href: '/our-story' },
+                          { name: 'Our Story', href: '/about' },
                           { name: 'Blog', href: '/blog' },
                           { name: 'Contact Us', href: '/contact-us' },
                           { name: 'FAQs', href: '/faq' }
@@ -419,7 +419,7 @@ export function Navbar() {
               {['Home', 'Our Story', 'Collections', 'Blog'].map((item) => (
                 <Link
                   key={item}
-                  href={item === 'Home' ? '/' : item === 'Our Story' ? '/our-story' : `/${item.toLowerCase().replace(' ', '-')}`}
+                  href={item === 'Home' ? '/' : item === 'Our Story' ? '/about' : `/${item.toLowerCase().replace(' ', '-')}`}
                   className="text-[11px] font-premium-sans text-muted-foreground hover:text-primary transition-colors duration-500 tracking-[0.2em] luxe-underline"
                 >
                   {item}
