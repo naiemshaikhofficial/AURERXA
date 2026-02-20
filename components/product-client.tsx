@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { addToWishlist, checkPendingOrder } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
-import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play, Ruler } from 'lucide-react'
+import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play, Ruler, ShoppingBag, ShieldAlert } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 import supabaseLoader from '@/lib/supabase-loader'
@@ -530,6 +530,11 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                             {product.purity}
                                         </span>
                                     )}
+                                    {product.stock === 0 && (
+                                        <span className="px-3 py-1 bg-red-950/20 border border-red-500/30 text-[9px] uppercase tracking-widest text-red-500 font-bold">
+                                            Out of Stock
+                                        </span>
+                                    )}
                                     {product.stock < 5 && product.stock > 0 && (
                                         <span className="px-3 py-1 border border-red-500/20 text-[9px] uppercase tracking-widest text-red-500/80">
                                             Low Stock
@@ -778,36 +783,90 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
                             {/* Actions */}
                             <div className="flex flex-col gap-4 pt-6">
-                                <Button
-                                    onClick={handleBuyNow}
-                                    disabled={addingToCart || product.stock === 0}
-                                    className="w-full bg-white text-neutral-950 h-16 uppercase tracking-[0.3em] text-xs font-bold hover:bg-neutral-200 transition-all rounded-none"
-                                >
-                                    Purchase Now
-                                </Button>
+                                {product.stock > 0 ? (
+                                    <>
+                                        <Button
+                                            onClick={handleBuyNow}
+                                            disabled={addingToCart}
+                                            className="w-full bg-white text-neutral-950 h-16 uppercase tracking-[0.3em] text-xs font-bold hover:bg-neutral-200 transition-all rounded-none"
+                                        >
+                                            Purchase Now
+                                        </Button>
 
-                                <div className="flex gap-4">
-                                    <Button
-                                        onClick={handleAddToCart}
-                                        disabled={addingToCart || product.stock === 0}
-                                        className="flex-1 bg-transparent border border-white/20 text-white h-14 uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
-                                    >
-                                        {addingToCart ? <Loader2 className="animate-spin w-4 h-4" /> : 'Add to Bag'}
-                                    </Button>
+                                        <div className="flex gap-4">
+                                            <Button
+                                                onClick={handleAddToCart}
+                                                disabled={addingToCart}
+                                                className="flex-1 bg-transparent border border-white/20 text-white h-14 uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
+                                            >
+                                                {addingToCart ? <Loader2 className="animate-spin w-4 h-4" /> : 'Add to Bag'}
+                                            </Button>
 
-                                    <button
-                                        onClick={handleAddToWishlist}
-                                        className={`w-14 h-14 flex items-center justify-center border transition-all duration-300 ${inWishlist
-                                            ? 'bg-red-500/10 border-red-500/50 text-red-500'
-                                            : 'bg-transparent border-white/20 text-white hover:border-white hover:bg-white hover:text-black'
-                                            }`}
-                                    >
-                                        <Heart className={`w-5 h-5 ${inWishlist && 'fill-current'}`} />
-                                    </button>
-                                </div>
+                                            <button
+                                                onClick={handleAddToWishlist}
+                                                className={`w-14 h-14 flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-transparent border-white/20 text-white hover:bg-white/5'}`}
+                                            >
+                                                <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
+                                            </button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="space-y-4">
+                                        <Button
+                                            disabled
+                                            className="w-full bg-neutral-900 text-white/40 h-16 uppercase tracking-[0.3em] text-xs font-bold border border-white/5 rounded-none cursor-not-allowed"
+                                        >
+                                            Currently Unavailable
+                                        </Button>
+                                        <button
+                                            onClick={handleAddToWishlist}
+                                            className={`w-full h-14 flex items-center justify-center gap-3 border transition-all duration-300 ${inWishlist ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-transparent border-white/20 text-white hover:border-white hover:bg-white hover:text-black uppercase tracking-widest text-[10px] font-bold'}`}
+                                        >
+                                            <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
+                                            {inWishlist ? 'Added to Wishlist' : 'Add to Wishlist'}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* STICKY MOBILE ACTIONS */}
+            <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-neutral-950/80 backdrop-blur-2xl border-t border-white/5 p-4 pb-8 safe-area-pb animate-in slide-in-from-bottom-5 duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+                <div className="max-w-md mx-auto">
+                    {product.stock > 0 ? (
+                        <div className="flex gap-3">
+                            <button
+                                onClick={handleAddToCart}
+                                disabled={addingToCart}
+                                className="flex-1 bg-neutral-900 border border-white/10 text-white h-14 uppercase tracking-[0.15em] text-[10px] font-black hover:bg-neutral-800 active:scale-95 transition-all rounded-xl flex items-center justify-center gap-3 px-4"
+                            >
+                                {addingToCart ? <Loader2 className="animate-spin w-4 h-4" /> : (
+                                    <div className="flex items-center gap-3">
+                                        <ShoppingBag className="w-4 h-4 text-amber-500/60" />
+                                        <span>Bag</span>
+                                    </div>
+                                )}
+                            </button>
+                            <button
+                                onClick={handleBuyNow}
+                                disabled={addingToCart}
+                                className="flex-[2] bg-amber-500 text-black h-14 uppercase tracking-[0.2em] text-[10px] font-black hover:bg-amber-400 active:scale-95 transition-all rounded-xl shadow-[0_0_30px_rgba(var(--primary),0.2)]"
+                            >
+                                Buy Masterpiece
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            disabled
+                            className="w-full bg-neutral-900 border border-white/10 text-white/40 h-14 uppercase tracking-[0.2em] text-[10px] font-black rounded-xl cursor-not-allowed flex items-center justify-center gap-3"
+                        >
+                            <ShieldAlert className="w-4 h-4 opacity-50" />
+                            Sold Out
+                        </button>
+                    )}
                 </div>
             </div>
 
