@@ -117,9 +117,9 @@ export const metadata: Metadata = {
     images: ['/logo.png'],
   },
   icons: {
-    icon: '/favicon%2030x30.ico',
-    shortcut: '/favicon%2030x30.ico',
-    apple: '/favicon%2030x30.ico',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
   },
   alternates: {
     canonical: './',
