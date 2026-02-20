@@ -157,31 +157,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             return
         }
 
-        // Optimistic add if we have product data
-        if (productData) {
-            setItems(prev => {
-                const existing = prev.find(item => item.product_id === productId && item.size === size)
-                if (existing) {
-                    return prev.map(item => item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item)
-                }
-                return [...prev, {
-                    id: `temp_${Date.now()}`,
-                    product_id: productId,
-                    quantity,
-                    size,
-                    products: productData
-                }]
-            })
-        }
+        // Optimistic update state
+        let tempId = `temp_${Date.now()}`
+        setItems(prev => {
+            const existing = prev.find(item => item.product_id === productId && item.size === size)
+            if (existing) {
+                return prev.map(item => item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item)
+            }
+            return [...prev, {
+                id: tempId,
+                product_id: productId,
+                quantity,
+                size,
+                products: productData
+            }]
+        })
+        openCart()
 
         try {
             const result = await addToCartAction(productId, size, quantity)
             if (result.success) {
+                // If we got the new item back, we could use it, but for now just refresh silently
                 await refreshCart(true)
-                openCart()
             } else {
-                console.error('Failed to add to cart:', result.error)
-                // If it failed, refresh to get actual state
+                // Revert optimistic update on failure
                 await refreshCart(true)
             }
         } catch (error) {
@@ -192,7 +191,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const updateQuantity = async (cartId: string, quantity: number) => {
         const newQuantity = Math.max(1, quantity)
+        const previousItems = [...items]
 
+        // Optimistic update
         setItems(prev => prev.map(item =>
             item.id === cartId ? { ...item, quantity: newQuantity } : item
         ))
@@ -201,24 +202,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             try {
                 const result = await updateCartItemAction(cartId, newQuantity)
                 if (!result.success) {
-                    await refreshCart(true) // Revert by refreshing
+                    setItems(previousItems)
+                    await refreshCart(true)
                 }
             } catch (error) {
+                setItems(previousItems)
                 await refreshCart(true)
             }
         }
     }
 
     const removeItem = async (cartId: string) => {
+        const previousItems = [...items]
+
+        // Optimistic update
         setItems(prev => prev.filter(item => item.id !== cartId))
 
         if (user && !cartId.startsWith('guest_') && !cartId.startsWith('temp_')) {
             try {
                 const result = await removeFromCartAction(cartId)
                 if (!result.success) {
+                    setItems(previousItems)
                     await refreshCart(true)
                 }
             } catch (error) {
+                setItems(previousItems)
                 await refreshCart(true)
             }
         }

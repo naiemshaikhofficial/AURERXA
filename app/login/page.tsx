@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -57,8 +58,9 @@ function LoginForm() {
                 redirectPath = '/'
             }
 
-            // Force a hard refresh to ensure middleware/server components pick up the new session
-            window.location.href = redirectPath
+            // Use router.replace for a smooth SPA transition, followed by refresh to update server state
+            router.replace(redirectPath)
+            router.refresh()
         } catch (err: any) {
             setError(err.message || 'Failed to sign in')
         } finally {
@@ -94,8 +96,12 @@ function LoginForm() {
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
-
-            <div className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl"
+            >
                 <div className="text-center mb-10">
                     <Link href="/">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -223,7 +229,7 @@ function LoginForm() {
                         </Link>
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </div >
     )
 }

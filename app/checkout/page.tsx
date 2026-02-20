@@ -213,23 +213,60 @@ export default function CheckoutPage() {
 
     const handleSaveAddress = useCallback(async (formData: any) => {
         setError(null)
+        const previousAddresses = [...addresses]
+        const tempId = `temp_${Date.now()}`
 
-        let result
-        if (editingAddressId) {
-            const { updateAddress } = await import('@/app/actions')
-            result = await updateAddress(editingAddressId, formData)
-        } else {
-            result = await addAddress(formData)
+        // Construct a displayable address object from formData
+        const displayAddress = {
+            id: editingAddressId || tempId,
+            ...formData,
+            street_address: formData.street_address || `${formData.address_line1}, ${formData.address_line2 || ''}, ${formData.landmark || ''}`.replace(/, ,/g, ',').trim()
         }
 
-        if (result.success) {
-            await loadData()
-            setShowAddressForm(false)
-            setEditingAddressId(null)
-        } else {
-            setError(result.error || 'Failed to save address')
+        // Optimistic Update
+        setAddresses(prev => {
+            if (editingAddressId) {
+                return prev.map(a => a.id === editingAddressId ? displayAddress : a)
+            }
+            return [...prev, displayAddress]
+        })
+
+        if (!editingAddressId) {
+            setSelectedAddress(tempId)
         }
-    }, [editingAddressId, loadData])
+        setShowAddressForm(false)
+        setEditingAddressId(null)
+
+        try {
+            let result
+            if (editingAddressId) {
+                const { updateAddress } = await import('@/app/actions')
+                result = await updateAddress(editingAddressId, formData)
+            } else {
+                result = await addAddress(formData)
+            }
+
+            if (result.success) {
+                // Background refresh to get actual IDs and server state
+                const freshAddresses = await getAddresses()
+                setAddresses(freshAddresses)
+                if (tempId === selectedAddress || !selectedAddress) {
+                    const newAddr = freshAddresses.find((a: any) => a.pincode === formData.pincode && a.full_name === formData.full_name)
+                    if (newAddr) setSelectedAddress(newAddr.id)
+                }
+            } else {
+                setError(result.error || 'Failed to save address')
+                setAddresses(previousAddresses)
+                setShowAddressForm(true)
+                if (editingAddressId) setEditingAddressId(editingAddressId)
+            }
+        } catch (err) {
+            console.error('Failed to save address:', err)
+            setError('System busy. Please try again.')
+            setAddresses(previousAddresses)
+            setShowAddressForm(true)
+        }
+    }, [editingAddressId, addresses, selectedAddress])
 
     const handleEditAddress = (addr: any) => {
         setEditingAddressId(addr.id)

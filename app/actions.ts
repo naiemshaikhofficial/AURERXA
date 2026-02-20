@@ -5,7 +5,7 @@ import { createServerClient } from '@supabase/ssr'
 import { notifyNewProduct } from './push-actions'
 import { createCashfreeOrder, getCashfreePayments } from '@/lib/cashfree'
 import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib } from '@/lib/razorpay'
-import { unstable_cache, revalidateTag } from 'next/cache'
+import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { sanitize, sanitizeObject } from '@/lib/sanitizer'
@@ -767,6 +767,9 @@ export async function addToCart(productId: string, size?: string, quantity: numb
     console.error('Add to cart error:', error)
     return { success: false, error: 'Failed to add to cart' }
   }
+
+  revalidatePath('/cart')
+  revalidatePath('/checkout')
   return { success: true, message: 'Added to cart' }
 }
 
@@ -783,6 +786,8 @@ export async function updateCartItem(cartId: string, quantity: number) {
     .eq('id', cartId)
 
   if (error) return { success: false, error: 'Failed to update' }
+  revalidatePath('/cart')
+  revalidatePath('/checkout')
   return { success: true }
 }
 
@@ -795,6 +800,8 @@ export async function removeFromCart(cartId: string) {
     .eq('id', cartId)
 
   if (error) return { success: false, error: 'Failed to remove' }
+  revalidatePath('/cart')
+  revalidatePath('/checkout')
   return { success: true }
 }
 
@@ -998,6 +1005,9 @@ export async function addAddress(addressData: {
     if (error.code === '23505') return { success: false, error: 'This address is already in your concierge registry' }
     return { success: false, error: `Concierge Error: ${error.message || 'Verification failed'}` }
   }
+
+  revalidatePath('/checkout')
+  revalidatePath('/account')
   return { success: true, message: 'Address added' }
 }
 
@@ -1045,6 +1055,9 @@ export async function updateAddress(addressId: string, addressData: {
     if (error.message?.includes('violates check constraint')) return { success: false, error: 'Please check all required fields are filled correctly' }
     return { success: false, error: `Refinement Error: ${error.message || 'System busy'}` }
   }
+
+  revalidatePath('/checkout')
+  revalidatePath('/account')
   return { success: true }
 }
 

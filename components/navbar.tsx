@@ -202,11 +202,12 @@ export function Navbar() {
       const { signOutAction } = await import('@/app/actions')
       await signOutAction()
 
-      // 4. Force a hard reload to clear all memory state and ensure fresh middleware run
-      window.location.replace('/')
+      // 4. Use router.replace for a smooth SPA transition followed by refresh
+      router.replace('/')
+      router.refresh()
     } catch (error) {
       console.error('Sign out error:', error)
-      window.location.href = '/'
+      router.push('/')
     }
   }
 

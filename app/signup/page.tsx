@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, Suspense } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -68,7 +69,8 @@ function SignupForm() {
             }
 
             toast.success("Account created successfully! Welcome to AURERXA.")
-            window.location.href = '/'
+            router.replace('/')
+            router.refresh()
             // setIsSubmitted(true)
         } catch (err: any) {
             setError(err.message || 'Failed to sign up')
@@ -102,87 +104,134 @@ function SignupForm() {
 
     return (
         <div className="min-h-screen bg-background flex items-center justify-center px-4 py-20 relative overflow-hidden">
-
-            <div className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl"
+            >
                 <div className="text-center mb-10">
                     <Link href="/">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src="/logo-new.webp" alt="Aurerxa" className="h-24 mx-auto mb-6 opacity-90 dark:invert-0" />
                     </Link>
                     <h2 className="text-3xl font-serif font-bold text-foreground mb-2">
-                        {isSubmitted ? 'Check Your Inbox' : 'Create Account'}
+                        <AnimatePresence mode="wait">
+                            {isSubmitted ? (
+                                <motion.span
+                                    key="submitted-title"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    Check Your Inbox
+                                </motion.span>
+                            ) : (
+                                <motion.span
+                                    key="signup-title"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    Create Account
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
                     </h2>
                     <p className="text-muted-foreground text-sm">
-                        {isSubmitted ? 'A verification link has been sent to your email.' : 'Join the circle of exclusivity'}
+                        <AnimatePresence mode="wait">
+                            {isSubmitted ? (
+                                <motion.span
+                                    key="submitted-subtitle"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    A verification link has been sent to your email.
+                                </motion.span>
+                            ) : (
+                                <motion.span
+                                    key="signup-subtitle"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    Join the circle of exclusivity
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
                     </p>
                 </div>
 
-                {isSubmitted ? (
-                    <div className="space-y-8 animate-in fade-in zoom-in duration-500">
-                        <div className="w-20 h-20 mx-auto rounded-full border border-primary/30 flex items-center justify-center bg-primary/5">
-                            <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-
-                        <div className="text-center space-y-4">
-                            <p className="text-muted-foreground/70 text-sm leading-relaxed">
-                                We have sent a luxurious invitation to verify your account at <span className="text-primary font-medium">{formData.email}</span>.
-                            </p>
-                            <div className="alert-luxury-success mt-8">
-                                <p className="text-[10px]">Verification is required to access your bespoke portal.</p>
+                <AnimatePresence mode="wait">
+                    {isSubmitted ? (
+                        <motion.div
+                            key="submitted-content"
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="space-y-8"
+                        >
+                            <div className="w-20 h-20 mx-auto rounded-full border border-primary/30 flex items-center justify-center bg-primary/5">
+                                <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
                             </div>
-                        </div>
 
-                        <div className="pt-4 space-y-4">
-                            <Button
-                                onClick={() => router.push('/login')}
-                                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest h-12"
-                            >
-                                Back to Login
-                            </Button>
-                            <button
-                                onClick={() => setIsSubmitted(false)}
-                                className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest"
-                            >
-                                Re-enter Email
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        {error && (
-                            <div className="alert-luxury-error mb-6 text-center">
-                                <div className="flex items-center justify-center gap-3">
-                                    <AlertCircle size={14} className="text-red-500" />
-                                    <p>{error}</p>
+                            <div className="text-center space-y-4">
+                                <p className="text-muted-foreground/70 text-sm leading-relaxed">
+                                    We have sent a luxurious invitation to verify your account at <span className="text-primary font-medium">{formData.email}</span>.
+                                </p>
+                                <div className="alert-luxury-success mt-8">
+                                    <p className="text-[10px]">Verification is required to access your bespoke portal.</p>
                                 </div>
                             </div>
-                        )}
 
-                        <div className="space-y-6">
+                            <div className="pt-4 space-y-4">
+                                <Button
+                                    onClick={() => router.push('/login')}
+                                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold uppercase tracking-widest h-12"
+                                >
+                                    Back to Login
+                                </Button>
+                                <button
+                                    onClick={() => setIsSubmitted(false)}
+                                    className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest"
+                                >
+                                    Re-enter Email
+                                </button>
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="signup-form"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="space-y-6"
+                        >
+                            {error && (
+                                <div className="alert-luxury-error mb-6 text-center">
+                                    <div className="flex items-center justify-center gap-3">
+                                        <AlertCircle size={14} className="text-red-500" />
+                                        <p>{error}</p>
+                                    </div>
+                                </div>
+                            )}
+
                             <Button
                                 onClick={handleGoogleSignup}
                                 variant="outline"
                                 className="w-full bg-background/5 text-foreground hover:bg-background/10 h-12 font-medium flex items-center justify-center gap-3 border border-border hover:border-foreground/20 transition-all duration-300 rounded-none uppercase tracking-widest text-xs"
                             >
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
-                                    <path
-                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                        fill="#4285F4"
-                                    />
-                                    <path
-                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                        fill="#34A853"
-                                    />
-                                    <path
-                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                        fill="#FBBC05"
-                                    />
-                                    <path
-                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                        fill="#EA4335"
-                                    />
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                                 </svg>
                                 Continue with Google
                             </Button>
@@ -309,10 +358,10 @@ function SignupForm() {
                                     Sign In
                                 </Link>
                             </div>
-                        </div>
-                    </>
-                )}
-            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
         </div>
     )
 }
