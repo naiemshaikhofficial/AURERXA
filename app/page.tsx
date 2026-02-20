@@ -39,7 +39,7 @@ async function CategoryBrowsingSection() {
     {
       name: 'Earrings',
       slug: 'earrings',
-      image_url: 'https://images.unsplash.com/photo-1635767798638-3e25273a8236?q=80&w=1000&auto=format&fit=crop'
+      image_url: '/long-earring-with-violet-precious-stones-hang-from-woman-s-ear.jpg'
     },
     {
       name: 'Rings',
