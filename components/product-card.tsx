@@ -210,7 +210,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                         >
                             <Image
                                 src={sanitizeImagePath(allImages[currentImageIndex])}
-                                alt={product.name}
+                                alt={`${product.purity || ''} ${product.material_type ? MATERIAL_CONFIG[product.material_type].label : ''} ${product.name} - ${product.categories?.name || 'Jewellery'} by AURERXA`}
                                 fill
                                 className={cn(
                                     "object-cover transition-all duration-700",

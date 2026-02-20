@@ -17,6 +17,41 @@ interface PageProps {
         search?: string
     }>
 }
+import { Metadata } from 'next'
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+    const params = await searchParams
+    const category = params.category && params.category !== 'all' ? params.category : ''
+    const gender = params.gender && params.gender !== 'all' ? params.gender : ''
+    const material = params.material_type && params.material_type !== 'all' ? params.material_type : ''
+    const occasion = params.occasion && params.occasion !== 'all' ? params.occasion : ''
+
+    const parts = [
+        gender ? (gender === 'women' ? "Women's" : "Men's") : '',
+        material || '',
+        category || 'Jewellery',
+        'Collections',
+        occasion ? `for ${occasion}` : ''
+    ].filter(Boolean)
+
+    const title = `${parts.join(' ')} - Latest 2026 Designs | AURERXA`
+    const description = `Explore the finest ${parts.join(' ').toLowerCase()} at AURERXA. Featured handcrafted masterpieces with certified luxury quality. Shop our latest heritage collection online.`
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const url = `${baseUrl}/collections${category ? `?category=${category}` : ''}`
+
+    return {
+        title,
+        description,
+        alternates: { canonical: url },
+        openGraph: {
+            title,
+            description,
+            url,
+            siteName: 'AURERXA',
+            type: 'website'
+        }
+    }
+}
 
 export default async function CollectionsPage({ searchParams }: PageProps) {
     const params = await searchParams
