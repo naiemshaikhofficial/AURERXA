@@ -636,8 +636,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                     <div className="space-y-1">
                                         <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Purity / Karat</p>
                                         <div className="flex flex-col">
-                                            <p className="text-xs md:text-sm font-serif italic text-white/80">{formatPurity(product.purity).label}</p>
-                                            <p className="text-[9px] text-white/30 uppercase tracking-widest">{formatPurity(product.purity).subLabel}</p>
+                                            <p className="text-xs md:text-sm font-serif italic text-white/80">{formatPurity(product.purity, product.material_type).label}</p>
+                                            <p className="text-[9px] text-white/30 uppercase tracking-widest">{formatPurity(product.purity, product.material_type).subLabel}</p>
                                         </div>
                                     </div>
                                 )}
@@ -702,7 +702,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                     <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Material Integrity</p>
                                     <div className="flex flex-col">
                                         <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">
-                                            {product.material_type ? MATERIAL_CONFIG[product.material_type]?.label : formatPurity(product.purity).label}
+                                            {product.material_type ? MATERIAL_CONFIG[product.material_type]?.label : formatPurity(product.purity, product.material_type).label}
                                         </p>
                                         {product.material_type === 'gold_plated' && (
                                             <p className="text-[7px] text-white/30 uppercase tracking-widest mt-0.5 italic">Durable Gold Overlay</p>

@@ -135,7 +135,7 @@ export function AdminSidebar({ admin, children }: { admin: { email?: string; rol
                     <Image src="/logo.webp" alt="AURERXA" width={22} height={22} className="rounded" unoptimized />
                     <span className="text-sm font-semibold tracking-wider text-[#D4AF37]">ADMIN</span>
                 </Link>
-                <button onClick={handleLogout} className="text-white/40 hover:text-red-400">
+                <button onClick={handleLogout} className="text-white/40 hover:text-red-400 p-2">
                     <LogOut className="w-5 h-5" />
                 </button>
             </div>
@@ -194,9 +194,16 @@ export function AdminSidebar({ admin, children }: { admin: { email?: string; rol
                                 )
                             })}
                         </nav>
-                        <div className="pt-4 border-t border-white/5">
-                            <p className="text-xs text-white/40 truncate">{admin.email}</p>
-                            <p className={`text-xs font-medium ${roleColor} tracking-wider uppercase mt-0.5`}>{roleBadge}</p>
+                        <div className="mt-auto pt-4 border-t border-white/5 pb-6">
+                            <div className="px-2 mb-4">
+                                <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold mb-1">Session</p>
+                                <p className="text-xs text-white/60 truncate">{admin.email}</p>
+                                <p className={`text-[10px] font-bold ${roleColor} tracking-[0.2em] uppercase mt-1`}>{roleBadge}</p>
+                            </div>
+                            <button onClick={handleLogout} className="flex items-center gap-3 text-white/40 hover:text-red-400 transition text-sm w-full px-3 py-3 bg-white/5 rounded-xl border border-white/5">
+                                <LogOut className="w-4 h-4" />
+                                <span>Logout Session</span>
+                            </button>
                         </div>
                     </aside>
                 </div>

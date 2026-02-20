@@ -386,7 +386,7 @@ export function Navbar() {
                               {isAdmin && (
                                 <Link
                                   href="/admin"
-                                  className="flex flex-col items-center justify-center p-4 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2 relative"
+                                  className="flex flex-col items-center justify-center p-4 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2 relative z-50 pointer-events-auto active:scale-95 tactile-press"
                                 >
                                   <div className="relative">
                                     <Shield className="w-5 h-5 mb-2 text-[#D4AF37] transition-colors stroke-1" />
@@ -396,7 +396,7 @@ export function Navbar() {
                                       </span>
                                     )}
                                   </div>
-                                  <span className="text-[9px] uppercase tracking-widest text-[#D4AF37]">Admin Panel</span>
+                                  <span className="text-[9px] uppercase tracking-widest text-[#D4AF37] font-bold">Admin Panel</span>
                                 </Link>
                               )}
                             </div>

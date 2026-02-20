@@ -7,7 +7,6 @@ export const PURITY_MAPPING: Record<string, { label: string; subLabel: string; t
     // Gold Standards
     '24': { label: '24K Fine Gold', subLabel: '99.9% Pure', type: 'Gold' },
     '24K': { label: '24K Fine Gold', subLabel: '99.9% Pure', type: 'Gold' },
-    '999': { label: '24K Fine Gold', subLabel: '99.9% Pure', type: 'Gold' },
     '22': { label: '22K Gold Purity', subLabel: 'BIS 916 Standard', type: 'Gold' },
     '22K': { label: '22K Gold Purity', subLabel: 'BIS 916 Standard', type: 'Gold' },
     '916': { label: '22K Gold Purity', subLabel: 'BIS 916 Standard', type: 'Gold' },
@@ -24,6 +23,7 @@ export const PURITY_MAPPING: Record<string, { label: string; subLabel: string; t
     '925': { label: '925 Sterling Silver', subLabel: 'Premium Quality', type: 'Silver' },
     '99.9': { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' },
     '99.9%': { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' },
+    '999': { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' }, // Default to Silver as per user request if both exist
 
     // Platinum Standards
     '950': { label: '950 Platinum', subLabel: 'Highly Pure & Rare', type: 'Platinum' },
@@ -32,10 +32,20 @@ export const PURITY_MAPPING: Record<string, { label: string; subLabel: string; t
     'PT900': { label: '900 Platinum', subLabel: '90% Pure Platinum', type: 'Platinum' },
 }
 
-export function formatPurity(value: string | number | null | undefined) {
+export function formatPurity(value: string | number | null | undefined, materialType?: string | null) {
     if (!value) return { label: 'Fine Craftsmanship', subLabel: 'Premium Materials', type: 'General' as const }
 
     const strValue = String(value).toUpperCase().trim()
+    const isGoldType = materialType?.toLowerCase().includes('gold') || materialType === 'real_gold' || materialType === 'gold_plated'
+    const isSilverType = materialType?.toLowerCase().includes('silver') || materialType === 'silver'
+
+    // Special Case: 999 Purity which can be Gold or Silver
+    if (strValue === '999' || strValue === '24' || strValue === '24K') {
+        if (isSilverType) {
+            return { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' as const }
+        }
+        return { label: '24K Fine Gold', subLabel: '99.9% Pure', type: 'Gold' as const }
+    }
 
     // Exact match from mapping
     if (PURITY_MAPPING[strValue]) {
@@ -51,7 +61,10 @@ export function formatPurity(value: string | number | null | undefined) {
     const num = parseFloat(strValue)
     if (!isNaN(num)) {
         if (num <= 24 && num >= 1) return { label: `${num}K Gold Purity`, subLabel: 'Certified Quality', type: 'Gold' as const }
-        if (num >= 900) return { label: `${num} Fine Purity`, subLabel: 'Precious Metal', type: 'General' as const }
+        if (num >= 900) {
+            if (isSilverType) return { label: `${num} Fine Silver`, subLabel: 'Premium Quality', type: 'Silver' as const }
+            return { label: `${num} Fine Purity`, subLabel: 'Precious Metal', type: 'General' as const }
+        }
     }
 
     return { label: `${strValue} Purity`, subLabel: 'Handmade Excellence', type: 'General' as const }

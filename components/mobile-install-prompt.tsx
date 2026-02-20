@@ -25,11 +25,14 @@ export function MobileInstallPrompt() {
             setShowPrompt(true)
         })
 
-        // Force show prompt once on mobile if not dismissed
-        // This is to capture the "Direct Install" feel the user wants
+        // Force show prompt if not dismissed in the last 7 days
         const isMobile = ios || android
-        if (isMobile && !localStorage.getItem('installPromptDismissed')) {
-            const timer = setTimeout(() => setShowPrompt(true), 3000)
+        const lastDismissed = localStorage.getItem('installPromptDismissedAt')
+        const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000
+        const shouldShow = isMobile && (!lastDismissed || (Date.now() - parseInt(lastDismissed) > sevenDaysInMs))
+
+        if (shouldShow) {
+            const timer = setTimeout(() => setShowPrompt(true), 15000) // Give more time before showing
             return () => clearTimeout(timer)
         }
 
@@ -46,15 +49,15 @@ export function MobileInstallPrompt() {
         } else if (isIOS) {
             setShowDetails(true)
         } else {
-            // Most modern Android browsers will have the prompt by now if manifest is valid
-            // If not, we show instructions
             setShowDetails(true)
         }
     }
 
-    const handleDismiss = () => {
+    const handleDismiss = (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
         setShowPrompt(false)
-        localStorage.setItem('installPromptDismissed', 'true')
+        localStorage.setItem('installPromptDismissedAt', Date.now().toString())
     }
 
     if (!showPrompt) return null
@@ -62,12 +65,12 @@ export function MobileInstallPrompt() {
     return (
         <AnimatePresence>
             <motion.div
-                initial={{ y: 100, opacity: 0 }}
+                initial={{ y: 200, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: 200, opacity: 0 }}
-                className="fixed bottom-20 left-4 right-4 z-[100] md:hidden"
+                className="fixed bottom-24 left-4 right-4 z-[100] md:hidden"
             >
-                <div className="bg-popover/90 backdrop-blur-2xl border border-border rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8)] ring-1 ring-border">
+                <div className="bg-popover/95 backdrop-blur-3xl border border-border/50 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.9)] ring-1 ring-border/20">
                     {!showDetails ? (
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
@@ -76,7 +79,7 @@ export function MobileInstallPrompt() {
                                 </div>
                                 <div className="space-y-1">
                                     <h4 className="text-foreground font-bold text-sm tracking-tight">AURERXA App</h4>
-                                    <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-medium">Timeless Luxury</p>
+                                    <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-medium">Legacy Luxury</p>
                                 </div>
                             </div>
 
@@ -89,10 +92,10 @@ export function MobileInstallPrompt() {
                                 </Button>
                                 <button
                                     onClick={handleDismiss}
-                                    className="p-2 text-muted-foreground hover:text-foreground transition-colors"
+                                    className="p-3 -mr-2 text-muted-foreground hover:text-foreground touch-none transition-colors"
                                     aria-label="Dismiss install prompt"
                                 >
-                                    <X size={20} />
+                                    <X size={22} className="stroke-[2.5px]" />
                                 </button>
                             </div>
                         </div>
@@ -103,8 +106,14 @@ export function MobileInstallPrompt() {
                             className="space-y-6 pt-2"
                         >
                             <div className="flex justify-between items-start">
-                                <h4 className="text-foreground font-serif italic text-xl">How to Install</h4>
-                                <button onClick={() => setShowDetails(false)} className="text-muted-foreground" aria-label="Close install instructions"><X size={18} /></button>
+                                <h4 className="text-foreground font-serif italic text-xl">Heritage Install</h4>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setShowDetails(false); }}
+                                    className="p-2 -mr-1 text-muted-foreground hover:text-foreground"
+                                    aria-label="Close install instructions"
+                                >
+                                    <X size={20} />
+                                </button>
                             </div>
 
                             <div className="space-y-4">
