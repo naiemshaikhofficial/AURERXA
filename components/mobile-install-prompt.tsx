@@ -22,17 +22,19 @@ export function MobileInstallPrompt() {
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault()
             setDeferredPrompt(e)
-            setShowPrompt(true)
+
+            // Still check session dismissal before showing even if browser suggests it
+            if (!sessionStorage.getItem('installPromptDismissedInSession')) {
+                setShowPrompt(true)
+            }
         })
 
-        // Force show prompt if not dismissed in the last 7 days
+        // Force show prompt if not dismissed in THIS visit/session
         const isMobile = ios || android
-        const lastDismissed = localStorage.getItem('installPromptDismissedAt')
-        const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000
-        const shouldShow = isMobile && (!lastDismissed || (Date.now() - parseInt(lastDismissed) > sevenDaysInMs))
+        const dismissedInSession = sessionStorage.getItem('installPromptDismissedInSession')
 
-        if (shouldShow) {
-            const timer = setTimeout(() => setShowPrompt(true), 15000) // Give more time before showing
+        if (isMobile && !dismissedInSession) {
+            const timer = setTimeout(() => setShowPrompt(true), 15000) // 15s delay as requested previously
             return () => clearTimeout(timer)
         }
 
@@ -45,6 +47,7 @@ export function MobileInstallPrompt() {
             if (outcome === 'accepted') {
                 setDeferredPrompt(null)
                 setShowPrompt(false)
+                sessionStorage.setItem('installPromptDismissedInSession', 'true')
             }
         } else if (isIOS) {
             setShowDetails(true)
@@ -57,7 +60,7 @@ export function MobileInstallPrompt() {
         e.preventDefault()
         e.stopPropagation()
         setShowPrompt(false)
-        localStorage.setItem('installPromptDismissedAt', Date.now().toString())
+        sessionStorage.setItem('installPromptDismissedInSession', 'true')
     }
 
     if (!showPrompt) return null
