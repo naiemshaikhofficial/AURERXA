@@ -287,15 +287,15 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                     </div>
                 </div>
 
-                {/* Mobile Button (Always Visible) - Scaled Down */}
-                <div className="md:hidden mt-auto pt-2 flex gap-2">
+                <div className="md:hidden mt-auto pt-2">
                     <Button
-                        onClick={handleBuyNow}
-                        aria-label={`Select ${product.name}`}
-                        className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-8 text-[7px] uppercase font-premium-sans tracking-[0.25em] rounded-none flex items-center justify-center gap-2 group focus-visible:ring-1 focus-visible:ring-primary"
+                        onClick={handleAddToCart}
+                        disabled={isAdding}
+                        aria-label={`Add ${product.name} to cart`}
+                        className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-9 text-[8px] uppercase font-premium-sans tracking-[0.15em] rounded-none flex items-center justify-center gap-2 group focus-visible:ring-1 focus-visible:ring-primary overflow-hidden"
                     >
-                        <span>Select Piece</span>
-                        <div className="h-[0.5px] w-3 bg-primary/30 group-hover:bg-black/40 transition-colors" />
+                        <span className="truncate">{isAdding ? 'Adding' : 'Add to Cart'}</span>
+                        {!isAdding && <div className="h-[0.5px] w-2 bg-primary/30 group-hover:bg-black/40 transition-colors flex-shrink-0" />}
                     </Button>
                 </div>
             </div>

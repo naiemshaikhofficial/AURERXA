@@ -257,6 +257,13 @@ export function Navbar() {
     }
   }, [])
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [pathname])
+
   return (
     <>
       <motion.nav
@@ -295,7 +302,7 @@ export function Navbar() {
               </Link>
 
               {mounted && (
-                <Sheet>
+                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                   <SheetTrigger asChild>
                     <button className="text-foreground/80 hover:text-primary transition-colors p-2 relative" aria-label="Open navigation menu">
                       <Menu className="w-6 h-6 stroke-1" />
