@@ -13,34 +13,71 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         }
     }
 
-    const title = `${product.name} | AURERXA`
-    const description = product.description || `Exquisite ${product.name} from AURERXA's heritage collection.`
+    const categoryName = Array.isArray(product.categories) ? product.categories[0]?.name : product.categories?.name
+    const materialLabel = product.material_type || 'Jewelry'
+    const title = `${product.name} - Buy ${materialLabel} ${categoryName || 'Jewelry'} Online | AURERXA`
+    const description = product.description || `Buy ${product.name} online at AURERXA. Premium handcrafted ${materialLabel} ${categoryName || 'jewelry'}. ₹${product.price?.toLocaleString('en-IN')}. Free shipping, certified quality, easy returns.`
 
-    const ogImageUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/og/product/${product.slug}`
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const ogImageUrl = `${baseUrl}/api/og/product/${product.slug}`
+    const productUrl = `${baseUrl}/products/${product.slug}`
+
+    // Dynamic keyword generation based on product attributes
+    const dynamicKeywords = [
+        product.name,
+        `Buy ${product.name} Online`,
+        `${product.name} Price`,
+        `${product.name} India`,
+        categoryName ? `${categoryName} Online` : '',
+        categoryName ? `Buy ${categoryName}` : '',
+        categoryName ? `${categoryName} for ${product.gender || 'Women'}` : '',
+        categoryName ? `Gold ${categoryName}` : '',
+        categoryName ? `${materialLabel} ${categoryName}` : '',
+        `AURERXA ${categoryName || 'Jewelry'}`,
+        materialLabel,
+        product.purity ? `${product.purity} Gold` : '',
+        product.gender ? `${product.gender} Jewelry` : '',
+        product.gender ? `${categoryName || 'Jewelry'} for ${product.gender}` : '',
+        ...(product.tags || []),
+        'Handcrafted Jewelry India',
+        'Buy Jewelry Online',
+        'AURERXA',
+    ].filter(Boolean)
 
     return {
         title,
         description,
-        keywords: [product.name, 'AURERXA Jewelry', 'Luxury Jewelry India', product.material_type || '', 'Handcrafted Jewelry'],
+        keywords: dynamicKeywords,
         openGraph: {
             title,
             description,
-            type: 'article',
-            url: `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.slug}`,
+            type: 'website',
+            url: productUrl,
+            siteName: 'AURERXA',
+            locale: 'en_IN',
             images: [
                 {
                     url: product.image_url || ogImageUrl,
                     width: 1200,
                     height: 630,
-                    alt: product.name,
+                    alt: `${product.name} - Buy Online at AURERXA`,
                 },
+                ...(product.images || []).slice(0, 3).map((img: string) => ({
+                    url: img,
+                    width: 800,
+                    height: 800,
+                    alt: `${product.name} - AURERXA`,
+                })),
             ],
         },
         twitter: {
             card: 'summary_large_image',
-            title,
+            title: `${product.name} - ₹${product.price?.toLocaleString('en-IN')} | AURERXA`,
             description,
             images: [product.image_url || ogImageUrl],
+        },
+        alternates: {
+            canonical: productUrl,
         },
     }
 }
@@ -88,16 +125,28 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
     const productUrl = `${baseUrl}/products/${product.slug}`
 
+    const categoryName = Array.isArray(product.categories) ? product.categories[0]?.name : product.categories?.name
+    const categorySlug = Array.isArray(product.categories) ? product.categories[0]?.slug : product.categories?.slug
+    const subCategoryName = Array.isArray(product.sub_categories) ? product.sub_categories[0]?.name : product.sub_categories?.name
+
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Product',
+        '@id': productUrl,
         name: product.name,
         image: product.image_url ? [product.image_url, ...(product.images || [])] : [baseUrl + '/logo.png'],
-        description: product.description,
+        description: product.description || `Buy ${product.name} online at AURERXA. Premium ${product.material_type || ''} ${categoryName || 'jewelry'}.`,
         sku: product.id,
         mpn: product.slug,
+        gtin13: undefined, // Add if you have barcode/GTIN
         brand: {
             '@type': 'Brand',
+            name: 'AURERXA',
+            url: baseUrl,
+            logo: `${baseUrl}/logo.png`,
+        },
+        manufacturer: {
+            '@type': 'Organization',
             name: 'AURERXA',
         },
         offers: {
@@ -108,6 +157,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
             itemCondition: 'https://schema.org/NewCondition',
             availability: product.stock && product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            seller: {
+                '@type': 'Organization',
+                name: 'AURERXA',
+            },
             shippingDetails: {
                 '@type': 'OfferShippingDetails',
                 'shippingRate': {
@@ -128,16 +181,66 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                         'unitCode': 'DAY',
                     },
                     'transitTime': {
-                        '@type': 'ShippingDeliveryTime',
+                        '@type': 'QuantitativeValue',
                         'minValue': 1,
                         'maxValue': 5,
                         'unitCode': 'DAY',
                     },
                 },
             },
+            hasMerchantReturnPolicy: {
+                '@type': 'MerchantReturnPolicy',
+                'applicableCountry': 'IN',
+                'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                'merchantReturnDays': 15,
+                'returnMethod': 'https://schema.org/ReturnByMail',
+                'returnFees': 'https://schema.org/FreeReturn',
+            },
         },
         material: product.material_type || 'Jewelry',
-        category: Array.isArray(product.categories) ? product.categories[0]?.name : product.categories?.name,
+        category: categoryName,
+        ...(product.weight_grams ? {
+            weight: {
+                '@type': 'QuantitativeValue',
+                value: product.weight_grams,
+                unitCode: 'GRM',
+            }
+        } : {}),
+        ...(product.dimensions_width && product.dimensions_height ? {
+            depth: {
+                '@type': 'QuantitativeValue',
+                value: product.dimensions_length || 0,
+                unitCode: product.dimensions_unit === 'cm' ? 'CMT' : 'MMT',
+            },
+            width: {
+                '@type': 'QuantitativeValue',
+                value: product.dimensions_width,
+                unitCode: product.dimensions_unit === 'cm' ? 'CMT' : 'MMT',
+            },
+            height: {
+                '@type': 'QuantitativeValue',
+                value: product.dimensions_height,
+                unitCode: product.dimensions_unit === 'cm' ? 'CMT' : 'MMT',
+            },
+        } : {}),
+        color: product.material_type?.includes('Gold') ? 'Gold' : product.material_type?.includes('Silver') ? 'Silver' : product.material_type?.includes('Rose') ? 'Rose Gold' : undefined,
+        audience: product.gender ? {
+            '@type': 'PeopleAudience',
+            suggestedGender: product.gender,
+        } : undefined,
+        additionalProperty: [
+            ...(product.purity ? [{ '@type': 'PropertyValue', name: 'Purity', value: product.purity }] : []),
+            ...(product.material_type ? [{ '@type': 'PropertyValue', name: 'Material', value: product.material_type }] : []),
+            ...(product.gender ? [{ '@type': 'PropertyValue', name: 'Gender', value: product.gender }] : []),
+            ...(categoryName ? [{ '@type': 'PropertyValue', name: 'Jewelry Type', value: categoryName }] : []),
+            ...(subCategoryName ? [{ '@type': 'PropertyValue', name: 'Sub Category', value: subCategoryName }] : []),
+            ...(product.tags || []).map((tag: string) => ({ '@type': 'PropertyValue', name: 'Tag', value: tag })),
+        ],
+        isRelatedTo: categoryName ? {
+            '@type': 'Product',
+            name: `${categoryName} Collection`,
+            url: `${baseUrl}/collections?category=${categorySlug}`,
+        } : undefined,
     }
 
     const breadcrumbLd = {
@@ -156,9 +259,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 name: 'Collections',
                 item: `${baseUrl}/collections`,
             },
-            {
+            ...(categoryName ? [{
                 '@type': 'ListItem',
                 position: 3,
+                name: categoryName,
+                item: `${baseUrl}/collections?category=${categorySlug}`,
+            }] : []),
+            {
+                '@type': 'ListItem',
+                position: categoryName ? 4 : 3,
                 name: product.name,
                 item: productUrl,
             },
