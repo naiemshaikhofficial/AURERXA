@@ -31,17 +31,58 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: 'AURERXA | Premium Luxury Jewelry & Bespoke Jewelry Design',
   description: 'AURERXA: Timeless luxury handcrafted to perfection. Explore our global collection of artisan gold, conflict-free diamond, and bespoke jewelry. A heritage of craftsmanship, redefined for the world.',
+  applicationName: 'AURERXA',
+  authors: [{ name: 'AURERXA Artisans', url: 'https://aurerxa.com' }],
+  generator: 'Next.js',
+  referrer: 'origin-when-cross-origin',
   keywords: [
     'Premium Luxury Jewelry', 'Bespoke Jewelry Design', 'Artisan Gold Jewelry',
     'Luxury Jewelry Brand', 'Handcrafted Fine Jewelry', 'Ethical Diamond Jewelry',
     'High-End Indian Jewelry', 'Custom Jewelry Maker', 'Fine Jewelry Collections',
-    'Heirloom Quality Jewelry'
+    'Heirloom Quality Jewelry', 'Gold Mangalsutra', 'Diamond Bridal Sets',
+    'Sangamner Best Jewelry', 'Luxury Indian Boutique'
   ],
+  creator: 'AURERXA',
+  publisher: 'AURERXA',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   openGraph: {
     title: 'AURERXA | World-Class Luxury & Bespoke Jewelry',
     description: 'Timeless luxury handcrafted to perfection. Discover AURERXA Heritage.',
-    images: ['/logo.png'],
+    url: 'https://aurerxa.com',
+    siteName: 'AURERXA',
+    locale: 'en_US',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'AURERXA Luxury Jewelry Logo',
+      },
+    ],
     type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AURERXA | World-Class Luxury & Bespoke Jewelry',
+    description: 'Timeless luxury handcrafted to perfection.',
+    site: '@aurerxa',
+    creator: '@aurerxa',
+    images: ['/logo.png'],
   },
   icons: {
     icon: '/favicon%2030x30.ico',
@@ -54,7 +95,11 @@ export const metadata: Metadata = {
       'en-US': '/en-US',
       'x-default': '/',
     },
-  }
+  },
+  other: {
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+  },
 }
 
 export const viewport: Viewport = {
@@ -144,6 +189,35 @@ export default async function RootLayout({
     }
   }
 
+  const searchboxLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    'url': baseUrl,
+    'potentialAction': {
+      '@type': 'SearchAction',
+      'target': {
+        '@type': 'EntryPoint',
+        'urlTemplate': `${baseUrl}/collections?search={search_term_string}`
+      },
+      'query-input': 'required name=search_term_string'
+    }
+  }
+
+  const navigationLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SiteNavigationElement',
+    'hasPart': [
+      { '@type': 'WebPage', 'name': 'Collections', 'url': `${baseUrl}/collections` },
+      { '@type': 'WebPage', 'name': 'Necklaces', 'url': `${baseUrl}/collections?category=necklaces` },
+      { '@type': 'WebPage', 'name': 'Earrings', 'url': `${baseUrl}/collections?category=earrings` },
+      { '@type': 'WebPage', 'name': 'Rings', 'url': `${baseUrl}/collections?category=rings` },
+      { '@type': 'WebPage', 'name': 'Mangalsutra', 'url': `${baseUrl}/collections?category=mangalsutra` },
+      { '@type': 'WebPage', 'name': 'Our Story', 'url': `${baseUrl}/our-story` },
+      { '@type': 'WebPage', 'name': 'About Us', 'url': `${baseUrl}/about` },
+      { '@type': 'WebPage', 'name': 'Contact Us', 'url': `${baseUrl}/contact-us` }
+    ]
+  }
+
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable} ${cormorant.variable}`}>
       <head>
@@ -165,6 +239,14 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(searchboxLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(navigationLd) }}
         />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
