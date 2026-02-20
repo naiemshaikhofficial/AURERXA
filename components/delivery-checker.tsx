@@ -21,20 +21,25 @@ interface DeliveryInfo {
     message?: string
     error?: string
     location?: string
+    city?: string
+    state?: string
     shippingRate?: number
 }
 
 interface DeliveryCheckerProps {
-    product: any
+    product?: any
+    cartItems?: any[]
+    subtotal?: number
     compact?: boolean
 }
 
-export function DeliveryChecker({ product, compact = false }: DeliveryCheckerProps) {
+export function DeliveryChecker({ product, cartItems, subtotal, compact = false }: DeliveryCheckerProps) {
     const [pincode, setPincode] = useState('')
     const [loading, setLoading] = useState(false)
     const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const productPrice = product?.price || 0
+
+    const displaySubtotal = subtotal || product?.price || 0
 
     // Load saved pincode from localStorage
     useEffect(() => {
@@ -59,9 +64,10 @@ export function DeliveryChecker({ product, compact = false }: DeliveryCheckerPro
         const result = await checkDeliveryAvailability(code)
 
         if (result.success) {
-            // Calculate shipping rate for this specific product
+            // Calculate shipping rate for this specific product or cart
             const { calculateShippingRate } = await import('@/app/actions')
-            const shippingRes = await calculateShippingRate(code, [{ products: product, quantity: 1 }], false)
+            const itemsToRate = cartItems || (product ? [{ products: product, quantity: 1 }] : [])
+            const shippingRes = await calculateShippingRate(code, itemsToRate, false)
 
             setDeliveryInfo({
                 ...result,
@@ -82,7 +88,7 @@ export function DeliveryChecker({ product, compact = false }: DeliveryCheckerPro
         localStorage.removeItem('aurerxa_pincode')
     }
 
-    const freeShipping = productPrice >= 50000
+    const freeShipping = displaySubtotal >= 50000
 
     return (
         <div className={`relative overflow-hidden ${compact ? '' : ''}`}>
@@ -178,7 +184,7 @@ export function DeliveryChecker({ product, compact = false }: DeliveryCheckerPro
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-white/80 text-xs font-serif italic tracking-wide mb-1">
-                                                Estimated Delivery to <span className="text-white font-bold">{deliveryInfo.location}</span>
+                                                Estimated Delivery to <span className="text-white font-bold">{deliveryInfo.location || `${deliveryInfo.city}${deliveryInfo.state ? `, ${deliveryInfo.state}` : ''}`.toUpperCase()}</span>
                                             </p>
                                             <p className="text-white text-sm">
                                                 <span className="font-bold">{deliveryInfo.estimatedDelivery?.from}</span> - <span className="font-bold">{deliveryInfo.estimatedDelivery?.to}</span>
@@ -265,7 +271,7 @@ export function DeliveryEstimate({ pincode }: { pincode?: string }) {
                 </div>
                 <div className="flex-1">
                     <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] mb-0.5">
-                        Estimated Delivery to <span className="text-white font-bold">{deliveryInfo.location}</span>
+                        Estimated Delivery to <span className="text-white font-bold">{deliveryInfo.location || `${deliveryInfo.city}${deliveryInfo.state ? `, ${deliveryInfo.state}` : ''}`.toUpperCase()}</span>
                     </p>
                     <p className="text-xs text-white uppercase tracking-wider font-bold">
                         {deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}

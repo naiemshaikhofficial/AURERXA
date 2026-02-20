@@ -177,19 +177,9 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
                     const data = await getPincodeDetails(formData.pincode)
                     if (isCancelled) return;
 
-                    if (data && data[0] && data[0].Status === 'Success') {
-                        const postOffice = data[0].PostOffice[0]
-                        let cityName = postOffice.Block || postOffice.District
-                        if (formData.pincode.startsWith('422')) cityName = 'Sangamner'
-
-                        const stateName = postOffice.State
-                        const stateObj = states.find(s =>
-                            s.name.toLowerCase() === stateName.toLowerCase() ||
-                            s.name.toLowerCase().includes(stateName.toLowerCase())
-                        )
-
-                        if (cityName) setValue('city', cityName)
-                        if (stateObj) setValue('state', stateObj.isoCode)
+                    if (data && data.success) {
+                        if (data.city) setValue('city', data.city)
+                        if (data.stateCode) setValue('state', data.stateCode)
                     }
                 } catch (err) {
                     console.error('Pincode detection error:', err)

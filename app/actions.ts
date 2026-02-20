@@ -925,14 +925,42 @@ export async function isInWishlist(productId: string) {
 
 export async function getPincodeDetails(pincode: string) {
   try {
-    const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`)
+    if (!pincode || pincode.length !== 6) return null
+
+    const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`, { next: { revalidate: 3600 } })
     const data = await response.json()
-    return data
+
+    if (data && data[0] && data[0].Status === 'Success' && data[0].PostOffice) {
+      const postOffice = data[0].PostOffice[0]
+      const stateName = postOffice.State
+
+      // Map state name to code for India (common case)
+      let stateCode = ''
+      const { State } = await import('country-state-city')
+      const states = State.getStatesOfCountry('IN')
+      const foundState = states.find(s =>
+        s.name.toLowerCase() === stateName.toLowerCase() ||
+        s.name.toLowerCase().includes(stateName.toLowerCase())
+      )
+      if (foundState) stateCode = foundState.isoCode
+
+      return {
+        success: true,
+        city: postOffice.Block !== 'NA' ? postOffice.Block : postOffice.District,
+        district: postOffice.District,
+        state: stateName,
+        stateCode: stateCode,
+        country: 'IN',
+        postOffices: data[0].PostOffice
+      }
+    }
+    return null
   } catch (error) {
     console.error('Server Pincode Error:', error)
     return null
   }
 }
+
 
 export async function getAddresses() {
   const client = await getAuthClient()
@@ -2809,6 +2837,9 @@ export async function checkDeliveryAvailability(pincode: string) {
       prepaidAvailable,
       isODA,
       location: locationDisplay.toUpperCase(),
+      city: locality || district,
+      district: district,
+      state: state,
       message: isODA
         ? 'Extended Delivery Area (Remote)'
         : zone === 'metro'
@@ -2817,6 +2848,7 @@ export async function checkDeliveryAvailability(pincode: string) {
             ? 'Standard Delivery'
             : 'Extended Delivery Area'
     }
+
   } catch (err) {
     console.error('Delivery check error:', err)
     return {

@@ -13,7 +13,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         }
     }
 
-    const categoryName = Array.isArray(product.categories) ? product.categories[0]?.name : product.categories?.name
+    const categories = product.categories as any
+    const categoryName = Array.isArray(categories) ? categories[0]?.name : categories?.name
     const materialLabel = product.material_type || 'Jewelry'
     const purityLabel = product.purity ? `${product.purity} ` : ''
 
@@ -128,9 +129,11 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
     const productUrl = `${baseUrl}/products/${product.slug}`
 
-    const categoryName = Array.isArray(product.categories) ? product.categories[0]?.name : product.categories?.name
-    const categorySlug = Array.isArray(product.categories) ? product.categories[0]?.slug : product.categories?.slug
-    const subCategoryName = Array.isArray(product.sub_categories) ? product.sub_categories[0]?.name : product.sub_categories?.name
+    const categories = product.categories as any
+    const subCategories = product.sub_categories as any
+    const categoryName = Array.isArray(categories) ? categories[0]?.name : categories?.name
+    const categorySlug = Array.isArray(categories) ? categories[0]?.slug : categories?.slug
+    const subCategoryName = Array.isArray(subCategories) ? subCategories[0]?.name : subCategories?.name
 
     const jsonLd = {
         '@context': 'https://schema.org',

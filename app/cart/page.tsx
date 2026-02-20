@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight, Search } from 'lucide-react'
 import { useSearch } from '@/context/search-context'
+import { DeliveryChecker } from '@/components/delivery-checker'
 
 export default function CartPage() {
     const { items: cart, loading, updateQuantity, removeItem } = useCart()
@@ -170,6 +171,10 @@ export default function CartPage() {
                                             <span className="font-serif text-2xl text-primary/80">₹{total.toLocaleString('en-IN')}</span>
                                         </div>
                                         <p className="text-[9px] text-muted-foreground/50 uppercase tracking-widest text-right">Including all taxes</p>
+                                    </div>
+
+                                    <div className="mb-0 p-0">
+                                        <DeliveryChecker cartItems={cart} subtotal={subtotal} compact={true} />
                                     </div>
 
                                     <Link href="/checkout" className="block">
