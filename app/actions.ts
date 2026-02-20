@@ -22,6 +22,28 @@ const supabaseServer = createServerClient(
   }
 )
 
+export interface ActionResponse<T = any> {
+  success: boolean
+  data?: T
+  error?: string
+}
+
+export interface ProductData {
+  name: string
+  description?: string
+  price: number
+  image_url: string
+  images?: string[]
+  category_id?: string
+  sub_category_id?: string
+  stock?: number
+  slug: string
+  tags?: string[]
+  material_type?: string
+  purity?: string
+  weight_grams?: number
+}
+
 export async function getTestProductCount() {
   const { count, error } = await supabaseServer.from('products').select('*', { count: 'exact', head: true })
   console.log('DEBUG: Product count:', count, error)
@@ -193,17 +215,18 @@ export async function signOutAction() {
 }
 
 
-export async function addNewProduct(productData: any) {
+export async function addNewProduct(productData: ProductData): Promise<ActionResponse> {
   const isAdmin = await checkIsAdmin()
   if (!isAdmin) return { success: false, error: 'Unauthorized' }
 
+  const sanitizedData = sanitizeObject(productData)
   const client = await getAuthClient()
 
   const { data, error } = await client
     .from('products')
     .insert({
-      ...productData,
-      tags: productData.tags || [],
+      ...sanitizedData,
+      tags: sanitizedData.tags || [],
       created_at: new Date().toISOString()
     })
     .select()
@@ -323,16 +346,17 @@ export async function getSubCategories(categoryId?: string) {
   )()
 }
 
-export async function addSubCategory(subCategoryData: any) {
+export async function addSubCategory(subCategoryData: { name: string, category_id: string, slug: string, description?: string }): Promise<ActionResponse> {
   const isAdmin = await checkIsAdmin()
   if (!isAdmin) return { success: false, error: 'Unauthorized' }
 
+  const sanitizedData = sanitizeObject(subCategoryData)
   const client = await getAuthClient()
 
   const { data, error } = await client
     .from('sub_categories')
     .insert({
-      ...subCategoryData,
+      ...sanitizedData,
       created_at: new Date().toISOString()
     })
     .select()
@@ -574,18 +598,19 @@ export async function getAdminProducts() {
   return data
 }
 
-export async function updateProductDetails(productId: string, updates: any) {
+export async function updateProductDetails(productId: string, updates: Partial<ProductData>): Promise<ActionResponse> {
   const isAdmin = await checkIsAdmin()
   if (!isAdmin) return { success: false, error: 'Unauthorized' }
 
+  const sanitizedUpdates = sanitizeObject(updates)
   try {
     const client = await getAuthClient()
 
-    console.log('DEBUG: Updating product details', { productId, updates })
+    console.log('DEBUG: Updating product details', { productId, updates: sanitizedUpdates })
 
     const { data, error } = await client
       .from('products')
-      .update(updates)
+      .update(sanitizedUpdates)
       .eq('id', productId)
       .select()
 

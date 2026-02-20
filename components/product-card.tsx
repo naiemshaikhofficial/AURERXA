@@ -271,14 +271,16 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                         <Button
                             onClick={handleAddToCart}
                             disabled={isAdding}
-                            className="bg-transparent text-foreground hover:bg-white/10 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0"
+                            aria-label={`Add ${product.name} to cart`}
+                            className="bg-transparent text-foreground hover:bg-white/10 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 focus-visible:ring-1 focus-visible:ring-primary"
                         >
                             {isAdding ? 'Adding' : 'Add to Cart'}
                         </Button>
                         <Button
                             onClick={handleBuyNow}
                             disabled={isBuying}
-                            className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 border-l border-white/10"
+                            aria-label={`Buy ${product.name} now`}
+                            className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 border-l border-white/10 focus-visible:ring-1 focus-visible:ring-primary"
                         >
                             {isBuying ? 'Wait' : 'Buy Now'}
                         </Button>
@@ -289,7 +291,8 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 <div className="md:hidden mt-auto pt-2 flex gap-2">
                     <Button
                         onClick={handleBuyNow}
-                        className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-8 text-[7px] uppercase font-premium-sans tracking-[0.25em] rounded-none flex items-center justify-center gap-2 group"
+                        aria-label={`Select ${product.name}`}
+                        className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-8 text-[7px] uppercase font-premium-sans tracking-[0.25em] rounded-none flex items-center justify-center gap-2 group focus-visible:ring-1 focus-visible:ring-primary"
                     >
                         <span>Select Piece</span>
                         <div className="h-[0.5px] w-3 bg-primary/30 group-hover:bg-black/40 transition-colors" />

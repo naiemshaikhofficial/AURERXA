@@ -330,6 +330,7 @@ export function Navbar() {
                           <motion.div key={idx} variants={fadeInUp}>
                             <Link
                               href={item.href}
+                              aria-current={pathname === item.href ? 'page' : undefined}
                               className={cn(
                                 "flex items-center justify-between py-6 group border-b border-border/5 transition-all text-sm uppercase tracking-[0.25em] font-light",
                                 pathname === item.href ? "text-primary ml-2" : "text-foreground/60 hover:text-primary hover:ml-2"
@@ -420,6 +421,7 @@ export function Navbar() {
                 <Link
                   key={item}
                   href={item === 'Home' ? '/' : item === 'Our Story' ? '/about' : `/${item.toLowerCase().replace(' ', '-')}`}
+                  aria-current={pathname === (item === 'Home' ? '/' : item === 'Our Story' ? '/about' : `/${item.toLowerCase().replace(' ', '-')}`) ? 'page' : undefined}
                   className="text-[11px] font-premium-sans text-muted-foreground hover:text-primary transition-colors duration-500 tracking-[0.2em] luxe-underline"
                 >
                   {item}
