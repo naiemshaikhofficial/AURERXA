@@ -78,10 +78,14 @@ export async function GET() {
             ? escapeXml(p.description.substring(0, 5000))
             : escapeXml(`Buy ${p.name} online at AURERXA. Premium handcrafted ${p.material_type || ''} ${categoryName || 'jewelry'}. Free shipping across India.`)
 
+        const purityLabel = p.purity ? `${p.purity} ` : ''
+        const materialLabel = p.material_type || 'Jewelry'
+        const fullTitle = `${purityLabel}${materialLabel} ${categoryName || 'Jewelry'} | ${p.name} | AURERXA`
+
         return `
         <item>
             <g:id>${escapeXml(p.id)}</g:id>
-            <g:title>${escapeXml(p.name)} - AURERXA</g:title>
+            <g:title>${escapeXml(fullTitle)}</g:title>
             <g:description>${description}</g:description>
             <g:link>${productUrl}</g:link>
             <g:image_link>${escapeXml(imageUrl)}</g:image_link>

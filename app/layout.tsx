@@ -155,6 +155,7 @@ import { TrackingScripts } from '@/components/scripts/tracking'
 import { BehaviorTracker } from '@/components/behavior-tracker'
 import { getCurrentUserProfile } from '@/app/actions'
 import { SearchModal } from '@/components/search-modal'
+import { DynamicTitle } from '@/components/dynamic-title'
 
 
 export default async function RootLayout({
@@ -321,6 +322,7 @@ export default async function RootLayout({
                 <SearchModal />
                 <Suspense fallback={null}>
                   <BehaviorTracker />
+                  <DynamicTitle />
                 </Suspense>
               </ConsentProvider>
             </SearchProvider>
