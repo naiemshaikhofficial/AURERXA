@@ -2,16 +2,16 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'AURERXA - Premium Luxury Jewelry',
+        name: 'AURERXA | World-Class Luxury & Bespoke Jewelry',
         short_name: 'AURERXA',
-        description: 'Timeless Luxury Crafted to Perfection',
+        description: 'Bespoke high-end jewelry handcrafted to perfection. Discover the heritage of AURERXA.',
         start_url: '/',
         id: '/?source=pwa',
         display: 'standalone',
         background_color: '#0a0a0a',
         theme_color: '#D4AF37',
         orientation: 'portrait',
-        categories: ['jewelry', 'fashion', 'luxury'],
+        categories: ['jewelry', 'fashion', 'luxury', 'lifestyle'],
         icons: [
             {
                 src: '/favicon 30x30.ico',

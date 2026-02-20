@@ -6,8 +6,9 @@ import { getBlogPosts } from '@/app/actions'
 import { BookOpen, Calendar, ArrowRight, Sparkles } from 'lucide-react'
 
 export const metadata = {
-    title: 'Blog - Jewelry Journal | AURERXA',
-    description: 'Discover jewelry care tips, buying guides, and the latest trends from AURERXA.'
+    title: 'Jewelry Blog - Care Tips, Buying Guides & Trends | AURERXA Journal',
+    description: 'Read expert jewelry guides, care tips, styling ideas, and latest trends on the AURERXA Journal. Learn how to choose, maintain, and style your gold, diamond, and fashion jewelry.',
+    keywords: ['Jewelry Blog', 'Jewelry Care Tips', 'Gold Jewelry Guide', 'Diamond Buying Guide', 'Jewelry Trends 2026', 'How to Style Jewelry'],
 }
 
 export const revalidate = 3600 // revalidate every hour

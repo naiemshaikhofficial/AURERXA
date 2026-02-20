@@ -144,9 +144,83 @@ async function HeroCarouselSection() {
   return <HeroCarousel slides={slides} />
 }
 
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'AURERXA | Buy Premium Jewelry Online - Gold, Diamond, Bridal & Fashion Jewelry',
+  description: 'Shop AURERXA for luxury handcrafted jewelry. Browse gold necklaces, diamond earrings, bridal sets, mangalsutra, rings & fashion accessories. Free shipping, easy returns, 100% certified. India\'s most trusted luxury jewelry brand.',
+  keywords: [
+    'Buy Jewelry Online India', 'Gold Jewelry Online Shopping', 'Diamond Jewelry Store',
+    'Bridal Jewelry Sets Online', 'Fashion Jewelry India', 'Luxury Jewelry Brand',
+    'AURERXA Official Store', 'Premium Handcrafted Jewelry'
+  ],
+  alternates: {
+    canonical: '/',
+  },
+}
+
 export default function HomePage() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'What type of jewelry does AURERXA sell?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'AURERXA offers premium handcrafted luxury jewelry including gold necklaces, diamond earrings, mangalsutra, bridal sets, rings, bangles, and fashion accessories. We specialize in both traditional Indian jewelry and modern contemporary designs.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Is AURERXA jewelry real gold?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, AURERXA offers authentic real gold jewelry (22K and 18K), as well as premium gold-plated and Bentex collections. Every piece comes with a certificate of authenticity.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Does AURERXA offer free shipping?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Yes, AURERXA provides free insured shipping across India on all orders. We ship via trusted partners like Delhivery with real-time tracking.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Can I customize jewelry at AURERXA?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Absolutely! AURERXA specializes in bespoke jewelry design. You can submit a custom order request through our website, and our master artisans will craft a unique piece tailored to your specifications.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'Where is AURERXA located?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'AURERXA\'s flagship boutique is located at Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605. We also ship worldwide through our online store at aurerxa.com.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'What is the return policy for AURERXA jewelry?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'AURERXA offers a hassle-free return policy. If you are not satisfied with your purchase, you can initiate a return within the specified period through your account dashboard.'
+        }
+      }
+    ]
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <Hero />
       <Heritage />
 

@@ -29,18 +29,50 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
-  title: 'AURERXA | Premium Luxury Jewelry & Bespoke Jewelry Design',
-  description: 'AURERXA: Timeless luxury handcrafted to perfection. Explore our global collection of artisan gold, conflict-free diamond, and bespoke jewelry. A heritage of craftsmanship, redefined for the world.',
+  title: {
+    default: 'AURERXA | Premium Luxury Jewelry, Fashion Jewelry & Bespoke Design',
+    template: '%s | AURERXA',
+  },
+  description: 'AURERXA: India\'s finest luxury jewelry brand. Shop gold necklaces, diamond earrings, bridal sets, mangalsutra, rings, bangles & fashion accessories. Handcrafted bespoke jewelry with free shipping. Trusted by 10,000+ customers.',
   applicationName: 'AURERXA',
   authors: [{ name: 'AURERXA Artisans', url: 'https://aurerxa.com' }],
   generator: 'Next.js',
   referrer: 'origin-when-cross-origin',
   keywords: [
+    // Core Brand
+    'AURERXA', 'AURERXA Jewelry', 'Aurerxa Official',
+    // Jewelry Types
+    'Gold Necklace', 'Diamond Earrings', 'Silver Rings', 'Bridal Jewelry Sets',
+    'Mangalsutra Online', 'Gold Bangles', 'Pendant Necklace', 'Stud Earrings',
+    'Hoop Earrings', 'Chain Necklace', 'Choker Necklace', 'Statement Jewelry',
+    'Cocktail Rings', 'Engagement Rings', 'Wedding Bands',
+    // Fashion & Lifestyle
+    'Fashion Jewelry', 'Trendy Jewelry', 'Designer Jewelry', 'Jewelry Fashion',
+    'Fashion Accessories', 'Women Fashion Jewelry', 'Stylish Jewelry Online',
+    'Luxury Fashion Brand', 'Indian Fashion Jewelry', 'Party Wear Jewelry',
+    // Occasion Based
+    'Bridal Jewelry', 'Wedding Jewelry', 'Anniversary Gifts', 'Birthday Gift Jewelry',
+    'Valentine Gift', 'Diwali Jewelry', 'Raksha Bandhan Gift', 'Karva Chauth Jewelry',
+    'Office Wear Jewelry', 'Daily Wear Jewelry', 'Casual Jewelry', 'Date Night Jewelry',
+    // Material Based
+    'Gold Plated Jewelry', 'Real Gold Jewelry', '22K Gold Jewelry', '18K Gold Jewelry',
+    'Diamond Jewelry', 'Silver Jewelry', 'Artificial Jewelry', 'Imitation Jewelry',
+    'American Diamond', 'CZ Jewelry', 'Kundan Jewelry', 'Polki Jewelry',
+    // Premium & Luxury
     'Premium Luxury Jewelry', 'Bespoke Jewelry Design', 'Artisan Gold Jewelry',
     'Luxury Jewelry Brand', 'Handcrafted Fine Jewelry', 'Ethical Diamond Jewelry',
-    'High-End Indian Jewelry', 'Custom Jewelry Maker', 'Fine Jewelry Collections',
-    'Heirloom Quality Jewelry', 'Gold Mangalsutra', 'Diamond Bridal Sets',
-    'Sangamner Best Jewelry', 'Luxury Indian Boutique'
+    'High-End Jewelry', 'Custom Jewelry Maker', 'Fine Jewelry Collections',
+    'Heirloom Quality Jewelry', 'Luxury Indian Boutique',
+    // Shopping Intent
+    'Buy Jewelry Online', 'Jewelry Store Online', 'Best Jewelry Shop',
+    'Jewelry Online Shopping', 'Best Jewelry Brand India', 'Cheap Luxury Jewelry',
+    'Affordable Designer Jewelry', 'Free Shipping Jewelry India',
+    // Regional
+    'Jewelry Sangamner', 'Jewelry Maharashtra', 'Indian Jewelry Online',
+    'South Asian Jewelry', 'Traditional Indian Jewelry', 'Modern Indian Jewelry',
+    // Gifting
+    'Jewelry Gift', 'Gift for Wife', 'Gift for Mother', 'Gift for Girlfriend',
+    'Gift for Sister', 'Personalized Jewelry', 'Custom Engraved Jewelry',
   ],
   creator: 'AURERXA',
   publisher: 'AURERXA',
