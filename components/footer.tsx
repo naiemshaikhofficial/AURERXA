@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import NextImage from 'next/image'
 import { useSearch } from '@/context/search-context'
 
 export function Footer() {
@@ -16,9 +17,11 @@ export function Footer() {
           {/* Brand Info */}
           <div className="space-y-10">
             <Link href="/" className="inline-block group" aria-label="AURERXA Home">
-              <img
+              <NextImage
                 src="https://imagizer.imageshack.com/img922/5651/qYeLiy.png"
                 alt="AURERXA Logo"
+                width={150}
+                height={64}
                 className="h-16 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700"
               />
             </Link>

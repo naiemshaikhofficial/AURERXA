@@ -3,8 +3,9 @@ import { Timeline } from '@/components/story/timeline'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-    title: 'Our Story | AURERXA',
-    description: 'From a small atelier in Jaipur to a global symbol of luxury. Discover the journey of AURERXA.',
+    title: 'Jewelry Heritage & Artisanal Craftsmanship | Our Story | AURERXA',
+    description: 'The journey of AURERXA: From a legacy of artisan craftsmanship to a global symbol of fine luxury jewelry. Discover our commitment to ethical materials and timeless design.',
+    keywords: ['Jewelry Heritage', 'Artisanal Craftsmanship', 'Handmade Jewelry History', 'Bespoke Jewelry Maker', 'Fine Jewelry Design Story', 'Ethical Luxury Jewelry India'],
 }
 
 export default function OurStoryPage() {

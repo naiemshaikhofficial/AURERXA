@@ -29,18 +29,32 @@ const cormorant = Cormorant_Garamond({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
-  title: 'AURERXA - Premium Luxury Jewelry',
-  description: 'Timeless Luxury Crafted to Perfection. Explore our exquisite collection of premium jewelry.',
+  title: 'AURERXA | Premium Luxury Jewelry & Bespoke Jewelry Design',
+  description: 'AURERXA: Timeless luxury handcrafted to perfection. Explore our global collection of artisan gold, conflict-free diamond, and bespoke jewelry. A heritage of craftsmanship, redefined for the world.',
+  keywords: [
+    'Premium Luxury Jewelry', 'Bespoke Jewelry Design', 'Artisan Gold Jewelry',
+    'Luxury Jewelry Brand', 'Handcrafted Fine Jewelry', 'Ethical Diamond Jewelry',
+    'High-End Indian Jewelry', 'Custom Jewelry Maker', 'Fine Jewelry Collections',
+    'Heirloom Quality Jewelry'
+  ],
   openGraph: {
-    title: 'AURERXA - Premium Luxury Jewelry',
-    description: 'Timeless Luxury Crafted to Perfection',
+    title: 'AURERXA | World-Class Luxury & Bespoke Jewelry',
+    description: 'Timeless luxury handcrafted to perfection. Discover AURERXA Heritage.',
     images: ['/logo.png'],
+    type: 'website',
   },
   icons: {
     icon: '/favicon%2030x30.ico',
     shortcut: '/favicon%2030x30.ico',
     apple: '/favicon%2030x30.ico',
   },
+  alternates: {
+    canonical: './',
+    languages: {
+      'en-US': '/en-US',
+      'x-default': '/',
+    },
+  }
 }
 
 export const viewport: Viewport = {
@@ -72,6 +86,64 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const profile = await getCurrentUserProfile()
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'JewelryStore', // Primary type for shop
+    'additionalType': ['Organization', 'Brand'],
+    'name': 'AURERXA',
+    'alternateName': 'Aurerxa Luxury Jewelry',
+    'url': baseUrl,
+    'logo': `${baseUrl}/logo.png`,
+    'description': 'Handcrafted premium luxury jewelry brand specializing in bespoke gold and conflict-free diamond pieces.',
+    'sameAs': [
+      'https://facebook.com/aurerxa',
+      'https://instagram.com/aurerxa',
+      'https://youtube.com/@aurerxa',
+      'https://linkedin.com/company/aurerxa'
+    ],
+    'address': {
+      '@type': 'PostalAddress',
+      'streetAddress': 'Captain Lakshmi Chowk, Rangargalli',
+      'addressLocality': 'Sangamner',
+      'addressRegion': 'Maharashtra',
+      'postalCode': '422605',
+      'addressCountry': 'IN'
+    },
+    'contactPoint': {
+      '@type': 'ContactPoint',
+      'telephone': '+91-9391032677',
+      'contactType': 'global customer service',
+      'areaServed': 'World',
+      'availableLanguage': ['English', 'Hindi', 'Marathi']
+    }
+  }
+
+  const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'JewelryStore',
+    'name': 'AURERXA Flagship Boutique',
+    'image': `${baseUrl}/logo.png`,
+    '@id': `${baseUrl}/#boutique`,
+    'url': baseUrl,
+    'telephone': '+919391032677',
+    'priceRange': '₹₹₹₹',
+    'address': organizationSchema.address,
+    'geo': {
+      '@type': 'GeoCoordinates',
+      'latitude': 19.5761,
+      'longitude': 74.2074
+    },
+    'openingHoursSpecification': {
+      '@type': 'OpeningHoursSpecification',
+      'dayOfWeek': [
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+      ],
+      'opens': '10:00',
+      'closes': '21:00'
+    }
+  }
+
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable} ${cormorant.variable}`}>
       <head>
@@ -85,6 +157,14 @@ export default async function RootLayout({
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
         />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">

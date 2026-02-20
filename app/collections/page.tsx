@@ -54,8 +54,54 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
         maxPrice: initialFilters.priceRange.max || undefined
     })
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: params.category ? `${params.category} Collection | AURERXA` : 'Jewellery Collections | AURERXA',
+        description: `Explore our exclusive ${params.category || ''} jewelry collection. Handcrafted masterpieces and timeless luxury at AURERXA.`,
+        url: `${baseUrl}/collections${params.category ? `?category=${params.category}` : ''}`,
+        mainEntity: {
+            '@type': 'ItemList',
+            'itemListElement': products.slice(0, 10).map((product: any, index: number) => ({
+                '@type': 'ListItem',
+                'position': index + 1,
+                'url': `${baseUrl}/products/${product.slug}`,
+                'name': product.name,
+                'image': product.image_url
+            }))
+        }
+    }
+
+    const breadcrumbLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: baseUrl,
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Collections',
+                item: `${baseUrl}/collections`,
+            }
+        ],
+    }
+
     return (
         <main>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+            />
             <Navbar />
             <CollectionsClient
                 initialProducts={products as any}

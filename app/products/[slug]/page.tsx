@@ -21,13 +21,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return {
         title,
         description,
+        keywords: [product.name, 'AURERXA Jewelry', 'Luxury Jewelry India', product.material_type || '', 'Handcrafted Jewelry'],
         openGraph: {
             title,
             description,
-            type: 'website',
+            type: 'article',
+            url: `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.slug}`,
             images: [
                 {
-                    url: ogImageUrl,
+                    url: product.image_url || ogImageUrl,
                     width: 1200,
                     height: 630,
                     alt: product.name,
@@ -38,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             card: 'summary_large_image',
             title,
             description,
-            images: [ogImageUrl],
+            images: [product.image_url || ogImageUrl],
         },
     }
 }
@@ -83,24 +85,84 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
     const isWishlisted = await isInWishlist(product.id)
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const productUrl = `${baseUrl}/products/${product.slug}`
+
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: product.name,
-        image: product.image_url,
+        image: product.image_url ? [product.image_url, ...(product.images || [])] : [baseUrl + '/logo.png'],
         description: product.description,
         sku: product.id,
+        mpn: product.slug,
         brand: {
             '@type': 'Brand',
             name: 'AURERXA',
         },
         offers: {
             '@type': 'Offer',
-            url: `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.slug}`,
+            url: productUrl,
             priceCurrency: 'INR',
             price: product.price,
-            availability: 'https://schema.org/InStock',
+            priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+            itemCondition: 'https://schema.org/NewCondition',
+            availability: product.stock && product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            shippingDetails: {
+                '@type': 'OfferShippingDetails',
+                'shippingRate': {
+                    '@type': 'MonetaryAmount',
+                    'value': 0,
+                    'currency': 'INR',
+                },
+                'shippingDestination': {
+                    '@type': 'DefinedRegion',
+                    'addressCountry': 'IN',
+                },
+                'deliveryTime': {
+                    '@type': 'ShippingDeliveryTime',
+                    'handlingTime': {
+                        '@type': 'QuantitativeValue',
+                        'minValue': 0,
+                        'maxValue': 1,
+                        'unitCode': 'DAY',
+                    },
+                    'transitTime': {
+                        '@type': 'ShippingDeliveryTime',
+                        'minValue': 1,
+                        'maxValue': 5,
+                        'unitCode': 'DAY',
+                    },
+                },
+            },
         },
+        material: product.material_type || 'Jewelry',
+        category: Array.isArray(product.categories) ? product.categories[0]?.name : product.categories?.name,
+    }
+
+    const breadcrumbLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: baseUrl,
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Collections',
+                item: `${baseUrl}/collections`,
+            },
+            {
+                '@type': 'ListItem',
+                position: 3,
+                name: product.name,
+                item: productUrl,
+            },
+        ],
     }
 
     return (
@@ -108,6 +170,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
             />
             <ProductClient
                 product={product}

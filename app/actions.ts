@@ -826,6 +826,24 @@ export async function getCartCount() {
 }
 
 // ============================================
+// SEO & SITEMAP HELPERS
+// ============================================
+
+export async function getAllProductSlugs() {
+  const { data } = await supabaseServer
+    .from('products')
+    .select('slug, updated_at')
+  return data || []
+}
+
+export async function getAllCategorySlugs() {
+  const { data } = await supabaseServer
+    .from('categories')
+    .select('slug')
+  return data || []
+}
+
+// ============================================
 // WISHLIST
 // ============================================
 
