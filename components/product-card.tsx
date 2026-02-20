@@ -202,24 +202,36 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                         style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
                     >
                         <motion.div
-                            initial={{ x: '-20%' }}
-                            animate={{ x: '0%' }}
-                            exit={{ x: '20%' }}
-                            transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-                            className="absolute inset-[-8%] will-change-transform pointer-events-none"
+                            key={currentImageIndex}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="relative w-full h-full"
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            onDragEnd={(_, info) => {
+                                if (allImages.length <= 1) return
+                                const swipeThreshold = 50
+                                if (info.offset.x < -swipeThreshold) {
+                                    setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
+                                } else if (info.offset.x > swipeThreshold) {
+                                    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length)
+                                }
+                            }}
                         >
                             <Image
                                 src={sanitizeImagePath(allImages[currentImageIndex])}
                                 alt={`${product.purity || ''} ${product.material_type ? MATERIAL_CONFIG[product.material_type].label : ''} ${product.name} - ${product.categories?.name || 'Jewellery'} by AURERXA`}
                                 fill
+                                priority={priority || index < 2}
+                                loader={supabaseLoader}
                                 className={cn(
-                                    "object-cover transition-all duration-700",
+                                    "object-cover transition-transform duration-700 will-change-transform",
                                     isHovered ? "scale-110" : "scale-100"
                                 )}
                                 sizes="(max-width: 480px) 50vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                                priority={priority || index < 2}
                                 fetchPriority={priority || index < 2 ? "high" : "auto"}
-                                loader={supabaseLoader}
                                 unoptimized={allImages[currentImageIndex]?.startsWith('blob:') || allImages[currentImageIndex]?.includes('imageshack.com')}
                             />
                         </motion.div>

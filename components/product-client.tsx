@@ -451,11 +451,29 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             <div className="pt-20 lg:pt-24 min-h-screen flex flex-col lg:flex-row relative z-10">
                 {/* LEFT: Image Gallery */}
                 <div className="w-full lg:w-[55%] lg:h-[calc(100vh-6rem)] lg:sticky lg:top-24 p-0 lg:p-6 flex flex-col gap-6">
-                    {/* Main Image */}
-                    <div className="relative w-full aspect-[4/5] lg:aspect-auto flex-1 bg-neutral-900/20 border border-white/5 overflow-hidden group">
-                        <div className="absolute inset-0 z-10">
+                    {/* Main Image - Adjustable aspect for landscape look on mobile */}
+                    <div className="relative w-full aspect-[3/2] lg:aspect-auto flex-1 bg-neutral-900/20 border border-white/5 overflow-hidden group">
+                        <motion.div
+                            key={selectedImage}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute inset-0 z-10"
+                            drag="x"
+                            dragConstraints={{ left: 0, right: 0 }}
+                            onDragEnd={(_, info) => {
+                                if (allImages.length <= 1) return
+                                const swipeThreshold = 50
+                                if (info.offset.x < -swipeThreshold) {
+                                    setSelectedImage((prev) => (prev === allImages.length - 1 ? 0 : prev + 1))
+                                } else if (info.offset.x > swipeThreshold) {
+                                    setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1))
+                                }
+                            }}
+                        >
                             <ZoomableImage src={allImages[selectedImage]} alt={product.name} />
-                        </div>
+                        </motion.div>
 
                         {/* Navigation Arrows */}
                         {allImages.length > 1 && (
@@ -833,8 +851,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                 </div>
             </div>
 
-            {/* STICKY MOBILE ACTIONS - Lifted above BottomNav */}
-            <div className="fixed bottom-14 left-0 right-0 z-40 lg:hidden bg-neutral-950/80 backdrop-blur-2xl border-t border-white/5 p-4 pb-4 animate-in slide-in-from-bottom-5 duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+            {/* STICKY MOBILE ACTIONS - Lifted above BottomNav (z-50) with safe clearance */}
+            <div className="fixed bottom-20 left-0 right-0 z-[45] lg:hidden bg-neutral-950/80 backdrop-blur-2xl border-t border-white/5 p-4 pb-4 animate-in slide-in-from-bottom-5 duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
                 <div className="max-w-md mx-auto">
                     {product.stock > 0 ? (
                         <div className="flex gap-3">

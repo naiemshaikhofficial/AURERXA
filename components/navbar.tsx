@@ -69,17 +69,15 @@ export function Navbar() {
           return
         }
 
-        setUser(currentUser)
-
-        // Parallel fetch for profile and admin status
-        const [{ data: profileData }, { data: adminData }] = await Promise.all([
-          supabase.from('profiles').select('*').eq('id', currentUser.id).single(),
-          supabase.from('admin_users').select('role').eq('id', currentUser.id).single()
+        // Parallel fetch for profile and admin status - Using maybeSingle() to prevent Promise.all rejection if not admin
+        const [profileResult, adminResult] = await Promise.all([
+          supabase.from('profiles').select('*').eq('id', currentUser.id).maybeSingle(),
+          supabase.from('admin_users').select('role').eq('id', currentUser.id).maybeSingle()
         ])
 
         if (isMounted) {
-          if (profileData) setProfile(profileData)
-          if (adminData) setIsAdmin(true)
+          if (profileResult.data) setProfile(profileResult.data)
+          if (adminResult.data) setIsAdmin(true)
         }
       } catch (err: any) {
         if (err.name !== 'AbortError' && !err.message?.includes('aborted')) {
@@ -123,7 +121,7 @@ export function Navbar() {
             .from('admin_users')
             .select('role')
             .eq('id', session.user.id)
-            .single()
+            .maybeSingle()
           if (isMounted) setIsAdmin(!!adminData)
         } catch (e: any) {
           if (e.name !== 'AbortError' && !e.message?.includes('aborted')) {

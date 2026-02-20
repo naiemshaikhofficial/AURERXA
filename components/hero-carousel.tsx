@@ -107,7 +107,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
     return (
         <section
             ref={containerRef}
-            className="relative h-[65vh] md:h-[90vh] w-full overflow-hidden bg-background group"
+            className="relative w-full aspect-[16/10] md:aspect-[21/9] max-h-[90vh] overflow-hidden bg-background group"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -131,11 +131,11 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                 }}
                                 animate={{
                                     opacity: isMain ? 1 : 0.35,
-                                    scale: isMain ? (isHovered ? 1.08 : 1.05) : 0.75,
+                                    scale: isMain ? (isHovered ? 1.04 : 1.02) : 0.75,
                                     z: isMain ? (isHovered ? 200 : 100) : -400,
-                                    x: offset * (isMobile ? 55 : 65) + "%", // Overlap side slides
-                                    rotateY: offset * (isMobile ? -10 : -20), // Subtle tilt for depth
-                                    y: isMain ? (isHovered ? -20 : 0) : 0, // Lift when hovered
+                                    x: offset * (isMobile ? 65 : 45) + "%", // Unified overlap
+                                    rotateY: offset * (isMobile ? -10 : -15), // Subtle tilt for depth
+                                    y: isMain ? (isHovered ? -10 : 0) : 0, // Lift when hovered
                                 }}
                                 exit={{
                                     opacity: 0,
@@ -147,12 +147,23 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                     duration: 0.9,
                                     ease: [0.33, 1, 0.68, 1], // Custom premium ease
                                 }}
-                                className={`absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none ${isMain ? 'z-10 pointer-events-auto' : 'z-0'} will-change-transform`}
+                                drag={isMain ? "x" : false}
+                                dragConstraints={{ left: 0, right: 0 }}
+                                onDragEnd={(_, info) => {
+                                    if (!isMain) return
+                                    const swipeThreshold = 50
+                                    if (info.offset.x < -swipeThreshold) {
+                                        nextSlide()
+                                    } else if (info.offset.x > swipeThreshold) {
+                                        prevSlide()
+                                    }
+                                }}
+                                className={`absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none ${isMain ? 'z-10 pointer-events-auto cursor-grab active:cursor-grabbing' : 'z-0'} will-change-transform`}
                                 style={{ transformStyle: 'preserve-3d' }}
                             >
                                 <Link
                                     href={(slide.cta_link || '/collections').replace('/collection/', '/collections/').replace('/mordern', '/modern')}
-                                    className={`relative w-[92%] md:w-[85%] h-[85%] md:h-[90%] rounded-[2rem] overflow-hidden block border border-white/20 ${isMain ? 'z-10' : ''}`}
+                                    className={`relative w-[96%] md:w-[94%] h-[92%] md:h-[94%] rounded-[2rem] overflow-hidden block border border-white/20 ${isMain ? 'z-10' : ''}`}
                                     style={{
                                         boxShadow: isMain
                                             ? `0 50px 100px -20px rgba(${hexToRgb(slide.text_color || '#000000')}, 0.15), 0 0 80px -10px rgba(0,0,0,0.8)`
