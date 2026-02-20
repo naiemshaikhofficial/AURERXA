@@ -133,7 +133,7 @@ export function InvoiceTemplate({ order, type }: InvoiceProps) {
             {/* Header */}
             <div className="flex justify-between items-start mb-6 pb-6 border-b-2 border-slate-50">
                 <div className="flex gap-4 items-center">
-                    <img src="/logo.png" alt="Logo" className={cn("object-contain", isShipping ? "h-10" : "h-16")} />
+                    <img src="/logo-new.webp" alt="Logo" className={cn("object-contain", isShipping ? "h-10" : "h-16")} />
                     <div>
                         <h1 className={cn("font-black tracking-tighter leading-none", isShipping ? "text-xl" : "text-3xl")}>{sellerDetails.name}</h1>
                         <p className="text-[10px] font-bold text-[#D4AF37] uppercase tracking-widest mt-1">Heritage Craftsmanship & Hallmarked Jewelry</p>

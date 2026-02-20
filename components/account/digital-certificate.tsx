@@ -39,7 +39,7 @@ export function DigitalCertificate({ orderId, productName, purchaseDate, sku, cu
 
                 {/* Header */}
                 <div className="mb-12 relative z-10">
-                    <Image src="/logo.webp" alt="AURERXA" width={120} height={40} className="mx-auto mb-6 opacity-80" />
+                    <Image src="/logo-new.webp" alt="AURERXA" width={120} height={40} className="mx-auto mb-6 opacity-80" />
                     <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-[#1a1a1a] mb-2 uppercase">Certificate</h1>
                     <h2 className="text-xl md:text-2xl font-serif italic text-[#D4AF37]">of Authenticity</h2>
                 </div>

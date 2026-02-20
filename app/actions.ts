@@ -238,7 +238,7 @@ export async function addNewProduct(productData: ProductData): Promise<ActionRes
   }
 
   // Trigger push notification
-  await notifyNewProduct(data.name, data.slug, data.image_url || '/logo.png')
+  await notifyNewProduct(data.name, data.slug, data.image_url || '/logo-new.webp')
 
   revalidateTag('products', '')
   return { success: true, data }

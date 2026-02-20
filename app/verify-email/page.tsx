@@ -12,7 +12,7 @@ export default function VerifyEmailPage() {
             <div className="w-full max-w-md bg-card border border-border p-8 md:p-12 relative z-10 shadow-2xl text-center">
                 <div className="mb-10">
                     <Link href="/">
-                        <img src="/logo.webp" alt="Aurerxa" className="h-24 mx-auto mb-6 opacity-90 dark:invert-0 invert" />
+                        <img src="/logo-new.webp" alt="Aurerxa" className="h-24 mx-auto mb-6 opacity-90 dark:invert-0" />
                     </Link>
 
                     <div className="w-20 h-20 mx-auto rounded-full border border-emerald-500/30 flex items-center justify-center bg-emerald-500/5 mb-8">

@@ -56,7 +56,7 @@ export function AdminSidebar({ admin, children }: { admin: { email?: string; rol
                 <div className="h-16 flex items-center justify-between px-4 border-b border-white/5">
                     {!collapsed && (
                         <Link href="/admin" className="flex items-center gap-2.5">
-                            <Image src="/logo.webp" alt="AURERXA" width={40} height={40} className="rounded" unoptimized />
+                            <Image src="/logo-new.webp" alt="AURERXA" width={40} height={40} className="rounded" unoptimized />
                         </Link>
                     )}
                     {collapsed && (
@@ -132,7 +132,7 @@ export function AdminSidebar({ admin, children }: { admin: { email?: string; rol
                     <Menu className="w-6 h-6" />
                 </button>
                 <Link href="/admin" className="flex items-center gap-2">
-                    <Image src="/logo.webp" alt="AURERXA" width={22} height={22} className="rounded" unoptimized />
+                    <Image src="/logo-new.webp" alt="AURERXA" width={22} height={22} className="rounded" unoptimized />
                     <span className="text-sm font-semibold tracking-wider text-[#D4AF37]">ADMIN</span>
                 </Link>
                 <button onClick={handleLogout} className="text-white/40 hover:text-red-400 p-2">
@@ -147,7 +147,7 @@ export function AdminSidebar({ admin, children }: { admin: { email?: string; rol
                     <aside className="absolute left-0 top-0 h-full w-72 bg-[#111111] border-r border-white/5 p-4 flex flex-col">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-2.5">
-                                <Image src="/logo.webp" alt="AURERXA" width={28} height={28} className="rounded" unoptimized />
+                                <Image src="/logo-new.webp" alt="AURERXA" width={28} height={28} className="rounded" unoptimized />
                                 <span className="text-lg font-semibold tracking-wider text-[#D4AF37]">AURERXA</span>
                             </div>
                             <button onClick={() => setMobileOpen(false)} className="text-white/40">

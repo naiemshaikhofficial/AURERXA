@@ -100,7 +100,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: '/logo.png',
+        url: '/logo-new.webp',
         width: 1200,
         height: 630,
         alt: 'AURERXA Luxury Jewelry Logo',
@@ -114,7 +114,7 @@ export const metadata: Metadata = {
     description: 'Timeless luxury handcrafted to perfection.',
     site: '@aurerxa',
     creator: '@aurerxa',
-    images: ['/logo.png'],
+    images: ['/logo-new.webp'],
   },
   icons: {
     icon: '/favicon.ico',
@@ -172,7 +172,7 @@ export default async function RootLayout({
     'name': 'AURERXA',
     'alternateName': 'Aurerxa Luxury Jewelry',
     'url': baseUrl,
-    'logo': `${baseUrl}/logo.png`,
+    'logo': `${baseUrl}/logo-new.webp`,
     'description': 'Handcrafted premium luxury jewelry brand specializing in bespoke gold and conflict-free diamond pieces.',
     'sameAs': [
       'https://facebook.com/aurerxa',
@@ -201,7 +201,7 @@ export default async function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'JewelryStore',
     'name': 'AURERXA Flagship Boutique',
-    'image': `${baseUrl}/logo.png`,
+    'image': `${baseUrl}/logo-new.webp`,
     '@id': `${baseUrl}/#boutique`,
     'url': baseUrl,
     'telephone': '+919391032677',

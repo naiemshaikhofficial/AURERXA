@@ -46,7 +46,7 @@ export async function GET() {
         const availability = p.stock && p.stock > 0 ? 'in_stock' : 'out_of_stock'
         const condition = 'new'
         const productUrl = `${baseUrl}/products/${p.slug}`
-        const imageUrl = p.image_url || `${baseUrl}/logo.png`
+        const imageUrl = p.image_url || `${baseUrl}/logo-new.webp`
 
         // Google product category for jewelry
         const googleCategory = 'Apparel & Accessories > Jewelry'

@@ -70,7 +70,7 @@ export async function sendNotification(title: string, body: string, url: string 
         url,
         icon: '/logo.png',
         badge: '/Favicon.ico',
-        image: url.includes('/products/') ? '/logo.png' : undefined, // Placeholder for rich image if needed
+        image: url.includes('/products/') ? '/logo-new.webp' : undefined, // Placeholder for rich image if needed
     })
 
     const results = await Promise.allSettled(
@@ -168,7 +168,7 @@ export async function notifyAbandonedCart(userId: string, productName: string, p
         body: `The ${productName} is still waiting in your cart. Complete your purchase now.`,
         url: `/cart`,
         icon: '/logo.png',
-        image: productImage || '/logo.png',
+        image: productImage || '/logo-new.webp',
     })
 
     await Promise.allSettled(
