@@ -292,10 +292,9 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                         onClick={handleAddToCart}
                         disabled={isAdding}
                         aria-label={`Add ${product.name} to cart`}
-                        className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-9 text-[8px] uppercase font-premium-sans tracking-[0.15em] rounded-none flex items-center justify-center gap-2 group focus-visible:ring-1 focus-visible:ring-primary overflow-hidden"
+                        className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-9 text-[7.5px] uppercase font-black tracking-wider rounded-none flex items-center justify-center focus-visible:ring-1 focus-visible:ring-primary overflow-hidden px-1"
                     >
-                        <span className="truncate">{isAdding ? 'Adding' : 'Add to Cart'}</span>
-                        {!isAdding && <div className="h-[0.5px] w-2 bg-primary/30 group-hover:bg-black/40 transition-colors flex-shrink-0" />}
+                        <span className="whitespace-nowrap">{isAdding ? 'Adding...' : 'Add to Cart'}</span>
                     </Button>
                 </div>
             </div>

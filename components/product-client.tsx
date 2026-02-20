@@ -833,8 +833,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                 </div>
             </div>
 
-            {/* STICKY MOBILE ACTIONS */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-neutral-950/80 backdrop-blur-2xl border-t border-white/5 p-4 pb-8 safe-area-pb animate-in slide-in-from-bottom-5 duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
+            {/* STICKY MOBILE ACTIONS - Lifted above BottomNav */}
+            <div className="fixed bottom-14 left-0 right-0 z-40 lg:hidden bg-neutral-950/80 backdrop-blur-2xl border-t border-white/5 p-4 pb-4 animate-in slide-in-from-bottom-5 duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
                 <div className="max-w-md mx-auto">
                     {product.stock > 0 ? (
                         <div className="flex gap-3">

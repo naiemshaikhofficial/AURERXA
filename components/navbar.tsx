@@ -319,7 +319,7 @@ export function Navbar() {
                       </div>
                       <ModeToggle />
                     </SheetHeader>
-                    <div className="flex flex-col py-2 relative flex-1 overflow-y-auto no-scrollbar">
+                    <div className="flex flex-col py-2 relative flex-1 overflow-y-auto no-scrollbar pb-32">
                       <motion.div
                         variants={staggerContainer}
                         initial="initial"
