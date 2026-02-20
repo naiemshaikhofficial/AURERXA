@@ -11,7 +11,7 @@ const occasions = [
     {
         name: 'Party Wear',
         slug: 'party',
-        image: '/valentines-day-still-life-design_23-2149246309.avif',
+        image: '/portrait-woman-wearing-corset-posing-outdoors.jpg',
         subtitle: 'Night Editions'
     },
     {
@@ -23,7 +23,7 @@ const occasions = [
     {
         name: 'Date Night',
         slug: 'date-night',
-        image: '/indian-couple-purchasing-jewellery-man-woman-jewelry-store-luxury-jewellery-shopping_162695-27852.avif',
+        image: '/smiling-woman-presenting-gift-box-with-ring-man.jpg',
         subtitle: 'Romantic Series'
     },
     {
@@ -35,8 +35,9 @@ const occasions = [
     {
         name: 'Office Wear',
         slug: 'office',
-        image: '/alberto-rodriguez-santana-EU-KuIDEbKU-unsplash.jpg',
-        subtitle: 'Executive Suite'
+        image: '/young-beautiful-smiling-brunette-female-nice-trendy-black-business-suit_158538-19399.jpg',
+        subtitle: 'Executive Suite',
+        position: '20% center'
     },
     {
         name: 'Daily Wear',
@@ -46,7 +47,7 @@ const occasions = [
     }
 ]
 
-function OccasionCard({ occ, index }: { occ: typeof occasions[0], index: number }) {
+function OccasionCard({ occ, index }: { occ: typeof occasions[0] & { position?: string }, index: number }) {
     const cardRef = useRef<HTMLDivElement>(null)
     const { scrollXProgress } = useScroll({
         target: cardRef,
@@ -79,6 +80,7 @@ function OccasionCard({ occ, index }: { occ: typeof occasions[0], index: number 
                             alt={occ.name}
                             fill
                             className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                            style={{ objectPosition: occ.position || 'center' }}
                             sizes="(max-width: 768px) 48vw, 40vw"
                         />
                     </motion.div>
