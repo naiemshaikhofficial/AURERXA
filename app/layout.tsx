@@ -39,8 +39,10 @@ export const metadata: Metadata = {
   generator: 'Next.js',
   referrer: 'origin-when-cross-origin',
   keywords: [
-    // Core Brand
+    // Core Brand & Variations
     'AURERXA', 'AURERXA Jewelry', 'Aurerxa Official',
+    'Aurexa', 'Aure', 'Aurrex', 'Aurex', 'Aurer', 'Aurera',
+    'ar', 'a', 'aur', 'aurex jewelry', 'aurexa india', 'rexa',
     // Jewelry Types
     'Gold Necklace', 'Diamond Earrings', 'Silver Rings', 'Bridal Jewelry Sets',
     'Mangalsutra Online', 'Gold Bangles', 'Pendant Necklace', 'Stud Earrings',
@@ -174,7 +176,7 @@ export default async function RootLayout({
     '@type': 'JewelryStore', // Primary type for shop
     'additionalType': ['Organization', 'Brand'],
     'name': 'AURERXA',
-    'alternateName': 'Aurerxa Luxury Jewelry',
+    'alternateName': ['Aurexa', 'Aure', 'Aurrex', 'Aurex', 'Aurer', 'Aurera', 'ar', 'a', 'Aurerxa Luxury Jewelry'],
     'url': baseUrl,
     'logo': `${baseUrl}/logo-new.webp`,
     'description': 'Handcrafted premium luxury jewelry brand specializing in bespoke gold and conflict-free diamond pieces.',
