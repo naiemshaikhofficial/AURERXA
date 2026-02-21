@@ -104,7 +104,7 @@ export default function ContactPage() {
                   <Mail className="text-primary" size={20} />
                   Email
                 </h3>
-                <p className="text-muted-foreground font-light">hello@aurerxa.com</p>
+                <p className="text-muted-foreground font-light">aurerxa@gmail.com</p>
                 <p className="text-sm text-muted-foreground/60 mt-1 font-light">
                   We respond to all inquiries within 24 hours
                 </p>
@@ -115,9 +115,9 @@ export default function ContactPage() {
                   <Phone className="text-primary" size={20} />
                   Phone
                 </h3>
-                <p className="text-muted-foreground font-light">+1 (555) 123-4567</p>
+                <p className="text-muted-foreground font-light">+91 95790 42043</p>
                 <p className="text-sm text-muted-foreground/60 mt-1 font-light">
-                  Monday - Saturday, 10 AM - 6 PM EST
+                  Monday - Saturday, 10 AM - 6 PM IST
                 </p>
               </div>
 
@@ -127,11 +127,11 @@ export default function ContactPage() {
                   Address
                 </h3>
                 <p className="text-muted-foreground font-light">
-                  AURERXA Flagship Boutique
+                  nijamuddin shaikh,
                   <br />
-                  Madison Avenue
+                  kolhewadi road, near tajgard
                   <br />
-                  New York, NY 10065
+                  sangamner 422605
                 </p>
               </div>
 

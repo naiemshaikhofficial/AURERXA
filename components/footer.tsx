@@ -80,10 +80,10 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors leading-[1.8] tracking-widest"
-                  aria-label="Our location on Google Maps: Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605"
+                  aria-label="Our location on Google Maps: nijamuddin shaikh, kolhewadi road, near tajgard, sangamner 422605"
                 >
-                  Captain Lakshmi Chowk, Rangargalli<br />
-                  Sangamner, Maharashtra 422605
+                  nijamuddin shaikh, kolhewadi road<br />
+                  near tajgard, sangamner 422605
                 </a>
               </div>
               <div className="flex items-center gap-4 group">
@@ -92,7 +92,7 @@ export function Footer() {
                   alt="Phone"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <a href="tel:+919391032677" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Call us at +91 93910 32677">+91 93910 32677</a>
+                <a href="tel:+919579042043" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Call us at +91 95790 42043">+91 95790 42043</a>
               </div>
               <div className="flex items-center gap-4 group">
                 <img
@@ -100,7 +100,7 @@ export function Footer() {
                   alt="Email"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <a href="mailto:support@aurerxa.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Email us at support@aurerxa.com">support@aurerxa.com</a>
+                <a href="mailto:aurerxa@gmail.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Email us at aurerxa@gmail.com">aurerxa@gmail.com</a>
               </div>
               <div className="flex items-center gap-4 group cursor-pointer tactile-press" onClick={openSearch}>
                 <img

@@ -188,7 +188,7 @@ export default async function RootLayout({
     ],
     'address': {
       '@type': 'PostalAddress',
-      'streetAddress': 'Captain Lakshmi Chowk, Rangargalli',
+      'streetAddress': 'nijamuddin shaikh, kolhewadi road, near tajgard',
       'addressLocality': 'Sangamner',
       'addressRegion': 'Maharashtra',
       'postalCode': '422605',
@@ -196,7 +196,7 @@ export default async function RootLayout({
     },
     'contactPoint': {
       '@type': 'ContactPoint',
-      'telephone': '+91-9391032677',
+      'telephone': '+91-9579042043',
       'contactType': 'global customer service',
       'areaServed': 'World',
       'availableLanguage': ['English', 'Hindi', 'Marathi']
@@ -210,7 +210,7 @@ export default async function RootLayout({
     'image': `${baseUrl}/logo-new.webp`,
     '@id': `${baseUrl}/#boutique`,
     'url': baseUrl,
-    'telephone': '+919391032677',
+    'telephone': '+919579042043',
     'priceRange': '₹₹₹₹',
     'address': organizationSchema.address,
     'geo': {

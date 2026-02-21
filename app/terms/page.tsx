@@ -139,10 +139,10 @@ export default function TermsPage() {
                         In accordance with the <strong className="text-foreground">Consumer Protection (E-Commerce) Rules, 2020</strong>, the name and contact details of the Grievance Officer are provided below:
                     </p>
                     <div className="mt-4 text-sm text-foreground space-y-1">
-                        <p><strong>Name:</strong> [Anisur Rehman Shaikh]</p>
-                        <p><strong>Designation:</strong> Legal Compliance Officer</p>
-                        <p><strong>Email:</strong> compliance@aurerxa.com</p>
-                        <p><strong>Address:</strong> Mumbai, Maharashtra, India</p>
+                        <p><strong>Name:</strong> [Naiemoddin Nijamoddin Shaikh]</p>
+                        <p><strong>Designation:</strong> Owner Of Aurerxa</p>
+                        <p><strong>Email:</strong> aurerxa@gmail.com</p>
+                        <p><strong>Address:</strong> nijamuddin shaikh, kolhewadi road, near tajgard sangamner 422605</p>
                     </div>
                 </section>
             </div>
