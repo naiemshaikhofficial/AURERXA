@@ -43,7 +43,7 @@ export function Hero() {
         <div className="relative w-full h-full">
           <Image
             src="/pexels-the-glorious-studio-3584518-29245554.webp"
-            alt=""
+            alt="Cinematic Luxury Jewelry Background - AURERXA Heritage"
             fill
             priority
             fetchPriority="high"
@@ -69,7 +69,7 @@ export function Hero() {
           <div className="mb-6 relative inline-block">
             <Image
               src="/logo.webp"
-              alt=""
+              alt="AURERXA Official Logo - World-Class Luxury & Bespoke Jewelry"
               width={112}
               height={112}
               priority

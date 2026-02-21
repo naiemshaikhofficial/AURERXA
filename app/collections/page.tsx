@@ -34,8 +34,8 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
         occasion ? `for ${occasion}` : ''
     ].filter(Boolean)
 
-    const title = `${parts.join(' ')} - Latest 2026 Designs | AURERXA`
-    const description = `Explore the finest ${parts.join(' ').toLowerCase()} at AURERXA. Featured handcrafted masterpieces with certified luxury quality. Shop our latest heritage collection online.`
+    const title = `${parts.join(' ')} - Latest 2026 Designs | Buy Online at AURERXA`
+    const description = `Shop the exclusive ${parts.join(' ').toLowerCase()} at AURERXA India. Discover handcrafted luxury masterpieces, certified quality, and free insured shipping on our latest heritage collection.`
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
     const url = `${baseUrl}/collections${category ? `?category=${category}` : ''}`
 

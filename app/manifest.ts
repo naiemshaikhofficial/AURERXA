@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: 'AURERXA | World-Class Luxury & Bespoke Jewelry',
+        name: 'AURERXA | World-Class Luxury & Bespoke Jewelry India',
         short_name: 'AURERXA',
-        description: 'Bespoke high-end jewelry handcrafted to perfection. Discover the heritage of AURERXA.',
+        description: 'Bespoke high-end jewelry handcrafted to perfection in India. Discover the timeless heritage and certified luxury of AURERXA.',
         start_url: '/',
         id: '/?source=pwa',
         display: 'standalone',

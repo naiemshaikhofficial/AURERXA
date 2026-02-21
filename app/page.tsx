@@ -153,7 +153,9 @@ export const metadata: Metadata = {
   keywords: [
     'Buy Jewelry Online India', 'Gold Jewelry Online Shopping', 'Diamond Jewelry Store',
     'Bridal Jewelry Sets Online', 'Fashion Jewelry India', 'Luxury Jewelry Brand',
-    'AURERXA Official Store', 'Premium Handcrafted Jewelry'
+    'AURERXA Official Store', 'Premium Handcrafted Jewelry',
+    'Gold Necklace for Women', 'Diamond Stud Earrings', 'Bespoke Design Jewelry',
+    'Indian Heritage Jewelry', 'Certified 22K Gold Online', 'Free Insured Shipping'
   ],
   alternates: {
     canonical: '/',

@@ -279,7 +279,7 @@ export const getUsedTags = unstable_cache(
       const uniqueTags = Array.from(new Set(allTags.map(t => t.toLowerCase())))
         .map(t => {
           if (t === 'genz') return 'GENZ'
-          if (t === 'mordern') return 'Modern'
+          if (t === 'modern') return 'Modern'
           return t.charAt(0).toUpperCase() + t.slice(1)
         })
         .sort()

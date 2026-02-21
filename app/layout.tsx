@@ -68,11 +68,14 @@ export const metadata: Metadata = {
     'Jewelry Online Shopping', 'Best Jewelry Brand India', 'Cheap Luxury Jewelry',
     'Affordable Designer Jewelry', 'Free Shipping Jewelry India',
     // Regional
-    'Jewelry Sangamner', 'Jewelry Maharashtra', 'Indian Jewelry Online',
-    'South Asian Jewelry', 'Traditional Indian Jewelry', 'Modern Indian Jewelry',
-    // Gifting
-    'Jewelry Gift', 'Gift for Wife', 'Gift for Mother', 'Gift for Girlfriend',
-    'Gift for Sister', 'Personalized Jewelry', 'Custom Engraved Jewelry',
+    'AURERXA Jewelry India', 'Buy Jewelry Online India', 'Best Jewelry Shop Mumbai',
+    'Certified Gold Jewelry Online India', 'Conflict Free Diamond Jewelry',
+    'Luxury Gift for Her India', 'Custom Engagement Rings India',
+    'Traditional Maharashtrian Jewelry', 'Bespoke Jewelry Designers India',
+    'Free Insured Shipping Jewelry', 'Jewelry Store Sangamner',
+    'Aurerxa Heritage', 'Fine Jewelry Collections 2026',
+    'Handcrafted Masterpieces', 'Gold Plated Jewelry Online India',
+    'Bentex Jewelry Online', 'Real Gold Jewelry Online',
   ],
   creator: 'AURERXA',
   publisher: 'AURERXA',
@@ -122,8 +125,9 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   alternates: {
-    canonical: './',
+    canonical: '/',
     languages: {
+      'en-IN': '/en-IN',
       'en-US': '/en-US',
       'x-default': '/',
     },

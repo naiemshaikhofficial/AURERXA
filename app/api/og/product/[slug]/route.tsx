@@ -65,7 +65,7 @@ export async function GET(
                         {/* Product Image */}
                         <div style={{ display: 'flex', position: 'relative', width: 450, height: 450, borderRadius: 20, overflow: 'hidden', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
                             <img
-                                src={product.image_url}
+                                src={product.image_url?.startsWith('http') ? product.image_url : `https://aurerxa.com${product.image_url}`}
                                 width="450"
                                 height="450"
                                 style={{ objectFit: 'cover' }}
