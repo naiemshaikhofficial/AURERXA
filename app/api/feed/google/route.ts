@@ -111,22 +111,3 @@ ${items}
         },
     })
 }
-
-const feed = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
-<channel>
-<title>AURERXA - Premium Luxury Jewelry</title>
-<link>${baseUrl}</link>
-<description>AURERXA catalog for Google Shopping. Premium handcrafted luxury jewelry.</description>
-${items}
-</channel>
-</rss>`
-
-return new NextResponse(feed.trim(), {
-    status: 200,
-    headers: {
-        'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'no-store, max-age=0, must-revalidate',
-    },
-})
-}
