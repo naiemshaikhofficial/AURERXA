@@ -28,7 +28,7 @@ export default function BannedPage() {
                 <div className="pt-4">
                     <p className="text-xs text-white/30 mb-4"> believe this is a mistake?</p>
                     <a
-                        href="mailto:support@aurerxa.com"
+                        href="mailto:Support@aurerxa.com"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black rounded-sm uppercase tracking-widest text-xs font-bold hover:bg-neutral-200 transition"
                     >
                         <Mail className="w-4 h-4" />

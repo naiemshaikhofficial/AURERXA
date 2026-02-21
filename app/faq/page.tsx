@@ -36,7 +36,7 @@ const faqs = [
             },
             {
                 q: 'How do I initiate a return?',
-                a: 'Contact our customer service at returns@aurerxa.com with your order number. We will arrange a pickup from your location.'
+                a: 'Contact our customer service at Support@aurerxa.com with your order number. We will arrange a pickup from your location.'
             },
             {
                 q: 'How long does the refund take?',
@@ -133,7 +133,7 @@ export default function FAQPage() {
                     <div className="mt-16 text-center p-8 bg-card border border-border">
                         <h3 className="font-serif text-xl font-medium mb-3">Still have questions?</h3>
                         <p className="text-muted-foreground mb-6">Our customer support team is here to help</p>
-                        <a href="mailto:support@aurerxa.com" className="inline-block px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium uppercase tracking-widest text-sm transition-colors">
+                        <a href="mailto:Support@aurerxa.com" className="inline-block px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium uppercase tracking-widest text-sm transition-colors">
                             Contact Us
                         </a>
                     </div>

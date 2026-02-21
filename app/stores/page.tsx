@@ -11,7 +11,7 @@ export default function StoresPage() {
         name: "Nijam Gold Works",
         address: "Captain Lakshmi Chowk, Rangargalli Near Sikchi Hospital Sangamner, Maharashtra 422605",
         phone: "+91 93910 32677",
-        email: "hello@aurerxa.com",
+        email: "contact@aurerxa.com",
         hours: "Mon-Sat: 11AM-9PM",
         mapLink: "https://www.google.com/maps/place/Nijam+Gold+works/data=!4m2!3m1!1s0x0:0xe8958ae639e82931?sa=X&ved=1t:2428&ictx=111",
         lat: 19.5761,
@@ -169,7 +169,7 @@ export default function StoresPage() {
                                 </p>
 
                                 <a
-                                    href="mailto:hello@aurerxa.com?subject=Private Boutique Consultation"
+                                    href="mailto:contact@aurerxa.com?subject=Private Boutique Consultation"
                                     className="inline-block px-16 py-6 border border-white/20 hover:bg-white hover:text-black transition-all duration-700 text-[10px] font-premium-sans tracking-[0.5em] uppercase text-white"
                                 >
                                     Request Appointment

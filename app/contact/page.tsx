@@ -104,7 +104,7 @@ export default function ContactPage() {
                   <Mail className="text-primary" size={20} />
                   Email
                 </h3>
-                <p className="text-muted-foreground font-light">aurerxa@gmail.com</p>
+                <p className="text-muted-foreground font-light">contact@aurerxa.com</p>
                 <p className="text-sm text-muted-foreground/60 mt-1 font-light">
                   We respond to all inquiries within 24 hours
                 </p>

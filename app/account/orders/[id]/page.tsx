@@ -740,7 +740,7 @@ export default function OrderDetailPage() {
                                                 <span className="text-xs font-bold uppercase tracking-tighter">Return Policy</span>
                                             </div>
                                             <p className="text-xs text-muted-foreground leading-relaxed italic">
-                                                Return only accepted on defective product. Email us at <a href="mailto:support@aurerxa.com" className="hover:text-primary underline">support@aurerxa.com</a> or visit our <Link href="/policies/refund-policy" className="hover:text-primary underline">refund or return policy</Link>.
+                                                Return only accepted on defective product. Email us at <a href="mailto:Support@aurerxa.com" className="hover:text-primary underline">Support@aurerxa.com</a> or visit our <Link href="/policies/refund-policy" className="hover:text-primary underline">refund or return policy</Link>.
                                             </p>
                                         </div>
                                     </div>

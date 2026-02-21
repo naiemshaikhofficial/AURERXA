@@ -141,7 +141,7 @@ export default function TermsPage() {
                     <div className="mt-4 text-sm text-foreground space-y-1">
                         <p><strong>Name:</strong> [Naiemoddin Nijamoddin Shaikh]</p>
                         <p><strong>Designation:</strong> Owner Of Aurerxa</p>
-                        <p><strong>Email:</strong> aurerxa@gmail.com</p>
+                        <p><strong>Email:</strong> contact@aurerxa.com</p>
                         <p><strong>Address:</strong> nijamuddin shaikh, kolhewadi road, near tajgard sangamner 422605</p>
                     </div>
                 </section>
