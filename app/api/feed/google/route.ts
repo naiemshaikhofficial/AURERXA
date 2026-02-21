@@ -25,120 +25,108 @@ export async function GET() {
         return new NextResponse('Error fetching products', { status: 500 })
     }
 
-    const escapeXml = (str: string) => {
-        if (!str) return ''
-        return str
+    const escapeXml = (str: any) => {
+        if (str === null || str === undefined) return ''
+        return String(str)
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&apos;')
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '') // Remove control characters
     }
 
     const items = products.map((p: any) => {
-        if (!p.slug || !p.name) return '' // Skip invalid products
+        if (!p.slug || !p.name) return ''
 
-        const categoryName = Array.isArray(p.categories) ? p.categories[0]?.name : p.categories?.name
+        const categoryName = Array.isArray(p.categories) ? p.categories[0]?.name : (p.categories?.name || 'Jewelry')
         const availability = (p.stock && p.stock > 0) ? 'in_stock' : 'out_of_stock'
-        const condition = 'new'
         const productUrl = `${baseUrl}/products/${p.slug}`
         const imageUrl = p.image_url || `${baseUrl}/logo-new.webp`
 
-        // Google product category for jewelry
-        const googleCategory = 'Apparel & Accessories > Jewelry'
-        const productType = categoryName ? `Jewelry > ${categoryName}` : 'Jewelry'
+        // Google requirements
+        const googleCategory = 'Apparel &amp; Accessories &gt; Jewelry'
+        const productType = `Jewelry &gt; ${escapeXml(categoryName)}`
+        const description = (p.description || '').substring(0, 4500)
+        const fullTitle = `${escapeXml(p.purity || '')} ${escapeXml(p.material_type || 'Jewelry')} ${escapeXml(categoryName)} | ${escapeXml(p.name)} | AURERXA`.trim().replace(/\s+/g, ' ')
 
-        // Material/color mapping
-        let color = 'Gold'
-        const mat = (p.material_type || '').toLowerCase()
-        if (mat.includes('silver')) color = 'Silver'
-        else if (mat.includes('rose')) color = 'Rose Gold'
-        else if (mat.includes('platinum')) color = 'Platinum'
+        // Additional Images
+        const additionalImages = (p.images || []).slice(0, 10)
+            .filter((img: any) => !!img)
+            .map((img: string) => `<g:additional_image_link>${escapeXml(img)}</g:additional_image_link>`)
+            .join('\n')
 
-        // Gender mapping for Google
-        let gender = 'unisex'
-        const gnd = (p.gender || '').toLowerCase()
-        if (gnd === 'women' || gnd === 'female') gender = 'female'
-        else if (gnd === 'men' || gnd === 'male') gender = 'male'
+        // Tags / Highlights
+        const highlights = (p.tags || []).slice(0, 10)
+            .filter((t: any) => !!t)
+            .map((tag: string) => `<g:product_highlight>${escapeXml(tag)}</g:product_highlight>`)
+            .join('\n')
 
-        // Additional images (up to 10)
-        const additionalImages = (p.images || []).slice(0, 10).map((img: string) =>
-            img ? `<g:additional_image_link>${escapeXml(img)}</g:additional_image_link>` : ''
-        ).join('')
-
-        // Custom labels
-        const label0 = p.material_type || 'Jewelry'
-        const label1 = categoryName || 'All'
-        const label2 = p.purity || ''
-        const label3 = p.price > 50000 ? 'Premium' : p.price > 10000 ? 'Mid-Range' : 'Affordable'
-
-        const description = p.description
-            ? escapeXml(p.description.substring(0, 4900))
-            : escapeXml(`Buy ${p.name} online at AURERXA. Premium handcrafted ${p.material_type || ''} ${categoryName || 'jewelry'}. Free shipping across India.`)
-
-        const purityLabel = p.purity ? `${p.purity} ` : ''
-        const materialLabel = p.material_type || 'Jewelry'
-        const fullTitle = `${purityLabel}${materialLabel} ${categoryName || 'Jewelry'} | ${p.name} | AURERXA`
-
-        // Unique Identifiers
-        const mpn = p.slug.toUpperCase()
-        const hasIdentifiers = 'no'
-
-        return `
-        <item>
-            <g:id>${escapeXml(p.id)}</g:id>
-            <g:title>${escapeXml(fullTitle)}</g:title>
-            <g:description>${description}</g:description>
-            <g:link>${productUrl}</g:link>
-            <g:image_link>${escapeXml(imageUrl)}</g:image_link>
-            ${additionalImages}
-            <g:availability>${availability}</g:availability>
-            <g:price>${p.price || 0} INR</g:price>
-            <g:condition>${condition}</g:condition>
-            <g:brand>AURERXA</g:brand>
-            <g:mpn>${escapeXml(mpn)}</g:mpn>
-            <g:identifier_exists>${hasIdentifiers}</g:identifier_exists>
-            <g:google_product_category>${googleCategory}</g:google_product_category>
-            <g:product_type>${escapeXml(productType)}</g:product_type>
-            <g:gender>${gender}</g:gender>
-            <g:color>${color}</g:color>
-            <g:material>${escapeXml(p.material_type || 'Jewelry')}</g:material>
-            <g:age_group>adult</g:age_group>
-            <g:item_group_id>${escapeXml(categoryName || 'jewelry')}</g:item_group_id>
-            <g:shipping>
-                <g:country>IN</g:country>
-                <g:service>Standard Insured Shipping</g:service>
-                <g:price>0 INR</g:price>
-            </g:shipping>
-            <g:tax>
-                <g:country>IN</g:country>
-                <g:rate>3</g:rate>
-                <g:tax_ship>yes</g:tax_ship>
-            </g:tax>
-            <g:custom_label_0>${escapeXml(label0)}</g:custom_label_0>
-            <g:custom_label_1>${escapeXml(label1)}</g:custom_label_1>
-            <g:custom_label_2>${escapeXml(label2)}</g:custom_label_2>
-            <g:custom_label_3>${escapeXml(label3)}</g:custom_label_3>
-            ${p.weight_grams ? `<g:product_weight>${p.weight_grams} g</g:product_weight>` : ''}
-            ${(p.tags || []).map((tag: string) => tag ? `<g:product_highlight>${escapeXml(tag)}</g:product_highlight>` : '').join('')}
-        </item>`
-    }).join('')
+        return `<item>
+<g:id>${escapeXml(p.id)}</g:id>
+<g:title>${escapeXml(fullTitle)}</g:title>
+<g:description><![CDATA[${description}]]></g:description>
+<g:link>${escapeXml(productUrl)}</g:link>
+<g:image_link>${escapeXml(imageUrl)}</g:image_link>
+${additionalImages ? additionalImages + '\n' : ''}<g:availability>${availability}</g:availability>
+<g:price>${p.price || 0} INR</g:price>
+<g:condition>new</g:condition>
+<g:brand>AURERXA</g:brand>
+<g:mpn>${escapeXml(p.slug.toUpperCase())}</g:mpn>
+<g:identifier_exists>no</g:identifier_exists>
+<g:google_product_category>${googleCategory}</g:google_product_category>
+<g:product_type>${productType}</g:product_type>
+<g:gender>${escapeXml(p.gender?.toLowerCase() === 'men' ? 'male' : p.gender?.toLowerCase() === 'women' ? 'female' : 'unisex')}</g:gender>
+<g:color>${escapeXml(p.material_type?.includes('Silver') ? 'Silver' : p.material_type?.includes('Rose') ? 'Rose Gold' : 'Gold')}</g:color>
+<g:material>${escapeXml(p.material_type || 'Jewelry')}</g:material>
+<g:age_group>adult</g:age_group>
+<g:shipping>
+<g:country>IN</g:country>
+<g:service>Standard Insured Shipping</g:service>
+<g:price>0 INR</g:price>
+</g:shipping>
+<g:tax>
+<g:country>IN</g:country>
+<g:rate>3</g:rate>
+<g:tax_ship>yes</g:tax_ship>
+</g:tax>
+${highlights ? highlights + '\n' : ''}</item>`
+    }).filter(Boolean).join('\n')
 
     const feed = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
-    <channel>
-        <title>AURERXA - Premium Luxury Jewelry</title>
-        <link>${baseUrl}</link>
-        <description>AURERXA's complete product catalog for Google Shopping. Premium handcrafted luxury jewelry including gold, diamond, and fashion jewelry.</description>
-        ${items}
-    </channel>
+<channel>
+<title>AURERXA - Premium Luxury Jewelry</title>
+<link>${baseUrl}</link>
+<description>AURERXA product catalog for Google Shopping.</description>
+${items}
+</channel>
 </rss>`
 
-    return new NextResponse(feed, {
+    return new NextResponse(feed.trim(), {
         status: 200,
         headers: {
             'Content-Type': 'application/xml; charset=utf-8',
-            'Cache-Control': 'no-store, max-age=0', // Disable cache for debugging
+            'Cache-Control': 'no-store, max-age=0, must-revalidate',
         },
     })
+}
+
+const feed = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+<channel>
+<title>AURERXA - Premium Luxury Jewelry</title>
+<link>${baseUrl}</link>
+<description>AURERXA catalog for Google Shopping. Premium handcrafted luxury jewelry.</description>
+${items}
+</channel>
+</rss>`
+
+return new NextResponse(feed.trim(), {
+    status: 200,
+    headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
+    },
+})
 }
