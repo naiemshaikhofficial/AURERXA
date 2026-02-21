@@ -850,6 +850,13 @@ export async function getAllCategorySlugs() {
   return data || []
 }
 
+export async function getAllBlogSlugs() {
+  const { data } = await supabaseServer
+    .from('blog')
+    .select('slug, updated_at')
+  return data || []
+}
+
 // ============================================
 // WISHLIST
 // ============================================

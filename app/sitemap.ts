@@ -1,12 +1,13 @@
 import { MetadataRoute } from 'next'
-import { getAllProductSlugs, getAllCategorySlugs } from '@/app/actions'
+import { getAllProductSlugs, getAllCategorySlugs, getAllBlogSlugs } from '@/app/actions'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const baseUrl = 'https://www.aurerxa.com'
 
     // Fetch dynamic data
     const products = await getAllProductSlugs()
     const categories = await getAllCategorySlugs()
+    const blogs = await getAllBlogSlugs()
 
     const productEntries: MetadataRoute.Sitemap = products.map((p: any) => ({
         url: `${baseUrl}/products/${p.slug}`,
@@ -121,5 +122,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         },
     ]
 
-    return [...staticEntries, ...categoryEntries, ...productEntries]
+    const blogEntries: MetadataRoute.Sitemap = blogs.map((b: any) => ({
+        url: `${baseUrl}/blog/${b.slug}`,
+        lastModified: b.updated_at ? new Date(b.updated_at) : new Date(),
+        changeFrequency: 'monthly',
+        priority: 0.6,
+    }))
+
+    return [...staticEntries, ...categoryEntries, ...productEntries, ...blogEntries]
 }

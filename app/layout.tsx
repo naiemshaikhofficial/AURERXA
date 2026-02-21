@@ -28,7 +28,7 @@ const cormorant = Cormorant_Garamond({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL('https://www.aurerxa.com'),
   title: {
     default: 'AURERXA | Premium Luxury Jewelry, Fashion Jewelry & Bespoke Design',
     template: '%s | AURERXA',
@@ -98,7 +98,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AURERXA | World-Class Luxury & Bespoke Jewelry',
     description: 'Timeless luxury handcrafted to perfection. Discover AURERXA Heritage.',
-    url: 'https://aurerxa.com',
+    url: 'https://www.aurerxa.com',
     siteName: 'AURERXA',
     locale: 'en_US',
     images: [

@@ -36,7 +36,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 
     const title = `${parts.join(' ')} - Latest 2026 Designs | Buy Online at AURERXA`
     const description = `Shop the exclusive ${parts.join(' ').toLowerCase()} at AURERXA India. Discover handcrafted luxury masterpieces, certified quality, and free insured shipping on our latest heritage collection.`
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const baseUrl = 'https://www.aurerxa.com'
     const url = `${baseUrl}/collections${category ? `?category=${category}` : ''}`
 
     return {

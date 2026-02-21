@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const rawDescription = product.description || `Explore our exquisite ${purityLabel}${materialLabel} ${categoryName || 'jewelry'}. Handcrafted ${product.name} from AURERXA's heritage collection. Certified quality & Free Shipping.`
     const description = rawDescription.length > 160 ? rawDescription.substring(0, 157) + '...' : rawDescription
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const baseUrl = 'https://www.aurerxa.com'
     const ogImageUrl = `${baseUrl}/api/og/product/${product.slug}`
     const productUrl = `${baseUrl}/products/${product.slug}`
 
@@ -134,7 +134,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
 
     const isWishlisted = await isInWishlist(product.id)
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const baseUrl = 'https://www.aurerxa.com'
     const productUrl = `${baseUrl}/products/${product.slug}`
 
     const categories = product.categories as any

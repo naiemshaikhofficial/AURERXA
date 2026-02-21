@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 3600
 
 export async function GET() {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const baseUrl = 'https://www.aurerxa.com'
 
     const { data: products, error } = await supabaseServer
         .from('products')
