@@ -136,13 +136,13 @@ export default function TermsPage() {
                 <section className="bg-primary/5 border border-primary/20 p-6 mt-12">
                     <h2 className="text-lg font-serif font-bold mb-4">Grievance Officer</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                        In accordance with the <strong className="text-foreground">Consumer Protection (E-Commerce) Rules, 2020</strong>, the name and contact details of the Grievance Officer are provided below:
+                        In accordance with the <strong className="text-foreground">Consumer Protection (E-Commerce) Rules, 2020</strong>, the name and contact details of the Owner Of Aurerxa are provided below:
                     </p>
                     <div className="mt-4 text-sm text-foreground space-y-1">
-                        <p><strong>Name:</strong> [Naiemoddin Nijamoddin Shaikh]</p>
+                        <p><strong>Name:</strong>  Naiemoddin Nijamoddin Shaikh</p>
                         <p><strong>Designation:</strong> Owner Of Aurerxa</p>
-                        <p><strong>Email:</strong> contact@aurerxa.com</p>
-                        <p><strong>Address:</strong> nijamuddin shaikh, kolhewadi road, near tajgard sangamner 422605</p>
+                        <p><strong>Email:</strong> naiemoddinofficial@gmail.com</p>
+                        <p><strong>Address:</strong> nijamuddin shaikh, kolhewadi road, near tajgarden sangamner 422605</p>
                     </div>
                 </section>
             </div>
