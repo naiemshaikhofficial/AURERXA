@@ -100,7 +100,7 @@ export function Footer() {
                   alt="Email"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <a href="mailto:care@aurerxa.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Email us at care@aurerxa.com">care@aurerxa.com</a>
+                <a href="mailto:support@aurerxa.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Email us at support@aurerxa.com">support@aurerxa.com</a>
               </div>
               <div className="flex items-center gap-4 group cursor-pointer tactile-press" onClick={openSearch}>
                 <img
