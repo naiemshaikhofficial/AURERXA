@@ -575,7 +575,7 @@ export const getProductBySlug = cache(async (slug: string) => {
           categories(slug, name), 
           sub_categories(slug, name)
         `)
-        .eq('slug', slug)
+        .ilike('slug', slug)
         .single()
       if (error) return null
       return data

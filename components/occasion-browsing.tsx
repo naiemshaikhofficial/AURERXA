@@ -165,6 +165,7 @@ export function OccasionBrowsing() {
                     <div
                         ref={scrollContainerRef}
                         className="flex overflow-x-auto gap-4 md:gap-24 pb-16 md:pb-32 px-6 md:px-[10vw] no-scrollbar snap-x snap-proximity pt-8 md:pt-20"
+                        style={{ touchAction: 'pan-x' }}
                     >
                         {occasions.map((occ, idx) => (
                             <OccasionCard key={occ.name} occ={occ} index={idx} />

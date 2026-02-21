@@ -67,7 +67,7 @@ export function CategoryNav() {
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                     className="fixed top-20 md:top-24 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/40 h-20 md:h-24 flex items-center overflow-hidden"
                 >
-                    <div className="max-w-7xl mx-auto px-4 md:px-6 w-full overflow-x-auto no-scrollbar">
+                    <div className="max-w-7xl mx-auto px-4 md:px-6 w-full overflow-x-auto no-scrollbar" style={{ touchAction: 'pan-x' }}>
                         <div className="flex items-center justify-between min-w-max md:min-w-0 gap-6 md:gap-8">
                             {categories.map((cat) => {
                                 const isActive = pathname === cat.href || (cat.href !== '/collections' && pathname.startsWith(cat.href))

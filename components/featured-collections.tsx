@@ -117,9 +117,9 @@ export function FeaturedCollections({ categories: initialCategories }: { categor
             className="text-center mb-12 md:mb-40 space-y-4 md:space-y-8"
           >
             <div className="space-y-3 md:space-y-6">
-              <span className="text-primary/60 text-[8px] md:text-[10px] tracking-[0.8em] font-bold uppercase block">Crafted Excellence</span>
+              <span className="text-primary/60 text-[8px] md:text-[10px] tracking-[0.8em] font-bold uppercase block">Shop By Material</span>
               <h2 className="text-3xl md:text-9xl font-serif font-black italic text-foreground tracking-tighter leading-none">
-                The <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Collections.</span>
+                Curated <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary/40 to-primary">Materials.</span>
               </h2>
             </div>
             <Link href="/collections" className="group block">
@@ -133,7 +133,7 @@ export function FeaturedCollections({ categories: initialCategories }: { categor
           {/* Collections Grid */}
           <motion.div
             variants={staggerContainer}
-            className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6"
+            className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6"
           >
             {categories.map((category) => (
               <CollectionCard key={category.id} category={category} parentScrollProgress={scrollYProgress} />
