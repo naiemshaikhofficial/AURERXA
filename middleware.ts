@@ -2,6 +2,19 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+    const pathname = request.nextUrl.pathname
+
+    // --- 1. FAST EXIT FOR STATIC ASSETS & INTERNAL FILES ---
+    // This reduces Edge Function invocations and CPU time significantly.
+    if (
+        pathname.startsWith('/_next') ||
+        pathname.startsWith('/api/') ||
+        pathname.includes('.') || // Static files like .png, .jpg, .ico
+        pathname === '/favicon.ico'
+    ) {
+        return NextResponse.next()
+    }
+
     let response = NextResponse.next({
         request: {
             headers: request.headers,
@@ -32,7 +45,6 @@ export async function middleware(request: NextRequest) {
     // --- LIGHTWEIGHT RATE LIMITING ---
     // Simple per-instance rate limiting for expensive routes
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous'
-    const pathname = request.nextUrl.pathname
 
     // Expensive routes that need protection
     const isExpensiveRoute = pathname.startsWith('/login') ||
@@ -90,24 +102,30 @@ export async function middleware(request: NextRequest) {
     const isAuthRoute = pathname.startsWith('/login') ||
         pathname.startsWith('/signup')
 
-    // Always call getUser to ensure session is refreshed
-    // Wrap in try-catch to satisfy Next.js 16/experimental abort behaviors
-    let user = null
-    try {
-        const { data } = await supabase.auth.getUser()
-        user = data.user
-    } catch (e: any) {
-        // Handle potential AbortError/ECONNRESET from getUser() or AuthSessionMissingError
-        const isIgnorable =
-            e.code === 'ECONNRESET' ||
-            e.name === 'AbortError' ||
-            e.message?.includes('signal is aborted') ||
-            e.name === 'AuthSessionMissingError' ||
-            e.message?.includes('Auth session missing') ||
-            e.message?.includes('fetch failed')
+    // OPTIMIZATION: Check for session cookie presence before calling expensive getUser()
+    // If no cookie exists and it's not a protected route, we can skip auth logic.
+    const hasSessionCookie = request.cookies.get('sb-xquczexikijzbzcuvmqh-auth-token')
 
-        if (!isIgnorable) {
-            console.error('Middleware Auth Error:', e)
+    let user = null
+    if (hasSessionCookie || isProtectedRoute || isAuthRoute) {
+        // Always call getUser to ensure session is refreshed
+        // Wrap in try-catch to satisfy Next.js 16/experimental abort behaviors
+        try {
+            const { data } = await supabase.auth.getUser()
+            user = data.user
+        } catch (e: any) {
+            // Handle potential AbortError/ECONNRESET from getUser() or AuthSessionMissingError
+            const isIgnorable =
+                e.code === 'ECONNRESET' ||
+                e.name === 'AbortError' ||
+                e.message?.includes('signal is aborted') ||
+                e.name === 'AuthSessionMissingError' ||
+                e.message?.includes('Auth session missing') ||
+                e.message?.includes('fetch failed')
+
+            if (!isIgnorable) {
+                console.error('Middleware Auth Error:', e)
+            }
         }
     }
 

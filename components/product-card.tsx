@@ -31,6 +31,7 @@ export function MaterialBadge({ type }: { type: MaterialType }) {
             {cfg.label}
         </div>
     )
+
 }
 
 export interface Product {
@@ -278,7 +279,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                                     "object-cover transition-transform duration-700 will-change-transform",
                                     isHovered ? "scale-110" : "scale-100"
                                 )}
-                                sizes="(max-width: 480px) 50vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                 fetchPriority={priority || index < 2 ? "high" : "auto"}
                                 unoptimized={allImages[currentImageIndex]?.startsWith('blob:') || allImages[currentImageIndex]?.includes('imageshack.com')}
                             />

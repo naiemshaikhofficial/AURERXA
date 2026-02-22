@@ -346,7 +346,7 @@ export async function submitReview(formData: FormData): Promise<ActionResponse> 
       return { success: false, error: error.message }
     }
 
-    revalidateTag('reviews')
+    revalidateTag('reviews', '')
     return { success: true }
   } catch (err: any) {
     console.error('Submit review crash:', err)
@@ -659,7 +659,7 @@ export const getBestsellers = unstable_cache(
     return data || []
   },
   ['bestsellers'],
-  { revalidate: 60, tags: ['products', 'bestsellers'] }
+  { revalidate: 3600, tags: ['products', 'bestsellers'] }
 )
 
 export async function getNewReleases(limit: number = 8) {
@@ -2147,7 +2147,7 @@ export async function syncLiveGoldRates() {
     console.log('[SYNC SUCCESS] Rates updated for all metals.')
 
     // Revalidate the cache tag to ensure the UI sees the new rates
-    revalidateTag('gold-rates')
+    revalidateTag('gold-rates', '')
 
     return { success: true, rates: results }
   } catch (err: any) {
