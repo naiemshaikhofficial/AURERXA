@@ -1,7 +1,7 @@
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { Hero } from '@/components/hero'
-import { getNewReleases } from './actions'
+import { getNewReleases, getGoldRates } from './actions'
 import { SectionSkeleton } from '@/components/skeletons'
 import type { CategoryBrowsingProps } from '@/components/category-browsing'
 import type { ShopByGenderProps } from '@/components/shop-by-gender'
@@ -163,6 +163,9 @@ export const metadata: Metadata = {
 }
 
 export default function HomePage() {
+  // Trigger gold rate sync on every visit in the background
+  getGoldRates().catch(err => console.error('Gold sync trigger error:', err));
+
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -224,13 +227,20 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <Hero />
-      <Heritage />
+      <section id="boutique-hero" aria-label="AURERXA Luxury Boutique Hero">
+        <Hero />
+      </section>
+
+      <section id="brand-heritage">
+        <Heritage />
+      </section>
 
       {/* Dynamic Hero Carousel (Bridal Series & More) */}
-      <Suspense fallback={<div className="h-[80vh] w-full bg-background animate-pulse" />}>
-        <HeroCarouselSection />
-      </Suspense>
+      <section id="bridal-collections" className="bg-background">
+        <Suspense fallback={<div className="h-[80vh] w-full bg-background animate-pulse" />}>
+          <HeroCarouselSection />
+        </Suspense>
+      </section>
 
 
       <Suspense fallback={<div className="py-24 h-96 bg-background animate-pulse" />}>

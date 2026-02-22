@@ -47,6 +47,43 @@ export interface Product {
     gender?: string
     stock?: number
     material_type?: MaterialType
+    tags?: string[]
+}
+
+const QUALITY_TAG_CONFIG: Record<string, { label: string; color: string; bg: string; icon?: string }> = {
+    'anti-tarnish': { label: 'Anti-Tarnish', color: 'text-cyan-400', bg: 'bg-cyan-500/10 border-cyan-500/30' },
+    'waterproof': { label: 'Waterproof', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/30' },
+    'lifetime-quality': { label: 'Lifetime Quality', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/30' },
+    'pvd-coating': { label: 'PVD Coated', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/30' },
+}
+
+function QualityBadge({ tags }: { tags?: string[] }) {
+    if (!tags || tags.length === 0) return null
+
+    // Sort to show important ones first
+    const activeConfigs = tags
+        .map(t => t.toLowerCase())
+        .filter(t => QUALITY_TAG_CONFIG[t])
+        .map(t => QUALITY_TAG_CONFIG[t])
+
+    if (activeConfigs.length === 0) return null
+
+    return (
+        <div className="flex flex-wrap gap-1.5">
+            {activeConfigs.slice(0, 2).map((cfg, i) => (
+                <div
+                    key={i}
+                    className={cn(
+                        "inline-flex items-center px-1.5 py-0.5 rounded-sm border backdrop-blur-md",
+                        "text-[7px] font-bold uppercase tracking-[0.1em]",
+                        cfg.bg, cfg.color
+                    )}
+                >
+                    {cfg.label}
+                </div>
+            ))}
+        </div>
+    )
 }
 
 interface ProductCardProps {
@@ -157,17 +194,28 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
             )}
         >
             <div className={cn(
-                "relative overflow-hidden group/img bg-muted",
-                viewMode === 'grid' ? 'aspect-[4/5] w-full' : 'aspect-square md:aspect-[3/4] md:w-1/3' // Portfolio aspect ratio
+                "relative overflow-hidden group/img bg-muted shrink-0",
+                viewMode === 'list' ? 'aspect-square w-full md:w-1/3' : 'aspect-square w-full'
             )}>
                 <Link href={`/products/${product.slug}`} className="absolute inset-0 z-30 block" onClick={onClose} aria-label={`View details for ${product.name}`} />
 
-                {/* Material Badge */}
-                {product.material_type && (
-                    <div className="absolute top-3 left-3 z-40">
+                {/* Status Badges */}
+                <div className="absolute top-2.5 left-2.5 z-40 flex flex-col gap-1.5">
+                    {product.material_type && (
                         <MaterialBadge type={product.material_type} />
-                    </div>
-                )}
+                    )}
+                    <QualityBadge tags={product.tags} />
+                    {product.stock !== undefined && product.stock > 0 && product.stock < 5 && (
+                        <div className="inline-flex items-center px-2 py-1 rounded-full border border-red-500/30 bg-red-500/10 backdrop-blur-md text-[7px] font-bold uppercase tracking-[0.1em] text-red-400 animate-pulse">
+                            Only {product.stock} Left
+                        </div>
+                    )}
+                    {product.stock === 0 && (
+                        <div className="inline-flex items-center px-2 py-1 rounded-full border border-red-500/50 bg-neutral-950/80 backdrop-blur-md text-[7px] font-bold uppercase tracking-[0.1em] text-red-500">
+                            Sold Out
+                        </div>
+                    )}
+                </div>
 
                 {/* Progress Segments */}
                 {allImages.length > 1 && (
@@ -241,8 +289,9 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
 
             {/* Product Info - Minimalist Editorial Style */}
             <div className={cn(
-                "p-4 md:p-5 space-y-3 relative z-10 bg-card flex-1 flex flex-col",
-                viewMode === 'list' ? 'md:p-8 md:justify-center' : ''
+                "p-3 md:p-4 space-y-2 relative z-10 bg-card flex-1 flex flex-col",
+                viewMode === 'list' && 'md:p-8 md:justify-center',
+                viewMode === 'compact' && 'p-2 md:p-3 space-y-1'
             )}>
                 <div className="flex flex-col gap-1">
                     <div className="flex flex-wrap items-center gap-2 mb-1 opacity-70">
@@ -278,37 +327,41 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
                 </div>
 
                 {/* Modern Slide-up Buttons */}
-                <div className="hidden md:block absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] z-20">
-                    <div className="grid grid-cols-2 gap-px bg-white/5 backdrop-blur-md border-t border-white/10">
+                {viewMode !== 'compact' && (
+                    <div className="hidden md:block absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] z-20">
+                        <div className="grid grid-cols-2 gap-px bg-white/5 backdrop-blur-md border-t border-white/10">
+                            <Button
+                                onClick={handleAddToCart}
+                                disabled={isAdding}
+                                aria-label={`Add ${product.name} to cart`}
+                                className="bg-transparent text-foreground hover:bg-white/10 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 focus-visible:ring-1 focus-visible:ring-primary"
+                            >
+                                {isAdding ? 'Adding' : 'Add to Cart'}
+                            </Button>
+                            <Button
+                                onClick={handleBuyNow}
+                                disabled={isBuying}
+                                aria-label={`Buy ${product.name} now`}
+                                className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 border-l border-white/10 focus-visible:ring-1 focus-visible:ring-primary"
+                            >
+                                {isBuying ? 'Wait' : 'Buy Now'}
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
+                {viewMode !== 'compact' && (
+                    <div className="md:hidden mt-auto pt-2">
                         <Button
                             onClick={handleAddToCart}
                             disabled={isAdding}
                             aria-label={`Add ${product.name} to cart`}
-                            className="bg-transparent text-foreground hover:bg-white/10 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 focus-visible:ring-1 focus-visible:ring-primary"
+                            className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-9 text-[7.5px] uppercase font-black tracking-wider rounded-none flex items-center justify-center focus-visible:ring-1 focus-visible:ring-primary overflow-hidden px-1"
                         >
-                            {isAdding ? 'Adding' : 'Add to Cart'}
-                        </Button>
-                        <Button
-                            onClick={handleBuyNow}
-                            disabled={isBuying}
-                            aria-label={`Buy ${product.name} now`}
-                            className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 border-l border-white/10 focus-visible:ring-1 focus-visible:ring-primary"
-                        >
-                            {isBuying ? 'Wait' : 'Buy Now'}
+                            <span className="whitespace-nowrap">{isAdding ? 'Adding...' : 'Add to Cart'}</span>
                         </Button>
                     </div>
-                </div>
-
-                <div className="md:hidden mt-auto pt-2">
-                    <Button
-                        onClick={handleAddToCart}
-                        disabled={isAdding}
-                        aria-label={`Add ${product.name} to cart`}
-                        className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-9 text-[7.5px] uppercase font-black tracking-wider rounded-none flex items-center justify-center focus-visible:ring-1 focus-visible:ring-primary overflow-hidden px-1"
-                    >
-                        <span className="whitespace-nowrap">{isAdding ? 'Adding...' : 'Add to Cart'}</span>
-                    </Button>
-                </div>
+                )}
             </div>
         </motion.div>
     )

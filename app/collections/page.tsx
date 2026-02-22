@@ -1,5 +1,5 @@
 import { CollectionsClient } from './collections-client'
-import { getFilteredProducts, getCategories, getUsedTags } from '@/app/actions'
+import { getFilteredProducts, getCategories, getUsedTags, getSubCategories } from '@/app/actions'
 import { Navbar } from '@/components/navbar'
 
 interface PageProps {
@@ -22,6 +22,7 @@ import { Metadata } from 'next'
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
     const params = await searchParams
     const category = params.category && params.category !== 'all' ? params.category : ''
+    const sub_category = params.sub_category && params.sub_category !== 'all' ? params.sub_category : ''
     const gender = params.gender && params.gender !== 'all' ? params.gender : ''
     const material = params.material_type && params.material_type !== 'all' ? params.material_type : ''
     const occasion = params.occasion && params.occasion !== 'all' ? params.occasion : ''
@@ -29,7 +30,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     const parts = [
         gender ? (gender === 'women' ? "Women's" : "Men's") : '',
         material || '',
-        category || 'Jewellery',
+        sub_category || category || 'Jewellery',
         'Collections',
         occasion ? `for ${occasion}` : ''
     ].filter(Boolean)
@@ -55,7 +56,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 
 export default async function CollectionsPage({ searchParams }: PageProps) {
     const params = await searchParams
-    const categories = await getCategories()
+    const subCategories = await getSubCategories()
     const tags = await getUsedTags()
 
     const initialFilters = {
@@ -93,9 +94,9 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        name: params.category ? `${params.category} Collection | AURERXA` : 'Jewellery Collections | AURERXA',
-        description: `Explore our exclusive ${params.category || ''} jewelry collection. Handcrafted masterpieces and timeless luxury at AURERXA.`,
-        url: `${baseUrl}/collections${params.category ? `?category=${params.category}` : ''}`,
+        name: params.sub_category ? `${params.sub_category} Collection | AURERXA` : params.category ? `${params.category} Collection | AURERXA` : 'Jewellery Collections | AURERXA',
+        description: `Explore our exclusive ${params.sub_category || params.category || ''} jewelry collection. Handcrafted masterpieces and timeless luxury at AURERXA.`,
+        url: `${baseUrl}/collections${params.sub_category ? `?sub_category=${params.sub_category}` : params.category ? `?category=${params.category}` : ''}`,
         mainEntity: {
             '@type': 'ItemList',
             'itemListElement': products.slice(0, 10).map((product: any, index: number) => ({
@@ -140,7 +141,7 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
             <Navbar />
             <CollectionsClient
                 initialProducts={products as any}
-                categories={categories}
+                categories={subCategories as any}
                 tags={tags}
                 initialFilters={initialFilters as any}
             />

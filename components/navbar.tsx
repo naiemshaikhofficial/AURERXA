@@ -278,29 +278,63 @@ export function Navbar() {
           <div className="flex justify-between items-start md:items-center h-full">
             <Link href="/" className="flex-shrink-0 group relative z-50" aria-label="AURERXA Home">
               <img
-                src="https://imagizer.imageshack.com/img922/5651/qYeLiy.png"
+                src="/logo-new-v2.png"
                 alt="AURERXA Logo"
-                className="h-10 md:h-20 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
+                className="h-8 md:h-16 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
               />
             </Link>
 
-            {/* Mobile Cart & Search Actions (Visible only on mobile) */}
+            {/* Mobile Actions (Visible only on mobile) */}
             <div className="flex gap-4 items-center md:hidden relative z-50 pt-1">
-              <Link href="/cart" className="relative text-primary/80 hover:text-primary transition-colors p-2 bg-background/50 rounded-full backdrop-blur-sm border border-border group tactile-press" aria-label={`Cart with ${cartCount} items`}>
+              {/* Search */}
+              <button
+                onClick={openSearch}
+                className="p-2 transition-colors duration-300 group tactile-press"
+                aria-label="Search"
+              >
+                <img
+                  src="https://img.icons8.com/?size=100&id=VNGluvySmxmA&format=png&color=BF9B65"
+                  alt="Search"
+                  className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
+                />
+              </button>
+
+              {/* Shop / Collections */}
+              <Link
+                href="/collections"
+                className="p-2 transition-colors duration-300 group tactile-press"
+                aria-label="Shop Collections"
+              >
+                <img
+                  src="https://img.icons8.com/?size=100&id=121367&format=png&color=BF9B65"
+                  alt="Shop"
+                  className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
+                />
+              </Link>
+
+              {/* Cart */}
+              <Link href="/cart" className="relative p-2 transition-colors duration-300 group tactile-press" aria-label={`Cart with ${cartCount} items`}>
                 <img
                   src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=BF9B65"
                   alt="Cart"
-                  className="w-5 h-5 transition-transform duration-300 group-hover:scale-105"
+                  className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
                 />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-card text-primary text-[9px] font-medium rounded-full flex items-center justify-center border border-border">
+                  <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center border border-background shadow-lg">
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
               </Link>
 
               {mounted && (
-                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <Sheet open={isMobileMenuOpen} onOpenChange={(open) => {
+                  setIsMobileMenuOpen(open)
+                  // Re-check admin status if opening and we have a user but no admin status yet
+                  if (open && user && !isAdmin) {
+                    supabase.from('admin_users').select('role').eq('id', user.id).maybeSingle()
+                      .then(({ data }) => { if (data) setIsAdmin(true) })
+                  }
+                }}>
                   <SheetTrigger asChild>
                     <button className="text-foreground/80 hover:text-primary transition-colors p-2 relative" aria-label="Open navigation menu">
                       <Menu className="w-6 h-6 stroke-1" />
@@ -309,20 +343,20 @@ export function Navbar() {
                       )}
                     </button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[300px] p-0">
-                    <SheetHeader className="p-8 border-b border-border text-left bg-card/30 flex flex-row items-center justify-between">
+                  <SheetContent side="left" className="bg-background border-r border-border text-foreground w-[85vw] max-w-[300px] p-0 flex flex-col h-[100dvh] gap-0 overflow-hidden">
+                    <SheetHeader className="p-4 border-b border-border text-left bg-card/10 flex flex-row items-center justify-between flex-shrink-0">
                       <div>
                         <SheetTitle className="text-3xl font-serif text-foreground/90 font-light tracking-wide">AURERXA</SheetTitle>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-[0.3em]">Est. 1989</p>
                       </div>
                       <ModeToggle />
                     </SheetHeader>
-                    <div className="flex flex-col py-2 relative flex-1 overflow-y-auto no-scrollbar pb-24">
+                    <div className="flex-1 overflow-y-auto no-scrollbar py-2 min-h-0">
                       <motion.div
                         variants={staggerContainer}
                         initial="initial"
                         animate="animate"
-                        className="flex flex-col px-4 min-h-max"
+                        className="flex flex-col px-4 min-h-0"
                       >
                         {[
                           { name: 'Home', href: '/' },
@@ -338,7 +372,7 @@ export function Navbar() {
                               href={item.href}
                               aria-current={pathname === item.href ? 'page' : undefined}
                               className={cn(
-                                "flex items-center justify-between py-6 group border-b border-border/5 transition-all text-sm uppercase tracking-[0.25em] font-light",
+                                "flex items-center justify-between py-3 group border-b border-border/5 transition-all text-sm uppercase tracking-[0.25em] font-light",
                                 pathname === item.href ? "text-primary ml-2" : "text-foreground/60 hover:text-primary hover:ml-2"
                               )}
                             >
@@ -354,10 +388,8 @@ export function Navbar() {
 
                       {/* User Profile Section in Mobile Menu */}
                       <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
                         transition={{ delay: 0.5, duration: 0.8 }}
-                        className="mt-8 px-6 pt-8 border-t border-border space-y-4"
+                        className="flex-shrink-0 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-border space-y-2 bg-card/30 backdrop-blur-xl"
                       >
                         {authLoading ? (
                           <div className="flex items-center justify-center py-4">
@@ -365,34 +397,34 @@ export function Navbar() {
                           </div>
                         ) : user ? (
                           <>
-                            <div className="flex items-center gap-4 mb-6 p-4 rounded-sm bg-muted/10 border border-border">
+                            <div className="flex items-center gap-3 mb-2 p-2 rounded-sm bg-muted/10 border border-border">
                               <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-serif text-lg">
                                 {getInitials()}
                               </div>
                               <div className="flex flex-col gap-1">
-                                <span className="text-xs font-medium text-foreground/80 uppercase tracking-wider">{profile?.full_name || 'My Account'}</span>
-                                <span className="text-[10px] text-muted-foreground font-light">{user.email}</span>
+                                <span className="text-xs font-medium text-foreground/80 uppercase tracking-wider break-words line-clamp-2">{profile?.full_name || 'My Account'}</span>
+                                <span className="text-[10px] text-muted-foreground font-light break-all">{user.email}</span>
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                               <Link
                                 href="/account"
-                                className="flex flex-col items-center justify-center p-4 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
+                                className="flex flex-col items-center justify-center p-2 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
                               >
-                                <Settings className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-primary/60 transition-colors stroke-1" />
-                                <span className="text-[9px] uppercase tracking-widest text-muted-foreground group-hover:text-primary/80">Account</span>
+                                <Settings className="w-4 h-4 mb-1 text-muted-foreground group-hover:text-primary/60 transition-colors stroke-1" />
+                                <span className="text-[8px] uppercase tracking-widest text-muted-foreground group-hover:text-primary/80">Account</span>
                               </Link>
                               <button
                                 onClick={handleSignOut}
-                                className="flex flex-col items-center justify-center p-4 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
+                                className="flex flex-col items-center justify-center p-2 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
                               >
-                                <LogOut className="w-5 h-5 mb-2 text-muted-foreground group-hover:text-destructive/60 transition-colors stroke-1" />
-                                <span className="text-[9px] uppercase tracking-widest text-muted-foreground group-hover:text-destructive/80">Sign Out</span>
+                                <LogOut className="w-4 h-4 mb-1 text-muted-foreground group-hover:text-destructive/60 transition-colors stroke-1" />
+                                <span className="text-[8px] uppercase tracking-widest text-muted-foreground group-hover:text-destructive/80">Sign Out</span>
                               </button>
                               {isAdmin && (
                                 <Link
                                   href="/admin"
-                                  className="flex flex-col items-center justify-center p-4 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2 relative z-50 pointer-events-auto active:scale-95 tactile-press"
+                                  className="flex flex-col items-center justify-center p-2 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2 active:scale-95 tactile-press ml-1 mr-1"
                                 >
                                   <div className="relative">
                                     <Shield className="w-5 h-5 mb-2 text-[#D4AF37] transition-colors stroke-1" />

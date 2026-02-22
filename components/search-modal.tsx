@@ -87,7 +87,7 @@ export function SearchModal() {
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="SEARCH OUR HERITAGE..."
-                            className="w-full bg-transparent border-none text-2xl md:text-5xl font-serif text-white placeholder:text-white/10 focus:outline-none uppercase tracking-widest"
+                            className="w-full bg-transparent border-none text-2xl md:text-3xl font-serif text-white placeholder:text-white/10 focus:outline-none uppercase tracking-widest"
                         />
                         {loading && (
                             <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -101,23 +101,23 @@ export function SearchModal() {
                         <div className="animate-in fade-in slide-in-from-top-4 duration-500">
                             {/* Category & Tag Suggestions Area */}
                             {(suggestions.categories.length > 0 || suggestions.tags.length > 0 || (suggestions.materials && suggestions.materials.length > 0)) && (
-                                <div className="space-y-6 mb-12">
+                                <div className="space-y-6 mb-10">
                                     {/* Material Suggestions - Targeted */}
                                     {suggestions.materials && suggestions.materials.length > 0 && (
-                                        <div className="flex flex-wrap gap-3">
+                                        <div className="flex flex-wrap gap-2">
                                             {suggestions.materials.map(mat => (
                                                 <Link
                                                     key={mat.value}
                                                     href={`/collections?material_type=${mat.value}`}
                                                     onClick={onClose}
-                                                    className="flex items-center gap-2.5 px-5 py-2.5 bg-white/5 border border-white/10 hover:border-primary/40 rounded-full transition-all group"
+                                                    className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 hover:border-primary/40 rounded-full transition-all group"
                                                 >
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${mat.value === 'real_gold' ? 'bg-amber-400' :
-                                                            mat.value === 'gold_plated' ? 'bg-orange-400' :
-                                                                mat.value === 'bentex' ? 'bg-slate-400' :
-                                                                    mat.value === 'silver' ? 'bg-blue-300' : 'bg-cyan-400'
+                                                    <div className={`w-1 h-1 rounded-full ${mat.value === 'real_gold' ? 'bg-amber-400' :
+                                                        mat.value === 'gold_plated' ? 'bg-orange-400' :
+                                                            mat.value === 'bentex' ? 'bg-slate-400' :
+                                                                mat.value === 'silver' ? 'bg-blue-300' : 'bg-cyan-400'
                                                         } group-hover:scale-125 transition-transform`} />
-                                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/60 group-hover:text-white font-bold">
+                                                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/60 group-hover:text-white font-bold">
                                                         Shop in {mat.label}
                                                     </span>
                                                 </Link>
@@ -126,13 +126,13 @@ export function SearchModal() {
                                     )}
 
                                     {/* Standard Categories & Tags */}
-                                    <div className="flex flex-wrap gap-4">
+                                    <div className="flex flex-wrap gap-3">
                                         {suggestions.categories.map(cat => (
                                             <Link
                                                 key={cat.slug}
                                                 href={`/collections/${cat.slug}`}
                                                 onClick={onClose}
-                                                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-sm font-serif italic"
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-xs font-serif italic"
                                             >
                                                 <Compass className="w-3 h-3 text-primary" />
                                                 {cat.name}
@@ -143,7 +143,7 @@ export function SearchModal() {
                                                 key={tag}
                                                 href={`/collections/${tag.toLowerCase()}`}
                                                 onClick={onClose}
-                                                className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-sm uppercase tracking-widest font-light"
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-[10px] uppercase tracking-widest font-light"
                                             >
                                                 <TagIcon className="w-3 h-3 text-primary" />
                                                 {tag}
@@ -154,7 +154,7 @@ export function SearchModal() {
                             )}
 
                             {results.length > 0 ? (
-                                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                                     {results.map((product, idx) => (
                                         <ProductCard
                                             key={product.id}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Search } from 'lucide-react'
 import { Footer } from '@/components/footer'
@@ -8,6 +9,7 @@ import { useSearch } from '@/context/search-context'
 import { getFilteredProducts } from '@/app/actions'
 import { HeritageHighlights } from '@/components/heritage-highlights'
 import { CinematicFilter, FilterState, PRICE_RANGES } from '@/components/cinematic-filter'
+import { CategoryGrid } from '@/components/category-grid'
 import { ProductCard, Product } from '@/components/product-card'
 import { cn } from '@/lib/utils'
 
@@ -19,6 +21,7 @@ interface CollectionsClientProps {
 }
 
 export function CollectionsClient({ initialProducts, categories, tags, initialFilters }: CollectionsClientProps) {
+    const router = useRouter()
     const { openSearch } = useSearch()
     const [viewMode] = useState<'grid' | 'list'>('grid')
     const [filters, setFilters] = useState<FilterState>(initialFilters)
@@ -88,12 +91,14 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
                             </span>
                             <div className="h-[1px] w-16 bg-foreground/20" />
                         </div>
-                        <h1 className="text-6xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4 uppercase">
+                        <h1 className="text-4xl md:text-8xl font-serif font-medium text-foreground/90 tracking-tight leading-none mb-4 uppercase break-words">
                             {filters.tag
                                 ? `${formatTitle(filters.tag)} Collection`
-                                : filters.category !== 'all'
-                                    ? categories.find(c => c.slug === filters.category)?.name || 'Collections'
-                                    : 'Collections'}
+                                : filters.sub_category !== 'all'
+                                    ? categories.find(c => c.slug === filters.sub_category)?.name || 'Collections'
+                                    : filters.category !== 'all'
+                                        ? categories.find(c => c.slug === filters.category)?.name || 'Collections'
+                                        : 'Collections'}
                         </h1>
                         <p className="max-w-xl mx-auto text-muted-foreground font-light text-sm tracking-widest uppercase leading-loose">
                             {filters.tag
@@ -114,90 +119,122 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
                     productCount={products.length}
                 />
 
-                {/* In-Page Search Bar */}
-                <div className="mb-8 max-w-2xl mx-auto">
-                    <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="SEARCH WITHIN COLLECTION..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-card/40 border border-border focus:border-primary/50 rounded-full py-4 pl-12 pr-4 text-[10px] font-premium-sans tracking-[0.2em] outline-none transition-all placeholder:text-muted-foreground/20 uppercase"
-                        />
-                        {searchQuery && (
-                            <button
-                                onClick={() => setSearchQuery('')}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
-                            >
-                                <Loader2 className={cn("w-3 h-3 text-muted-foreground/40", loading && "animate-spin")} />
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Product Grid */}
-                {loading ? (
-                    <div className="min-h-[50vh] flex flex-col items-center justify-center gap-6">
-                        <Loader2 className="w-8 h-8 text-muted-foreground/20 animate-spin" />
-                        <span className="text-[10px] font-premium-sans text-muted-foreground/30 tracking-[0.3em] animate-pulse">ACQUIRING DATA...</span>
-                    </div>
-                ) : products.length === 0 ? (
-                    <div className="min-h-[50vh] flex flex-col items-center justify-center text-center space-y-6 opacity-50">
-                        <span className="text-6xl text-muted-foreground/5 font-serif">Empty</span>
-                        <p className="text-xs text-muted-foreground/30 font-premium-sans tracking-widest uppercase">No artifacts found in this specific curation.</p>
-                        <button
-                            // Reset to default state
-                            onClick={() => {
-                                setSearchQuery('')
-                                handleFilterChange({
-                                    category: 'all',
-                                    sub_category: 'all',
-                                    type: 'all',
-                                    gender: 'all',
-                                    tag: undefined,
-                                    occasion: 'all',
-                                    material_type: 'all',
-                                    priceRange: { label: 'All Prices', min: 0, max: null },
-                                    sortBy: 'newest',
-                                    search: ''
-                                })
-                            }}
-                            className="text-muted-foreground/40 underline underline-offset-8 hover:text-foreground transition-colors text-xs uppercase tracking-widest"
+                {/* Conditional Content: Category Grid or Product Listing */}
+                <AnimatePresence mode="wait">
+                    {filters.category === 'all' && filters.sub_category === 'all' && !searchQuery ? (
+                        <motion.div
+                            key="category-grid"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
                         >
-                            Clear Filters
-                        </button>
-                        <div className="pt-4">
-                            <button
-                                onClick={openSearch}
-                                className="flex items-center gap-3 px-6 py-3 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all group"
-                            >
-                                <Search className="w-3.5 h-3.5 text-primary/60" />
-                                <span className="text-[10px] font-premium-sans tracking-[0.2em] uppercase">Search All Heritage</span>
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className={`grid gap-4 md:gap-px bg-card/5 border border-border p-px ${viewMode === 'grid'
-                            ? 'grid-cols-2 lg:grid-cols-3'
-                            : 'grid-cols-1'
-                            }`}
-                    >
-                        {products.map((product, i) => (
-                            <ProductCard
-                                key={product.id}
-                                product={product}
-                                viewMode={viewMode}
-                                index={i}
-                                // Prioritize the first few images for LCP
-                                priority={i < 4}
+                            <div className="inline-flex items-center gap-4 mb-8">
+                                <span className="text-[10px] font-premium-sans text-muted-foreground tracking-[0.4em] uppercase">Browse Collections</span>
+                                <div className="h-[1px] w-24 bg-border/40" />
+                            </div>
+                            <CategoryGrid
+                                categories={categories}
+                                onCategorySelect={(slug) => router.push(`/collections/${slug}`)}
                             />
-                        ))}
-                    </motion.div>
-                )}
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="product-listing"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            {/* In-Page Search Bar */}
+                            <div className="mb-8 max-w-2xl mx-auto">
+                                <div className="relative group">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                                    <input
+                                        type="text"
+                                        placeholder="SEARCH WITHIN COLLECTION..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="w-full bg-card/40 border border-border focus:border-primary/50 rounded-full py-4 pl-12 pr-4 text-[10px] font-premium-sans tracking-[0.2em] outline-none transition-all placeholder:text-muted-foreground/20 uppercase"
+                                    />
+                                    {searchQuery && (
+                                        <button
+                                            onClick={() => setSearchQuery('')}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
+                                        >
+                                            <Loader2 className={cn("w-3 h-3 text-muted-foreground/40", loading && "animate-spin")} />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Product Listing logic starts here */}
+
+                            {/* Product Grid */}
+                            {loading ? (
+                                <div className="min-h-[50vh] flex flex-col items-center justify-center gap-6">
+                                    <Loader2 className="w-8 h-8 text-muted-foreground/20 animate-spin" />
+                                    <span className="text-[10px] font-premium-sans text-muted-foreground/30 tracking-[0.3em] animate-pulse">ACQUIRING DATA...</span>
+                                </div>
+                            ) : products.length === 0 ? (
+                                <div className="min-h-[50vh] flex flex-col items-center justify-center text-center space-y-6 opacity-50">
+                                    <span className="text-6xl text-muted-foreground/5 font-serif">Empty</span>
+                                    <p className="text-xs text-muted-foreground/30 font-premium-sans tracking-widest uppercase">No artifacts found in this specific curation.</p>
+                                    <button
+                                        // Reset to default state
+                                        onClick={() => {
+                                            setSearchQuery('')
+                                            handleFilterChange({
+                                                category: 'all',
+                                                sub_category: 'all',
+                                                type: 'all',
+                                                gender: 'all',
+                                                tag: undefined,
+                                                occasion: 'all',
+                                                material_type: 'all',
+                                                priceRange: { label: 'All Prices', min: 0, max: null },
+                                                sortBy: 'newest',
+                                                search: ''
+                                            })
+                                        }}
+                                        className="text-muted-foreground/40 underline underline-offset-8 hover:text-foreground transition-colors text-xs uppercase tracking-widest"
+                                    >
+                                        Clear Filters
+                                    </button>
+                                    <div className="pt-4">
+                                        <button
+                                            onClick={openSearch}
+                                            className="flex items-center gap-3 px-6 py-3 bg-foreground/5 hover:bg-foreground/10 border border-foreground/10 transition-all group"
+                                        >
+                                            <Search className="w-3.5 h-3.5 text-primary/60" />
+                                            <span className="text-[10px] font-premium-sans tracking-[0.2em] uppercase">Search All Heritage</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className={`grid gap-4 md:gap-px bg-card/5 border border-border p-px ${viewMode === 'grid'
+                                        ? 'grid-cols-2 lg:grid-cols-3'
+                                        : 'grid-cols-1'
+                                        }`}
+                                >
+                                    {products.map((product, i) => (
+                                        <ProductCard
+                                            key={product.id}
+                                            product={product}
+                                            viewMode={viewMode}
+                                            index={i}
+                                            // Prioritize the first few images for LCP
+                                            priority={i < 4}
+                                        />
+                                    ))}
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
             <HeritageHighlights />
             <Footer />

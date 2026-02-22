@@ -213,14 +213,14 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                                 >
                                                     {slide.subtitle && (
                                                         <p
-                                                            className="font-premium-sans text-[10px] md:text-sm tracking-[0.5em] uppercase mb-2"
-                                                            style={{ color: slide.text_color || 'rgba(251, 191, 36, 0.9)' }} // amber-200/90 default
+                                                            className="font-premium-sans text-[11px] md:text-sm tracking-[0.6em] uppercase mb-3 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] font-semibold"
+                                                            style={{ color: slide.text_color || '#FFFFFF' }} // Shifted to white for universal visibility
                                                         >
                                                             {slide.subtitle.replace(/mordern/gi, 'Modern')}
                                                         </p>
                                                     )}
                                                     <h2
-                                                        className="text-2xl md:text-7xl font-serif font-medium leading-tight drop-shadow-2xl"
+                                                        className="text-2xl md:text-7xl font-serif font-medium leading-tight drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]"
                                                         style={{ color: slide.text_color || 'white' }}
                                                     >
                                                         {slide.title.replace(/mordern/gi, 'Modern')}

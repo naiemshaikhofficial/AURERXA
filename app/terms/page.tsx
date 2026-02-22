@@ -81,13 +81,15 @@ export default function TermsPage() {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">5. Force Majeure & Artisanal Delivery</h2>
+                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">5. Artisanal Production & Non-Negotiable Timelines</h2>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        AURERXA shall not be liable for any delay or failure in performance resulting from causes beyond its reasonable control, including but not limited to raw material shortages (gold/silver price volatility or availability), government regulations, weather conditions, or transportation delays.
+                        By purchasing from AURERXA, you explicitly acknowledge that you are acquiring <strong className="text-foreground">handcrafted fine jewelry</strong>, which is not subject to mass-production speeds.
                     </p>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                        <strong className="text-foreground italic underline">Artisanal Nature & Delivery Timelines:</strong> Most AURERXA products are <strong className="text-foreground">handcrafted and involve intricate manual labor</strong>. By purchasing from us, you acknowledge that delivery timelines are <strong className="text-foreground">estimates only</strong> and "time is not of the essence" for delivery. We prioritize quality and craftsmanship over speed, and late delivery shall not entitle the customer to any compensation, damages, or cancellation beyond the standard 6-hour window.
-                    </p>
+                    <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
+                        <li><strong className="text-foreground">Lead Times:</strong> Production timelines can vary based on the complexity of the design, purity certification (HUID), and raw material quality checks. </li>
+                        <li><strong className="text-foreground">No Guarantee on Speed:</strong> While we aim for prompt delivery, AURERXA shall not be liable for any damages, losses, or cancellations resulting from artisanal production delays.</li>
+                        <li><strong className="text-foreground">Time not of the Essence:</strong> You agree that "Time is not of the essence" for the delivery of our handcrafted products. Quality and purity verification take precedence over delivery urgency.</li>
+                    </ul>
                 </section>
 
                 <section className="space-y-4">
@@ -118,6 +120,7 @@ export default function TermsPage() {
                         <li><strong className="text-foreground">Third-Party Liability:</strong> AURERXA is not liable for any payment failures, data breaches, or technical errors occurring on the third-party payment gateway&apos;s interface.</li>
                         <li><strong className="text-foreground">Transaction Charges:</strong> In the event of an approved cancellation or refund (customer-side), any <strong className="text-foreground">non-refundable payment gateway fees</strong> (typically 2-3%) charged by our service providers will be deducted from the final refund amount.</li>
                         <li><strong className="text-foreground">Price Volatility:</strong> Since the price of gold and silver fluctuates daily, the price at the moment of order placement is final. We will not honor refund requests based on subsequent price drops.</li>
+                        <li><strong className="text-foreground italic">Non-Acceptance (RTO) Charges:</strong> If a customer refuses to accept a high-value shipment without a verifiable reason (e.g., tampered seal), they agree to indemnify AURERXA for all non-recoverable costs. These costs, including but not limited to <strong className="text-foreground">custom luxury packaging, high-value insurance premiums, and two-way dynamic logistics fees</strong>, will be deducted from the eligible refund amount.</li>
                     </ul>
                 </section>
 
@@ -136,13 +139,13 @@ export default function TermsPage() {
                 <section className="bg-primary/5 border border-primary/20 p-6 mt-12">
                     <h2 className="text-lg font-serif font-bold mb-4">Grievance Officer</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                        In accordance with the <strong className="text-foreground">Consumer Protection (E-Commerce) Rules, 2020</strong>, the name and contact details of the Owner Of Aurerxa are provided below:
+                        In accordance with the <strong className="text-foreground">Consumer Protection (E-Commerce) Rules, 2020</strong>, the name and contact details of the Grievance Officer are provided below:
                     </p>
                     <div className="mt-4 text-sm text-foreground space-y-1">
-                        <p><strong>Name:</strong>  Naiemoddin Nijamoddin Shaikh</p>
-                        <p><strong>Designation:</strong> Owner Of Aurerxa</p>
-                        <p><strong>Email:</strong> naiemoddinofficial@gmail.com</p>
-                        <p><strong>Address:</strong> nijamuddin shaikh, kolhewadi road, near tajgarden sangamner 422605</p>
+                        <p><strong>Name:</strong> [Anisur Rehman Shaikh]</p>
+                        <p><strong>Designation:</strong> Legal Compliance Officer</p>
+                        <p><strong>Email:</strong> compliance@aurerxa.com</p>
+                        <p><strong>Address:</strong> Mumbai, Maharashtra, India</p>
                     </div>
                 </section>
             </div>

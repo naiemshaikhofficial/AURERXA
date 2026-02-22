@@ -104,7 +104,7 @@ export default function ContactPage() {
                   <Mail className="text-primary" size={20} />
                   Email
                 </h3>
-                <p className="text-muted-foreground font-light">contact@aurerxa.com</p>
+                <p className="text-muted-foreground font-light">Contact@aurerxa.com</p>
                 <p className="text-sm text-muted-foreground/60 mt-1 font-light">
                   We respond to all inquiries within 24 hours
                 </p>
@@ -115,24 +115,49 @@ export default function ContactPage() {
                   <Phone className="text-primary" size={20} />
                   Phone
                 </h3>
-                <p className="text-muted-foreground font-light">+91 95790 42043</p>
+                <p className="text-muted-foreground font-light">+91 93910 32677</p>
                 <p className="text-sm text-muted-foreground/60 mt-1 font-light">
-                  Monday - Saturday, 10 AM - 6 PM IST
+                  Monday - Saturday, 10 AM - 8 PM IST
                 </p>
               </div>
 
-              <div className="p-6 bg-card border border-border">
+              <div className="p-6 bg-card border border-border mt-auto">
                 <h3 className="text-lg font-serif font-medium mb-3 text-foreground flex items-center gap-3">
                   <MapPin className="text-primary" size={20} />
                   Address
                 </h3>
-                <p className="text-muted-foreground font-light">
-                  nijamuddin shaikh,
-                  <br />
-                  kolhewadi road, near tajgard
-                  <br />
-                  sangamner 422605
-                </p>
+                <div className="space-y-4">
+                  <p className="text-muted-foreground font-light leading-relaxed">
+                    Aurerxa | Nijam Gold Works
+                    <br />
+                    Jedhe Colony, Rangargalli
+                    <br />
+                    Sangamner, Maharashtra 422605
+                  </p>
+
+                  {/* Compact Supportable Map */}
+                  <div className="relative border border-border/50 bg-black/20 overflow-hidden h-[150px] group/map">
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3759.400120661953!2d74.207201!3d19.567351499999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bdd01d03a70e915%3A0xe8958ae639e82931!2sAurerxa%20%7C%20Nijam%20Gold%20Works!5e0!3m2!1sen!2sin!4v1771769037819!5m2!1sen!2sin"
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0, filter: 'grayscale(0.6) contrast(1.2) invert(0.05)' }}
+                      allowFullScreen={true}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="grayscale-[0.6] group-hover/map:grayscale-0 transition-all duration-500"
+                    />
+                  </div>
+
+                  <a
+                    href="https://maps.app.goo.gl/PdTNoNuey3ecsxkt6"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-[10px] text-primary uppercase tracking-[0.2em] hover:underline font-medium"
+                  >
+                    View On Google Maps →
+                  </a>
+                </div>
               </div>
 
               <div className="p-6 bg-card border border-border">

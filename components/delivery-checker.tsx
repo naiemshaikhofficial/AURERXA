@@ -31,9 +31,10 @@ interface DeliveryCheckerProps {
     cartItems?: any[]
     subtotal?: number
     compact?: boolean
+    onShippingUpdate?: (rate: number | null) => void
 }
 
-export function DeliveryChecker({ product, cartItems, subtotal, compact = false }: DeliveryCheckerProps) {
+export function DeliveryChecker({ product, cartItems, subtotal, compact = false, onShippingUpdate }: DeliveryCheckerProps) {
     const [pincode, setPincode] = useState('')
     const [loading, setLoading] = useState(false)
     const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null)
@@ -69,10 +70,12 @@ export function DeliveryChecker({ product, cartItems, subtotal, compact = false 
             const itemsToRate = cartItems || (product ? [{ products: product, quantity: 1 }] : [])
             const shippingRes = await calculateShippingRate(code, itemsToRate, false)
 
+            const rate = shippingRes.success ? shippingRes.rate : undefined
             setDeliveryInfo({
                 ...result,
-                shippingRate: shippingRes.success ? shippingRes.rate : undefined
+                shippingRate: rate
             })
+            if (onShippingUpdate) onShippingUpdate(rate ?? null)
             localStorage.setItem('aurerxa_pincode', code)
         } else {
             setError(result.error || 'Unable to check delivery')
@@ -85,6 +88,7 @@ export function DeliveryChecker({ product, cartItems, subtotal, compact = false 
         setPincode('')
         setDeliveryInfo(null)
         setError(null)
+        if (onShippingUpdate) onShippingUpdate(null)
         localStorage.removeItem('aurerxa_pincode')
     }
 

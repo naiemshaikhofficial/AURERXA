@@ -25,6 +25,7 @@ export function CategoryNav() {
     const pathname = usePathname()
     const [isVisible, setIsVisible] = useState(true)
     const [lastScrollY, setLastScrollY] = useState(0)
+    const [isInteracting, setIsInteracting] = useState(false)
 
     useEffect(() => {
         let scrollTimeout: NodeJS.Timeout
@@ -33,6 +34,11 @@ export function CategoryNav() {
             const currentScrollY = window.scrollY
 
             // Hide on scroll down, show on scroll up
+            if (isInteracting) {
+                setIsVisible(true)
+                return
+            }
+
             if (currentScrollY < 50) {
                 setIsVisible(true)
             } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
@@ -55,7 +61,7 @@ export function CategoryNav() {
             window.removeEventListener('scroll', handleScroll)
             clearTimeout(scrollTimeout)
         }
-    }, [lastScrollY])
+    }, [lastScrollY, isInteracting])
 
     return (
         <AnimatePresence>
@@ -65,10 +71,17 @@ export function CategoryNav() {
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -100, opacity: 0 }}
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    onMouseEnter={() => setIsInteracting(true)}
+                    onMouseLeave={() => setIsInteracting(false)}
+                    onTouchStart={() => setIsInteracting(true)}
+                    onTouchEnd={() => setIsInteracting(false)}
                     className="fixed top-20 md:top-24 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/40 h-20 md:h-24 flex items-center overflow-hidden"
                 >
-                    <div className="max-w-7xl mx-auto px-4 md:px-6 w-full overflow-x-auto no-scrollbar" style={{ touchAction: 'pan-x' }}>
-                        <div className="flex items-center justify-between min-w-max md:min-w-0 gap-6 md:gap-8">
+                    <div
+                        className="w-full overflow-x-auto no-scrollbar overscroll-x-contain touch-pan-x"
+                        data-lenis-prevent
+                    >
+                        <div className="flex items-center justify-start gap-4 md:gap-8 px-4 md:px-8 mx-auto w-max min-w-full lg:justify-center">
                             {categories.map((cat) => {
                                 const isActive = pathname === cat.href || (cat.href !== '/collections' && pathname.startsWith(cat.href))
 
@@ -88,7 +101,7 @@ export function CategoryNav() {
                                                 width={32}
                                                 height={32}
                                                 className={cn(
-                                                    "w-6 h-6 md:w-8 md:h-8 transition-all duration-500 dark:invert-0",
+                                                    "w-6 h-6 md:w-8 md:h-8 transition-all duration-500 dark:invert-0 pointer-events-auto",
                                                     !isActive && "opacity-60"
                                                 )}
                                                 loading="lazy"

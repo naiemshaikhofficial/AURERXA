@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button'
 import { addToWishlist, checkPendingOrder } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
-import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play, Ruler, ShoppingBag, ShieldAlert } from 'lucide-react'
+import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play, Ruler, ShoppingBag, ShieldAlert, Star } from 'lucide-react'
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 import supabaseLoader from '@/lib/supabase-loader'
@@ -22,6 +22,9 @@ import { formatPurity, formatWeight, formatDimensions } from '@/lib/material-int
 import { PairItWith } from '@/components/pair-it-with'
 import { RecentlyViewed } from '@/components/recently-viewed'
 import { MATERIAL_CONFIG, MaterialBadge } from '@/components/product-card'
+import { getProductReviews, getReviewStats } from '@/app/actions'
+import { ReviewList } from '@/components/review-list'
+import { ReviewForm } from '@/components/review-form'
 
 
 interface ProductClientProps {
@@ -140,35 +143,64 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
     // We no longer lock the body scroll to prevent layout shift.
     // Instead, we use overscroll-behavior: contain and stopPropagation.
 
-    // Native Wheel Listener
+    // Native Wheel Listener for Center-to-Pointer Zoom
     useEffect(() => {
         const container = containerRef.current
         if (!container) return
 
         const onWheel = (e: WheelEvent) => {
-            // If scale > 1, we always prevent default to avoid page movement
-            // If scale === 1, we only prevent if zooming (ctrlKey)
-            if (scale > 1 || e.ctrlKey || Math.abs(e.deltaY) > 2) {
+            if (e.ctrlKey || Math.abs(e.deltaY) > 2) {
                 e.preventDefault()
                 e.stopPropagation()
-                const delta = -e.deltaY * 0.005
-                setScale(prev => Math.min(Math.max(1, prev + delta), 4))
+
+                const zoomSpeed = 0.005
+                const delta = -e.deltaY * zoomSpeed
+                const nextScale = Math.min(Math.max(1, scale + delta), 4)
+
+                if (nextScale !== scale) {
+                    // Calculate zoom-to-pointer offset
+                    const rect = container.getBoundingClientRect()
+                    const mouseX = e.clientX - rect.left
+                    const mouseY = e.clientY - rect.top
+
+                    // Ratio of mouse position relative to container
+                    const rx = (mouseX / rect.width) - 0.5
+                    const ry = (mouseY / rect.height) - 0.5
+
+                    // Adjust x and y based on the change in scale
+                    if (nextScale > 1) {
+                        const scaleChange = nextScale - scale
+                        x.set(x.get() - (rect.width * rx * scaleChange))
+                        y.set(y.get() - (rect.height * ry * scaleChange))
+                    }
+
+                    setScale(nextScale)
+                }
             }
         }
 
         container.addEventListener('wheel', onWheel, { passive: false })
         return () => container.removeEventListener('wheel', onWheel)
-    }, [scale]) // Re-bind when scale changes to ensure correct logic
+    }, [scale, x, y])
 
-    const toggleZoom = () => {
+    const toggleZoom = (e: React.MouseEvent) => {
         if (scale > 1) {
             setScale(1)
+            x.set(0)
+            y.set(0)
         } else {
-            setScale(2.5)
+            const rect = containerRef.current?.getBoundingClientRect()
+            if (rect) {
+                const rx = ((e.clientX - rect.left) / rect.width) - 0.5
+                const ry = ((e.clientY - rect.top) / rect.height) - 0.5
+                setScale(2.5)
+                x.set(-rect.width * rx * 1.5)
+                y.set(-rect.height * ry * 1.5)
+            }
         }
     }
 
-    // Touch Handling (Pinch)
+    // Touch Handling (Pinch-to-Center)
     const touchStartDist = useRef<number>(0)
     const onTouchStart = (e: React.TouchEvent) => {
         if (e.touches.length === 2) {
@@ -182,13 +214,16 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
     const onTouchMove = (e: React.TouchEvent) => {
         if (e.touches.length === 2) {
             e.preventDefault()
-            e.stopPropagation()
             const dist = Math.hypot(
                 e.touches[0].clientX - e.touches[1].clientX,
                 e.touches[0].clientY - e.touches[1].clientY
             )
             const delta = dist - touchStartDist.current
-            setScale(prevs => Math.min(Math.max(1, prevs + delta * 0.015), 4))
+            const nextScale = Math.min(Math.max(1, scale + delta * 0.01), 4)
+
+            if (nextScale !== scale) {
+                setScale(nextScale)
+            }
             touchStartDist.current = dist
         }
     }
@@ -212,7 +247,7 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
             ref={containerRef}
             className="relative w-full h-full overflow-hidden bg-neutral-950 select-none cursor-zoom-in group/zoom isolate"
             style={{
-                touchAction: scale > 1 ? 'none' : 'pan-y',
+                touchAction: 'none', // Critical for custom gestures
                 contain: 'paint',
                 overscrollBehavior: 'contain'
             }}
@@ -227,7 +262,7 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
                 dragConstraints={getConstraints()}
                 dragElastic={0.1}
                 dragMomentum={false}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                transition={{ type: 'spring', damping: 30, stiffness: 250 }}
             >
                 <div className="relative w-full h-full pointer-events-none">
                     <Image
@@ -243,20 +278,28 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
                 </div>
             </motion.div>
 
-            {/* Floating Controls */}
-            <div className={`absolute bottom-6 right-6 flex flex-col gap-2 transition-opacity duration-500 ${scale > 1 ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <button
-                    onClick={() => setScale(1)}
-                    className="w-12 h-12 flex items-center justify-center bg-neutral-900/80 backdrop-blur-xl text-white rounded-full hover:bg-white hover:text-black transition-all border border-white/10"
-                >
-                    <RefreshCw className="w-4 h-4" />
-                </button>
-            </div>
-
-            {/* Hint */}
-            <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 px-6 py-2.5 bg-neutral-900/40 backdrop-blur-xl rounded-full text-[9px] text-white/40 uppercase tracking-[0.3em] pointer-events-none transition-all duration-500 border border-white/5 ${scale === 1 ? 'opacity-100' : 'opacity-0 translate-y-4'}`}>
-                Double Click / Pinch to Explore
-            </div>
+            {/* Floating Reset Control */}
+            <AnimatePresence>
+                {scale > 1 && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="absolute bottom-6 right-6 flex flex-col gap-2 z-40"
+                    >
+                        <button
+                            onClick={() => {
+                                setScale(1)
+                                x.set(0)
+                                y.set(0)
+                            }}
+                            className="w-12 h-12 flex items-center justify-center bg-neutral-900/80 backdrop-blur-xl text-white rounded-full hover:bg-white hover:text-black transition-all border border-white/10 shadow-2xl"
+                        >
+                            <RefreshCw className="w-4 h-4" />
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }
@@ -275,6 +318,23 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const [selectedImage, setSelectedImage] = useState(0)
     const [isVTOOpen, setIsVTOOpen] = useState(false)
     const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
+    const [scrolled, setScrolled] = useState(false)
+    const [isBreakdownOpen, setIsBreakdownOpen] = useState(false)
+    const [sortBy, setSortBy] = useState('Newest')
+    const [isSortOpen, setIsSortOpen] = useState(false)
+    const [shippingCharge, setShippingCharge] = useState<number | null>(null)
+
+    // Handle scroll for sticky bar
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 600)
+        }
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+    const [reviews, setReviews] = useState<any[]>([])
+    const [reviewStats, setReviewStats] = useState({ average: 0, total: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } })
+    const [isReviewFormOpen, setIsReviewFormOpen] = useState(false)
 
     // Memoize image array to prevent re-calculations on every render
     const allImages = React.useMemo(() => {
@@ -325,6 +385,21 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
         })
         return final
     }, [product])
+
+    // Load Reviews
+    const loadReviews = async () => {
+        if (!product.id) return
+        const [fetchedReviews, fetchedStats] = await Promise.all([
+            getProductReviews(product.id),
+            getReviewStats(product.id)
+        ])
+        setReviews(fetchedReviews)
+        setReviewStats(fetchedStats)
+    }
+
+    useEffect(() => {
+        loadReviews()
+    }, [product.id])
 
     // Add to recently viewed on mount
     useEffect(() => {
@@ -554,16 +629,39 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                         </span>
                                     )}
                                     {product.stock < 5 && product.stock > 0 && (
-                                        <span className="px-3 py-1 border border-red-500/20 text-[9px] uppercase tracking-widest text-red-500/80">
-                                            Low Stock
+                                        <span className="px-3 py-1 border border-red-500/20 text-[9px] uppercase tracking-widest text-red-500/80 animate-pulse">
+                                            Only {product.stock} left in stock
                                         </span>
                                     )}
                                 </div>
                             </div>
 
-                            <h1 className="text-4xl md:text-5xl lg:text-7xl font-serif text-white/90 leading-[0.9] tracking-tight">
-                                {product.name}
-                            </h1>
+                            <div className="flex items-center justify-between">
+                                <h1 className="text-4xl md:text-5xl lg:text-7xl font-serif text-white/90 leading-[0.9] tracking-tight">
+                                    {product.name}
+                                </h1>
+                                {reviewStats.total > 0 && (
+                                    <div className="flex flex-col items-end gap-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex gap-0.5">
+                                                {[1, 2, 3, 4, 5].map((s) => (
+                                                    <Star
+                                                        key={s}
+                                                        className={`w-2.5 h-2.5 stroke-[1.5] ${s <= Math.round(reviewStats.average) ? 'fill-amber-200 text-amber-200' : 'text-white/5'}`}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <span className="text-[10px] font-medium tracking-widest text-white/60">{reviewStats.average}</span>
+                                        </div>
+                                        <button
+                                            onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}
+                                            className="text-[9px] text-white/40 uppercase tracking-widest hover:text-amber-500 transition-colors border-b border-white/10"
+                                        >
+                                            {reviewStats.total} Reviews
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
 
                             <p className="text-3xl font-light text-amber-100/80 font-serif italic">
                                 ₹{product.price.toLocaleString('en-IN')}
@@ -738,10 +836,71 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             </div>
                         </div>
 
-                        <DeliveryChecker product={product} />
+                        <DeliveryChecker
+                            product={product}
+                            onShippingUpdate={(rate) => setShippingCharge(rate)}
+                        />
 
 
                         {/* Selectors */}
+                        <div className="flex items-center gap-4 mb-4">
+                            <h1 className="text-2xl md:text-3xl font-serif italic text-white tracking-tight">{product.name}</h1>
+                            <div className="h-px flex-1 bg-white/5" />
+                        </div>
+
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-baseline gap-4">
+                                <span className="text-2xl font-serif text-white tracking-tight">₹{product.price.toLocaleString()}</span>
+                                {product.original_price && (
+                                    <span className="text-sm text-white/30 line-through">₹{product.original_price.toLocaleString()}</span>
+                                )}
+                                <span className="text-[10px] uppercase tracking-[0.2em] text-amber-500/60 font-medium">Incl. of all taxes</span>
+                            </div>
+                            {shippingCharge !== null && (
+                                <div className="text-right">
+                                    <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-1">Shipping Charge</p>
+                                    <p className="text-xs font-bold text-amber-100/80 tracking-widest">
+                                        {shippingCharge > 0 ? `₹${shippingCharge}` : 'FREE'}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* ACTIONS BELOW PRICE - As requested */}
+                        <div className="flex flex-col gap-3 mb-12">
+                            {product.stock > 0 ? (
+                                <>
+                                    <Button
+                                        onClick={handleBuyNow}
+                                        disabled={addingToCart}
+                                        className="w-full bg-white text-black h-14 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-neutral-200 transition-all rounded-none"
+                                    >
+                                        Buy It Now
+                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            onClick={handleAddToCart}
+                                            disabled={addingToCart}
+                                            className="flex-[3] bg-transparent border border-white/20 text-white h-12 uppercase tracking-[0.2em] text-[9px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
+                                        >
+                                            {addingToCart ? <Loader2 className="animate-spin w-3 h-3" /> : 'Add to Bag'}
+                                        </Button>
+                                        <button
+                                            onClick={handleAddToWishlist}
+                                            className={`flex-1 h-12 flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-transparent border-white/20 text-white hover:bg-white/5'}`}
+                                        >
+                                            <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <Button disabled className="w-full bg-neutral-900 text-white/40 h-14 uppercase tracking-[0.3em] text-[10px] font-bold border border-white/5 rounded-none">
+                                    Out of Stock
+                                </Button>
+                            )}
+                        </div>
+
+                        {/* Selectors Area */}
                         <div className="space-y-8 pt-4">
                             {/* Sizes */}
                             {product.sizes && product.sizes.length > 0 && (
@@ -799,97 +958,207 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 </div>
                             )}
 
-                            {/* Actions */}
+                            {/* Additional Info / CTA Area */}
                             <div className="flex flex-col gap-4 pt-6">
-                                {product.stock > 0 ? (
-                                    <>
-                                        <Button
-                                            onClick={handleBuyNow}
-                                            disabled={addingToCart}
-                                            className="w-full bg-white text-neutral-950 h-16 uppercase tracking-[0.3em] text-xs font-bold hover:bg-neutral-200 transition-all rounded-none"
-                                        >
-                                            Purchase Now
-                                        </Button>
-
-                                        <div className="flex gap-4">
-                                            <Button
-                                                onClick={handleAddToCart}
-                                                disabled={addingToCart}
-                                                className="flex-1 bg-transparent border border-white/20 text-white h-14 uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
-                                            >
-                                                {addingToCart ? <Loader2 className="animate-spin w-4 h-4" /> : 'Add to Bag'}
-                                            </Button>
-
-                                            <button
-                                                onClick={handleAddToWishlist}
-                                                className={`w-14 h-14 flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-transparent border-white/20 text-white hover:bg-white/5'}`}
-                                            >
-                                                <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
-                                            </button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <Button
-                                            disabled
-                                            className="w-full bg-neutral-900 text-white/40 h-16 uppercase tracking-[0.3em] text-xs font-bold border border-white/5 rounded-none cursor-not-allowed"
-                                        >
-                                            Currently Unavailable
-                                        </Button>
-                                        <button
-                                            onClick={handleAddToWishlist}
-                                            className={`w-full h-14 flex items-center justify-center gap-3 border transition-all duration-300 ${inWishlist ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-transparent border-white/20 text-white hover:border-white hover:bg-white hover:text-black uppercase tracking-widest text-[10px] font-bold'}`}
-                                        >
-                                            <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
-                                            {inWishlist ? 'Added to Wishlist' : 'Add to Wishlist'}
-                                        </button>
-                                    </div>
-                                )}
+                                {/* Actions moved above to price area for prominence */}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* STICKY MOBILE ACTIONS - Lifted above BottomNav (z-50) with safe clearance */}
-            <div className="fixed bottom-20 left-0 right-0 z-[45] lg:hidden bg-neutral-950/80 backdrop-blur-2xl border-t border-white/5 p-4 pb-4 animate-in slide-in-from-bottom-5 duration-500 shadow-[0_-20px_50px_rgba(0,0,0,0.8)]">
-                <div className="max-w-md mx-auto">
-                    {product.stock > 0 ? (
-                        <div className="flex gap-3">
-                            <button
-                                onClick={handleAddToCart}
-                                disabled={addingToCart}
-                                className="flex-1 bg-neutral-900 border border-white/10 text-white h-14 uppercase tracking-[0.15em] text-[10px] font-black hover:bg-neutral-800 active:scale-95 transition-all rounded-xl flex items-center justify-center gap-3 px-4"
-                            >
-                                {addingToCart ? <Loader2 className="animate-spin w-4 h-4" /> : (
-                                    <div className="flex items-center gap-3">
-                                        <ShoppingBag className="w-4 h-4 text-amber-500/60" />
-                                        <span>Bag</span>
-                                    </div>
-                                )}
-                            </button>
-                            <button
-                                onClick={handleBuyNow}
-                                disabled={addingToCart}
-                                className="flex-[2] bg-amber-500 text-black h-14 uppercase tracking-[0.2em] text-[10px] font-black hover:bg-amber-400 active:scale-95 transition-all rounded-xl shadow-[0_0_30px_rgba(var(--primary),0.2)]"
-                            >
-                                Buy Masterpiece
-                            </button>
+            {/* STICKY ACTION BAR - Mirroring Palmonas Luxury UI */}
+            <AnimatePresence>
+                {scrolled && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                        className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-950/90 backdrop-blur-xl border-t border-white/5 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]"
+                    >
+                        <div className="max-w-7xl mx-auto px-4 py-4 md:py-5 flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 min-w-0">
+                                <div className="w-12 h-12 md:w-14 md:h-14 bg-white/5 rounded-none overflow-hidden flex-shrink-0 border border-white/5">
+                                    <Image
+                                        src={sanitizeImagePath(product.image_url)}
+                                        alt={product.name}
+                                        width={100}
+                                        height={100}
+                                        className="w-full h-full object-cover"
+                                        loader={supabaseLoader}
+                                    />
+                                </div>
+                                <div className="hidden sm:block min-w-0">
+                                    <h4 className="text-xs font-serif italic text-white truncate">{product.name}</h4>
+                                    <p className="text-[10px] text-white/40 tracking-widest uppercase mt-0.5">₹{product.price.toLocaleString()}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 flex-1 md:flex-none justify-end">
+                                <div className="text-right mr-4 hidden md:block">
+                                    <p className="text-lg font-serif text-white">₹{product.price.toLocaleString()}</p>
+                                    <p className="text-[9px] text-amber-500/60 uppercase tracking-widest font-bold">
+                                        {shippingCharge !== null ? (shippingCharge > 0 ? `+ ₹${shippingCharge} Shipping` : 'Free Shipping') : (product.price >= 50000 ? 'Free Shipping' : 'Standard Shipping')}
+                                    </p>
+                                </div>
+                                <Button
+                                    onClick={handleAddToCart}
+                                    disabled={addingToCart}
+                                    className="hidden md:flex bg-transparent border border-white/20 text-white h-12 px-8 uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
+                                >
+                                    {addingToCart ? <Loader2 className="animate-spin w-3 h-3" /> : 'Add to Bag'}
+                                </Button>
+                                <Button
+                                    onClick={handleBuyNow}
+                                    disabled={addingToCart}
+                                    className="flex-1 md:flex-none bg-white text-black h-12 px-10 md:px-12 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-neutral-200 transition-all rounded-none shadow-[0_4px_20px_rgba(255,255,255,0.1)]"
+                                >
+                                    Buy It Now
+                                </Button>
+                            </div>
                         </div>
-                    ) : (
-                        <button
-                            disabled
-                            className="w-full bg-neutral-900 border border-white/10 text-white/40 h-14 uppercase tracking-[0.2em] text-[10px] font-black rounded-xl cursor-not-allowed flex items-center justify-center gap-3"
-                        >
-                            <ShieldAlert className="w-4 h-4 opacity-50" />
-                            Sold Out
-                        </button>
-                    )}
-                </div>
-            </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Smart Recommendations - Curated Pairings */}
             <PairItWith productId={product.id} />
+
+            {/* REVIEW SECTION - Refined Palmonas Style */}
+            <section id="reviews" className="max-w-7xl mx-auto px-6 py-24 border-t border-white/5">
+                <div className="flex flex-col gap-12 mb-16">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                        {/* Rating Breakdown Toggle */}
+                        <div className="space-y-4">
+                            <button
+                                onClick={() => setIsBreakdownOpen(!isBreakdownOpen)}
+                                className="flex items-center gap-4 group"
+                            >
+                                <div className="flex gap-1">
+                                    {[1, 2, 3, 4, 5].map((s) => (
+                                        <Star
+                                            key={s}
+                                            className={`w-5 h-5 transition-all duration-300 ${s <= Math.round(reviewStats.average) ? 'fill-white text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' : 'text-white/10'}`}
+                                        />
+                                    ))}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl font-serif text-white">{reviewStats.average.toFixed(1)}</span>
+                                    <span className="text-sm font-medium text-white/40 tracking-widest uppercase">
+                                        {reviewStats.total.toLocaleString()} Reviews
+                                    </span>
+                                    <motion.div
+                                        animate={{ rotate: isBreakdownOpen ? 180 : 0 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        <svg className="w-4 h-4 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                                    </motion.div>
+                                </div>
+                            </button>
+
+                            <AnimatePresence>
+                                {isBreakdownOpen && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.4, ease: "circOut" }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="pt-4 space-y-3 w-full max-w-sm">
+                                            {[5, 4, 3, 2, 1].map((rating) => {
+                                                const counts = reviews.filter(r => r.rating === rating).length;
+                                                const percentage = reviewStats.total > 0 ? (counts / reviewStats.total) * 100 : 0;
+                                                return (
+                                                    <div key={rating} className="flex items-center gap-4 group">
+                                                        <span className="text-[10px] font-bold text-white/40 w-4">{rating}</span>
+                                                        <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${percentage}%` }}
+                                                                transition={{ duration: 1, delay: 0.2 }}
+                                                                className="h-full bg-white/80 rounded-full"
+                                                            />
+                                                        </div>
+                                                        <span className="text-[10px] font-medium text-white/20 w-8">{counts}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+
+                        {/* Actions & Filters */}
+                        <div className="flex items-center gap-3">
+                            {/* Sort Dropdown */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsSortOpen(!isSortOpen)}
+                                    className="h-12 px-6 flex items-center gap-3 border border-white/5 rounded-none bg-white/[0.02] hover:bg-white/[0.05] transition-all text-white/60 text-[10px] font-bold uppercase tracking-widest"
+                                >
+                                    Sort: {sortBy}
+                                    <svg className={`w-3 h-3 transition-transform duration-300 ${isSortOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
+                                </button>
+
+                                <AnimatePresence>
+                                    {isSortOpen && (
+                                        <>
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                onClick={() => setIsSortOpen(false)}
+                                                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+                                            />
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute right-0 top-full mt-2 w-48 z-50 bg-neutral-900 border border-white/10 shadow-2xl py-2"
+                                            >
+                                                {['Featured', 'Newest', 'Highest Ratings', 'Lowest Ratings'].map((option) => (
+                                                    <button
+                                                        key={option}
+                                                        onClick={() => {
+                                                            setSortBy(option);
+                                                            setIsSortOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-white/5 ${sortBy === option ? 'text-white' : 'text-white/40'}`}
+                                                    >
+                                                        {option}
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+                                        </>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            <Button
+                                onClick={() => setIsReviewFormOpen(true)}
+                                className="bg-white text-black hover:bg-neutral-200 transition-all rounded-none font-bold text-[10px] uppercase tracking-[0.2em] h-12 px-10"
+                            >
+                                Write a review
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                <ReviewList reviews={reviews} />
+
+                {/* Review Modal */}
+                <ReviewForm
+                    productId={product.id}
+                    isOpen={isReviewFormOpen}
+                    onClose={() => setIsReviewFormOpen(false)}
+                    onSuccess={() => {
+                        loadReviews()
+                    }}
+                />
+            </section>
 
             {/* Recently Viewed - User Journey */}
             <RecentlyViewed />

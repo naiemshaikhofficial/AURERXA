@@ -16,3 +16,7 @@ export function sanitizeImagePath(url: string | null | undefined): string {
   // Ensure it starts with a single forward slash
   return normalized.startsWith('/') ? normalized : `/${normalized}`
 }
+export function isCapacitor(): boolean {
+  if (typeof window === 'undefined') return false;
+  return !!(window as any).Capacitor;
+}

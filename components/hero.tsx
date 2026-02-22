@@ -68,13 +68,12 @@ export function Hero() {
           {/* Logo Brand Mark - Removed motion wrapper for instant LCP */}
           <div className="mb-6 relative inline-block">
             <Image
-              src="/logo.webp"
-              alt="AURERXA Official Logo - World-Class Luxury & Bespoke Jewelry"
-              width={112}
-              height={112}
+              src="/logo-new-v2.png"
+              alt="AURERXA Official Logo"
+              width={160}
+              height={64}
               priority
-              loading="eager"
-              className="w-20 md:w-28 h-auto relative z-10 opacity-90 drop-shadow-xl dark:invert-0 invert"
+              className="w-24 md:w-36 h-auto relative z-10 opacity-90 drop-shadow-2xl dark:invert-0"
             />
           </div>
 

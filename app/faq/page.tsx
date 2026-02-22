@@ -1,84 +1,166 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { ChevronDown } from 'lucide-react'
 
 const faqs = [
     {
-        category: 'Orders & Shipping',
+        category: 'Ordering & Customization',
         questions: [
             {
-                q: 'How long does delivery take?',
-                a: 'Delivery typically takes 3-5 business days for metro cities and 5-10 business days for other locations. You will receive a tracking number once your order is shipped.'
+                q: 'How do I place a custom (Bespoke) jewelry order?',
+                a: 'At AURERXA, we specialize in bringing your vision to life. You can visit our "Custom Jewelry" page and fill out the design form with your requirements. Our master artisans will review the design and contact you with a feasibility report and quote within 24-48 hours.'
             },
             {
-                q: 'Is shipping free?',
-                a: 'Yes! We offer free shipping on all orders above ₹50,000. For orders below this amount, a flat shipping fee of ₹500 applies.'
+                q: 'Can I cancel my order?',
+                a: 'Orders can be cancelled only within 6 hours of placement or before the status changes to "Packed", whichever is earlier. Once an order is shipped or artisanal work has begun on a custom piece, it cannot be cancelled.'
             },
             {
-                q: 'Can I track my order?',
-                a: 'Absolutely! Once your order is shipped, you will receive a tracking link via email and SMS. You can also track from your account dashboard.'
-            },
-            {
-                q: 'Do you ship internationally?',
-                a: 'Currently, we only ship within India. International shipping will be available soon.'
+                q: 'What happens if my order is cancelled by AURERXA?',
+                a: 'AURERXA reserves the right to cancel orders that do not pass our rigorous multi-stage Quality Check (QC) or due to unexpected inventory errors. In such cases, a 100% refund is issued to your original payment method immediately.'
             }
         ]
     },
     {
-        category: 'Returns & Refunds',
+        category: 'Shipping & Secure Delivery',
         questions: [
+            {
+                q: 'What are the shipping charges?',
+                a: 'We offer FREE Insured Shipping on all orders above ₹50,000 across India. For orders below this amount, a flat insurance and handling fee of ₹500 applies to ensure your luxury item is protected during transit.'
+            },
+            {
+                q: 'What is the "Broken Seal" policy?',
+                a: 'AURERXA parcels are shipped in tamper-evident luxury boxes with a brand seal. DO NOT accept the parcel if the seal is broken or tampered with. Refuse the delivery immediately and contact our support team.'
+            },
+            {
+                q: 'How long will my delivery take?',
+                a: 'Standard delivery typically takes 3-5 business days for metros and 5-10 business days for other locations across India, but since most AURERXA pieces are handcrafted masterpieces, intricate designs may require additional time for artisanal perfection and rigorous quality checks.'
+            },
+            {
+                q: 'Why does handcrafted jewelry take longer to deliver?',
+                a: 'Unlike mass-produced items, every AURERXA masterpiece is hand-forged and meticulously detailed by our master artisans. This slow, artisanal process ensures your jewelry is a unique work of art. Quality takes time, and we never rush perfection.'
+            },
+            {
+                q: 'What happens if I refuse to accept my delivery (RTO)?',
+                a: 'If a parcel is rejected without a valid reason (like a broken seal), AURERXA will deduct all logistics costs—including premium packaging, high-value transit insurance, and forward/return shipping fees—from your refund amount.'
+            },
+            {
+                q: 'Are the shipments insured?',
+                a: 'Yes, 100%. Every shipment is fully insured by AURERXA. We partner with premium high-value logistics like Delhivery, Bluedart, and Sequel to ensure secure door-to-door delivery with a mandatory signature.'
+            }
+        ]
+    },
+    {
+        category: 'Quality, Purity & Verification',
+        questions: [
+            {
+                q: 'How do I know my gold jewelry is authentic?',
+                a: 'All our gold jewelry (14K to 24K) is BIS Hallmarked and carries a unique HUID (Hallmark Unique ID). You can verify this using the "BIS Care" app. Each piece also carries the AURERXA brand stamp.'
+            },
+            {
+                q: 'Does all jewelry carry a Hallmark?',
+                a: 'BIS Hallmarking is applicable only to precious gold (14K-24K) and certain silver items. Gold-plated, Bentex, and artificial fashion accessories do not carry a BIS Hallmark as they are not made entirely of solid precious metals.'
+            },
+            {
+                q: 'How are product rates calculated?',
+                a: 'Our rates are a combination of the global live spot price, a local Mumbai/Nashik market calibration factor, and a small luxury markup. This ensures you get fair, real-time pricing for premium craftsmanship.'
+            },
+            {
+                q: 'What is the "Anti-Fraud Weight Check"?',
+                a: 'To prevent fraud, we record the weight of every product at 0.01g precision during packing. This weight is documented on your invoice. For any return claim, the product weight must match our dispatch records exactly.'
+            }
+        ]
+    },
+    {
+        category: 'Returns & Unboxing Protocols',
+        questions: [
+            {
+                q: 'What is the Mandatory Unboxing Protocol?',
+                a: 'For any claim regarding damage or a wrong product, a continuous, uncut unboxing video is MANDATORY. The video must show the sealed parcel, the shipping label, and the unboxing process without any edits. Without this, claims are automatically rejected.'
+            },
             {
                 q: 'What is your return policy?',
-                a: 'We offer a 15-day return policy on all purchases. Items must be unused, in original condition with all packaging and certificates intact.'
+                a: 'Due to the high intrinsic value of jewelry, we maintain a Strict No-Refund Policy. Returns are only considered for verifiable manufacturing defects or wrong items received, which must be reported within 24 hours of delivery with a valid unboxing video.'
             },
             {
-                q: 'How do I initiate a return?',
-                a: 'Contact our customer service at Support@aurerxa.com with your order number. We will arrange a pickup from your location.'
-            },
-            {
-                q: 'How long does the refund take?',
-                a: 'Refunds are processed within 10-15 business days after we receive and verify the returned item.'
+                q: 'How are refunds processed for cancellations?',
+                a: 'For approved cancellations within the 6-hour window, the refund is processed within 5-7 business days. Please note that non-refundable payment gateway fees (typically 2-3%) charged by service providers may be deducted.'
             }
         ]
     },
     {
-        category: 'Product & Quality',
+        category: 'Trust, Heritage & Authenticity',
         questions: [
             {
-                q: 'Is your jewelry certified?',
-                a: 'Yes, all our gold jewelry is BIS hallmarked and comes with a certificate of authenticity. Diamond jewelry comes with IGI/GIA certification.'
+                q: 'Why should I trust AURERXA?',
+                a: 'AURERXA is built on a 50-year legacy of trust and craftsmanship. We are an established boutique jewelry house with a physical presence. Every high-value shipment is insured, hallmarked, and triple-checked for quality before it leaves our heritage workshops.'
             },
             {
-                q: 'What is the gold purity?',
-                a: 'We offer 22K (916) and 18K (750) gold jewelry. The purity is clearly mentioned on each product page and stamped on the jewelry.'
+                q: 'How can I verify the HUID of my jewelry?',
+                a: 'You can verify the authenticity of your gold jewelry using the "BIS Care" mobile app. Simply enter the 6-digit HUID code stamped on your jewelry to see the hallmarking details and purity records issued by the Government of India.'
             },
             {
-                q: 'Do you offer customization?',
-                a: 'Yes! We offer custom jewelry design services. Fill out our custom order form and our team will get in touch with you.'
-            },
-            {
-                q: 'How do I care for my jewelry?',
-                a: 'Store your jewelry in the box provided. Clean with a soft cloth. Avoid contact with perfumes, chemicals, and water. We recommend professional cleaning every 6 months.'
+                q: 'Are my diamonds certified?',
+                a: 'Yes, all our diamond jewelry comes with world-renowned IGI (International Gemological Institute) or GIA (Gemological Institute of America) certification, ensuring you receive only the highest quality natural diamonds.'
             }
         ]
     },
     {
-        category: 'Payment & Security',
+        category: 'Store & Boutique Visits',
         questions: [
             {
-                q: 'What payment methods do you accept?',
-                a: 'We accept all major credit/debit cards, UPI, and net banking for a secure transaction experience.'
+                q: 'Can I pick up my order from the store?',
+                a: 'Yes, we offer a "Store Pickup" option. You can place your order online and select pickup at our Sangamner boutique. Please bring a valid government ID and your order confirmation for verification during pickup.'
             },
             {
-                q: 'Is my payment information secure?',
-                a: 'Absolutely. All transactions are encrypted using SSL technology and processed through secure payment gateways. We never store your card details.'
+                q: 'Where is your physical boutique located?',
+                a: 'Our main heritage boutique is located at Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605. We invite you to visit us and experience our collections in person.'
             },
             {
-                q: 'Can I pay in EMI?',
-                a: 'Yes, we offer EMI options on select credit cards for orders above ₹25,000. EMI options will be shown at checkout.'
+                q: 'Can I see a piece virtually before buying?',
+                a: 'Absolutely! We offer virtual try-ons and WhatsApp video calls. Our concierge team can show you the jewelry in detail under natural lighting to help you make an informed decision.'
+            }
+        ]
+    },
+    {
+        category: 'Gifting & Packaging',
+        questions: [
+            {
+                q: 'Do you offer gift wrapping?',
+                a: 'Every AURERXA order arrives in our signature premium luxury packaging, designed for gifting. You can also add a personalized gift message during checkout, which we will print on a high-quality keepsake card.'
+            },
+            {
+                q: 'Will the invoice be included in a gift order?',
+                a: 'For gift orders, we can exclude the physical invoice from the parcel if requested. However, as per Indian laws, a digital invoice will always be sent to the registered email and may be required for insurance/returns.'
+            }
+        ]
+    },
+    {
+        category: 'Jewelry Sizing & Fit',
+        questions: [
+            {
+                q: 'How do I find my ring size?',
+                a: 'We have a detailed Size Guide available on our website. You can use our printable sizer or measure an existing ring. If you are still unsure, we recommend visiting a local jeweler for professional measurement before placing a high-value order.'
+            },
+            {
+                q: 'What if the bangle or ring I ordered doesn\'t fit?',
+                a: 'Since most of our pieces are handcrafted to order, we highly recommend double-checking sizes. While we offer a return policy for defects, size-related exchanges are handled on a case-by-case basis and may incur additional artisanal/shipping charges.'
+            }
+        ]
+    },
+    {
+        category: 'Jewelry Care & Maintenance',
+        questions: [
+            {
+                q: 'How should I care for my AURERXA jewelry?',
+                a: 'Store jewelry in the original AURERXA box provided. Avoid contact with perfumes, hairsprays, detergents, and water. For gold-plated items, natural wear and tear of plating is expected over time and is not considered a defect.'
+            },
+            {
+                q: 'Do you offer professional cleaning services?',
+                a: 'Yes, we offer professional cleaning and polishing for all AURERXA gold and diamond products. Please contact our support team to schedule a maintenance service for your jewelry.'
             }
         ]
     }
@@ -133,9 +215,9 @@ export default function FAQPage() {
                     <div className="mt-16 text-center p-8 bg-card border border-border">
                         <h3 className="font-serif text-xl font-medium mb-3">Still have questions?</h3>
                         <p className="text-muted-foreground mb-6">Our customer support team is here to help</p>
-                        <a href="mailto:Support@aurerxa.com" className="inline-block px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium uppercase tracking-widest text-sm transition-colors">
+                        <Link href="/contact" className="inline-block px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium uppercase tracking-widest text-sm transition-colors">
                             Contact Us
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </main>

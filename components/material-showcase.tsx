@@ -102,15 +102,6 @@ export function MaterialShowcase({
 }) {
     return (
         <div className="space-y-0">
-            {/* Branding Header */}
-            <div className="bg-neutral-950 pt-16 md:pt-24 px-6 md:px-12 text-center space-y-4 md:space-y-6">
-                <h2 className="text-3xl md:text-9xl font-serif font-black italic text-white tracking-tighter leading-none">
-                    Discovery by <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">Material.</span>
-                </h2>
-                <p className="max-w-xl mx-auto text-white/40 text-[9px] md:text-sm font-light tracking-[0.2em] uppercase leading-loose italic">
-                    Each piece is a testament to our legacy of precision, crafted from the world's most precious elements.
-                </p>
-            </div>
 
             {realGoldProducts && realGoldProducts.length > 0 && (
                 <SectionRow

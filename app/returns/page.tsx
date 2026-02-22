@@ -97,15 +97,31 @@ export default function ReturnsShippingPage() {
                                 </li>
                             </ul>
                             <p className="mt-4 text-[10px] text-primary italic leading-tight">
-                                * Note: Many AURERXA pieces are <strong className="text-foreground underline">handcrafted by artisans</strong>. Intricate designs may require additional time for perfection. Delivery dates are estimates, not guarantees.
+                                <strong className="text-foreground uppercase tracking-tighter">Artisanal Production Disclaimer:</strong><br />
+                                Most AURERXA masterpieces are <strong className="text-foreground">hand-forged and meticulously crafted by master artisans</strong>. By Placing an order, you acknowledge and agree that delivery timelines are <strong className="text-foreground underline">good-faith estimates only</strong>. Due to the high precision required for hand-setting stones and hallmarking, "Time is not of the essence." We prioritize absolute quality and certification over delivery speed.
                             </p>
                         </div>
                     </div>
 
-                    <div className="bg-primary/5 border border-primary/20 p-6">
-                        <h3 className="font-medium text-foreground mb-2">Shipping Charges</h3>
-                        <p className="text-sm text-muted-foreground">
-                            We offer <span className="text-primary font-bold">FREE Insured Shipping</span> on all orders above ₹50,000. For orders below this amount, a flat fee of ₹500 applies to cover high-value transit insurance and secure handling.
+                    <div className="bg-primary/5 border border-primary/20 p-6 space-y-4">
+                        <h3 className="font-medium text-foreground flex items-center gap-2">
+                            <Truck className="w-4 h-4 text-primary" />
+                            Non-Acceptance & RTO Policy
+                        </h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            If a delivery is rejected or refused by the recipient (Return to Origin - RTO) without a valid, verifiable reason (such as a broken seal documented at the door), <strong className="text-foreground">AURERXA reserves the absolute right to deduct all incurred logistics expenses</strong> from the final refund.
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                            These deductions include, but are not limited to:
+                        </p>
+                        <ul className="list-disc pl-5 text-[10px] text-muted-foreground space-y-1">
+                            <li>Premium high-value transit insurance charges</li>
+                            <li>Tamper-evident luxury packaging and handling costs</li>
+                            <li>Two-way dynamic shipping fees (Forward + Return)</li>
+                            <li>Applicable non-refundable payment gateway transaction fees</li>
+                        </ul>
+                        <p className="text-[10px] text-primary italic">
+                            * The remaining balance will be processed only after the product returns to our facility and clears a multi-stage purity and weight inspection.
                         </p>
                     </div>
                 </section>

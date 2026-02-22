@@ -6,13 +6,14 @@ export default function robots(): MetadataRoute.Robots {
     return {
         rules: [
             {
+                userAgent: 'Googlebot-Image',
+                allow: '/',
+                disallow: ['/admin/', '/api/'],
+            },
+            {
                 userAgent: 'Googlebot',
                 allow: '/',
                 disallow: ['/admin/', '/api/', '/account/', '/checkout/', '/cart/', '/login/', '/signup/', '/forgot-password/', '/verify-email/', '/banned/'],
-            },
-            {
-                userAgent: 'Googlebot-Image',
-                allow: '/',
             },
             {
                 userAgent: 'Bingbot',

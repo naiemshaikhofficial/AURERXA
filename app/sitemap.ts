@@ -12,15 +12,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const productEntries: MetadataRoute.Sitemap = products.map((p: any) => ({
         url: `${baseUrl}/products/${p.slug}`,
         lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
-        changeFrequency: 'weekly',
-        priority: 0.8,
+        changeFrequency: 'daily',
+        priority: 0.9,
     }))
 
     const categoryEntries: MetadataRoute.Sitemap = categories.map((c: any) => ({
-        url: `${baseUrl}/collections?category=${c.slug}`,
+        url: `${baseUrl}/collections/${c.slug}`,
         lastModified: new Date(),
         changeFrequency: 'daily',
-        priority: 0.8,
+        priority: 0.9,
     }))
 
     const staticEntries: MetadataRoute.Sitemap = [

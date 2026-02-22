@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Filter, X, Check, ChevronDown, SlidersHorizontal, Diamond, Gem } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -78,6 +79,7 @@ export function CinematicFilter({
     onFiltersChange,
     productCount
 }: CinematicFilterProps) {
+    const router = useRouter()
     const [isOpen, setIsOpen] = useState(false)
     const [filters, setFilters] = useState<FilterState>(initialFilters)
     const [activeTab, setActiveTab] = useState<'type' | 'gender' | 'price' | 'sort' | 'material' | 'tags'>('type')
@@ -99,11 +101,9 @@ export function CinematicFilter({
         }
     }, [isOpen])
 
-    // Handle Category Change (Material) - Horizontal Scroll
-    const handleCategoryChange = (slug: string) => {
-        const newFilters = { ...filters, category: slug }
-        setFilters(newFilters)
-        onFiltersChange(newFilters)
+    // Handle Sub-category Change (Horizontal Scroll)
+    const handleHorizontalChange = (slug: string) => {
+        router.push(`/collections/${slug}`)
     }
 
     // Handle Drill-down Filters
@@ -144,14 +144,17 @@ export function CinematicFilter({
                     className="bg-background/80 backdrop-blur-md border border-border rounded-none md:rounded-full shadow-none overflow-hidden flex flex-col md:flex-row items-center justify-between p-2"
                 >
                     {/* Material/Collection Links (Horizontal Scroll) */}
-                    <div className="w-full md:w-auto overflow-x-auto no-scrollbar flex items-center gap-1 p-1 order-2 md:order-1">
+                    <div
+                        className="w-full md:w-auto overflow-x-auto no-scrollbar overscroll-x-contain touch-pan-x flex items-center gap-1 p-1 order-2 md:order-1"
+                        data-lenis-prevent
+                    >
                         {categories.map((cat) => (
                             <button
                                 key={cat.slug}
-                                onClick={() => handleCategoryChange(cat.slug)}
+                                onClick={() => handleHorizontalChange(cat.slug)}
                                 className={cn(
                                     "px-6 py-3 rounded-full text-[9px] uppercase tracking-[0.2em] font-premium-sans whitespace-nowrap transition-all duration-300",
-                                    filters.category === cat.slug
+                                    filters.sub_category === cat.slug
                                         ? "bg-foreground text-background font-bold"
                                         : "text-muted-foreground hover:text-foreground hover:bg-muted"
                                 )}
@@ -208,22 +211,27 @@ export function CinematicFilter({
                             onWheel={(e) => e.stopPropagation()}
                         >
                             {/* Drawer Header */}
-                            <div className="flex items-center justify-between p-8 border-b border-border">
-                                <h2 className="text-2xl font-serif text-foreground font-medium italic">Refine Collection</h2>
-                                <div className="flex items-center gap-6">
+                            <div className="flex items-center justify-between px-8 pt-10 pb-6 md:p-8 border-b border-border">
+                                <h2 className="text-lg md:text-2xl font-serif text-foreground font-medium italic">Refine Collection</h2>
+                                <div className="flex items-center gap-4 md:gap-6">
                                     {activeFilterCount > 0 && (
                                         <button
                                             onClick={clearFilters}
-                                            className="text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-[0.2em] border-b border-border pb-px"
+                                            className="group flex items-center gap-2 text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-[0.2em] border-b border-border pb-px"
                                         >
+                                            <img
+                                                src="https://img.icons8.com/?size=100&id=13054&format=png&color=BF9B65"
+                                                alt="Reset"
+                                                className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500"
+                                            />
                                             Reset
                                         </button>
                                     )}
                                     <button
                                         onClick={() => setIsOpen(false)}
-                                        className="p-3 bg-muted rounded-full hover:bg-foreground hover:text-background transition-all group"
+                                        className="p-2 transition-colors group tactile-press"
                                     >
-                                        <X className="w-5 h-5 text-foreground group-hover:text-background transition-colors" />
+                                        <X className="w-6 h-6 text-foreground/70 group-hover:text-primary transition-colors" />
                                     </button>
                                 </div>
                             </div>
@@ -430,10 +438,10 @@ export function CinematicFilter({
                             </div>
 
                             {/* Drawer Footer */}
-                            <div className="p-8 pb-12 md:pb-8 border-t border-border bg-background">
+                            <div className="p-6 md:p-8 pb-14 md:pb-8 border-t border-border bg-background">
                                 <button
                                     onClick={() => setIsOpen(false)}
-                                    className="w-full py-5 bg-foreground text-background font-premium-sans font-bold uppercase tracking-[0.3em] rounded-none hover:bg-foreground/90 transition-colors"
+                                    className="w-full py-5 bg-foreground text-background font-premium-sans font-bold uppercase tracking-[0.3em] rounded-none hover:bg-foreground/90 transition-colors shadow-2xl tactile-press"
                                 >
                                     View {productCount} Artifacts
                                 </button>

@@ -42,7 +42,7 @@ export async function GET() {
         const categoryName = Array.isArray(p.categories) ? p.categories[0]?.name : (p.categories?.name || 'Jewelry')
         const availability = (p.stock && p.stock > 0) ? 'in_stock' : 'out_of_stock'
         const productUrl = `${baseUrl}/products/${p.slug}`
-        const imageUrl = p.image_url || `${baseUrl}/logo-new.webp`
+        const imageUrl = p.image_url || `${baseUrl}/icon-512.png`
 
         // Google requirements
         const googleCategory = 'Apparel &amp; Accessories &gt; Jewelry'

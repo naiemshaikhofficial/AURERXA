@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCart } from '@/context/cart-context'
-import { cn } from '@/lib/utils'
+import { cn, isCapacitor } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { useSearch } from '@/context/search-context'
 
@@ -13,8 +13,10 @@ export function BottomNav() {
     const { cartCount } = useCart()
     const { openSearch } = useSearch()
     const [user, setUser] = useState<any>(null)
+    const [isNative, setIsNative] = useState(false)
 
     useEffect(() => {
+        setIsNative(isCapacitor())
         let authListener: { subscription: { unsubscribe: () => void } } | null = null
 
         const getUser = async () => {
@@ -66,6 +68,8 @@ export function BottomNav() {
             }
         },
     ]
+
+    if (!isNative) return null
 
     return (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-neutral-950/90 backdrop-blur-lg border-t border-neutral-800 md:hidden safe-area-pb">

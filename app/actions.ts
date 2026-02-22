@@ -3,9 +3,9 @@
 import { cookies, headers } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { notifyNewProduct } from './push-actions'
+import { revalidateTag, revalidatePath, unstable_cache } from 'next/cache'
 import { createCashfreeOrder, getCashfreePayments } from '@/lib/cashfree'
 import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib } from '@/lib/razorpay'
-import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { sanitize, sanitizeObject } from '@/lib/sanitizer'
@@ -214,6 +214,182 @@ export async function signOutAction() {
   }
 }
 
+// ============================================
+// REVIEWS
+// ============================================
+
+export async function getProductReviews(productId: string) {
+  // Step 1: Fetch reviews (including guest fields)
+  const { data: reviews, error: reviewError } = await supabaseServer
+    .from('product_reviews')
+    .select('id, rating, comment, images, is_verified, created_at, user_id, guest_name')
+    .eq('product_id', productId)
+    .eq('status', 'approved')
+    .order('created_at', { ascending: false })
+
+  if (reviewError) {
+    console.error('❌ Error fetching reviews:', reviewError)
+    return []
+  }
+
+  if (!reviews || reviews.length === 0) return []
+
+  // Step 2: Fetch profiles for authenticated reviewers
+  const userIds = Array.from(new Set(reviews.map(r => r.user_id).filter(Boolean)))
+
+  let profilesMap: Record<string, { full_name: string }> = {}
+
+  if (userIds.length > 0) {
+    const { data: profiles, error: profileError } = await supabaseServer
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', userIds)
+
+    if (!profileError && profiles) {
+      profiles.forEach(p => {
+        profilesMap[p.id] = { full_name: p.full_name }
+      })
+    }
+  }
+
+  // Step 3: Combine — use profile name for logged-in users, guest_name for guests
+  const results = reviews.map(r => ({
+    ...r,
+    profiles: r.user_id && profilesMap[r.user_id]
+      ? profilesMap[r.user_id]
+      : r.guest_name
+        ? { full_name: r.guest_name }
+        : null
+  }))
+
+  return results
+}
+
+export async function getReviewStats(productId: string) {
+  const { data, error } = await supabaseServer
+    .from('product_reviews')
+    .select('rating')
+    .eq('product_id', productId)
+    .eq('status', 'approved')
+
+  if (error || !data) {
+    return { average: 0, total: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } }
+  }
+
+  const total = data.length
+  const sum = data.reduce((acc, curr) => acc + curr.rating, 0)
+  const average = total > 0 ? Number((sum / total).toFixed(1)) : 0
+
+  const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+  data.forEach(r => {
+    distribution[r.rating as keyof typeof distribution]++
+  })
+
+  return { average, total, distribution }
+}
+
+export async function submitReview(formData: FormData): Promise<ActionResponse> {
+  try {
+    const productId = formData.get('productId') as string
+    const rating = parseInt(formData.get('rating') as string)
+    const comment = formData.get('comment') as string
+    const imagesJson = formData.get('images') as string
+    const images = JSON.parse(imagesJson || '[]')
+    const guestFirstName = (formData.get('firstName') as string || '').trim()
+    const guestLastName = (formData.get('lastName') as string || '').trim()
+    const guestEmail = (formData.get('email') as string || '').trim()
+
+    if (!productId || isNaN(rating) || rating < 1 || rating > 5) {
+      return { success: false, error: 'Invalid product or rating' }
+    }
+
+    // Check if user is authenticated (optional for guest reviews)
+    let userId: string | null = null
+    try {
+      const client = await getAuthClient()
+      const { data: { user } } = await client.auth.getUser()
+      if (user) userId = user.id
+    } catch { /* Guest review — no auth */ }
+
+    // For guest reviews, name and email are required
+    if (!userId) {
+      if (!guestFirstName || !guestEmail) {
+        return { success: false, error: 'Name and email are required' }
+      }
+      // Basic email validation
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
+        return { success: false, error: 'Invalid email address' }
+      }
+    }
+
+    const guestName = guestLastName
+      ? `${guestFirstName} ${guestLastName.charAt(0)}.`
+      : guestFirstName
+
+    // Use supabaseServer — RLS policy now allows public inserts
+    const { error } = await supabaseServer
+      .from('product_reviews')
+      .insert({
+        product_id: productId,
+        user_id: userId,
+        guest_name: userId ? null : guestName,
+        guest_email: userId ? null : guestEmail,
+        rating,
+        comment: sanitize(comment),
+        images: images,
+        status: 'approved',
+        created_at: new Date().toISOString()
+      })
+
+    if (error) {
+      console.error('Submit review error:', error)
+      return { success: false, error: error.message }
+    }
+
+    revalidateTag('reviews')
+    return { success: true }
+  } catch (err: any) {
+    console.error('Submit review crash:', err)
+    return { success: false, error: err.message || 'Internal server error' }
+  }
+}
+
+export async function uploadReviewImage(base64: string, productId: string): Promise<ActionResponse<string>> {
+  try {
+    // Size guard: reject images > 500KB base64 (approx 375KB binary)
+    if (base64.length > 500_000) {
+      return { success: false, error: 'Image too large. Please use a smaller image.' }
+    }
+
+    // Convert base64 to buffer
+    const base64Data = base64.replace(/^data:image\/\w+;base64,/, '')
+    const buffer = Buffer.from(base64Data, 'base64')
+    const fileName = `${productId}/guest-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.webp`
+
+    // Use supabaseServer — bucket is now public for inserts
+    const { data, error } = await supabaseServer.storage
+      .from('review')
+      .upload(fileName, buffer, {
+        contentType: 'image/webp',
+        upsert: true
+      })
+
+    if (error) {
+      console.error('Storage upload error:', error)
+      return { success: false, error: error.message }
+    }
+
+    const { data: { publicUrl } } = supabaseServer.storage
+      .from('review')
+      .getPublicUrl(fileName)
+
+    return { success: true, data: publicUrl }
+  } catch (err: any) {
+    console.error('Upload review image crash:', err)
+    return { success: false, error: err.message || 'Internal server error' }
+  }
+}
+
 
 export async function addNewProduct(productData: ProductData): Promise<ActionResponse> {
   const isAdmin = await checkIsAdmin()
@@ -238,7 +414,7 @@ export async function addNewProduct(productData: ProductData): Promise<ActionRes
   }
 
   // Trigger push notification
-  await notifyNewProduct(data.name, data.slug, data.image_url || '/logo-new.webp')
+  await notifyNewProduct(data.name, data.slug, data.image_url || '/icon-192.png')
 
   revalidateTag('products', '')
   return { success: true, data }
@@ -326,7 +502,7 @@ export async function getSubCategories(categoryId?: string) {
     async () => {
       let query = supabaseServer
         .from('sub_categories')
-        .select('id, name, slug, category_id, description')
+        .select('id, name, slug, category_id, description, image_url')
         .order('name')
 
       if (categoryId) {
@@ -415,17 +591,22 @@ export async function deleteSubCategory(id: string) {
 // PRODUCTS
 // ============================================
 
-export const getGoldRates = unstable_cache(
-  async () => {
+/**
+ * Public function to get gold rates and trigger background sync if stale
+ */
+export async function getGoldRates() {
+  try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabaseServer = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
     const { data, error } = await supabaseServer
       .from('gold_rates')
       .select('purity, rate, updated_at')
-      .order('purity', { ascending: false })
 
-    if (error) {
-      console.error('Error fetching gold rates:', error)
-      return null
-    }
+    if (error) throw error;
 
     const ratesObj: Record<string, number> = {}
     let lastUpdatedValue: number = 0
@@ -442,21 +623,25 @@ export const getGoldRates = unstable_cache(
       })
     }
 
-    // Lazy Background Sync: If no rates or rates are older than 8 hours
+    const lastUpdated = lastUpdatedValue > 0 ? new Date(lastUpdatedValue).toISOString() : null
+
+    // Lazy Background Sync: If rates are older than 8 hours
     const eightHoursAgo = Date.now() - (8 * 3600000)
     const isStale = !data || data.length === 0 || lastUpdatedValue < eightHoursAgo
 
     if (isStale) {
-      console.log('DEBUG: Gold rates stale, triggering background sync')
+      console.log(`[SYNC] Data is stale. Triggering background sync...`)
+      // Trigger but don't обязательно await if we want fast response, 
+      // but awaiting is safer for Turbopack consistency
       syncLiveGoldRates().catch(err => console.error('Background sync failed:', err))
     }
 
-    return ratesObj
-  },
-  ['gold-rates'],
-  { revalidate: 3600, tags: ['gold-rates'] } // Reduced cache time for safer sync checks
-)
-
+    return { rates: ratesObj, lastUpdated }
+  } catch (err) {
+    console.error('Error in getGoldRates:', err)
+    return null
+  }
+}
 
 export const getBestsellers = unstable_cache(
   async () => {
@@ -1796,9 +1981,6 @@ export async function submitContact(formData: any) {
 
 
 export async function forceSyncGoldRates() {
-  const isAdmin = await checkIsAdmin()
-  if (!isAdmin) return { success: false, error: 'Unauthorized' }
-
   const result = await syncLiveGoldRates();
   if (result.success) {
     // @ts-ignore - Handle varying revalidateTag signatures in newer Next.js versions
@@ -1810,15 +1992,28 @@ export async function forceSyncGoldRates() {
 export async function updateGoldRate(purity: string, rate: number) {
   const isAdmin = await checkIsAdmin()
   if (!isAdmin) return { success: false, error: 'Unauthorized' }
+  return _upsertGoldRate(purity, rate)
+}
 
-  const { error } = await supabaseServer
+// Internal function used by syncLiveGoldRates — uses service role to bypass RLS
+// since it's a server-side automated process
+async function _upsertGoldRate(purity: string, rate: number) {
+  const { createClient } = await import('@supabase/supabase-js')
+  const serviceClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  const { error } = await serviceClient
     .from('gold_rates')
     .upsert({ purity, rate, updated_at: new Date().toISOString() }, { onConflict: 'purity' })
 
   if (error) {
-    console.error(`Error updating gold rate for ${purity}:`, error)
+    console.error(`[DB ERROR] Error updating gold rate for ${purity}:`, error)
     return { success: false, error: error.message }
   }
+
+  console.log(`[DB] Updated ${purity} to ${rate}`)
   return { success: true }
 }
 
@@ -1828,6 +2023,13 @@ export async function updateGoldRate(purity: string, rate: number) {
  */
 export async function syncLiveGoldRates() {
   const apiKey = process.env.GOLD_API_KEY
+
+  // Calibration factors for local market (Mumbai/Nashik)
+  const goldMult = parseFloat(process.env.GOLD_PRICE_MULTIPLIER || '1.0')
+  const silverMult = parseFloat(process.env.SILVER_PRICE_MULTIPLIER || '1.0')
+  const platinumMult = parseFloat(process.env.PLATINUM_PRICE_MULTIPLIER || '1.0')
+  const markupPercent = parseFloat(process.env.GOLD_LOCAL_MARKUP_PERCENT || '5.8')
+  const markupFactor = 1 + (markupPercent / 100)
 
   if (!apiKey || apiKey === 'YOUR_GOLD_API_KEY') {
     return { success: false, error: 'Gold API Key not configured' }
@@ -1847,15 +2049,35 @@ export async function syncLiveGoldRates() {
 
     if (goldRes.ok) {
       const data = await goldRes.json()
+      if (data.error && data.error.includes('quota')) {
+        console.error('[SYNC ERROR] GoldAPI Quota Exceeded')
+        return { success: false, error: 'API Quota Exceeded' }
+      }
       const price24K = data.price_gram_24k
       if (price24K) {
-        await updateGoldRate('24K', price24K)
-        await updateGoldRate('22K', price24K * 0.9167)
-        await updateGoldRate('18K', price24K * 0.75)
-        results['24K'] = price24K
-        results['22K'] = price24K * 0.9167
-        results['18K'] = price24K * 0.75
+        // Calibrate to local market
+        const calibratedPrice = price24K * goldMult * markupFactor
+
+        // All standard gold carats with their purity fractions
+        const goldCarats: Record<string, number> = {
+          '24K': 1.0,
+          '22K': 22 / 24,
+          '21K': 21 / 24,
+          '20K': 20 / 24,
+          '18K': 18 / 24,
+          '14K': 14 / 24,
+          '10K': 10 / 24,
+          '9K': 9 / 24,
+        }
+
+        for (const [carat, factor] of Object.entries(goldCarats)) {
+          const rate = Math.round(calibratedPrice * factor)
+          await _upsertGoldRate(carat, rate)
+          results[carat] = rate
+        }
       }
+    } else {
+      console.error(`[API ERROR] Gold Fetch Failed: ${goldRes.status}`)
     }
 
     // 2. Fetch Silver (XAG)
@@ -1868,10 +2090,26 @@ export async function syncLiveGoldRates() {
     })
     if (silverRes.ok) {
       const data = await silverRes.json()
-      if (data.price_gram) {
-        await updateGoldRate('Silver', data.price_gram)
-        results['Silver'] = data.price_gram
+      if (data.error && data.error.includes('quota')) {
+        console.error('[SYNC ERROR] Silver Sync Aborted: Quota Exceeded')
+      } else if (data.price_gram_24k) {
+        // Calibrate to local market
+        const calibratedPrice = data.price_gram_24k * silverMult * markupFactor
+        console.log(`[SYNC DEBUG] Silver Calibrated Base: ${calibratedPrice}`)
+
+        // Silver purities
+        const silverPurities: Record<string, number> = {
+          'Silver 999': 1.0,
+          'Silver 925': 0.925,
+        }
+        for (const [label, factor] of Object.entries(silverPurities)) {
+          const rate = Math.round(calibratedPrice * factor)
+          await _upsertGoldRate(label, rate)
+          results[label] = rate
+        }
       }
+    } else {
+      console.error(`[API ERROR] Silver Fetch Failed: ${silverRes.status}`)
     }
 
     // 3. Fetch Platinum (XPT)
@@ -1884,11 +2122,32 @@ export async function syncLiveGoldRates() {
     })
     if (platinumRes.ok) {
       const data = await platinumRes.json()
-      if (data.price_gram) {
-        await updateGoldRate('Platinum', data.price_gram)
-        results['Platinum'] = data.price_gram
+      if (data.error && data.error.includes('quota')) {
+        console.error('[SYNC ERROR] Platinum Sync Aborted: Quota Exceeded')
+      } else if (data.price_gram_24k) {
+        // Calibrate to local market
+        const calibratedPrice = data.price_gram_24k * platinumMult * markupFactor
+        console.log(`[SYNC DEBUG] Platinum Calibrated Base: ${calibratedPrice}`)
+
+        const platinumPurities: Record<string, number> = {
+          'Platinum 950': 0.950,
+          'Platinum 900': 0.900,
+          'Platinum 850': 0.850,
+        }
+        for (const [label, factor] of Object.entries(platinumPurities)) {
+          const rate = Math.round(calibratedPrice * factor)
+          await _upsertGoldRate(label, rate)
+          results[label] = rate
+        }
       }
+    } else {
+      console.error(`[API ERROR] Platinum Fetch Failed: ${platinumRes.status}`)
     }
+
+    console.log('[SYNC SUCCESS] Rates updated for all metals.')
+
+    // Revalidate the cache tag to ensure the UI sees the new rates
+    revalidateTag('gold-rates')
 
     return { success: true, rates: results }
   } catch (err: any) {
@@ -3866,7 +4125,7 @@ export async function checkAbandonedCarts() {
     // We fetch user_id from cart_items that were created > 24h ago
     const { data: abandonedItems, error } = await client
       .from('cart_items')
-      .select('user_id, profiles(email, full_name)')
+      .select('user_id')
       .lt('created_at', yesterday.toISOString())
       .not('user_id', 'is', null)
 
@@ -3874,6 +4133,22 @@ export async function checkAbandonedCarts() {
 
     // Group by user and filter out those who ordered recently
     const users = Array.from(new Set(abandonedItems.map(item => (item as any).user_id)))
+
+    // Fetch profiles for these users manually to avoid relationship issues
+    let profilesMap: Record<string, { email: string; full_name: string }> = {}
+    if (users.length > 0) {
+      const { data: profiles, error: profileError } = await client
+        .from('profiles')
+        .select('id, email, full_name')
+        .in('id', users)
+
+      if (!profileError && profiles) {
+        profiles.forEach((p: any) => {
+          profilesMap[p.id] = { email: p.email, full_name: p.full_name }
+        })
+      }
+    }
+
     const recoveryList = []
 
     for (const userId of users) {
@@ -3885,12 +4160,12 @@ export async function checkAbandonedCarts() {
         .gt('created_at', yesterday.toISOString())
 
       if (count === 0) {
-        const profile = abandonedItems.find(item => item.user_id === userId)?.profiles
+        const profile = profilesMap[userId as string]
         if (profile) {
           recoveryList.push({
             userId,
-            email: (profile as any).email,
-            name: (profile as any).full_name,
+            email: profile.email,
+            name: profile.full_name,
           })
         }
       }

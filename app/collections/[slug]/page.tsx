@@ -57,7 +57,7 @@ export default async function DynamicCollectionsPage({ params }: PageProps) {
             <Navbar />
             <CollectionsClient
                 initialProducts={products as any}
-                categories={categories}
+                categories={subCategories as any}
                 tags={tags}
                 initialFilters={initialFilters as any}
             />

@@ -6,6 +6,9 @@ import { Button } from './ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export function MobileInstallPrompt() {
+    // Disabled per user request - 2026-02-22
+    return null;
+
     const [showPrompt, setShowPrompt] = useState(false)
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
     const [isIOS, setIsIOS] = useState(false)

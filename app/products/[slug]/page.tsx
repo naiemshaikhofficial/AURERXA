@@ -148,7 +148,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         '@type': 'Product',
         '@id': productUrl,
         name: product.name,
-        image: product.image_url ? [product.image_url, ...(product.images || [])] : [baseUrl + '/logo-new.webp'],
+        image: product.image_url ? [product.image_url, ...(product.images || [])] : [baseUrl + '/icon-512.png'],
         description: product.description || `Buy ${product.name} online at AURERXA. Premium ${product.material_type || ''} ${categoryName || 'jewelry'}.`,
         sku: product.id,
         mpn: product.slug,
@@ -157,7 +157,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             '@type': 'Brand',
             name: 'AURERXA',
             url: baseUrl,
-            logo: `${baseUrl}/logo-new.webp`,
+            logo: `${baseUrl}/icon-512.png`,
         },
         manufacturer: {
             '@type': 'Organization',

@@ -4,11 +4,20 @@ import React from 'react'
 import Link from 'next/link'
 import NextImage from 'next/image'
 import { useSearch } from '@/context/search-context'
+import { isCapacitor } from '@/lib/utils'
 
 export function Footer() {
   const { openSearch } = useSearch()
+  const [isNative, setIsNative] = React.useState(false)
+
+  React.useEffect(() => {
+    setIsNative(isCapacitor())
+  }, [])
+
+  if (isNative) return null;
+
   return (
-    <footer className="hidden md:block py-24 px-6 lg:px-12 bg-background text-foreground relative overflow-hidden">
+    <footer className="py-24 px-6 lg:px-12 bg-background text-foreground relative overflow-hidden">
       {/* Black Edition Background Effect - Subtle Noise */}
 
 
@@ -18,11 +27,11 @@ export function Footer() {
           <div className="space-y-10">
             <Link href="/" className="inline-block group" aria-label="AURERXA Home">
               <NextImage
-                src="https://imagizer.imageshack.com/img922/5651/qYeLiy.png"
+                src="/logo-new-v2.png"
                 alt="AURERXA Logo"
-                width={150}
-                height={64}
-                className="h-16 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700"
+                width={120}
+                height={48}
+                className="h-12 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700"
               />
             </Link>
             <p className="text-xs text-muted-foreground font-light leading-loose tracking-widest uppercase">
@@ -76,14 +85,15 @@ export function Footer() {
                   className="w-5 h-5 mt-1 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
                 <a
-                  href="https://www.google.com/maps/place/Nijam+Gold+works/data=!4m2!3m1!1s0x0:0xe8958ae639e82931?sa=X&ved=1t:2428&ictx=111"
+                  href="https://maps.app.goo.gl/PdTNoNuey3ecsxkt6"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors leading-[1.8] tracking-widest"
-                  aria-label="Our location on Google Maps: nijamuddin shaikh, kolhewadi road, near tajgard, sangamner 422605"
+                  aria-label="Our location on Google Maps: Aurerxa | Nijam Gold Works, Jedhe Colony, Rangargalli, Sangamner, Maharashtra 422605"
                 >
-                  nijamuddin shaikh, kolhewadi road<br />
-                  near tajgard, sangamner 422605
+                  Aurerxa | Nijam Gold Works<br />
+                  Jedhe Colony, Rangargalli<br />
+                  Sangamner, Maharashtra 422605
                 </a>
               </div>
               <div className="flex items-center gap-4 group">
@@ -92,7 +102,7 @@ export function Footer() {
                   alt="Phone"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <a href="tel:+919579042043" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Call us at +91 95790 42043">+91 95790 42043</a>
+                <a href="tel:+919391032677" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Call us at +91 93910 32677">+91 93910 32677</a>
               </div>
               <div className="flex items-center gap-4 group">
                 <img
@@ -100,7 +110,7 @@ export function Footer() {
                   alt="Email"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <a href="mailto:Support@aurerxa.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Email us at Support@aurerxa.com">Support@aurerxa.com</a>
+                <a href="mailto:Contact@aurerxa.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Email us at Contact@aurerxa.com">Contact@aurerxa.com</a>
               </div>
               <div className="flex items-center gap-4 group cursor-pointer tactile-press" onClick={openSearch}>
                 <img
@@ -109,6 +119,37 @@ export function Footer() {
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
                 <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase luxe-underline">Search Our Heritage</span>
+              </div>
+              <div className="pt-4 space-y-2">
+                <a
+                  href="https://pub-fbfc4e7dd5594ba39086b366ce0d47ab.r2.dev/aurerxa.apk"
+                  download
+                  className="inline-flex items-center gap-4 px-6 py-3 bg-primary/5 border border-primary/10 rounded-2xl hover:bg-primary/10 transition-all duration-500 group group"
+                >
+                  <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                    <img
+                      src="https://img.icons8.com/?size=100&id=17836&format=png&color=BF9B65"
+                      alt="Android"
+                      className="w-5 h-5 opacity-90"
+                    />
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-primary/60 font-medium">Download for</span>
+                    <span className="text-[12px] uppercase tracking-widest text-primary font-black">Android (APK)</span>
+                  </div>
+                </a>
+
+                <div className="space-y-2 pt-1">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] font-medium opacity-60">Soon Available On</p>
+                    <div className="w-5 h-px bg-primary/20" />
+                  </div>
+                  <img
+                    src="/App-Store-and-Google-Play-badges-removebg-preview.png"
+                    alt="App Store and Google Play"
+                    className="h-30 w-auto object-contain opacity-40 hover:opacity-70 transition-opacity duration-700 grayscale hover:grayscale-0"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -152,9 +193,10 @@ export function Footer() {
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
             <Link href="/returns" className="hover:text-white transition-colors">Returns</Link>
+            <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
           </div>
         </div>
       </div>
-    </footer>
+    </footer >
   )
 }

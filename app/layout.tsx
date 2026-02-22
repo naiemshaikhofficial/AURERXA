@@ -30,19 +30,19 @@ const cormorant = Cormorant_Garamond({
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.aurerxa.com'),
   title: {
-    default: 'AURERXA | Premium Luxury Jewelry, Fashion Jewelry & Bespoke Design',
+    default: 'AURERXA | Authentic Luxury & Bespoke Jewelry Heritage',
     template: '%s | AURERXA',
   },
-  description: 'AURERXA: India\'s finest luxury jewelry brand. Shop gold necklaces, diamond earrings, bridal sets, mangalsutra, rings, bangles & fashion accessories. Handcrafted bespoke jewelry with free shipping. Trusted by 10,000+ customers.',
+  description: 'AURERXA: Elevating Indian luxury. Explore our legacy of gold necklaces, diamond earrings, and bespoke bridal jewelry. Handcrafted perfection with worldwide insured shipping.',
   applicationName: 'AURERXA',
   authors: [{ name: 'AURERXA Artisans', url: 'https://aurerxa.com' }],
   generator: 'Next.js',
   referrer: 'origin-when-cross-origin',
   keywords: [
-    // Core Brand & Variations
     'AURERXA', 'AURERXA Jewelry', 'Aurerxa Official',
-    'Aurexa', 'Aure', 'Aurrex', 'Aurex', 'Aurer', 'Aurera',
-    'ar', 'a', 'aur', 'aurex jewelry', 'aurexa india', 'rexa',
+    'AURERXA Heritage', 'AURERXA Boutique', 'AURERXA Sangamner',
+    'Aurerxa India', 'Aurerxa Luxury', 'Aurerxa Fine Jewelry',
+    'rexa', 'aurer', 'aure',
     // Jewelry Types
     'Gold Necklace', 'Diamond Earrings', 'Silver Rings', 'Bridal Jewelry Sets',
     'Mangalsutra Online', 'Gold Bangles', 'Pendant Necklace', 'Stud Earrings',
@@ -105,7 +105,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: '/logo-new.webp',
+        url: '/logo-new-v2.png',
         width: 1200,
         height: 630,
         alt: 'AURERXA Luxury Jewelry Logo',
@@ -119,12 +119,7 @@ export const metadata: Metadata = {
     description: 'Timeless luxury handcrafted to perfection.',
     site: '@aurerxa',
     creator: '@aurerxa',
-    images: ['/logo-new.webp'],
-  },
-  icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    images: ['/logo-new-v2.png'],
   },
   alternates: {
     canonical: '/',
@@ -162,6 +157,7 @@ import { BehaviorTracker } from '@/components/behavior-tracker'
 import { getCurrentUserProfile } from '@/app/actions'
 import { SearchModal } from '@/components/search-modal'
 import { DynamicTitle } from '@/components/dynamic-title'
+import { Footer } from '@/components/footer'
 
 
 export default async function RootLayout({
@@ -173,13 +169,13 @@ export default async function RootLayout({
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
   const organizationSchema = {
     '@context': 'https://schema.org',
-    '@type': 'JewelryStore', // Primary type for shop
-    'additionalType': ['Organization', 'Brand'],
+    '@type': 'JewelryStore',
+    'additionalType': ['Brand', 'Organization'],
     'name': 'AURERXA',
-    'alternateName': ['Aurexa', 'Aure', 'Aurrex', 'Aurex', 'Aurer', 'Aurera', 'ar', 'a', 'Aurerxa Luxury Jewelry'],
+    'alternateName': ['AURERXA Luxury', 'AURERXA Heritage', 'AURERXA Jewelry'],
     'url': baseUrl,
-    'logo': `${baseUrl}/logo-new.webp`,
-    'description': 'Handcrafted premium luxury jewelry brand specializing in bespoke gold and conflict-free diamond pieces.',
+    'logo': `${baseUrl}/icon-512.png`,
+    'description': 'AURERXA is a premium luxury jewelry brand specializing in bespoke gold and conflict-free diamond masterpieces.',
     'sameAs': [
       'https://facebook.com/aurerxa',
       'https://instagram.com/aurerxa',
@@ -188,7 +184,7 @@ export default async function RootLayout({
     ],
     'address': {
       '@type': 'PostalAddress',
-      'streetAddress': 'nijamuddin shaikh, kolhewadi road, near tajgard',
+      'streetAddress': 'Captain Lakshmi Chowk, Rangargalli',
       'addressLocality': 'Sangamner',
       'addressRegion': 'Maharashtra',
       'postalCode': '422605',
@@ -196,7 +192,7 @@ export default async function RootLayout({
     },
     'contactPoint': {
       '@type': 'ContactPoint',
-      'telephone': '+91-9579042043',
+      'telephone': '+91-',
       'contactType': 'global customer service',
       'areaServed': 'World',
       'availableLanguage': ['English', 'Hindi', 'Marathi']
@@ -207,10 +203,10 @@ export default async function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'JewelryStore',
     'name': 'AURERXA Flagship Boutique',
-    'image': `${baseUrl}/logo-new.webp`,
+    'image': `${baseUrl}/icon-512.png`,
     '@id': `${baseUrl}/#boutique`,
     'url': baseUrl,
-    'telephone': '+919579042043',
+    'telephone': '+919391032677',
     'priceRange': '₹₹₹₹',
     'address': organizationSchema.address,
     'geo': {
@@ -232,6 +228,8 @@ export default async function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     'url': baseUrl,
+    'name': 'AURERXA', // Explicit Site Name for Google Search
+    'alternateName': ['Aurerxa Luxury', 'AURERXA Jewelry'],
     'potentialAction': {
       '@type': 'SearchAction',
       'target': {
@@ -246,14 +244,14 @@ export default async function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'SiteNavigationElement',
     'hasPart': [
-      { '@type': 'WebPage', 'name': 'Collections', 'url': `${baseUrl}/collections` },
-      { '@type': 'WebPage', 'name': 'Necklaces', 'url': `${baseUrl}/collections?category=necklaces` },
-      { '@type': 'WebPage', 'name': 'Earrings', 'url': `${baseUrl}/collections?category=earrings` },
-      { '@type': 'WebPage', 'name': 'Rings', 'url': `${baseUrl}/collections?category=rings` },
-      { '@type': 'WebPage', 'name': 'Mangalsutra', 'url': `${baseUrl}/collections?category=mangalsutra` },
-      { '@type': 'WebPage', 'name': 'Our Story', 'url': `${baseUrl}/our-story` },
-      { '@type': 'WebPage', 'name': 'About Us', 'url': `${baseUrl}/about` },
-      { '@type': 'WebPage', 'name': 'Contact Us', 'url': `${baseUrl}/contact-us` }
+      { '@type': 'WebPage', 'name': 'Jewellery Collections', 'url': `${baseUrl}/collections` },
+      { '@type': 'WebPage', 'name': 'Latest New Releases', 'url': `${baseUrl}/collections?sortBy=newest` },
+      { '@type': 'WebPage', 'name': 'Best Selling Jewellery', 'url': `${baseUrl}/collections?sortBy=bestsellers` },
+      { '@type': 'WebPage', 'name': 'Anti-Tarnish Collection', 'url': `${baseUrl}/collections/anti-tarnish` },
+      { '@type': 'WebPage', 'name': 'Gold Necklaces', 'url': `${baseUrl}/collections/necklaces` },
+      { '@type': 'WebPage', 'name': 'Diamond Earrings', 'url': `${baseUrl}/collections/earrings` },
+      { '@type': 'WebPage', 'name': 'Bespoke Custom Jewellery', 'url': `${baseUrl}/custom-jewelry` },
+      { '@type': 'WebPage', 'name': 'Live Gold Rates India', 'url': `${baseUrl}/#gold-rates` }
     ]
   }
 
@@ -307,6 +305,7 @@ export default async function RootLayout({
                       <main>
                         {children}
                       </main>
+                      <Footer />
                     </div>
                     <CartSheet />
                     <BottomNav />

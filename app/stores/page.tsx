@@ -8,14 +8,14 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 
 export default function StoresPage() {
     const store = {
-        name: "Nijam Gold Works",
-        address: "Captain Lakshmi Chowk, Rangargalli Near Sikchi Hospital Sangamner, Maharashtra 422605",
+        name: "Aurerxa | Nijam Gold Works",
+        address: "Jedhe Colony, Rangargalli, Sangamner, Maharashtra 422605",
         phone: "+91 93910 32677",
-        email: "contact@aurerxa.com",
-        hours: "Mon-Sat: 11AM-9PM",
-        mapLink: "https://www.google.com/maps/place/Nijam+Gold+works/data=!4m2!3m1!1s0x0:0xe8958ae639e82931?sa=X&ved=1t:2428&ictx=111",
-        lat: 19.5761,
-        lng: 74.2058
+        email: "Contact@aurerxa.com",
+        hours: "Mon-Sat: 10AM-8PM",
+        mapLink: "https://maps.app.goo.gl/PdTNoNuey3ecsxkt6",
+        lat: 19.5673515,
+        lng: 74.207201
     }
 
     const containerRef = useRef(null)
@@ -63,61 +63,69 @@ export default function StoresPage() {
                         className="max-w-5xl mx-auto"
                     >
                         <div className="group bg-neutral-950 border border-white/5 hover:border-amber-500/20 transition-all duration-1000 shadow-[0_0_50px_rgba(0,0,0,1)] overflow-hidden">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 h-full">
-                                {/* Visual Showcase */}
-                                <div className="md:col-span-1 lg:col-span-2 relative min-h-[500px] bg-neutral-900 overflow-hidden">
-                                    {/* Cinematic Shutter Reveal */}
-                                    <motion.div
-                                        initial={{ clipPath: 'inset(100% 0 0 0)' }}
-                                        whileInView={{ clipPath: 'inset(0% 0 0 0)' }}
-                                        viewport={{ once: true }}
-                                        transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-                                        className="absolute inset-0 bg-black z-10 pointer-events-none"
+                            <div className="grid grid-cols-1 lg:grid-cols-5 h-full">
+                                {/* Map iframe Integration */}
+                                <div className="lg:col-span-3 relative min-h-[500px] bg-neutral-900 overflow-hidden group/map">
+                                    <iframe
+                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3759.400120661953!2d74.207201!3d19.567351499999997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bdd01d03a70e915%3A0xe8958ae639e82931!2sAurerxa%20%7C%20Nijam%20Gold%20Works!5e0!3m2!1sen!2sin!4v1771769037819!5m2!1sen!2sin"
+                                        width="100%"
+                                        height="100%"
+                                        style={{ border: 0, filter: 'invert(0.9) hue-rotate(180deg) contrast(1.2) grayscale(0.2)' }}
+                                        allowFullScreen={true}
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                        className="absolute inset-0 transition-all duration-1000 grayscale-[0.5] group-hover/map:grayscale-0 brightness-[0.8] group-hover/map:brightness-100"
                                     />
+                                    <div className="absolute top-0 right-0 w-32 h-32 border-t border-r border-white/10 m-8 pointer-events-none" />
+                                    <div className="absolute bottom-0 left-0 w-32 h-32 border-b border-l border-white/10 m-8 pointer-events-none" />
 
-                                    {/* Rolex-style placeholder visual */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-[#004028]/40 via-black to-black z-0" />
-                                    <motion.div style={{ y: yMap }} className="absolute inset-0 flex items-center justify-center">
-                                        <MapPin className="w-24 h-24 text-white/5 group-hover:text-amber-500/10 transition-colors duration-1000" />
-                                    </motion.div>
-                                    <div className="absolute bottom-12 left-12 z-20 space-y-4">
-                                        <p className="text-[9px] font-premium-sans tracking-[0.4em] text-amber-500 uppercase">Sangamner Boutique</p>
-                                        <h2 className="font-serif text-3xl md:text-4xl text-white italic tracking-wide">
-                                            {store.name}
-                                        </h2>
+                                    {/* Direct Map Button for better usability */}
+                                    <div className="absolute bottom-6 right-6 opacity-0 group-hover/map:opacity-100 transition-opacity duration-300">
+                                        <a
+                                            href={store.mapLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="px-4 py-2 bg-white text-black text-[9px] uppercase tracking-widest font-bold shadow-2xl hover:bg-amber-500 hover:text-white transition-colors"
+                                        >
+                                            Direct Link →
+                                        </a>
                                     </div>
-                                    <div className="absolute top-0 right-0 w-32 h-32 border-t border-r border-white/5 m-8" />
                                 </div>
 
                                 {/* Boutique Info */}
-                                <div className="md:col-span-1 lg:col-span-3 p-12 md:p-20 flex flex-col justify-center space-y-16">
-                                    <div className="space-y-12">
-                                        <div className="flex items-start gap-8 group/item">
-                                            <div className="p-4 border border-white/5 group-hover/item:border-amber-500/30 transition-colors duration-500">
-                                                <MapPin className="w-5 h-5 text-amber-500/60" />
+                                <div className="lg:col-span-2 p-12 md:p-16 flex flex-col justify-center space-y-12">
+                                    <div className="space-y-10">
+                                        <div className="space-y-2">
+                                            <p className="text-amber-500/40 text-[9px] uppercase tracking-[0.4em] font-premium-sans">Heritage House</p>
+                                            <h2 className="font-serif text-3xl text-white italic tracking-wide">{store.name}</h2>
+                                        </div>
+
+                                        <div className="flex items-start gap-6 group/item">
+                                            <div className="p-3 border border-white/5 group-hover/item:border-amber-500/30 transition-colors duration-500">
+                                                <MapPin className="w-4 h-4 text-amber-500/60" />
                                             </div>
-                                            <div className="space-y-2">
-                                                <p className="text-amber-500/40 text-[9px] uppercase tracking-[0.4em] font-premium-sans">The Address</p>
-                                                <span className="text-white/60 font-light text-xs leading-[2] tracking-widest italic block">{store.address}</span>
+                                            <div className="space-y-1">
+                                                <p className="text-amber-500/40 text-[8px] uppercase tracking-[0.4em] font-premium-sans">Location</p>
+                                                <span className="text-white/60 font-light text-xs leading-[1.8] tracking-widest italic block">{store.address}</span>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-start gap-8 group/item">
-                                            <div className="p-4 border border-white/5 group-hover/item:border-amber-500/30 transition-colors duration-500">
-                                                <Clock className="w-5 h-5 text-amber-500/60" />
+                                        <div className="flex items-start gap-6 group/item">
+                                            <div className="p-3 border border-white/5 group-hover/item:border-amber-500/30 transition-colors duration-500">
+                                                <Clock className="w-4 h-4 text-amber-500/60" />
                                             </div>
-                                            <div className="space-y-2">
-                                                <p className="text-amber-500/40 text-[9px] uppercase tracking-[0.4em] font-premium-sans">Operating Hours</p>
+                                            <div className="space-y-1">
+                                                <p className="text-amber-500/40 text-[8px] uppercase tracking-[0.4em] font-premium-sans">Visit Us</p>
                                                 <span className="text-white/60 font-light text-xs tracking-widest italic block">{store.hours}</span>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-start gap-8 group/item">
-                                            <div className="p-4 border border-white/5 group-hover/item:border-amber-500/30 transition-colors duration-500">
-                                                <Phone className="w-5 h-5 text-amber-500/60" />
+                                        <div className="flex items-start gap-6 group/item">
+                                            <div className="p-3 border border-white/5 group-hover/item:border-amber-500/30 transition-colors duration-500">
+                                                <Phone className="w-4 h-4 text-amber-500/60" />
                                             </div>
-                                            <div className="space-y-2">
-                                                <p className="text-amber-500/40 text-[9px] uppercase tracking-[0.4em] font-premium-sans">Private Line</p>
+                                            <div className="space-y-1">
+                                                <p className="text-amber-500/40 text-[8px] uppercase tracking-[0.4em] font-premium-sans">Concierge</p>
                                                 <a href={`tel:${store.phone}`} className="text-white/60 hover:text-white transition-colors text-xs tracking-[0.2em] block">
                                                     {store.phone}
                                                 </a>
@@ -129,9 +137,9 @@ export default function StoresPage() {
                                         href={store.mapLink}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center justify-center gap-4 w-full py-6 bg-white text-black text-[10px] uppercase tracking-[0.4em] font-bold hover:bg-amber-500 hover:text-white transition-all duration-700 shadow-2xl"
+                                        className="inline-flex items-center justify-center gap-4 w-full py-5 bg-white text-black text-[9px] uppercase tracking-[0.4em] font-bold hover:bg-amber-500 hover:text-white transition-all duration-700 shadow-2xl"
                                     >
-                                        <Navigation className="w-3.5 h-3.5" />
+                                        <Navigation className="w-3 h-3" />
                                         Plan Your Visit
                                     </a>
                                 </div>
@@ -169,7 +177,7 @@ export default function StoresPage() {
                                 </p>
 
                                 <a
-                                    href="mailto:contact@aurerxa.com?subject=Private Boutique Consultation"
+                                    href="mailto:Contact@aurerxa.com?subject=Private Boutique Consultation"
                                     className="inline-block px-16 py-6 border border-white/20 hover:bg-white hover:text-black transition-all duration-700 text-[10px] font-premium-sans tracking-[0.5em] uppercase text-white"
                                 >
                                     Request Appointment

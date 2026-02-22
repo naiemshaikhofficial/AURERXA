@@ -77,62 +77,68 @@ function ARScene({ faceLandmarks, productName, scale, manualAdjustments }: any) 
     useFrame((state, delta) => {
         if (!faceLandmarks) return
 
-        // --------------------------------------------------------
-        // Landmark Mapping (MediaPipe -> Three.js World Space)
-        // --------------------------------------------------------
-        // Index 177: Left Ear Region (Tragus/Lobe approximation)
-        // Index 401: Right Ear Region
-        // MediaPipe coords are normalized [0,1]. We map to camera view plane.
+        // 1. Calculate Face Scale (Distance between temporal landmarks 234 & 454)
+        const p1 = faceLandmarks[234]
+        const p2 = faceLandmarks[454]
+        const faceWidth = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2))
 
+        // Target scale is proportional to face width (calibrated value)
+        const targetScale = faceWidth * 2.2 * scale
+
+        // 2. Position Ear Landmarks
         const mapLandmark = (index: number) => {
             const point = faceLandmarks[index]
-            const x = (point.x - 0.5) * 2 // -1 to 1
-            const y = -(point.y - 0.5) * 2 // -1 to 1 (inverted Y)
+            const x = (point.x - 0.5) * 2
+            const y = -(point.y - 0.5) * 2
+            const z = -point.z * 5 // MediaPipe Z is relative to face center
 
-            // Unproject to world space at a fixed depth
-            // We approximate depth based on face width or Z coord if available
-            const depth = -Math.abs(point.z * 5) - 3 // Adjust depth multiplier
-
-            // Simple projection for 2D video overlay effectively
-            const vector = new THREE.Vector3(x * 2.5, y * 1.5, -2) // Manual calibration needed for perfect alignment
-            // vector.unproject(camera) // Typically needed for true 3D
-
-            return vector
+            return new THREE.Vector3(x * 2.5, y * 1.5, z - 2.5)
         }
 
         const targetLeft = mapLandmark(177)
         const targetRight = mapLandmark(401)
 
-        // Smoothing (Linear Interpolation)
-        leftEarRef.current.lerp(targetLeft, 0.2)
-        rightEarRef.current.lerp(targetRight, 0.2)
+        // 3. Smooth Dampening
+        leftEarRef.current.lerp(targetLeft, 0.3)
+        rightEarRef.current.lerp(targetRight, 0.3)
 
-        // Calculate Head Rotation
-        // Using face mesh normals or key points (nose tip vs ears)
-        // Simple 2D rotation for now based on ear height diff
-        const angle = Math.atan2(targetRight.y - targetLeft.y, targetRight.x - targetLeft.x)
-        rotationRef.current.z = angle
+        // 4. Calculate Rotation (Roll/Tilt)
+        const roll = Math.atan2(targetRight.y - targetLeft.y, targetRight.x - targetLeft.x)
+
+        // Pitch approximation (Nose vs Ears)
+        const nose = faceLandmarks[1] // Nose tip
+        const pitch = (nose.y - (faceLandmarks[10].y + faceLandmarks[152].y) / 2) * 2
+
+        rotationRef.current.set(pitch * 0.5, 0, roll)
+
+        // Dynamic scaling
+        state.scene.traverse((obj) => {
+            if (obj.type === 'Group') {
+                obj.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1)
+            }
+        })
     })
 
     const finalScale = [scale * 0.5, scale * 0.5, scale * 0.5]
 
     return (
         <>
-            <ambientLight intensity={1.5} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={2} />
-            <Environment preset="city" />
+            <ambientLight intensity={1.2} />
+            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1.5} castShadow />
+            <pointLight position={[-10, -10, -10]} intensity={0.5} color="#fff" />
+            <pointLight position={[5, 5, 5]} intensity={1} color="#fbbf24" /> {/* Golden highlight */}
 
             {faceLandmarks && (
                 <>
                     <EarringModel
                         position={[leftEarRef.current.x + manualAdjustments.x, leftEarRef.current.y + manualAdjustments.y, leftEarRef.current.z]}
-                        rotation={[0, 0, rotationRef.current.z]}
-                        scale={finalScale}
+                        rotation={[rotationRef.current.x, 0, rotationRef.current.z]}
+                        scale={[1, 1, 1]} // Actual scale handled in useFrame
                     />
                     <EarringModel
                         position={[rightEarRef.current.x - manualAdjustments.x, rightEarRef.current.y + manualAdjustments.y, rightEarRef.current.z]}
-                        rotation={[0, 0, rotationRef.current.z]}
-                        scale={finalScale}
+                        rotation={[rotationRef.current.x, 0, rotationRef.current.z]}
+                        scale={[1, 1, 1]}
                     />
                 </>
             )}
@@ -152,7 +158,7 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
     const [loading, setLoading] = useState(true)
     const [debugMsg, setDebugMsg] = useState('Initializing AR Engine...')
 
-    // Manual adjustments
+    const [showAdjust, setShowAdjust] = useState(false)
     const [scale, setScale] = useState(1)
     const [position, setPosition] = useState({ x: 0, y: 0 })
 
@@ -199,8 +205,9 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
                     if (!isActive) return
                     if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                         setFaceLandmarks(results.multiFaceLandmarks[0])
-                        setLoading(false)
                         setDebugMsg('')
+                    } else {
+                        setFaceLandmarks(null)
                     }
                 });
 
@@ -217,10 +224,14 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
                                 }
                             }
                         },
-                        width: 1280,
-                        height: 720
+                        width: 640,
+                        height: 480
                     });
                     await camera.start();
+                    if (isActive) {
+                        setLoading(false)
+                        setDebugMsg('')
+                    }
                 }
 
             } catch (error) {
@@ -302,6 +313,18 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
                                         manualAdjustments={position}
                                     />
                                 </Canvas>
+
+                                {/* Scanning Line Effect */}
+                                <AnimatePresence>
+                                    {!loading && !faceLandmarks && (
+                                        <motion.div
+                                            initial={{ top: '-10%' }}
+                                            animate={{ top: '110%' }}
+                                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                            className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500 to-transparent shadow-[0_0_15px_rgba(245,158,11,0.5)] z-20"
+                                        />
+                                    )}
+                                </AnimatePresence>
                             </div>
 
                             {/* Loading State */}
@@ -322,49 +345,76 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
                         </div>
 
                         {/* Controls */}
-                        <div className="p-8 border-t border-white/5 bg-neutral-950 relative z-20">
-                            <div className="flex flex-wrap gap-8 items-center justify-center">
-                                {/* Size Control */}
-                                <div className="flex flex-col items-center gap-2">
-                                    <span className="text-[8px] text-white/20 uppercase font-bold tracking-[0.2em]">Earring Size</span>
-                                    <input
-                                        type="range"
-                                        min="0.5"
-                                        max="2"
-                                        step="0.1"
-                                        value={scale}
-                                        onChange={(e) => setScale(parseFloat(e.target.value))}
-                                        className="w-32 accent-amber-500 cursor-pointer"
-                                    />
-                                </div>
+                        <div className="p-6 border-t border-white/5 bg-neutral-950/80 backdrop-blur-md relative z-20">
+                            <div className="flex flex-col items-center gap-6">
+                                {!showAdjust ? (
+                                    <button
+                                        onClick={() => setShowAdjust(true)}
+                                        className="px-8 py-3 bg-white/5 border border-white/10 text-[10px] uppercase tracking-[0.2em] text-white/60 hover:text-white hover:bg-white/10 transition-all rounded-full flex items-center gap-2"
+                                    >
+                                        <RefreshCcw className="w-3 h-3" />
+                                        Fine-Tune Placement
+                                    </button>
+                                ) : (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="flex flex-wrap gap-8 items-center justify-center w-full"
+                                    >
+                                        {/* Size Control */}
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span className="text-[8px] text-white/20 uppercase font-bold tracking-[0.2em]">Earring Scale</span>
+                                            <input
+                                                type="range"
+                                                min="0.5"
+                                                max="1.5"
+                                                step="0.01"
+                                                value={scale}
+                                                onChange={(e) => setScale(parseFloat(e.target.value))}
+                                                className="w-32 accent-amber-500 cursor-pointer"
+                                            />
+                                        </div>
 
-                                {/* X-Offset */}
-                                <div className="flex flex-col items-center gap-2">
-                                    <span className="text-[8px] text-white/20 uppercase font-bold tracking-[0.2em]">Adjust Width</span>
-                                    <input
-                                        type="range"
-                                        min="-0.5"
-                                        max="0.5"
-                                        step="0.01"
-                                        value={position.x}
-                                        onChange={(e) => setPosition(p => ({ ...p, x: parseFloat(e.target.value) }))}
-                                        className="w-32 accent-amber-500 cursor-pointer"
-                                    />
-                                </div>
+                                        {/* X-Offset */}
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span className="text-[8px] text-white/20 uppercase font-bold tracking-[0.2em]">Adjust Width</span>
+                                            <input
+                                                type="range"
+                                                min="-0.2"
+                                                max="0.2"
+                                                step="0.005"
+                                                value={position.x}
+                                                onChange={(e) => setPosition(p => ({ ...p, x: parseFloat(e.target.value) }))}
+                                                className="w-32 accent-amber-500 cursor-pointer"
+                                            />
+                                        </div>
 
-                                {/* Y-Offset */}
-                                <div className="flex flex-col items-center gap-2">
-                                    <span className="text-[8px] text-white/20 uppercase font-bold tracking-[0.2em]">Adjust Height</span>
-                                    <input
-                                        type="range"
-                                        min="-0.5"
-                                        max="0.5"
-                                        step="0.01"
-                                        value={position.y}
-                                        onChange={(e) => setPosition(p => ({ ...p, y: parseFloat(e.target.value) }))}
-                                        className="w-32 accent-amber-500 cursor-pointer"
-                                    />
-                                </div>
+                                        {/* Y-Offset */}
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span className="text-[8px] text-white/20 uppercase font-bold tracking-[0.2em]">Adjust Height</span>
+                                            <input
+                                                type="range"
+                                                min="-0.2"
+                                                max="0.2"
+                                                step="0.005"
+                                                value={position.y}
+                                                onChange={(e) => setPosition(p => ({ ...p, y: parseFloat(e.target.value) }))}
+                                                className="w-32 accent-amber-500 cursor-pointer"
+                                            />
+                                        </div>
+
+                                        <button
+                                            onClick={() => {
+                                                setShowAdjust(false)
+                                                setScale(1)
+                                                setPosition({ x: 0, y: 0 })
+                                            }}
+                                            className="text-[8px] text-amber-500/50 uppercase tracking-widest hover:text-amber-500 transition-colors"
+                                        >
+                                            Reset
+                                        </button>
+                                    </motion.div>
+                                )}
                             </div>
                         </div>
 
