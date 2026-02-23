@@ -1807,3 +1807,54 @@ export async function updateReturnStatus(requestId: string, status: string, admi
 
     return { success: true }
 }
+
+// ============================================
+// SITE SETTINGS MANAGEMENT
+// ============================================
+
+export async function getAdminSiteSetting<T>(key: string, defaultValue: T): Promise<T> {
+    const admin = await checkAdminRole()
+    if (!admin) return defaultValue
+
+    const client = await getAuthClient()
+    const { data, error } = await client
+        .from('site_settings')
+        .select('value')
+        .eq('key', key)
+        .maybeSingle()
+
+    if (error || !data) return defaultValue
+    return data.value as T
+}
+
+export async function updateSiteSetting(key: string, value: any): Promise<{ success: boolean; error?: string }> {
+    const admin = await checkAdminRole()
+    if (!admin || admin.role !== 'main_admin') return { success: false, error: 'Unauthorized. Only Main Admins can update site settings.' }
+
+    const client = await getAuthClient()
+    const { error } = await client
+        .from('site_settings')
+        .upsert({
+            key,
+            value,
+            updated_at: new Date().toISOString()
+        })
+
+    if (error) return { success: false, error: error.message }
+
+    // Log activity
+    await client.from('admin_activity_logs').insert({
+        admin_id: admin.userId,
+        action: `Updated site setting: ${key}`,
+        entity_type: 'site_setting',
+        entity_id: key,
+        details: value
+    })
+
+    // Bust the public setting cache (if getSiteSetting uses revalidateTag)
+    const { revalidateTag } = await import('next/cache')
+    revalidateTag(`setting:${key}`, '')
+    revalidateTag('settings', '')
+
+    return { success: true }
+}

@@ -56,6 +56,31 @@ function _cacheSet<T>(key: string, value: T): void {
   _lookupCache.set(key, { value, expiresAt: Date.now() + LOOKUP_TTL_MS })
 }
 
+/**
+ * Fetches a dynamic setting from the site_settings table with Next.js caching.
+ */
+export async function getSiteSetting<T>(key: string, defaultValue: T): Promise<T> {
+  return unstable_cache(
+    async () => {
+      try {
+        const { data, error } = await supabaseServer
+          .from('site_settings')
+          .select('value')
+          .eq('key', key)
+          .maybeSingle()
+
+        if (error || !data) return defaultValue
+        return data.value as T
+      } catch (err) {
+        console.error(`Error fetching setting ${key}:`, err)
+        return defaultValue
+      }
+    },
+    [`setting-${key}`],
+    { revalidate: 3600, tags: [`setting:${key}`, 'settings'] }
+  )()
+}
+
 export interface ProductData {
   name: string
   description?: string
@@ -1505,7 +1530,18 @@ export async function createOrder(
     console.error('Shipping calculation failed:', res.error)
     return { success: false, error: `Shipping Error: ${res.error}` }
   }
-  const shipping = subtotal >= 50000 ? 0 : (shippingResult.rate || 90)
+
+  // Fetch dynamic shipping config from DB
+  const shippingConfig = await getSiteSetting('shipping_config', {
+    free_shipping_threshold: 50000,
+    default_shipping_fee: 90,
+    is_enabled: true
+  })
+
+  let shipping = 0
+  if (shippingConfig.is_enabled) {
+    shipping = subtotal >= shippingConfig.free_shipping_threshold ? 0 : (shippingResult.rate || shippingConfig.default_shipping_fee)
+  }
 
   // 3. Re-validate Coupon on Server (CRITICAL)
   let couponDiscount = 0
@@ -3283,6 +3319,17 @@ function getCitySurcharge(pincode: string, weightKg: number): number {
 
 export async function calculateShippingRate(pincode: string, cartItems: any[], isCod: boolean = false) {
   try {
+    // Fetch dynamic shipping config
+    const shippingConfig = await getSiteSetting('shipping_config', {
+      free_shipping_threshold: 50000,
+      default_shipping_fee: 90,
+      is_enabled: true
+    })
+
+    if (!shippingConfig.is_enabled) {
+      return { success: true, rate: 0, isLive: false }
+    }
+
     const originPincode = '422605'
     const delhiveryToken = process.env.DELHIVERY_API_TOKEN
     const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'

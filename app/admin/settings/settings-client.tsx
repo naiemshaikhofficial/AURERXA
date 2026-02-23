@@ -1,12 +1,18 @@
 'use client'
 
 import React, { useState } from 'react'
-import { updateGoldRate, createCoupon, deleteCoupon, updateAdminRole, removeAdmin, searchUsersForAdmin } from '../actions'
-import { CircleDollarSign, Tag, Shield, Save, Plus, Trash2, Crown, HeadphonesIcon, UserPlus, Search, Loader2 } from 'lucide-react'
+import { updateGoldRate, createCoupon, deleteCoupon, updateAdminRole, removeAdmin, searchUsersForAdmin, updateSiteSetting } from '../actions'
+import { CircleDollarSign, Tag, Shield, Save, Plus, Trash2, Crown, HeadphonesIcon, UserPlus, Search, Loader2, Settings2, Truck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
-export function SettingsClient({ initialRates, initialCoupons, initialAdmins, currentRole }: any) {
+export function SettingsClient({ initialRates, initialCoupons, initialAdmins, currentRole, initialShippingConfig }: any) {
     const [tab, setTab] = useState('rates')
+    const [shippingConfig, setShippingConfig] = useState(initialShippingConfig || {
+        free_shipping_threshold: 50000,
+        default_shipping_fee: 90,
+        is_enabled: true
+    })
     const [editingRates, setEditingRates] = useState<Record<string, string>>(() => {
         const initial: Record<string, string> = {}
         initialRates.forEach((rate: any) => { initial[rate.id] = String(rate.rate) })
@@ -82,9 +88,24 @@ export function SettingsClient({ initialRates, initialCoupons, initialAdmins, cu
         setIsSearching(false)
     }
 
+    const handleShippingUpdate = async () => {
+        try {
+            const res = await updateSiteSetting('shipping_config', shippingConfig)
+            if (res.success) {
+                toast.success('Shipping settings updated')
+                router.refresh()
+            } else {
+                toast.error(res.error || 'Update failed')
+            }
+        } catch (error) {
+            toast.error('Something went wrong')
+        }
+    }
+
     const tabs = [
         { id: 'rates', label: 'Metal Rates', icon: CircleDollarSign },
         { id: 'coupons', label: 'Coupons', icon: Tag },
+        { id: 'config', label: 'Store Config', icon: Settings2 },
         ...(currentRole === 'main_admin' ? [{ id: 'admins', label: 'Admin Roles', icon: Shield }] : []),
     ]
 
@@ -147,6 +168,59 @@ export function SettingsClient({ initialRates, initialCoupons, initialAdmins, cu
                                 <button onClick={() => handleDeleteCoupon(c.id)} className="p-2 text-red-400/50 hover:text-red-400 transition"><Trash2 className="w-4 h-4" /></button>
                             </div>
                         ))}
+                    </div>
+                </div>
+            )}
+
+            {tab === 'config' && (
+                <div className="max-w-2xl space-y-4">
+                    <div className="bg-[#111111] border border-white/5 rounded-xl p-6 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <h3 className="text-sm font-medium flex items-center gap-2"><Truck className="w-4 h-4 text-[#D4AF37]" /> Shipping Protection</h3>
+                                <p className="text-xs text-white/40">Enable or disable shipping charges globally</p>
+                            </div>
+                            <button
+                                onClick={() => setShippingConfig((p: any) => ({ ...p, is_enabled: !p.is_enabled }))}
+                                className={`w-12 h-6 rounded-full transition-colors relative ${shippingConfig.is_enabled ? 'bg-emerald-500' : 'bg-white/10'}`}
+                            >
+                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${shippingConfig.is_enabled ? 'left-7' : 'left-1'}`} />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+                            <div className="space-y-2">
+                                <label className="text-xs text-white/40 font-medium">Free Shipping Threshold (₹)</label>
+                                <input
+                                    type="number"
+                                    value={shippingConfig.free_shipping_threshold}
+                                    onChange={e => setShippingConfig((p: any) => ({ ...p, free_shipping_threshold: parseFloat(e.target.value) }))}
+                                    placeholder="50000"
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/30"
+                                />
+                                <p className="text-[10px] text-white/20 italic">Orders above this amount get free shipping</p>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs text-white/40 font-medium">Default Shipping Fee (₹)</label>
+                                <input
+                                    type="number"
+                                    value={shippingConfig.default_shipping_fee}
+                                    onChange={e => setShippingConfig((p: any) => ({ ...p, default_shipping_fee: parseFloat(e.target.value) }))}
+                                    placeholder="90"
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/30"
+                                />
+                                <p className="text-[10px] text-white/20 italic">Standard fee for paid shipping</p>
+                            </div>
+                        </div>
+
+                        <div className="pt-2">
+                            <button
+                                onClick={handleShippingUpdate}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#D4AF37] text-black rounded-lg text-sm font-bold hover:opacity-90 transition shadow-lg shadow-[#D4AF37]/10"
+                            >
+                                <Save className="w-4 h-4" /> Save Store Configuration
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { getAdminGoldRates, getAdminCoupons, getAdminList, checkAdminRole } from '../actions'
+import { getAdminGoldRates, getAdminCoupons, getAdminList, checkAdminRole, getAdminSiteSetting } from '../actions'
 import { SettingsClient } from './settings-client'
 import { SettingsSkeleton } from './settings-skeleton'
 
@@ -14,11 +14,16 @@ export default async function SettingsPage() {
 }
 
 async function SettingsContent() {
-    const [rates, coupons, admins, role] = await Promise.all([
+    const [rates, coupons, admins, role, shippingConfig] = await Promise.all([
         getAdminGoldRates(),
         getAdminCoupons(),
         getAdminList(),
-        checkAdminRole()
+        checkAdminRole(),
+        getAdminSiteSetting('shipping_config', {
+            free_shipping_threshold: 50000,
+            default_shipping_fee: 90,
+            is_enabled: true
+        })
     ])
 
     return (
@@ -27,6 +32,7 @@ async function SettingsContent() {
             initialCoupons={coupons}
             initialAdmins={admins}
             currentRole={role?.role || ''}
+            initialShippingConfig={shippingConfig}
         />
     )
 }
