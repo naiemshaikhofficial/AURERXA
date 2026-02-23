@@ -96,7 +96,8 @@ interface ProductCardProps {
     priority?: boolean
 }
 
-export function ProductCard({ product, viewMode = 'grid', index = 0, className, onClose, priority = false }: ProductCardProps) {
+
+export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, className, onClose, priority = false }: ProductCardProps) => {
     const { addItem } = useCart()
     const router = useRouter()
     const [isAdding, setIsAdding] = useState(false)
@@ -366,4 +367,7 @@ export function ProductCard({ product, viewMode = 'grid', index = 0, className, 
             </div>
         </motion.div>
     )
-}
+
+})
+
+ProductCard.displayName = 'ProductCard'

@@ -1,14 +1,30 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Common malicious bot / scraper User-Agents to block at edge
+const BLOCKED_UA_PATTERNS = [
+    /sqlmap/i, /nikto/i, /nmap/i, /masscan/i, /zgrab/i,
+    /python-requests\/(?!.*aurerxa)/i, // Block generic Python scrapers (not our own)
+    /go-http-client\/(?!.*aurerxa)/i,
+    /curl\/(?!.*aurerxa)/i,
+    /wget/i,
+    /scrapy/i,
+    /petalbot/i,
+]
+
 export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname
+
+    // --- 0. BOT & SCRAPER BLOCKING (runs before anything else) ---
+    const ua = request.headers.get('user-agent') || ''
+    if (BLOCKED_UA_PATTERNS.some(p => p.test(ua))) {
+        return new NextResponse('Forbidden', { status: 403 })
+    }
 
     // --- 1. FAST EXIT FOR STATIC ASSETS & INTERNAL FILES ---
     // This reduces Edge Function invocations and CPU time significantly.
     if (
         pathname.startsWith('/_next') ||
-        pathname.startsWith('/api/') ||
         pathname.includes('.') || // Static files like .png, .jpg, .ico
         pathname === '/favicon.ico'
     ) {
@@ -46,19 +62,24 @@ export async function middleware(request: NextRequest) {
     // Simple per-instance rate limiting for expensive routes
     const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous'
 
-    // Expensive routes that need protection
-    const isExpensiveRoute = pathname.startsWith('/login') ||
-        pathname.startsWith('/signup') ||
-        pathname.startsWith('/api/search') ||
-        pathname.startsWith('/contact')
+    // Route-based rate limit config
+    // Auth/contact: 20 req/min | Checkout/payment: 10 req/min (stricter)
+    const rateLimitConfig: { match: boolean; limit: number; key: string } | null = (() => {
+        if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/contact')) {
+            return { match: true, limit: 20, key: `rl:auth:${ip}` }
+        }
+        if (pathname.startsWith('/checkout') || pathname.startsWith('/api/payment') || pathname.startsWith('/api/order')) {
+            return { match: true, limit: 10, key: `rl:payment:${ip}` }
+        }
+        return null
+    })()
 
-    if (isExpensiveRoute) {
-        // Rate limit: 20 requests per minute per IP for sensitive routes (slack for genuine burst)
-        const rateLimitKey = `rl:${ip}:${pathname}`
+    if (rateLimitConfig) {
+        const { limit, key } = rateLimitConfig
         const now = Date.now()
-        const windowSize = 60 * 1000 // 1 minute
+        const windowSize = 60 * 1000
 
-        const rlData = request.cookies.get(rateLimitKey)?.value
+        const rlData = request.cookies.get(key)?.value
         let count = 1
         let resetTime = now + windowSize
 
@@ -69,28 +90,25 @@ export async function middleware(request: NextRequest) {
                     count = parsed.count + 1
                     resetTime = parsed.resetTime
                 }
-            } catch (e) {
-                // Ignore parse errors from malformed cookies
-            }
+            } catch (e) { /* Ignore malformed cookies */ }
         }
 
-        if (count > 20) {
-            // Secondary blunt check: Overall IP limit to prevent distributed/malicious spikes
+        if (count > limit) {
             return new NextResponse('Too Many Requests', {
                 status: 429,
                 headers: {
                     'Retry-After': '60',
-                    'X-RateLimit-Limit': '20',
+                    'X-RateLimit-Limit': String(limit),
                     'X-RateLimit-Remaining': '0',
+                    'Content-Type': 'text/plain',
                 }
             })
         }
 
-        // Set/Update rate limit cookie
-        response.cookies.set(rateLimitKey, JSON.stringify({ count, resetTime }), {
+        response.cookies.set(key, JSON.stringify({ count, resetTime }), {
             httpOnly: true,
-            secure: true,
-            sameSite: 'strict', // Harder security for expensive routes
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
             maxAge: 60
         })
     }

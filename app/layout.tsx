@@ -168,6 +168,7 @@ import { getCurrentUserProfile } from '@/app/actions'
 import { SearchModal } from '@/components/search-modal'
 import { DynamicTitle } from '@/components/dynamic-title'
 import { Footer } from '@/components/footer'
+import { ErrorBoundary } from '@/components/error-boundary'
 
 
 export default async function RootLayout({
@@ -312,9 +313,11 @@ export default async function RootLayout({
                     <Navbar />
                     <div className="pt-20 md:pt-24">
                       <CategoryNav />
-                      <main>
-                        {children}
-                      </main>
+                      <ErrorBoundary componentName="Main Content">
+                        <main>
+                          {children}
+                        </main>
+                      </ErrorBoundary>
                       <Footer />
                     </div>
                     <CartSheet />
@@ -324,7 +327,9 @@ export default async function RootLayout({
                   </AdminRouteGuard>
 
                   <AdminOnlyWrapper>
-                    {children}
+                    <ErrorBoundary componentName="Admin Dashboard">
+                      {children}
+                    </ErrorBoundary>
                   </AdminOnlyWrapper>
 
                   <Toaster />

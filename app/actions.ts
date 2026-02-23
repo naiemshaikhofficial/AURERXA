@@ -28,6 +28,34 @@ export interface ActionResponse<T = any> {
   error?: string
 }
 
+// =====================================================
+// IN-MEMORY LOOKUP CACHE (eliminates N+1 DB patterns)
+// Used for frequently-queried, rarely-changing lookups
+// like category IDs by slug.
+// =====================================================
+interface CacheEntry<T> { value: T; expiresAt: number }
+const _lookupCache = new Map<string, CacheEntry<any>>()
+const LOOKUP_TTL_MS = 10 * 60 * 1000 // 10 minutes
+
+function _cacheGet<T>(key: string): T | null {
+  const entry = _lookupCache.get(key)
+  if (!entry) return null
+  if (Date.now() > entry.expiresAt) {
+    _lookupCache.delete(key)
+    return null
+  }
+  return entry.value as T
+}
+
+function _cacheSet<T>(key: string, value: T): void {
+  // Prevent unbounded growth — max 200 entries
+  if (_lookupCache.size >= 200) {
+    const firstKey = _lookupCache.keys().next().value
+    if (firstKey) _lookupCache.delete(firstKey)
+  }
+  _lookupCache.set(key, { value, expiresAt: Date.now() + LOOKUP_TTL_MS })
+}
+
 export interface ProductData {
   name: string
   description?: string
@@ -2460,31 +2488,29 @@ export async function getFilteredProducts(options: {
       try {
         let query = supabaseServer
           .from('products')
-          .select('id, name, price, description, image_url, images, slug, weight_grams, material_type, categories(id, name, slug)')
+          .select('id, name, price, image_url, images, slug, weight_grams, material_type, stock, tags, categories(name)')
 
-        // Category filter
+        // Category filter — in-memory cache eliminates repeated DB lookups for same slug
         const categorySlug = options.category || options.material
         if (categorySlug && categorySlug !== 'all') {
-          const { data: cat } = await supabaseServer
-            .from('categories')
-            .select('id')
-            .eq('slug', categorySlug)
-            .single()
-          if (cat) {
-            query = query.eq('category_id', cat.id)
+          const ck = `cat:${categorySlug}`
+          let catId = _cacheGet<string>(ck)
+          if (!catId) {
+            const { data: cat } = await supabaseServer.from('categories').select('id').eq('slug', categorySlug).single()
+            if (cat) { _cacheSet(ck, cat.id); catId = cat.id }
           }
+          if (catId) query = query.eq('category_id', catId)
         }
 
-        // Sub-category filter
+        // Sub-category filter — in-memory cache
         if (options.sub_category && options.sub_category !== 'all') {
-          const { data: subCat } = await supabaseServer
-            .from('sub_categories')
-            .select('id')
-            .eq('slug', options.sub_category)
-            .single()
-          if (subCat) {
-            query = query.eq('sub_category_id', subCat.id)
+          const sk = `subcat:${options.sub_category}`
+          let subCatId = _cacheGet<string>(sk)
+          if (!subCatId) {
+            const { data: subCat } = await supabaseServer.from('sub_categories').select('id').eq('slug', options.sub_category).single()
+            if (subCat) { _cacheSet(sk, subCat.id); subCatId = subCat.id }
           }
+          if (subCatId) query = query.eq('sub_category_id', subCatId)
         }
 
         // Tag filter (Theme Collections — robust with case variations + fallback)

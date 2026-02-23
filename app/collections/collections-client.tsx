@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Search } from 'lucide-react'
@@ -29,11 +29,14 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
     const [products, setProducts] = useState<Product[]>(initialProducts)
     const [searchQuery, setSearchQuery] = useState(initialFilters.search || '')
 
-    // Filters are initialized from props, no need for effect on mount
+    // For tracking the latest request to prevent race conditions
+    const latestRequestId = useRef(0)
 
-    const handleFilterChange = async (newFilters: FilterState) => {
+    const handleFilterChange = useCallback(async (newFilters: FilterState) => {
+        const requestId = ++latestRequestId.current
         setFilters(newFilters)
         setLoading(true)
+
         try {
             const data = await getFilteredProducts({
                 sortBy: newFilters.sortBy,
@@ -48,24 +51,30 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
                 maxPrice: newFilters.priceRange.max || undefined,
                 search: newFilters.search || undefined
             })
-            // Cast through unknown to resolve type overlap issue
-            setProducts(data as unknown as Product[])
+
+            // Only update products if this is still the latest request
+            if (requestId === latestRequestId.current) {
+                setProducts(data as unknown as Product[])
+            }
         } catch (error) {
-            console.error(error)
+            console.error('[CollectionsClient] Filter Update Error:', error)
         } finally {
-            setLoading(false)
+            if (requestId === latestRequestId.current) {
+                setLoading(false)
+            }
         }
-    }
+    }, [])
 
     // Debounce search input
     useEffect(() => {
         const timer = setTimeout(() => {
-            if (searchQuery !== (filters.search || '')) {
+            const currentFilterSearch = filters.search || ''
+            if (searchQuery !== currentFilterSearch) {
                 handleFilterChange({ ...filters, search: searchQuery })
             }
         }, 500)
         return () => clearTimeout(timer)
-    }, [searchQuery])
+    }, [searchQuery, filters, handleFilterChange])
 
     const formatTitle = (text: string) => {
         if (!text) return ''
