@@ -233,39 +233,39 @@ body {
 
 @layer base {
   :root {
-    /* SILK LUXURY PALETTE (Light Mode) */
-    --background: 40 20% 98%;
-    /* #FCFBF9 - Warm Silk Cream */
-    --foreground: 0 0% 10%;
-    /* #1A1A1A - Soft Black */
+    /* PURE LUXURY WHITE PALETTE (Light Mode) */
+    --background: 0 0% 100%;
+    /* #FFFFFF - Pure White */
+    --foreground: 0 0% 8%;
+    /* #141414 - Neutral Deep Black */
 
-    --card: 40 20% 98%;
-    --card-foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
 
-    --popover: 40 20% 98%;
-    --popover-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
 
     --primary: 43 45% 40%;
-    /* #94712B - Rich Dark Gold (Contrast for light bg) */
+    /* #94712B - Consistent High-Contrast Gold */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 40 10% 94%;
-    /* #F2F0EB - Light Warm Grey */
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 0 0% 98%;
+    /* #FAFAFA - Subtle Contrast */
+    --secondary-foreground: 0 0% 8%;
 
-    --muted: 40 10% 94%;
+    --muted: 0 0% 96%;
     --muted-foreground: 0 0% 40%;
 
-    --accent: 43 30% 90%;
-    /* #F5EFE0 - Pale Gold Background */
+    --accent: 43 20% 96%;
+    /* Very Pale Gold Hint */
     --accent-foreground: 43 45% 30%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 43 20% 85%;
-    /* #E0DAD0 - Warm Border */
-    --input: 43 20% 85%;
+    --border: 0 0% 92%;
+    /* #EBEBEB - Clean Neutral Border */
+    --input: 0 0% 92%;
     --ring: 43 45% 40%;
 
     --radius: 0rem;

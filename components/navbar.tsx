@@ -5,9 +5,10 @@ import Link from 'next/link'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
-import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield, Loader2 } from 'lucide-react'
+import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield, Loader2, X } from 'lucide-react'
 import { useCart } from '@/context/cart-context'
 import { useSearch } from '@/context/search-context'
+import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 import { getOrdersPollingData } from '@/app/admin/actions'
 import {
@@ -35,6 +36,7 @@ export function Navbar() {
   const pathname = usePathname()
   const { cartCount, openCart } = useCart()
   const { openSearch } = useSearch()
+  const { resolvedTheme } = useTheme()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [isAdmin, setIsAdmin] = useState(false)
@@ -227,7 +229,14 @@ export function Navbar() {
   const { scrollY } = useScroll()
   const [hidden, setHidden] = useState(false)
   const navHeight = useTransform(scrollY, [0, 100], ['6rem', '4.5rem'])
-  const navBg = useTransform(scrollY, [0, 100], ['rgba(var(--background), 0)', 'rgba(8, 8, 8, 0.95)'])
+  const navBg = useTransform(
+    scrollY,
+    [0, 100],
+    [
+      `rgba(${resolvedTheme === 'dark' ? '8, 8, 8' : '255, 255, 255'}, 0)`,
+      `rgba(${resolvedTheme === 'dark' ? '8, 8, 8' : '255, 255, 255'}, 0.95)`
+    ]
+  )
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0
@@ -276,11 +285,11 @@ export function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
-            <Link href="/" className="flex-shrink-0 group relative z-50" aria-label="AURERXA Home">
+            <Link href="/" className="flex-shrink-0 group relative z-50 pt-1 md:pt-0" aria-label="AURERXA Home">
               <img
                 src="/logo-new-v2.png"
                 alt="AURERXA Logo"
-                className="h-8 md:h-16 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
+                className="h-12 md:h-14 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
               />
             </Link>
 
@@ -472,18 +481,18 @@ export function Navbar() {
                 className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 group tactile-press"
                 aria-label="Search products"
               >
-                <Search className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
-                <span className="text-[10px] font-premium-sans text-muted-foreground/80 group-hover:text-primary/70 hidden lg:block tracking-widest">SEARCH</span>
+                <Search className="w-6 h-6 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
+                <span className="text-[10px] font-premium-sans text-muted-foreground/80 group-hover:text-primary/70 hidden lg:block tracking-widest uppercase">SEARCH</span>
               </button>
 
               {/* Wishlist */}
               <Link href="/wishlist" className="relative text-muted-foreground hover:text-primary transition-colors group tactile-press" aria-label="Wishlist">
-                <Heart className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
+                <Heart className="w-6 h-6 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
               </Link>
 
               {/* Cart */}
               <Link href="/cart" className="relative text-muted-foreground hover:text-primary transition-colors group tactile-press" aria-label={`Shopping Cart with ${cartCount} items`}>
-                <ShoppingBag className="w-4 h-4 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
+                <ShoppingBag className="w-6 h-6 stroke-[1.5px] group-hover:stroke-primary transition-colors" />
                 {cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-medium rounded-full flex items-center justify-center">
                     {cartCount > 9 ? '9+' : cartCount}

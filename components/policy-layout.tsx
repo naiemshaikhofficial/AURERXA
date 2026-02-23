@@ -3,8 +3,6 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { ChevronRight, FileText, Shield, Truck, HelpCircle } from 'lucide-react'
 
 interface PolicyLayoutProps {
@@ -25,9 +23,8 @@ export function PolicyLayout({ children, title, description }: PolicyLayoutProps
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
 
-            <main className="pt-24 pb-24">
+            <main className="pb-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="mb-12">
@@ -49,8 +46,8 @@ export function PolicyLayout({ children, title, description }: PolicyLayoutProps
                                             key={item.href}
                                             href={item.href}
                                             className={`flex items-center gap-3 px-3 py-2.5 text-sm transition-all group ${isActive
-                                                    ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary'
-                                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-l-2 border-transparent'
+                                                ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary'
+                                                : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 border-l-2 border-transparent'
                                                 }`}
                                         >
                                             <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
@@ -69,8 +66,6 @@ export function PolicyLayout({ children, title, description }: PolicyLayoutProps
                     </div>
                 </div>
             </main>
-
-            <Footer />
         </div>
     )
 }

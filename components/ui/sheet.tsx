@@ -67,11 +67,7 @@ const SheetContent = React.forwardRef<
     >
       {children}
       <SheetPrimitive.Close className="absolute right-4 top-4 opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none">
-        <img
-          src="https://img.icons8.com/?size=100&id=aJXCfqpXgZUC&format=png&color=FFFFFF"
-          alt="Close"
-          className="w-6 h-6"
-        />
+        <X className="w-6 h-6 text-foreground" />
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
     </SheetPrimitive.Content>

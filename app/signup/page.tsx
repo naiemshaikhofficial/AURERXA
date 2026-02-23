@@ -103,16 +103,16 @@ function SignupForm() {
     }
 
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center px-4 py-20 relative overflow-hidden">
+        <div className="min-h-[calc(100vh-12rem)] bg-background flex items-start justify-center px-4 pt-40 pb-20 relative overflow-hidden">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl"
+                className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl mt-8"
             >
                 <div className="text-center mb-10">
                     <Link href="/">
-                        <img src="/logo-new-v2.png" alt="Aurerxa" className="h-18 mx-auto mb-6 opacity-90 dark:invert-0" />
+                        <img src="/logo-new-v2.png" alt="Aurerxa" className="h-20 mx-auto mb-6 opacity-90 dark:invert-0" />
                     </Link>
                     <h2 className="text-3xl font-serif font-bold text-foreground mb-2">
                         <AnimatePresence mode="wait">
@@ -369,8 +369,8 @@ function SignupForm() {
 export default function SignupPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         }>
             <SignupForm />

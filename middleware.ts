@@ -124,7 +124,19 @@ export async function middleware(request: NextRequest) {
                 e.message?.includes('fetch failed')
 
             if (!isIgnorable) {
-                console.error('Middleware Auth Error:', e)
+                const errorCode = e.code || e.name || ''
+                const errorMsg = e.message || ''
+
+                const isSilentError =
+                    errorCode === 'refresh_token_not_found' ||
+                    errorCode === 'refresh_token_already_used' ||
+                    errorMsg.includes('Refresh Token Not Found') ||
+                    errorMsg.includes('Refresh Token Already Used') ||
+                    e.status === 400 && errorMsg.includes('Refresh Token')
+
+                if (!isSilentError) {
+                    console.error('Middleware Auth Error:', e)
+                }
             }
         }
     }

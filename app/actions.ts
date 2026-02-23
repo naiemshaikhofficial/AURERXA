@@ -64,7 +64,17 @@ async function checkIsAdmin() {
       .single()
 
     return !!data
-  } catch (err) {
+  } catch (err: any) {
+    // Ignore common session errors
+    const errorMsg = err.message || ''
+    if (
+      errorMsg.includes('Refresh Token Not Found') ||
+      errorMsg.includes('Refresh Token Already Used') ||
+      errorMsg.includes('Auth session missing')
+    ) {
+      return false
+    }
+    console.error('Error checking admin status:', err)
     return false
   }
 }

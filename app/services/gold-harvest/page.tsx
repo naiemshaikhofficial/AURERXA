@@ -1,8 +1,6 @@
 'use client'
 
 import React, { useState } from "react"
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -58,8 +56,7 @@ export default function GoldHarvestPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#050505] text-white selection:bg-primary/30">
-            <Navbar />
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
 
             <main>
                 {/* Wealth & Prestige Hero */}
@@ -82,7 +79,7 @@ export default function GoldHarvestPage() {
                             <h1 className="text-7xl md:text-9xl font-serif tracking-tight">
                                 Gold <span className="italic text-primary">Harvest.</span>
                             </h1>
-                            <p className="text-xl text-white/40 font-light max-w-2xl mx-auto leading-relaxed">
+                            <p className="text-muted-foreground font-light max-w-2xl mx-auto leading-relaxed">
                                 Nurture your dreams with AURERXA. A sophisticated saving scheme designed for
                                 those who value timing, tradition, and the enduring value of gold.
                             </p>
@@ -96,15 +93,15 @@ export default function GoldHarvestPage() {
                         >
                             <div className="text-center group cursor-default">
                                 <div className="w-px h-20 bg-gradient-to-b from-transparent via-primary/30 to-transparent mx-auto mb-4" />
-                                <p className="text-xs uppercase tracking-widest text-white/30 group-hover:text-primary transition-colors">Safety</p>
+                                <p className="text-xs uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">Safety</p>
                             </div>
                             <div className="text-center group cursor-default">
                                 <div className="w-px h-20 bg-gradient-to-b from-transparent via-primary/30 to-transparent mx-auto mb-4" />
-                                <p className="text-xs uppercase tracking-widest text-white/30 group-hover:text-primary transition-colors">Legacy</p>
+                                <p className="text-xs uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">Legacy</p>
                             </div>
                             <div className="text-center group cursor-default">
                                 <div className="w-px h-20 bg-gradient-to-b from-transparent via-primary/30 to-transparent mx-auto mb-4" />
-                                <p className="text-xs uppercase tracking-widest text-white/30 group-hover:text-primary transition-colors">Growth</p>
+                                <p className="text-xs uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">Growth</p>
                             </div>
                         </motion.div>
                     </div>
@@ -117,7 +114,7 @@ export default function GoldHarvestPage() {
                             <div className="lg:col-span-4 space-y-8">
                                 <h2 className="text-4xl font-serif">Why Choose <br /><span className="text-primary italic">Gold Harvest?</span></h2>
                                 <div className="h-px w-24 bg-primary/30" />
-                                <p className="text-white/50 font-light leading-relaxed">
+                                <p className="text-muted-foreground font-light leading-relaxed">
                                     Our scheme is not just a saving plan; it's a commitment to your future milestones, backed by AURERXA's 50-year legacy of trust.
                                 </p>
                             </div>
@@ -132,13 +129,13 @@ export default function GoldHarvestPage() {
                                     <motion.div
                                         key={i}
                                         whileHover={{ y: -5 }}
-                                        className="p-10 bg-[#0a0a0a] border border-white/5 rounded-3xl group hover:border-primary/20 transition-all"
+                                        className="p-10 bg-card border border-border rounded-3xl group hover:border-primary/20 transition-all"
                                     >
                                         <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-black transition-all">
                                             <item.icon size={24} strokeWidth={1.5} />
                                         </div>
                                         <h3 className="text-xl font-serif mb-3 italic">{item.title}</h3>
-                                        <p className="text-sm text-white/40 font-light leading-relaxed">{item.desc}</p>
+                                        <p className="text-sm text-muted-foreground font-light leading-relaxed">{item.desc}</p>
                                     </motion.div>
                                 ))}
                             </div>
@@ -147,9 +144,9 @@ export default function GoldHarvestPage() {
                 </section>
 
                 {/* Elegant Registration */}
-                <section className="py-32 bg-[#080808] relative">
+                <section className="py-32 bg-muted/30 relative">
                     <div className="container max-w-6xl mx-auto">
-                        <div className="bg-[#111] grid lg:grid-cols-2 rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl">
+                        <div className="bg-card grid lg:grid-cols-2 rounded-[3rem] overflow-hidden border border-border shadow-2xl">
                             <div className="p-16 space-y-8 flex flex-col justify-center border-r border-white/5">
                                 <div className="space-y-4">
                                     <h3 className="text-4xl font-serif">Cultivate Your <br /><span className="text-primary italic">Fortune.</span></h3>
@@ -172,7 +169,7 @@ export default function GoldHarvestPage() {
                                 </div>
                             </div>
 
-                            <div className="p-16 bg-[#0a0a0a]">
+                            <div className="p-16 bg-muted/30">
                                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                                     <div className="space-y-4">
                                         <Label className="text-[10px] uppercase tracking-[0.3em] text-primary/60 font-bold">Primary Consultant</Label>
@@ -237,8 +234,6 @@ export default function GoldHarvestPage() {
                     </div>
                 </section>
             </main>
-
-            <Footer />
         </div>
     )
 }

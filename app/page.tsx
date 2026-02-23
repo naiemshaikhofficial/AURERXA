@@ -17,7 +17,6 @@ const FeaturedCollections = dynamic(() => import('@/components/featured-collecti
 const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod => mod.Bestsellers))
 const CustomOrderForm = dynamic(() => import('@/components/custom-order-form').then(mod => mod.CustomOrderForm))
 const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => mod.Newsletter))
-const Footer = dynamic(() => import('@/components/footer').then(mod => mod.Footer))
 const RecentlyViewed = dynamic(() => import('@/components/recently-viewed').then(mod => mod.RecentlyViewed))
 const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-story').then(mod => mod.CraftsmanshipStory))
 const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
@@ -265,7 +264,7 @@ export default function HomePage() {
         <BestsellersSection />
       </Suspense>
 
-      <Suspense fallback={<div className="h-screen w-full bg-neutral-950 animate-pulse" />}>
+      <Suspense fallback={<div className="h-screen w-full bg-background animate-pulse" />}>
         <MaterialShowcaseSection />
       </Suspense>
 
@@ -276,8 +275,6 @@ export default function HomePage() {
       <CustomOrderForm />
       <RecentlyViewed />
       <Newsletter />
-
-      <Footer />
     </div>
   )
 }

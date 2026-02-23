@@ -187,13 +187,13 @@ export function Footer() {
         </div>
 
         {/* Bottom copyright section */}
-        <div className="pt-12 flex flex-col md:flex-row justify-between items-center gap-8 text-white/20 text-[10px] uppercase tracking-widest">
+        <div className="pt-12 flex flex-col md:flex-row justify-between items-center gap-8 text-muted-foreground/40 text-[10px] uppercase tracking-widest border-t border-border/50">
           <span>© {new Date().getFullYear()} AURERXA. All Rights Reserved.</span>
           <div className="flex gap-12">
-            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
-            <Link href="/returns" className="hover:text-white transition-colors">Returns</Link>
-            <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
+            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+            <Link href="/returns" className="hover:text-foreground transition-colors">Returns</Link>
+            <Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
           </div>
         </div>
       </div>

@@ -1,7 +1,5 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { SupabaseImage as Image } from '@/components/supabase-image'
 import { getBlogPost, getBlogPosts } from '@/app/actions'
 import { Calendar, User, ArrowLeft, Tag } from 'lucide-react'
@@ -27,27 +25,26 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     const relatedPosts = (await getBlogPosts(post.category)).filter(p => p.id !== post.id).slice(0, 3)
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white">
-            <Navbar />
+        <div className="min-h-screen bg-background text-foreground">
 
             <main className="pt-24 pb-24">
                 <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Back Link */}
-                    <Link href="/blog" className="inline-flex items-center text-white/50 hover:text-amber-400 mb-8">
+                    <Link href="/blog" className="inline-flex items-center text-muted-foreground hover:text-primary mb-8 transition-colors">
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         Back to Blog
                     </Link>
 
                     {/* Header */}
                     <header className="mb-8">
-                        <span className="inline-block px-3 py-1 bg-amber-500 text-neutral-950 text-xs font-bold uppercase mb-4">
+                        <span className="inline-block px-3 py-1 bg-primary text-primary-foreground text-xs font-bold uppercase mb-4">
                             {post.category}
                         </span>
                         <h1 className="text-3xl md:text-4xl font-serif font-bold mb-4">{post.title}</h1>
 
-                        <div className="flex items-center gap-6 text-sm text-white/50">
+                        <div className="flex items-center gap-6 text-sm text-muted-foreground">
                             <span className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
+                                <Calendar className="w-4 h-4 text-primary/50" />
                                 {new Date(post.published_at).toLocaleDateString('en-IN', {
                                     day: 'numeric',
                                     month: 'long',
@@ -55,7 +52,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                                 })}
                             </span>
                             <span className="flex items-center gap-2">
-                                <User className="w-4 h-4" />
+                                <User className="w-4 h-4 text-primary/50" />
                                 {post.author}
                             </span>
                         </div>
@@ -75,22 +72,22 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     )}
 
                     {/* Content */}
-                    <div className="prose prose-invert prose-amber max-w-none mb-12">
+                    <div className="prose dark:prose-invert prose-neutral max-w-none mb-12">
                         {post.content.split('\n\n').map((para: string, i: number) => {
                             if (para.startsWith('## ')) {
-                                return <h2 key={i} className="text-xl font-serif font-medium text-amber-400 mt-8 mb-4">{para.replace('## ', '')}</h2>
+                                return <h2 key={i} className="text-xl font-serif font-medium text-primary mt-8 mb-4">{para.replace('## ', '')}</h2>
                             }
-                            return <p key={i} className="text-white/70 leading-relaxed mb-4">{para}</p>
+                            return <p key={i} className="text-muted-foreground leading-relaxed mb-4">{para}</p>
                         })}
                     </div>
 
                     {/* Tags */}
                     {post.tags && post.tags.length > 0 && (
-                        <div className="flex items-center gap-2 mb-12 pt-8 border-t border-neutral-800">
-                            <Tag className="w-4 h-4 text-white/40" />
+                        <div className="flex items-center gap-2 mb-12 pt-8 border-t border-border">
+                            <Tag className="w-4 h-4 text-muted-foreground/40" />
                             <div className="flex flex-wrap gap-2">
                                 {post.tags.map((tag: string) => (
-                                    <span key={tag} className="px-3 py-1 bg-neutral-900 border border-neutral-700 text-sm text-white/60">
+                                    <span key={tag} className="px-3 py-1 bg-muted border border-border text-sm text-muted-foreground">
                                         {tag}
                                     </span>
                                 ))}
@@ -108,7 +105,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                                 <Link
                                     key={p.id}
                                     href={`/blog/${p.slug}`}
-                                    className="bg-neutral-900 border border-neutral-800 hover:border-amber-500/30 transition-all group"
+                                    className="bg-card border border-border hover:border-primary/30 transition-all group"
                                 >
                                     <div className="relative aspect-video overflow-hidden">
                                         <Image
@@ -120,7 +117,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                                         />
                                     </div>
                                     <div className="p-4">
-                                        <h3 className="font-serif font-medium group-hover:text-amber-400 transition-colors line-clamp-2">
+                                        <h3 className="font-serif font-medium group-hover:text-primary transition-colors line-clamp-2">
                                             {p.title}
                                         </h3>
                                     </div>
@@ -130,8 +127,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     </section>
                 )}
             </main>
-
-            <Footer />
         </div>
     )
 }

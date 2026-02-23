@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -15,11 +15,37 @@ function LoginForm() {
     const searchParams = useSearchParams()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [isCheckingSession, setIsCheckingSession] = useState(true)
     const [showPassword, setShowPassword] = useState(false)
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     })
+
+    useEffect(() => {
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session?.user) {
+                // If already logged in, redirect based on role or params
+                const { data: adminData } = await supabase
+                    .from('admin_users')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .maybeSingle()
+
+                if (redirect) {
+                    router.replace(redirect)
+                } else if (adminData) {
+                    router.replace('/admin')
+                } else {
+                    router.replace('/')
+                }
+            } else {
+                setIsCheckingSession(false)
+            }
+        }
+        checkSession()
+    }, [router, redirect])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -94,18 +120,26 @@ function LoginForm() {
         }
     }
 
+    if (isCheckingSession) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        )
+    }
+
     return (
-        <div className="min-h-screen bg-background flex items-center justify-center px-4 relative overflow-hidden">
+        <div className="min-h-[calc(100vh-12rem)] bg-background flex items-start justify-center px-4 pt-40 pb-20 relative overflow-hidden">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl"
+                className="w-full max-w-md bg-card/60 backdrop-blur-md border border-border p-8 md:p-12 relative z-10 shadow-2xl mt-8"
             >
                 <div className="text-center mb-10">
                     <Link href="/">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src="/logo-new-v2.png" alt="Aurerxa" className="h-18 mx-auto mb-6 opacity-90 dark:invert-0" />
+                        <img src="/logo-new-v2.png" alt="Aurerxa" className="h-20 mx-auto mb-6 opacity-90 dark:invert-0" />
                     </Link>
                     <h2 className="text-3xl font-serif font-bold text-foreground mb-2">Welcome Back</h2>
                     <p className="text-muted-foreground text-sm">Sign in to access your bespoke collection</p>
@@ -237,8 +271,8 @@ function LoginForm() {
 export default function LoginPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
         }>
             <LoginForm />

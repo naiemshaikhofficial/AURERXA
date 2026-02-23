@@ -5,8 +5,6 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import Script from 'next/script'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
 import { getOrderById, initiatePayment, verifyPayment } from '@/app/actions'
 import { Loader2, AlertCircle, ChevronRight, CreditCard, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react'
@@ -133,11 +131,9 @@ export default function PaymentRetryPage() {
     if (!order) return null
 
     return (
-        <div className="min-h-screen bg-[#0A0A0A] text-foreground selection:bg-primary/30">
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
             <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="lazyOnload" />
-
-            <Navbar />
 
             <main className="pt-32 pb-24 px-4">
                 <div className="max-w-4xl mx-auto">
@@ -298,8 +294,6 @@ export default function PaymentRetryPage() {
                     </div>
                 </div>
             </main>
-
-            <Footer />
         </div>
     )
 }
