@@ -33,8 +33,9 @@ function LoginForm() {
                     .eq('id', session.user.id)
                     .maybeSingle()
 
-                if (redirect) {
-                    router.replace(redirect)
+                const redirectPath = searchParams.get('redirect') || searchParams.get('next')
+                if (redirectPath) {
+                    router.replace(redirectPath)
                 } else if (adminData) {
                     router.replace('/admin')
                 } else {
@@ -45,7 +46,7 @@ function LoginForm() {
             }
         }
         checkSession()
-    }, [router, redirect])
+    }, [router, searchParams])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
