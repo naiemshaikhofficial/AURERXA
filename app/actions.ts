@@ -2487,17 +2487,18 @@ export async function getFilteredProducts(options: {
           }
         }
 
-        // Tag filter (Theme Collections)
+        // Tag filter (Theme Collections — robust with case variations + fallback)
         if (options.tag) {
           const t = options.tag.toLowerCase()
+          const dehyphenated = t.replace(/-/g, ' ')
           const words = t.split(/[- ]/)
           const lastWord = words[words.length - 1]
           const singularLast = lastWord.endsWith('s') ? lastWord.slice(0, -1) : lastWord
 
-          const variations = Array.from(new Set([
+          const baseVariations = Array.from(new Set([
             t,
-            t.toUpperCase(), // Support GENZ
-            t.replace(/-/g, ' '),
+            dehyphenated,
+            t.replace(/ /g, '-'),
             lastWord,
             singularLast,
             lastWord === 'ring' ? 'rings' : null,
@@ -2509,15 +2510,21 @@ export async function getFilteredProducts(options: {
             t === 'modern' || t === 'mordern' ? 'mordern' : null,
           ].filter(Boolean) as string[]))
 
-          const allVariations = [...variations]
-          variations.forEach(v => {
-            allVariations.push(v.charAt(0).toUpperCase() + v.slice(1))
+          // Auto-generate case variations for ALL bases
+          const allVariations: string[] = []
+          baseVariations.forEach(v => {
+            allVariations.push(v)                                                    // lowercase
+            allVariations.push(v.toUpperCase())                                      // UPPERCASE
+            allVariations.push(v.charAt(0).toUpperCase() + v.slice(1))              // Title case first word
+            allVariations.push(v.split(/[\s-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '))  // Title Case All Words
+            allVariations.push(v.split(/[\s-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-'))  // Title-Case-Hyphenated
           })
 
           const orFilter = Array.from(new Set(allVariations))
             .map(v => `tags.cs.{"${v}"}`)
             .join(',')
-          query = query.or(orFilter)
+          // Also match against name/description as fallback
+          query = query.or(`${orFilter},name.ilike.%${dehyphenated}%`)
         }
 
         // Gender filter
@@ -2548,25 +2555,46 @@ export async function getFilteredProducts(options: {
           }
         }
 
-        // Occasion filter (Treated as Tags with robust variations)
+        // Occasion filter (Treated as Tags with robust variations + name/description fallback)
         if (options.occasion && options.occasion !== 'all') {
           const o = options.occasion.toLowerCase()
-          const occasionVariations = Array.from(new Set([
-            o,
-            o.toUpperCase(),
-            o.charAt(0).toUpperCase() + o.slice(1),
+          // Handle hyphenated slugs: "date-night" → "date night", "day-out" → "day out"
+          const dehyphenated = o.replace(/-/g, ' ')
+
+          // Generate all possible variations
+          const baseVariations = Array.from(new Set([
+            o,                                              // original: "date-night"
+            dehyphenated,                                   // dehyphenated: "date night"
+            o.replace(/ /g, '-'),                           // hyphenated: "date-night"
+            // Common aliases
             o === 'daily' ? 'daily wear' : null,
-            o === 'daily wear' ? 'daily' : null,
-            o === 'daily' ? 'Daily Wear' : null,
-            o === 'wedding' ? 'Bridal' : null,
+            o === 'daily wear' || o === 'daily-wear' ? 'daily' : null,
             o === 'wedding' ? 'bridal' : null,
+            o === 'bridal' ? 'wedding' : null,
+            o === 'office' ? 'office wear' : null,
+            o === 'office wear' || o === 'office-wear' ? 'office' : null,
+            o === 'party' ? 'party wear' : null,
+            o === 'party wear' || o === 'party-wear' ? 'party' : null,
+            dehyphenated !== o ? dehyphenated.replace(/ /g, '-') : null,
           ].filter(Boolean) as string[]))
 
-          const occasionOrFilter = Array.from(new Set(occasionVariations))
+          // Auto-generate case variations for ALL bases
+          const allVariations: string[] = []
+          baseVariations.forEach(v => {
+            allVariations.push(v)                                                    // lowercase
+            allVariations.push(v.toUpperCase())                                      // UPPERCASE
+            allVariations.push(v.charAt(0).toUpperCase() + v.slice(1))              // Title case first word
+            allVariations.push(v.split(/[\s-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '))  // Title Case All Words
+            allVariations.push(v.split(/[\s-]/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('-'))  // Title-Case-Hyphenated
+          })
+
+          const uniqueVariations = Array.from(new Set(allVariations))
+          const occasionOrFilter = uniqueVariations
             .map(v => `tags.cs.{"${v}"}`)
             .join(',')
 
-          query = query.or(`${occasionOrFilter},description.ilike.%${o}%`)
+          // Also match against name and description as fallback
+          query = query.or(`${occasionOrFilter},name.ilike.%${dehyphenated}%,description.ilike.%${dehyphenated}%`)
         }
 
         // Material Type filter

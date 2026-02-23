@@ -162,7 +162,29 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                 style={{ transformStyle: 'preserve-3d' }}
                             >
                                 <Link
-                                    href={(slide.cta_link || '/collections').replace('/collection/', '/collections/').replace('/mordern', '/modern')}
+                                    href={(() => {
+                                        const raw = slide.cta_link || '/collections'
+                                        // Fix common typos and legacy paths
+                                        let link = raw
+                                            .replace('/collection/', '/collections/')
+                                            .replace('/mordern', '/modern')
+
+                                        // If link is /collections/{something} — normalize to use ?occasion= query param
+                                        // so the dynamic [slug] route handles it consistently
+                                        const slugMatch = link.match(/^\/collections\/([^/?&]+)$/)
+                                        if (slugMatch) {
+                                            const slug = slugMatch[1].toLowerCase()
+                                            // These are known category slugs that should NOT be redirected to ?occasion
+                                            const knownCategories = ['gold', 'silver', 'diamond', 'rings', 'earrings', 'necklaces', 'bangles', 'bracelets', 'pendants', 'chains', 'mangalsutra', 'kids']
+                                            const isCategory = knownCategories.includes(slug)
+                                            if (!isCategory) {
+                                                // treat as tag/occasion
+                                                link = `/collections?occasion=${slug}`
+                                            }
+                                        }
+
+                                        return link
+                                    })()}
                                     className={`relative w-[96%] md:w-[94%] h-[92%] md:h-[94%] rounded-[2rem] overflow-hidden block border border-white/20 ${isMain ? 'z-10' : ''}`}
                                     style={{
                                         boxShadow: isMain

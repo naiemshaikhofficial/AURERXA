@@ -121,7 +121,12 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
 
                 {/* Conditional Content: Category Grid or Product Listing */}
                 <AnimatePresence mode="wait">
-                    {filters.category === 'all' && filters.sub_category === 'all' && !searchQuery ? (
+                    {filters.category === 'all' && filters.sub_category === 'all' &&
+                        (!filters.occasion || filters.occasion === 'all') &&
+                        (!filters.tag) &&
+                        (!filters.gender || filters.gender === 'all') &&
+                        (!filters.type || filters.type === 'all') &&
+                        !searchQuery ? (
                         <motion.div
                             key="category-grid"
                             initial={{ opacity: 0 }}

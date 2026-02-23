@@ -64,12 +64,11 @@ function OccasionCard({ occ, index }: { occ: typeof occasions[0] & { position?: 
     return (
         <motion.div
             ref={cardRef}
-            style={{ y: yOffset }}
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="flex-shrink-0 w-[48vw] md:w-[40vw] lg:w-[28vw] aspect-[2/3] relative group overflow-hidden snap-start bg-neutral-900"
+            className="flex-shrink-0 w-[48vw] md:w-[40vw] lg:w-[28vw] aspect-[2/3] relative group overflow-hidden snap-center bg-neutral-900"
         >
             <Link href={`/collections?occasion=${occ.slug}`} className="block h-full w-full">
                 {/* Parallax Image Container */}
@@ -161,18 +160,16 @@ export function OccasionBrowsing() {
                         </button>
                     </div>
 
-                    {/* Staggered Scroll Container - Reduced padding for better touch initiation */}
                     <div
                         ref={scrollContainerRef}
-                        className="flex overflow-x-auto gap-4 md:gap-24 pb-16 md:pb-32 px-6 md:px-[10vw] no-scrollbar snap-x snap-proximity pt-8 md:pt-20"
-                        style={{ touchAction: 'pan-x' }}
+                        className="flex overflow-x-auto gap-4 md:gap-8 lg:gap-12 pb-16 md:pb-32 px-6 md:px-12 lg:px-16 no-scrollbar snap-x snap-proximity pt-8 md:pt-20"
                     >
                         {occasions.map((occ, idx) => (
                             <OccasionCard key={occ.name} occ={occ} index={idx} />
                         ))}
 
                         {/* End Experience Card */}
-                        <div className="flex-shrink-0 w-[48vw] md:w-[40vw] lg:w-[28vw] aspect-[2/3] snap-start">
+                        <div className="flex-shrink-0 w-[48vw] md:w-[40vw] lg:w-[28vw] aspect-[2/3] snap-center">
                             <Link
                                 href="/collections"
                                 className="h-full w-full border border-white/5 bg-neutral-900/50 flex flex-col items-center justify-center gap-4 md:gap-8 group hover:bg-primary transition-all duration-1000 relative overflow-hidden"
