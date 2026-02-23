@@ -31,7 +31,7 @@ import { ModeToggle } from './mode-toggle'
 import { motion, useScroll, useTransform, useMotionValueEvent } from 'framer-motion'
 import { staggerContainer, fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 
-export function Navbar() {
+export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
   const router = useRouter()
   const pathname = usePathname()
   const { cartCount, openCart } = useCart()

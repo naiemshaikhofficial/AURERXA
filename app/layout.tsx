@@ -164,11 +164,12 @@ import { ConsentProvider } from '@/context/consent-context'
 import { CookieConsent } from '@/components/cookie-consent'
 import { TrackingScripts } from '@/components/scripts/tracking'
 import { BehaviorTracker } from '@/components/behavior-tracker'
-import { getCurrentUserProfile } from '@/app/actions'
+import { getCurrentUserProfile, getSiteSetting } from '@/app/actions'
 import { SearchModal } from '@/components/search-modal'
 import { DynamicTitle } from '@/components/dynamic-title'
 import { Footer } from '@/components/footer'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { cn } from '@/lib/utils' // Added import
 
 
 export default async function RootLayout({
@@ -176,7 +177,20 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const profile = await getCurrentUserProfile()
+  const [profile, marketingConfig, contactConfig] = await Promise.all([
+    getCurrentUserProfile(),
+    getSiteSetting('marketing_config', {
+      banner_enabled: false,
+      banner_text: "Special Edition Heritage Collection - Now Live",
+      banner_link: "/collections"
+    }),
+    getSiteSetting('contact_config', {
+      phone: "+91 9391032677",
+      email: "support@aurerxa.com",
+      whatsapp: "+91 9391032677",
+      address: "Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605"
+    })
+  ])
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
   const organizationSchema = {
     '@context': 'https://schema.org',
@@ -203,66 +217,66 @@ export default async function RootLayout({
     },
     'contactPoint': {
       '@type': 'ContactPoint',
-      'telephone': '+91-',
-      'contactType': 'global customer service',
-      'areaServed': 'World',
+      'telephone': '+91-9391032677',
+      'contactType': 'customer service',
+      'areaServed': 'IN',
       'availableLanguage': ['English', 'Hindi', 'Marathi']
     }
   }
 
   const localBusinessSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'JewelryStore',
-    'name': 'AURERXA Flagship Boutique',
-    'image': `${baseUrl}/icon-512.png`,
-    '@id': `${baseUrl}/#boutique`,
-    'url': baseUrl,
-    'telephone': '+919391032677',
-    'priceRange': '₹₹₹₹',
-    'address': organizationSchema.address,
-    'geo': {
-      '@type': 'GeoCoordinates',
-      'latitude': 19.5761,
-      'longitude': 74.2074
+    "@context": "https://schema.org",
+    "@type": "JewelryStore",
+    "name": "AURERXA Luxury Boutique",
+    "image": `${baseUrl}/hero-banner.jpg`,
+    "@id": `${baseUrl}/#boutique`,
+    "url": baseUrl,
+    "telephone": "+91-9391032677",
+    "priceRange": "₹₹₹",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Captain Lakshmi Chowk, Rangargalli",
+      "addressLocality": "Sangamner",
+      "postalCode": "422605",
+      "addressCountry": "IN"
     },
-    'openingHoursSpecification': {
-      '@type': 'OpeningHoursSpecification',
-      'dayOfWeek': [
-        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 19.5761,
+      "longitude": 74.2081
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
       ],
-      'opens': '10:00',
-      'closes': '21:00'
+      "opens": "10:30",
+      "closes": "20:30"
     }
   }
 
   const searchboxLd = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    'url': baseUrl,
-    'name': 'AURERXA', // Explicit Site Name for Google Search
-    'alternateName': ['Aurerxa Luxury', 'AURERXA Jewelry'],
-    'potentialAction': {
-      '@type': 'SearchAction',
-      'target': {
-        '@type': 'EntryPoint',
-        'urlTemplate': `${baseUrl}/collections?search={search_term_string}`
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": baseUrl,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${baseUrl}/collections?search={search_term_string}`
       },
-      'query-input': 'required name=search_term_string'
+      "query-input": "required name=search_term_string"
     }
   }
 
   const navigationLd = {
-    '@context': 'https://schema.org',
-    '@type': 'SiteNavigationElement',
-    'hasPart': [
-      { '@type': 'WebPage', 'name': 'Jewellery Collections', 'url': `${baseUrl}/collections` },
-      { '@type': 'WebPage', 'name': 'Latest New Releases', 'url': `${baseUrl}/collections?sortBy=newest` },
-      { '@type': 'WebPage', 'name': 'Best Selling Jewellery', 'url': `${baseUrl}/collections?sortBy=bestsellers` },
-      { '@type': 'WebPage', 'name': 'Anti-Tarnish Collection', 'url': `${baseUrl}/collections/anti-tarnish` },
-      { '@type': 'WebPage', 'name': 'Gold Necklaces', 'url': `${baseUrl}/collections/necklaces` },
-      { '@type': 'WebPage', 'name': 'Diamond Earrings', 'url': `${baseUrl}/collections/earrings` },
-      { '@type': 'WebPage', 'name': 'Bespoke Custom Jewellery', 'url': `${baseUrl}/custom-jewelry` },
-      { '@type': 'WebPage', 'name': 'Live Gold Rates India', 'url': `${baseUrl}/#gold-rates` }
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "itemListElement": [
+      { "@type": "SiteNavigationElement", "position": 1, "name": "Latest Collections", "url": `${baseUrl}/collections` },
+      { "@type": "SiteNavigationElement", "position": 2, "name": "Gold Coins", "url": `${baseUrl}/collections?category=coins` },
+      { "@type": "SiteNavigationElement", "position": 3, "name": "Bespoke Jewelry", "url": `${baseUrl}/concierge` },
+      { "@type": "SiteNavigationElement", "position": 4, "name": "Luxury Watches", "url": `${baseUrl}/collections?category=watches` }
     ]
   }
 
@@ -275,7 +289,7 @@ export default async function RootLayout({
         {/* Preload critical fonts for smooth FCP/LCP */}
         <link
           rel="preload"
-          href="/_next/static/media/c9a5bc6a7c948912-s.p.woff2"
+          href="/fonts/Inter-Variable.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
@@ -304,26 +318,28 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-
           <CartProvider>
             <SearchProvider>
               <ConsentProvider initialProfile={profile}>
                 <SmoothScroll>
                   <AdminRouteGuard>
-                    <Navbar />
-                    <div className="pt-20 md:pt-24">
+                    {marketingConfig.banner_enabled && (
+                      <div className="bg-[#D4AF37] text-black py-2 px-4 text-center text-xs font-bold tracking-widest uppercase relative z-[100]">
+                        <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
+                          {marketingConfig.banner_text}
+                        </a>
+                      </div>
+                    )}
+                    <Navbar marketingConfig={marketingConfig} />
+                    <div className={cn("transition-all duration-300", marketingConfig.banner_enabled ? "pt-28 md:pt-32" : "pt-20 md:pt-24")}>
                       <CategoryNav />
                       <ErrorBoundary componentName="Main Content">
                         <main>
                           {children}
                         </main>
                       </ErrorBoundary>
-                      <Footer />
+                      <Footer contactConfig={contactConfig} />
                     </div>
-                    <CartSheet />
-                    <BottomNav />
-                    <MobileInstallPrompt />
-                    <NotificationManager />
                   </AdminRouteGuard>
 
                   <AdminOnlyWrapper>
@@ -332,18 +348,23 @@ export default async function RootLayout({
                     </ErrorBoundary>
                   </AdminOnlyWrapper>
 
+                  <CartSheet />
+                  <MobileInstallPrompt />
+                  <NotificationManager />
+                  <SearchModal />
+                  <DynamicTitle />
+                  <BottomNav />
+
                   <Toaster />
                   <SpeedInsights />
                   <Analytics />
-                </SmoothScroll>
 
-                <CookieConsent />
-                <TrackingScripts />
-                <SearchModal />
-                <Suspense fallback={null}>
-                  <BehaviorTracker />
-                  <DynamicTitle />
-                </Suspense>
+                  <CookieConsent />
+                  <TrackingScripts />
+                  <Suspense fallback={null}>
+                    <BehaviorTracker />
+                  </Suspense>
+                </SmoothScroll>
               </ConsentProvider>
             </SearchProvider>
           </CartProvider>

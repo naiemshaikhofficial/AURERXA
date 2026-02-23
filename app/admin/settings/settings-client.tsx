@@ -6,12 +6,27 @@ import { CircleDollarSign, Tag, Shield, Save, Plus, Trash2, Crown, HeadphonesIco
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
-export function SettingsClient({ initialRates, initialCoupons, initialAdmins, currentRole, initialShippingConfig }: any) {
+export function SettingsClient({ initialRates, initialCoupons, initialAdmins, currentRole, initialShippingConfig, initialMaintenanceConfig, initialContactConfig, initialMarketingConfig }: any) {
     const [tab, setTab] = useState('rates')
     const [shippingConfig, setShippingConfig] = useState(initialShippingConfig || {
         free_shipping_threshold: 50000,
         default_shipping_fee: 90,
         is_enabled: true
+    })
+    const [maintenanceConfig, setMaintenanceConfig] = useState(initialMaintenanceConfig || {
+        is_enabled: false,
+        message: "AURERXA is upgrading to serve you better. We will be back shortly with a more premium experience."
+    })
+    const [contactConfig, setContactConfig] = useState(initialContactConfig || {
+        phone: "+91 9391032677",
+        email: "support@aurerxa.com",
+        whatsapp: "+91 9391032677",
+        address: "Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605"
+    })
+    const [marketingConfig, setMarketingConfig] = useState(initialMarketingConfig || {
+        banner_enabled: false,
+        banner_text: "Special Edition Heritage Collection - Now Live",
+        banner_link: "/collections"
     })
     const [editingRates, setEditingRates] = useState<Record<string, string>>(() => {
         const initial: Record<string, string> = {}
@@ -102,6 +117,20 @@ export function SettingsClient({ initialRates, initialCoupons, initialAdmins, cu
         }
     }
 
+    const handleUpdateSetting = async (key: string, value: any) => {
+        try {
+            const res = await updateSiteSetting(key, value)
+            if (res.success) {
+                toast.success('Settings updated')
+                router.refresh()
+            } else {
+                toast.error(res.error || 'Update failed')
+            }
+        } catch (error) {
+            toast.error('Something went wrong')
+        }
+    }
+
     const tabs = [
         { id: 'rates', label: 'Metal Rates', icon: CircleDollarSign },
         { id: 'coupons', label: 'Coupons', icon: Tag },
@@ -173,7 +202,46 @@ export function SettingsClient({ initialRates, initialCoupons, initialAdmins, cu
             )}
 
             {tab === 'config' && (
-                <div className="max-w-2xl space-y-4">
+                <div className="max-w-2xl space-y-6">
+                    {/* Maintenance Mode */}
+                    <div className="bg-[#111111] border border-white/5 rounded-xl p-6 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <h3 className="text-sm font-medium flex items-center gap-2"><Shield className="w-4 h-4 text-amber-500" /> Maintenance Mode</h3>
+                                <p className="text-xs text-white/40">Restrict site access while working on updates</p>
+                            </div>
+                            <button
+                                onClick={() => setMaintenanceConfig((p: any) => ({ ...p, is_enabled: !p.is_enabled }))}
+                                className={`w-12 h-6 rounded-full transition-colors relative ${maintenanceConfig.is_enabled ? 'bg-amber-500' : 'bg-white/10'}`}
+                            >
+                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${maintenanceConfig.is_enabled ? 'left-7' : 'left-1'}`} />
+                            </button>
+                        </div>
+
+                        {maintenanceConfig.is_enabled && (
+                            <div className="space-y-4 pt-4 border-t border-white/5 animate-in fade-in slide-in-from-top-2">
+                                <div className="space-y-2">
+                                    <label className="text-xs text-white/40 font-medium">Maintenance Message</label>
+                                    <textarea
+                                        value={maintenanceConfig.message}
+                                        onChange={e => setMaintenanceConfig((p: any) => ({ ...p, message: e.target.value }))}
+                                        className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/30 min-h-[80px] resize-none"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="pt-2">
+                            <button
+                                onClick={() => handleUpdateSetting('maintenance_config', maintenanceConfig)}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/5 text-white border border-white/10 rounded-lg text-sm font-medium hover:bg-white/10 transition"
+                            >
+                                <Save className="w-4 h-4 text-white/40" /> Save Maintenance Mode
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Shipping Configuration */}
                     <div className="bg-[#111111] border border-white/5 rounded-xl p-6 space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
@@ -218,7 +286,109 @@ export function SettingsClient({ initialRates, initialCoupons, initialAdmins, cu
                                 onClick={handleShippingUpdate}
                                 className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#D4AF37] text-black rounded-lg text-sm font-bold hover:opacity-90 transition shadow-lg shadow-[#D4AF37]/10"
                             >
-                                <Save className="w-4 h-4" /> Save Store Configuration
+                                <Save className="w-4 h-4" /> Save Shipping Configuration
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Marketing Banner */}
+                    <div className="bg-[#111111] border border-white/5 rounded-xl p-6 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <h3 className="text-sm font-medium flex items-center gap-2"><Tag className="w-4 h-4 text-emerald-500" /> Announcement Banner</h3>
+                                <p className="text-xs text-white/40">Display an announcement bar at the top of the site</p>
+                            </div>
+                            <button
+                                onClick={() => setMarketingConfig((p: any) => ({ ...p, banner_enabled: !p.banner_enabled }))}
+                                className={`w-12 h-6 rounded-full transition-colors relative ${marketingConfig.banner_enabled ? 'bg-emerald-500' : 'bg-white/10'}`}
+                            >
+                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${marketingConfig.banner_enabled ? 'left-7' : 'left-1'}`} />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 pt-4 border-t border-white/5">
+                            <div className="space-y-2">
+                                <label className="text-xs text-white/40 font-medium">Banner Text</label>
+                                <input
+                                    type="text"
+                                    value={marketingConfig.banner_text}
+                                    onChange={e => setMarketingConfig((p: any) => ({ ...p, banner_text: e.target.value }))}
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/30"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs text-white/40 font-medium">Redirect Link</label>
+                                <input
+                                    type="text"
+                                    value={marketingConfig.banner_link}
+                                    onChange={e => setMarketingConfig((p: any) => ({ ...p, banner_link: e.target.value }))}
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/30"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-2">
+                            <button
+                                onClick={() => handleUpdateSetting('marketing_config', marketingConfig)}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/5 text-white border border-white/10 rounded-lg text-sm font-medium hover:bg-white/10 transition"
+                            >
+                                <Save className="w-4 h-4 text-white/40" /> Save Banner Config
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Contact Information */}
+                    <div className="bg-[#111111] border border-white/5 rounded-xl p-6 space-y-6">
+                        <div className="space-y-1">
+                            <h3 className="text-sm font-medium flex items-center gap-2"><HeadphonesIcon className="w-4 h-4 text-[#D4AF37]" /> Contact Information</h3>
+                            <p className="text-xs text-white/40">Global contact details used in footer and contact pages</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/5">
+                            <div className="space-y-2">
+                                <label className="text-xs text-white/40 font-medium">Support Phone</label>
+                                <input
+                                    type="text"
+                                    value={contactConfig.phone}
+                                    onChange={e => setContactConfig((p: any) => ({ ...p, phone: e.target.value }))}
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/30"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs text-white/40 font-medium">Support Email</label>
+                                <input
+                                    type="email"
+                                    value={contactConfig.email}
+                                    onChange={e => setContactConfig((p: any) => ({ ...p, email: e.target.value }))}
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/30"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs text-white/40 font-medium">WhatsApp Number</label>
+                                <input
+                                    type="text"
+                                    value={contactConfig.whatsapp}
+                                    onChange={e => setContactConfig((p: any) => ({ ...p, whatsapp: e.target.value }))}
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/30"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs text-white/40 font-medium">Store Address</label>
+                                <input
+                                    type="text"
+                                    value={contactConfig.address}
+                                    onChange={e => setContactConfig((p: any) => ({ ...p, address: e.target.value }))}
+                                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-[#D4AF37]/30"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="pt-2">
+                            <button
+                                onClick={() => handleUpdateSetting('contact_config', contactConfig)}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white/5 text-white border border-white/10 rounded-lg text-sm font-medium hover:bg-white/10 transition"
+                            >
+                                <Save className="w-4 h-4 text-white/40" /> Save Global Contact Info
                             </button>
                         </div>
                     </div>

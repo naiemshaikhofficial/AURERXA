@@ -228,7 +228,30 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/banned', request.url))
     }
 
-    // 5. Extra Security Headers
+    // 5. Maintenance Mode Check
+    // We run this after isAdmin is determined to allow admins to bypass maintenance.
+    const isMaintenancePath = pathname === '/maintenance'
+    const isAdminPath = pathname.startsWith('/admin')
+    const isLoginPage = pathname === '/login'
+
+    // Only check DB if it's not a maintenance/admin/login path and we haven't already determined user is admin
+    if (!isAdmin && !isMaintenancePath && !isAdminPath && !isLoginPage) {
+        try {
+            const { data: maintenanceConfig } = await supabase
+                .from('site_settings')
+                .select('value')
+                .eq('key', 'maintenance_config')
+                .maybeSingle()
+
+            if (maintenanceConfig && (maintenanceConfig.value as any)?.is_enabled) {
+                return NextResponse.redirect(new URL('/maintenance', request.url))
+            }
+        } catch (e) {
+            console.error('Middleware: Maintenance check error', e)
+        }
+    }
+
+    // 6. Extra Security Headers
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('X-Content-Type-Options', 'nosniff')
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')

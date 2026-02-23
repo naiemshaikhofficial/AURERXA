@@ -5,9 +5,11 @@ import Link from 'next/link'
 import NextImage from 'next/image'
 import { useSearch } from '@/context/search-context'
 import { isCapacitor } from '@/lib/utils'
+import { usePathname } from 'next/navigation'
 
-export function Footer() {
+export function Footer({ contactConfig }: { contactConfig?: any }) {
   const { openSearch } = useSearch()
+  const pathname = usePathname()
   const [isNative, setIsNative] = React.useState(false)
 
   React.useEffect(() => {
@@ -89,12 +91,10 @@ export function Footer() {
                   href="https://maps.app.goo.gl/PdTNoNuey3ecsxkt6"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors leading-[1.8] tracking-widest"
-                  aria-label="Our location on Google Maps: Aurerxa | Nijam Gold Works, Jedhe Colony, Rangargalli, Sangamner, Maharashtra 422605"
+                  className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors leading-[1.8] tracking-widest whitespace-pre-line"
+                  aria-label={`Our location on Google Maps: ${contactConfig?.address || 'Aurerxa Luxury Boutique'}`}
                 >
-                  Aurerxa | Nijam Gold Works<br />
-                  Jedhe Colony, Rangargalli<br />
-                  Sangamner, Maharashtra 422605
+                  {contactConfig?.address || 'Captain Lakshmi Chowk, Rangargalli,\nSangamner, Maharashtra 422605'}
                 </a>
               </div>
               <div className="flex items-center gap-4 group">
@@ -103,7 +103,7 @@ export function Footer() {
                   alt="Phone"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <a href="tel:+919391032677" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Call us at +91 93910 32677">+91 93910 32677</a>
+                <a href={`tel:${contactConfig?.phone || '+919391032677'}`} className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase" aria-label={`Call us at ${contactConfig?.phone || '+91 93910 32677'}`}>{contactConfig?.phone || '+91 93910 32677'}</a>
               </div>
               <div className="flex items-center gap-4 group">
                 <img
@@ -111,7 +111,7 @@ export function Footer() {
                   alt="Email"
                   className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
                 />
-                <a href="mailto:Contact@aurerxa.com" className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest" aria-label="Email us at Contact@aurerxa.com">Contact@aurerxa.com</a>
+                <a href={`mailto:${contactConfig?.email || 'support@aurerxa.com'}`} className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase" aria-label={`Email us at ${contactConfig?.email || 'support@aurerxa.com'}`}>{contactConfig?.email || 'support@aurerxa.com'}</a>
               </div>
               <div className="flex items-center gap-4 group cursor-pointer tactile-press" onClick={openSearch}>
                 <img

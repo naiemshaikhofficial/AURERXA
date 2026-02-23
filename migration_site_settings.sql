@@ -17,14 +17,27 @@ CREATE POLICY "Admins can manage site_settings" ON public.site_settings FOR ALL 
     EXISTS (SELECT 1 FROM public.admin_users WHERE id = auth.uid())
 );
 
--- Insert default shipping configuration
+-- Insert default configurations
 INSERT INTO public.site_settings (key, value)
-VALUES (
-    'shipping_config',
-    '{
+VALUES 
+    ('shipping_config', '{
         "free_shipping_threshold": 50000,
         "default_shipping_fee": 90,
         "is_enabled": true
-    }'::jsonb
-)
+    }'::jsonb),
+    ('maintenance_config', '{
+        "is_enabled": false,
+        "message": "AURERXA is upgrading to serve you better. We will be back shortly with a more premium experience."
+    }'::jsonb),
+    ('contact_config', '{
+        "phone": "+91 9391032677",
+        "email": "support@aurerxa.com",
+        "whatsapp": "+91 9391032677",
+        "address": "Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605"
+    }'::jsonb),
+    ('marketing_config', '{
+        "banner_enabled": false,
+        "banner_text": "Special Edition Heritage Collection - Now Live",
+        "banner_link": "/collections"
+    }'::jsonb)
 ON CONFLICT (key) DO NOTHING;
