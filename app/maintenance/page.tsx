@@ -1,5 +1,6 @@
 import React from 'react'
 import { Mail } from 'lucide-react'
+import Image from 'next/image'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,9 +17,15 @@ export default function MaintenancePage() {
                 {/* Brand Identity */}
                 <div className="space-y-6">
                     <div className="flex justify-center mb-8">
-                        <div className="w-20 h-20 rounded-full border border-[#D4AF37]/20 flex items-center justify-center bg-gradient-to-tr from-[#D4AF37]/10 to-transparent relative group">
-                            <span className="text-3xl font-serif text-[#D4AF37] tracking-tighter">AX</span>
-                            <div className="absolute inset-0 rounded-full border border-[#D4AF37]/40 scale-110 opacity-0 group-hover:opacity-100 transition-all duration-700" />
+                        <div className="relative w-48 h-20 group">
+                            <Image
+                                src="/logo-new-v2.png"
+                                alt="AURERXA"
+                                fill
+                                className="object-contain transition-all duration-700 brightness-110"
+                                priority
+                            />
+                            <div className="absolute -inset-4 border border-[#D4AF37]/10 scale-110 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-lg" />
                         </div>
                     </div>
 
