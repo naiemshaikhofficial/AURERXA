@@ -63,7 +63,8 @@ export function Footer() {
                 { name: 'Jewellery Care', href: '/services/jewelry-care' },
                 { name: 'Bulk Orders', href: '/bulk-order' },
                 { name: 'Find a Boutique', href: '/stores' },
-                { name: 'Virtual Try-On', href: '/services/virtual-try-on' }
+                { name: 'Virtual Try-On', href: '/services/virtual-try-on' },
+                { name: 'Live Gold Rates', href: '/live-rates' }
               ].map((service) => (
                 <li key={service.name}>
                   <Link href={service.href} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase luxe-underline">

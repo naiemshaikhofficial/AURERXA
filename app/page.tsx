@@ -19,7 +19,6 @@ const CustomOrderForm = dynamic(() => import('@/components/custom-order-form').t
 const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => mod.Newsletter))
 const RecentlyViewed = dynamic(() => import('@/components/recently-viewed').then(mod => mod.RecentlyViewed))
 const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-story').then(mod => mod.CraftsmanshipStory))
-const GoldRateCard = dynamic(() => import('@/components/gold-rate-card').then(mod => mod.GoldRateCard))
 const MaterialShowcase = dynamic(() => import('@/components/material-showcase').then(mod => mod.MaterialShowcase))
 
 async function NewReleasesSection() {
@@ -253,8 +252,6 @@ export default function HomePage() {
       <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
         <NewReleasesSection />
       </Suspense>
-
-      <GoldRateCard />
 
       <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="collection" columns={4} /></div>}>
         <FeaturedCollectionsSection />

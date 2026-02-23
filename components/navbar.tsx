@@ -228,13 +228,17 @@ export function Navbar() {
 
   const { scrollY } = useScroll()
   const [hidden, setHidden] = useState(false)
+
+  // Safe resolvedTheme for SSR
+  const isDark = mounted ? resolvedTheme === 'dark' : true;
+
   const navHeight = useTransform(scrollY, [0, 100], ['6rem', '4.5rem'])
   const navBg = useTransform(
     scrollY,
     [0, 100],
     [
-      `rgba(${resolvedTheme === 'dark' ? '8, 8, 8' : '255, 255, 255'}, 0)`,
-      `rgba(${resolvedTheme === 'dark' ? '8, 8, 8' : '255, 255, 255'}, 0.95)`
+      `rgba(${isDark ? '8, 8, 8' : '255, 255, 255'}, 0)`,
+      `rgba(${isDark ? '8, 8, 8' : '255, 255, 255'}, 0.95)`
     ]
   )
 
