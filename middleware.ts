@@ -69,10 +69,13 @@ export async function middleware(request: NextRequest) {
             return { match: true, limit: 20, key: `rl:auth:${ip}` }
         }
         if (pathname.startsWith('/checkout') || pathname.startsWith('/api/payment') || pathname.startsWith('/api/order')) {
-            return { match: true, limit: 10, key: `rl:payment:${ip}` }
+            return { match: true, limit: 30, key: `rl:payment:${ip}` }
         }
         return null
     })()
+
+    // Inject pathname for Server Component layout logic
+    response.headers.set('x-pathname', pathname)
 
     if (rateLimitConfig) {
         const { limit, key } = rateLimitConfig

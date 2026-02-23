@@ -170,13 +170,17 @@ import { DynamicTitle } from '@/components/dynamic-title'
 import { Footer } from '@/components/footer'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { cn } from '@/lib/utils' // Added import
-
+import { headers } from 'next/headers'
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const headerList = await headers()
+  const pathname = headerList.get('x-pathname') || ''
+  const isMaintenance = pathname === '/maintenance'
+
   const [profile, marketingConfig, contactConfig] = await Promise.all([
     getCurrentUserProfile(),
     getSiteSetting('marketing_config', {
@@ -323,22 +327,22 @@ export default async function RootLayout({
               <ConsentProvider initialProfile={profile}>
                 <SmoothScroll>
                   <AdminRouteGuard>
-                    {marketingConfig.banner_enabled && (
+                    {!isMaintenance && marketingConfig.banner_enabled && (
                       <div className="bg-[#D4AF37] text-black py-2 px-4 text-center text-xs font-bold tracking-widest uppercase relative z-[100]">
                         <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
                           {marketingConfig.banner_text}
                         </a>
                       </div>
                     )}
-                    <Navbar marketingConfig={marketingConfig} />
-                    <div className={cn("transition-all duration-300", marketingConfig.banner_enabled ? "pt-28 md:pt-32" : "pt-20 md:pt-24")}>
-                      <CategoryNav />
+                    {!isMaintenance && <Navbar marketingConfig={marketingConfig} />}
+                    <div className={cn("transition-all duration-300", !isMaintenance && marketingConfig.banner_enabled ? "pt-28 md:pt-32" : !isMaintenance ? "pt-20 md:pt-24" : "pt-0")}>
+                      {!isMaintenance && <CategoryNav />}
                       <ErrorBoundary componentName="Main Content">
                         <main>
                           {children}
                         </main>
                       </ErrorBoundary>
-                      <Footer contactConfig={contactConfig} />
+                      {!isMaintenance && <Footer contactConfig={contactConfig} />}
                     </div>
                   </AdminRouteGuard>
 
