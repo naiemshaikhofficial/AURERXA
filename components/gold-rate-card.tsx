@@ -169,18 +169,18 @@ export function GoldRateCard() {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
-                                className="flex flex-wrap items-center justify-center gap-4"
+                                className="grid grid-cols-2 md:grid-cols-5 gap-4 w-full"
                             >
                                 {getDisplayRates().map(([purity, rate]) => (
                                     <motion.div
                                         key={purity}
-                                        className="group p-6 flex flex-col items-center space-y-3 border border-white/5 bg-card/20 hover:bg-card/40 transition-colors duration-700 rounded-xl w-[calc(50%-1rem)] md:w-[calc(25%-1rem)] min-w-[140px] max-w-[240px]"
+                                        className="group p-5 flex flex-col items-center space-y-3 border border-white/5 bg-card/20 hover:bg-card/40 transition-colors duration-700 rounded-xl w-full"
                                     >
                                         <span className="text-muted-foreground text-[9px] tracking-[0.2em] uppercase group-hover:text-primary transition-colors duration-500">
                                             {getLabel(purity)}
                                         </span>
                                         <div className="flex flex-col items-center gap-0.5">
-                                            <span className="text-2xl md:text-3xl font-serif text-foreground/90 tracking-tight font-light">
+                                            <span className="text-xl md:text-2xl font-serif text-foreground/90 tracking-tight font-light">
                                                 {rate > 0 ? `₹${rate.toLocaleString('en-IN')}` : '—'}
                                             </span>
                                             <span className="text-[9px] text-muted-foreground/50 font-light tracking-wider uppercase">Per Gram</span>
