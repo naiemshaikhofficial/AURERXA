@@ -1,0 +1,309 @@
+'use client'
+
+import { useState, useEffect, useRef, useCallback } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { PREMIUM_EASE } from '@/lib/animation-constants'
+import { sanitizeImagePath } from '@/lib/utils'
+
+interface Slide {
+    id: string
+    image_url: string
+    mobile_image_url?: string
+    title: string
+    subtitle?: string
+    cta_text?: string
+    cta_link?: string
+    text_color?: string
+    button_bg?: string
+    button_text_color?: string
+    overlay_opacity?: number
+}
+
+export function HeroCarousel({ slides }: { slides: Slide[] }) {
+    if (!slides || slides.length === 0) {
+        console.log('HeroCarousel: Render skipped (no slides)')
+        return null
+    }
+
+    const [currentIndex, setCurrentIndex] = useState(0)
+    const [isHovered, setIsHovered] = useState(false)
+    const [direction, setDirection] = useState(0)
+    const [isMounted, setIsMounted] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
+    const containerRef = useRef<HTMLElement>(null)
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768)
+        checkMobile()
+        window.addEventListener('resize', checkMobile)
+        return () => window.removeEventListener('resize', checkMobile)
+    }, [])
+
+    useEffect(() => {
+        setIsMounted(true)
+        console.log('HeroCarousel mounted with slides:', slides?.length)
+    }, [slides?.length])
+
+    const { scrollYProgress } = useScroll({
+        target: isMounted ? containerRef : undefined,
+        offset: ["start start", "end start"]
+    })
+
+    // Low-pass filter for scroll noise (Anti-Jitter)
+    const smoothProgress = useSpring(scrollYProgress, {
+        stiffness: 100,
+        damping: 30,
+        mass: 0.5,
+        restDelta: 0.0001
+    })
+
+    const yParallax = useTransform(smoothProgress, [0, 1], ["0vh", "20vh"])
+
+    const nextSlide = useCallback((e?: React.MouseEvent) => {
+        e?.preventDefault()
+        e?.stopPropagation()
+        setDirection(1)
+        setCurrentIndex((prev) => (prev + 1) % slides.length)
+    }, [slides.length])
+
+    const prevSlide = useCallback((e?: React.MouseEvent) => {
+        e?.preventDefault()
+        e?.stopPropagation()
+        setDirection(-1)
+        setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length)
+    }, [slides.length])
+
+    // Auto-advance
+    useEffect(() => {
+        if (isHovered || slides.length <= 1) return
+        const timer = setInterval(() => {
+            nextSlide()
+        }, 5000)
+        return () => clearInterval(timer)
+    }, [isHovered, nextSlide, slides.length])
+
+    if (!slides || slides.length === 0) {
+        console.log('HeroCarousel: Render skipped (no slides)')
+        return null
+    }
+
+    // Get indices for the stacked effect
+    const getSlideIndex = (offset: number) => {
+        return (currentIndex + offset + slides.length) % slides.length
+    }
+
+    const visibleIndices = [-1, 0, 1] // Previous, Current, Next
+
+    const hexToRgb = (hex: string) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ?
+            `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` :
+            '139, 0, 0';
+    }
+
+    return (
+        <section
+            ref={containerRef}
+            className="relative w-full aspect-[16/10] md:aspect-[21/9] max-h-[90vh] overflow-hidden bg-background group"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            <div className="relative w-full h-full flex items-center justify-center perspective-[3000px]">
+                <AnimatePresence initial={false} custom={direction} mode="popLayout">
+                    {visibleIndices.map((offset) => {
+                        const index = getSlideIndex(offset)
+                        const slide = slides[index]
+                        const isMain = offset === 0
+
+                        return (
+                            <motion.div
+                                key={`${index}-${offset}`}
+                                custom={direction}
+                                initial={{
+                                    opacity: 0,
+                                    scale: isMain ? 0.9 : 0.6,
+                                    z: isMain ? 100 : -800,
+                                    x: offset * 120 + "%",
+                                    rotateY: offset * 45
+                                }}
+                                animate={{
+                                    opacity: isMain ? 1 : 0.35,
+                                    scale: isMain ? (isHovered ? 1.04 : 1.02) : 0.75,
+                                    z: isMain ? (isHovered ? 200 : 100) : -400,
+                                    x: offset * (isMobile ? 65 : 45) + "%", // Unified overlap
+                                    rotateY: offset * (isMobile ? -10 : -15), // Subtle tilt for depth
+                                    y: isMain ? (isHovered ? -10 : 0) : 0, // Lift when hovered
+                                }}
+                                exit={{
+                                    opacity: 0,
+                                    scale: 0.6,
+                                    z: -800,
+                                    x: (offset - direction) * 120 + "%",
+                                }}
+                                transition={{
+                                    duration: 0.9,
+                                    ease: [0.33, 1, 0.68, 1], // Custom premium ease
+                                }}
+                                drag={isMain ? "x" : false}
+                                dragConstraints={{ left: 0, right: 0 }}
+                                onDragEnd={(_, info) => {
+                                    if (!isMain) return
+                                    const swipeThreshold = 50
+                                    if (info.offset.x < -swipeThreshold) {
+                                        nextSlide()
+                                    } else if (info.offset.x > swipeThreshold) {
+                                        prevSlide()
+                                    }
+                                }}
+                                className={`absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none ${isMain ? 'z-10 pointer-events-auto cursor-grab active:cursor-grabbing' : 'z-0'} will-change-transform`}
+                                style={{ transformStyle: 'preserve-3d' }}
+                            >
+                                <Link
+                                    href={(() => {
+                                        const raw = slide.cta_link || '/collections'
+                                        // Fix common typos and legacy paths
+                                        let link = raw
+                                            .replace('/collection/', '/collections/')
+                                            .replace('/mordern', '/modern')
+
+                                        // If link is /collections/{something} — normalize to use ?occasion= query param
+                                        // so the dynamic [slug] route handles it consistently
+                                        const slugMatch = link.match(/^\/collections\/([^/?&]+)$/)
+                                        if (slugMatch) {
+                                            const slug = slugMatch[1].toLowerCase()
+                                            // These are known category slugs that should NOT be redirected to ?occasion
+                                            const knownCategories = ['gold', 'silver', 'diamond', 'rings', 'earrings', 'necklaces', 'bangles', 'bracelets', 'pendants', 'chains', 'mangalsutra', 'kids']
+                                            const isCategory = knownCategories.includes(slug)
+                                            if (!isCategory) {
+                                                // treat as tag/occasion
+                                                link = `/collections?occasion=${slug}`
+                                            }
+                                        }
+
+                                        return link
+                                    })()}
+                                    className={`relative w-[96%] md:w-[94%] h-[92%] md:h-[94%] rounded-[2rem] overflow-hidden block border border-white/20 ${isMain ? 'z-10' : ''}`}
+                                    style={{
+                                        boxShadow: isMain
+                                            ? `0 50px 100px -20px rgba(${hexToRgb(slide.text_color || '#000000')}, 0.15), 0 0 80px -10px rgba(0,0,0,0.8)`
+                                            : '0 20px 40px -10px rgba(0,0,0,0.5)'
+                                    }}
+                                >
+                                    {/* Image Container with Parallax - Forced GPU Layer */}
+                                    <motion.div
+                                        style={{ y: isMain ? yParallax : 0, translateZ: 0 }}
+                                        className="absolute inset-0 w-full h-[120%] -top-[10%] will-change-transform flex items-center justify-center overflow-hidden"
+                                    >
+                                        <Image
+                                            src={sanitizeImagePath(slide.image_url)}
+                                            alt={slide.title}
+                                            fill
+                                            priority={isMain}
+                                            unoptimized={slide.image_url.startsWith('blob:') || slide.image_url.includes('imageshack.com')}
+                                            className="object-cover object-center hidden md:block"
+                                            sizes="100vw"
+                                        />
+                                        <Image
+                                            src={sanitizeImagePath(slide.mobile_image_url || slide.image_url)}
+                                            alt={slide.title}
+                                            fill
+                                            priority={isMain}
+                                            unoptimized={(slide.mobile_image_url || slide.image_url).startsWith('blob:') || (slide.mobile_image_url || slide.image_url).includes('imageshack.com')}
+                                            className="object-cover object-center md:hidden"
+                                            sizes="100vw"
+                                        />
+                                    </motion.div>
+
+                                    {/* Gradient Overlay */}
+                                    <div
+                                        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-700"
+                                        style={{ opacity: slide.overlay_opacity ?? 1 }}
+                                    />
+
+                                    {/* Content (only for main slide) */}
+                                    {isMain && (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-8 p-8 text-center bg-transparent">
+                                            <div className="max-w-3xl space-y-6">
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 30 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+                                                    className="space-y-4"
+                                                >
+                                                    {slide.subtitle && (
+                                                        <p
+                                                            className="font-premium-sans text-[11px] md:text-sm tracking-[0.6em] uppercase mb-3 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] font-semibold"
+                                                            style={{ color: slide.text_color || '#FFFFFF' }} // Shifted to white for universal visibility
+                                                        >
+                                                            {slide.subtitle.replace(/mordern/gi, 'Modern')}
+                                                        </p>
+                                                    )}
+                                                    <h2
+                                                        className="text-2xl md:text-7xl font-serif font-medium leading-tight drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]"
+                                                        style={{ color: slide.text_color || 'white' }}
+                                                    >
+                                                        {slide.title.replace(/mordern/gi, 'Modern')}
+                                                    </h2>
+                                                </motion.div>
+
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.9 }}
+                                                    animate={{ opacity: 1, scale: 1 }}
+                                                    transition={{ duration: 0.6, delay: 0.6 }}
+                                                >
+                                                    <div
+                                                        className="inline-block px-8 md:px-12 py-3 md:py-4 font-semibold text-[10px] md:text-sm tracking-[0.3em] uppercase hover:bg-black hover:text-white transition-all duration-500 shadow-xl border border-transparent hover:border-white"
+                                                        style={{
+                                                            backgroundColor: slide.button_bg || 'white',
+                                                            color: slide.button_text_color || 'black'
+                                                        }}
+                                                    >
+                                                        {slide.cta_text || 'KNOW MORE'}
+                                                    </div>
+                                                </motion.div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </Link>
+                            </motion.div>
+                        )
+                    })}
+                </AnimatePresence>
+            </div>
+
+            {/* Navigation Indicators - Diamonds */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 z-30">
+                {slides.map((_, idx) => (
+                    <button
+                        key={idx}
+                        onClick={() => {
+                            setDirection(idx > currentIndex ? 1 : -1)
+                            setCurrentIndex(idx)
+                        }}
+                        className="group relative h-4 w-4 flex items-center justify-center"
+                        aria-label={`Go to slide ${idx + 1}`}
+                    >
+                        <div
+                            className={`h-2.5 w-2.5 rotate-45 transition-all duration-500 rounded-sm ${idx === currentIndex
+                                ? 'scale-125'
+                                : 'bg-white/40 hover:bg-white/70'
+                                }`}
+                            style={{
+                                backgroundColor: idx === currentIndex
+                                    ? (slides[currentIndex].text_color || '#8B0000')
+                                    : undefined,
+                                boxShadow: idx === currentIndex
+                                    ? `0 0 20px rgba(${hexToRgb(slides[currentIndex].text_color || '#8B0000')}, 0.5)`
+                                    : undefined
+                            }}
+                        />
+                    </button>
+                ))}
+            </div>
+
+        </section>
+    )
+}

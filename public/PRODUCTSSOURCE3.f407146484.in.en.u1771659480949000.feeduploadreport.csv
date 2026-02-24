@@ -1,0 +1,5 @@
+Feed name,Feed Id,Customer Id,Upload time
+"PRODUCTS SOURCE 3","407146484","5730048889","Feb 21, 2026, 1:08 pm GMT+05:30"
+
+Item Id,Line number,Message,Type,Values,Item title
+,"20","XML formatting error",Error,&quot;Column Nr.=49&quot;,

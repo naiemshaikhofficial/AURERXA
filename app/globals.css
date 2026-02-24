@@ -1,0 +1,329 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  overflow-anchor: none;
+  scroll-behavior: auto !important;
+}
+
+body {
+  font-family: var(--font-geist), system-ui, -apple-system, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "kern" 1, "liga" 1, "ss01" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  overscroll-behavior-y: none;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Hide scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* Matte Luxury Utilities - No Glow */
+  .gold-glow {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .gold-glow-lg {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  }
+
+  .font-serif {
+    font-family: var(--font-cormorant), serif;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+  }
+
+  .font-serif-luxury {
+    font-family: var(--font-cormorant), serif;
+    letter-spacing: 0.08em;
+    font-weight: 300;
+    text-transform: uppercase;
+  }
+
+  .font-premium-sans {
+    font-family: var(--font-geist), system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  /* Matte Gold Gradient - Static, Elegant */
+  .text-gradient-gold {
+    background: linear-gradient(to right,
+        #E5C590,
+        /* Matte Light Gold */
+        #BF9B65,
+        /* Matte Medium Gold */
+        #E5C590);
+    background-size: 100% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    /* Removed animation for calmness */
+  }
+
+  .bg-emerald-luxury {
+    background-color: hsl(158 55% 12%);
+    /* Derived from a deep emerald that works in dark mode */
+  }
+
+  .text-emerald-luxury {
+    color: hsl(158 55% 20%);
+  }
+
+  .border-premium {
+    border-color: rgba(255, 255, 255, 0.08);
+    /* White subtle border */
+  }
+
+  /* Luxury Selection */
+  ::selection {
+    background: rgba(191, 155, 101, 0.2);
+    /* Matte Gold Selection */
+    color: #E5C590;
+  }
+
+  .glass-premium {
+    @apply bg-background/60 backdrop-blur-md border border-border;
+  }
+
+  .alert-luxury-success {
+    @apply p-6 bg-card/40 backdrop-blur-xl border border-primary/20 text-primary font-premium-sans text-[10px] tracking-[0.2em] uppercase flex items-center justify-center gap-4 relative overflow-hidden;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+    animation: luxury-slide-in 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .alert-luxury-success::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-full;
+    animation: luxury-shimmer 3s infinite;
+  }
+
+  .alert-luxury-error {
+    @apply p-6 bg-card/40 backdrop-blur-xl border border-destructive/20 text-destructive font-premium-sans text-[10px] tracking-[0.2em] uppercase flex items-center justify-center gap-4 relative overflow-hidden;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+    animation: luxury-slide-in 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    color: #ff4d4d;
+    /* More vibrant yet premium red */
+  }
+
+  .alert-luxury-error::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-destructive/5 to-transparent -translate-x-full;
+    animation: luxury-shimmer 3s infinite;
+  }
+
+  @keyframes luxury-slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes luxury-shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .notification-luxury {
+    @apply fixed bottom-8 right-8 z-[100] p-6 backdrop-blur-xl border border-border text-foreground font-premium-sans text-[9px] tracking-[0.3em] uppercase;
+    background: hsl(var(--card));
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+  }
+
+  /* Ultra-Luxury Micro-Interactions */
+  .luxe-underline {
+    position: relative;
+    display: inline-block;
+  }
+
+  .luxe-underline::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -4px;
+    left: 50%;
+    background-color: hsl(var(--primary));
+    transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+
+  .luxe-underline:hover::after {
+    width: 100%;
+    opacity: 0.8;
+  }
+
+  .tactile-press {
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .tactile-press:active {
+    transform: scale(0.98);
+  }
+
+  .etched-glass {
+    @apply backdrop-blur-md border border-border relative;
+    background: rgba(var(--background), 0.6);
+  }
+
+  .etched-glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    z-index: -1;
+  }
+
+  /* Improved Focus States */
+  .focus-premium:focus-visible {
+    @apply outline-none ring-1 ring-primary/40 ring-offset-2 ring-offset-background;
+  }
+
+  /* Custom Scrollbar for Admin & Modals */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.2);
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.4);
+  }
+
+  /* Support for Firefox */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(212, 175, 55, 0.2) transparent;
+  }
+}
+
+@layer base {
+  :root {
+    /* PURE LUXURY WHITE PALETTE (Light Mode) */
+    --background: 0 0% 100%;
+    /* #FFFFFF - Pure White */
+    --foreground: 0 0% 8%;
+    /* #141414 - Neutral Deep Black */
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 8%;
+
+    --primary: 43 45% 40%;
+    /* #94712B - Consistent High-Contrast Gold */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 0 0% 98%;
+    /* #FAFAFA - Subtle Contrast */
+    --secondary-foreground: 0 0% 8%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 43 20% 96%;
+    /* Very Pale Gold Hint */
+    --accent-foreground: 43 45% 30%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 92%;
+    /* #EBEBEB - Clean Neutral Border */
+    --input: 0 0% 92%;
+    --ring: 43 45% 40%;
+
+    --radius: 0rem;
+  }
+
+  .dark {
+    /* MATTE BLACK LUXURY THEME (Dark Mode - Original) */
+    --background: 0 0% 3%;
+    /* #080808 - Deeper Matte Black */
+    --foreground: 0 0% 95%;
+    /* #f2f2f2 - Off-white */
+
+    --card: 0 0% 6%;
+    /* #101010 */
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 43 30% 65%;
+    /* #BF9B65 - Muted/Matte Gold */
+    --primary-foreground: 0 0% 5%;
+
+    --secondary: 0 0% 12%;
+    /* Dark Gray */
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 43 30% 25%;
+    /* Deep Gold Backgrounds */
+    --accent-foreground: 43 40% 75%;
+    /* Lighter Gold Text */
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 0 0% 12%;
+    --input: 0 0% 12%;
+    --ring: 43 30% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-select: none;
+}
