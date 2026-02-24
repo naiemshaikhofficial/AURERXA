@@ -996,10 +996,18 @@ async function getDynamicPricingMap(opts: PricingOptions): Promise<Record<string
       const currentCirc = getCircumferenceForSize(label)
       const currentInnerD = getDiameterForSize(label)
 
-      // Automatic Physical Scaling (Linear with Circumference)
-      adjWeight = baseWeight * (currentCirc / baseCirc)
+      // Weight Pairing: even sizes (8, 10, 12...) use the NEXT odd size's circumference
+      // Pair (8,9) → both show size 9's weight; (10,11) → size 11's weight; etc.
+      const sizeNum = parseInt(label)
+      const weightRefLabel = (!isNaN(sizeNum) && sizeNum % 2 === 0)
+        ? String(sizeNum + 1)
+        : label
+      const weightCirc = getCircumferenceForSize(weightRefLabel)
 
-      const wOut = ringWidth // Width in mm
+      // Weight anchored to size 16, scaled by the paired circumference
+      adjWeight = baseWeight * (weightCirc / baseCirc)
+
+      const wOut = ringWidth
       const dOut = currentInnerD.toFixed(2)
       const cOut = currentCirc.toFixed(2)
 
