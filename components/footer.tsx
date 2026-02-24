@@ -62,6 +62,7 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
               {[
                 { name: 'Personalized Visit', href: '/services/personalized-visit' },
                 { name: 'Gold Harvest Scheme', href: '/services/gold-harvest' },
+                { name: 'Ring Size Calculator', href: '/ring-size-calculator' },
                 { name: 'Jewellery Care', href: '/services/jewelry-care' },
                 { name: 'Bulk Orders', href: '/bulk-order' },
                 { name: 'Find a Boutique', href: '/stores' },

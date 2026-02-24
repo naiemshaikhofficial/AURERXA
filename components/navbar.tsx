@@ -374,6 +374,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                         {[
                           { name: 'Home', href: '/' },
                           { name: 'Shop Collections', href: '/collections' },
+                          { name: 'Ring Size Calculator', href: '/ring-size-calculator' },
                           { name: 'Custom Jewelry', href: '/custom-jewelry' },
                           { name: 'Our Story', href: '/about' },
                           { name: 'Blog', href: '/blog' },
