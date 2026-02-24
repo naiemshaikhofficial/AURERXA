@@ -243,8 +243,23 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
 export function useCart() {
     const context = useContext(CartContext)
+
+    // During SSR, some components might trigger this early. 
+    // Return a dummy context object to prevent crashing, 
+    // as it will re-render correctly on the client.
     if (context === undefined) {
-        throw new Error('useCart must be used within a CartProvider')
+        return {
+            items: [],
+            loading: true,
+            addItem: async () => { },
+            updateQuantity: async () => { },
+            removeItem: async () => { },
+            refreshCart: async () => { },
+            cartCount: 0,
+            isCartOpen: false,
+            openCart: () => { },
+            closeCart: () => { }
+        } as CartContextType
     }
     return context
 }

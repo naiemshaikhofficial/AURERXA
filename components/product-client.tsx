@@ -5,8 +5,6 @@ import { motion, AnimatePresence, useMotionValue } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { addToWishlist, checkPendingOrder } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
@@ -572,7 +570,6 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
     return (
         <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/30">
-            <Navbar />
 
             <div className="pt-20 lg:pt-24 min-h-screen flex flex-col lg:flex-row relative z-10">
                 {/* LEFT: Image Gallery */}
@@ -1294,7 +1291,6 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                 )}
             </AnimatePresence>
 
-            <Footer />
         </div>
     )
 }
