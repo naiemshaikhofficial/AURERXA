@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
     LayoutDashboard, ShoppingCart, Package, Users, HeadphonesIcon,
     Settings, ChevronLeft, ChevronRight, Menu, X, LogOut, Activity, Sparkles, Wrench, ShieldAlert,
-    ExternalLink, Megaphone, ShoppingBag, ArrowLeftRight
+    ExternalLink, Megaphone, ShoppingBag, ArrowLeftRight, TrendingUp
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
@@ -18,6 +18,7 @@ const NAV_ITEMS = [
     { label: 'Return Requests', href: '/admin/returns', icon: ArrowLeftRight, roles: ['main_admin', 'support_admin'] },
     { label: 'Categories', href: '/admin/categories', icon: Sparkles, imgSrc: 'https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
     { label: 'Products', href: '/admin/products', icon: Package, imgSrc: 'https://img.icons8.com/?size=100&id=12091&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Pricing Config', href: '/admin/settings/pricing', icon: TrendingUp, roles: ['main_admin'] },
     { label: 'Users', href: '/admin/users', icon: Users, imgSrc: 'https://img.icons8.com/?size=100&id=IbG1lmsRkQI2&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
     { label: 'Support', href: '/admin/support', icon: HeadphonesIcon, roles: ['main_admin', 'support_admin'] },
     { label: 'Settings', href: '/admin/settings', icon: Settings, roles: ['main_admin'] },

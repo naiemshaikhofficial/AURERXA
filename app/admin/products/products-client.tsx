@@ -72,6 +72,16 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
             sub_category_id: product.sub_category_id || null,
             tags: Array.isArray(product.tags) ? product.tags : [],
             material_type: product.material_type || null,
+            // Pricing fields
+            making_type: product.making_type || 'Plain',
+            pricing_type: product.pricing_type || 'none',
+            base_size: product.base_size || 16,
+            base_weight: product.base_weight || product.weight_grams || 0,
+            weight_per_unit: product.weight_per_unit || 0,
+            packaging_cost_override: product.packaging_cost_override ?? null,
+            platform_fee_pct_override: product.platform_fee_pct_override ?? null,
+            fixed_price_override: product.fixed_price_override ?? null,
+            is_dynamic_pricing: !!product.is_dynamic_pricing,
         })
         window.scrollTo({ top: 0, behavior: 'smooth' })
     }
@@ -113,7 +123,20 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                 sub_category_id: editingProduct.sub_category_id,
                 tags: Array.isArray(editingProduct.tags) ? editingProduct.tags : [],
                 material_type: editingProduct.material_type || null,
-            })
+                // Dynamic Pricing Fields
+                making_type: editingProduct.making_type || 'Plain',
+                pricing_type: editingProduct.pricing_type || 'none',
+                base_size: editingProduct.base_size || 16,
+                base_weight: editingProduct.base_weight || editingProduct.weight_grams || null,
+                weight_per_unit: editingProduct.weight_per_unit || null,
+                packaging_cost_override: editingProduct.packaging_cost_override ?? null,
+                platform_fee_pct_override: editingProduct.platform_fee_pct_override ?? null,
+                margin_percent_override: editingProduct.margin_percent_override ?? null,
+                min_price_threshold: editingProduct.min_price_threshold ?? null,
+                tax_pct_override: editingProduct.tax_pct_override ?? null,
+                fixed_price_override: editingProduct.fixed_price_override ?? null,
+                is_dynamic_pricing: !!editingProduct.is_dynamic_pricing,
+            } as any)
         } else {
             result = await addNewProduct({
                 name: editingProduct.name,
@@ -138,7 +161,20 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                 sub_category_id: editingProduct.sub_category_id || null,
                 tags: Array.isArray(editingProduct.tags) ? editingProduct.tags : [],
                 material_type: editingProduct.material_type || null,
-            })
+                // Dynamic Pricing Fields
+                making_type: editingProduct.making_type || 'Plain',
+                pricing_type: editingProduct.pricing_type || 'none',
+                base_size: editingProduct.base_size || 16,
+                base_weight: editingProduct.base_weight || editingProduct.weight_grams || null,
+                weight_per_unit: editingProduct.weight_per_unit || null,
+                packaging_cost_override: editingProduct.packaging_cost_override ?? null,
+                platform_fee_pct_override: editingProduct.platform_fee_pct_override ?? null,
+                margin_percent_override: editingProduct.margin_percent_override ?? null,
+                min_price_threshold: editingProduct.min_price_threshold ?? null,
+                tax_pct_override: editingProduct.tax_pct_override ?? null,
+                fixed_price_override: editingProduct.fixed_price_override ?? null,
+                is_dynamic_pricing: !!editingProduct.is_dynamic_pricing,
+            } as any)
         }
 
         if (result.success) {
@@ -302,9 +338,7 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                                             <div className="flex items-center gap-3 mt-1">
                                                 <span className="text-xs text-[#D4AF37] font-medium">{formatCurrency(product.price || 0)}</span>
                                                 <span className={`text-[10px] px-1.5 py-0.5 rounded ${(product.stock || 0) <= 5 ? 'bg-red-500/10 text-red-400' : 'bg-white/5 text-white/40'}`}>Stock: {product.stock ?? 'N/A'}</span>
-                                                {product.sub_categories?.name && (
-                                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#D4AF37]/10 text-[#D4AF37]">{product.sub_categories.name}</span>
-                                                )}
+                                                {/* Sub-category badge removed until DB migration is complete */}
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 flex-shrink-0">
@@ -511,6 +545,167 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
                                             className="bg-white/5 border-white/10 rounded-xl"
                                             placeholder="e.g. Soulmate, Valentines, Hip Hop"
                                         />
+                                    </div>
+
+                                    {/* ===== DYNAMIC PRICING SECTION ===== */}
+                                    <div className="space-y-4 p-4 bg-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-xl">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="text-xs font-bold text-[#D4AF37] uppercase tracking-widest">⚡ Dynamic Pricing</p>
+                                                <p className="text-[10px] text-white/30 mt-0.5">Live silver rate based price calculation</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditingProduct({ ...editingProduct, is_dynamic_pricing: !editingProduct.is_dynamic_pricing })}
+                                                className={`relative w-11 h-6 rounded-full transition-colors ${editingProduct.is_dynamic_pricing ? 'bg-[#D4AF37]' : 'bg-white/10'}`}
+                                            >
+                                                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${editingProduct.is_dynamic_pricing ? 'translate-x-6' : 'translate-x-1'}`} />
+                                            </button>
+                                        </div>
+
+                                        {editingProduct.is_dynamic_pricing && (
+                                            <div className="space-y-3">
+                                                {/* Pricing Type */}
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] text-white/20 uppercase ml-1">Pricing Type</p>
+                                                        <Select
+                                                            value={editingProduct.pricing_type || 'none'}
+                                                            onValueChange={(val) => setEditingProduct({ ...editingProduct, pricing_type: val })}
+                                                        >
+                                                            <SelectTrigger className="bg-white/5 border-white/10 rounded-xl text-xs">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="none">None (Fixed)</SelectItem>
+                                                                <SelectItem value="size_based">💍 Size-Based (Rings)</SelectItem>
+                                                                <SelectItem value="length_based">⛓️ Length-Based (Chains)</SelectItem>
+                                                                <SelectItem value="fixed">📦 Fixed Weight (Pendants)</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] text-white/20 uppercase ml-1">Making Type</p>
+                                                        <Select
+                                                            value={editingProduct.making_type || 'Plain'}
+                                                            onValueChange={(val) => setEditingProduct({ ...editingProduct, making_type: val })}
+                                                        >
+                                                            <SelectTrigger className="bg-white/5 border-white/10 rounded-xl text-xs">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="Plain">Plain (18% making)</SelectItem>
+                                                                <SelectItem value="Designer">Designer (28% making)</SelectItem>
+                                                                <SelectItem value="Handcrafted">Handcrafted (38% making)</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                </div>
+
+                                                {/* Weight Fields */}
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] text-white/20 uppercase ml-1">
+                                                            {editingProduct.pricing_type === 'size_based' ? 'Base Weight – Size 16 (g)' : 'Base Weight (g)'}
+                                                        </p>
+                                                        <Input
+                                                            type="number"
+                                                            value={editingProduct.base_weight || ''}
+                                                            onChange={(e) => setEditingProduct({ ...editingProduct, base_weight: parseFloat(e.target.value) || 0 })}
+                                                            className="bg-white/5 border-white/10 rounded-xl"
+                                                            placeholder="e.g. 3.5"
+                                                        />
+                                                    </div>
+                                                    {editingProduct.pricing_type === 'size_based' && (
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] text-white/20 uppercase ml-1">Base Size (default 16)</p>
+                                                            <Input
+                                                                type="number"
+                                                                value={editingProduct.base_size || 16}
+                                                                onChange={(e) => setEditingProduct({ ...editingProduct, base_size: parseInt(e.target.value) || 16 })}
+                                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                                placeholder="16"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    {editingProduct.pricing_type === 'length_based' && (
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] text-white/20 uppercase ml-1">Weight per Inch (g)</p>
+                                                            <Input
+                                                                type="number"
+                                                                value={editingProduct.weight_per_unit || ''}
+                                                                onChange={(e) => setEditingProduct({ ...editingProduct, weight_per_unit: parseFloat(e.target.value) || 0 })}
+                                                                className="bg-white/5 border-white/10 rounded-xl"
+                                                                placeholder="e.g. 2.5"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Advanced Pricing Overrides */}
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] text-white/20 uppercase ml-1">Profit Margin (%) Override</p>
+                                                        <Input
+                                                            type="number"
+                                                            value={editingProduct.margin_percent_override || ''}
+                                                            onChange={(e) => setEditingProduct({ ...editingProduct, margin_percent_override: parseFloat(e.target.value) || null })}
+                                                            className="bg-white/5 border-white/10 rounded-xl"
+                                                            placeholder="Global default"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] text-white/20 uppercase ml-1">GST / Tax (%) Override</p>
+                                                        <Input
+                                                            type="number"
+                                                            value={editingProduct.tax_pct_override || ''}
+                                                            onChange={(e) => setEditingProduct({ ...editingProduct, tax_pct_override: parseFloat(e.target.value) || null })}
+                                                            className="bg-white/5 border-white/10 rounded-xl"
+                                                            placeholder="Global default (3%)"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] text-white/20 uppercase ml-1">Min Price Threshold (₹)</p>
+                                                        <Input
+                                                            type="number"
+                                                            value={editingProduct.min_price_threshold || ''}
+                                                            onChange={(e) => setEditingProduct({ ...editingProduct, min_price_threshold: parseFloat(e.target.value) || null })}
+                                                            className="bg-white/5 border-white/10 rounded-xl"
+                                                            placeholder="e.g. 999"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] text-white/20 uppercase ml-1">Fixed Price Override (₹)</p>
+                                                        <Input
+                                                            type="number"
+                                                            value={editingProduct.fixed_price_override || ''}
+                                                            onChange={(e) => setEditingProduct({ ...editingProduct, fixed_price_override: parseFloat(e.target.value) || null })}
+                                                            className="bg-white/5 border-white/10 rounded-xl"
+                                                            placeholder="Disables dynamic pricing"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* Live Preview */}
+                                                {editingProduct.pricing_type === 'size_based' && editingProduct.base_weight > 0 && (
+                                                    <div className="p-3 bg-black/30 border border-white/5 rounded-xl">
+                                                        <p className="text-[10px] text-white/30 uppercase mb-1">Preview (Size 16 Anchor)</p>
+                                                        <p className="text-[#D4AF37] font-bold text-lg">₹1,999</p>
+                                                        <p className="text-[10px] text-white/20">Base weight {editingProduct.base_weight}g · Price scales ±3% per size</p>
+                                                    </div>
+                                                )}
+                                                {editingProduct.pricing_type === 'length_based' && editingProduct.weight_per_unit > 0 && (
+                                                    <div className="p-3 bg-black/30 border border-white/5 rounded-xl">
+                                                        <p className="text-[10px] text-white/30 uppercase mb-1">Preview (18" length)</p>
+                                                        <p className="text-[#D4AF37] font-bold text-base">{(editingProduct.weight_per_unit * 18).toFixed(2)}g total weight</p>
+                                                        <p className="text-[10px] text-white/20">Scales linearly with selected length</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex gap-4 p-4 bg-white/5 border border-white/10 rounded-xl">

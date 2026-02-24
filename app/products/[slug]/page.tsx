@@ -138,10 +138,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
     const productUrl = `${baseUrl}/products/${product.slug}`
 
     const categories = product.categories as any
-    const subCategories = product.sub_categories as any
     const categoryName = Array.isArray(categories) ? categories[0]?.name : categories?.name
     const categorySlug = Array.isArray(categories) ? categories[0]?.slug : categories?.slug
-    const subCategoryName = Array.isArray(subCategories) ? subCategories[0]?.name : subCategories?.name
 
     const jsonLd = {
         '@context': 'https://schema.org',
@@ -262,7 +260,6 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             ...(product.material_type ? [{ '@type': 'PropertyValue', name: 'Material', value: product.material_type }] : []),
             ...(product.gender ? [{ '@type': 'PropertyValue', name: 'Gender', value: product.gender }] : []),
             ...(categoryName ? [{ '@type': 'PropertyValue', name: 'Jewelry Type', value: categoryName }] : []),
-            ...(subCategoryName ? [{ '@type': 'PropertyValue', name: 'Sub Category', value: subCategoryName }] : []),
             ...(product.tags || []).map((tag: string) => ({ '@type': 'PropertyValue', name: 'Tag', value: tag })),
         ],
         isRelatedTo: categoryName ? {

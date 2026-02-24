@@ -9,6 +9,7 @@ import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib 
 import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { sanitize, sanitizeObject } from '@/lib/sanitizer'
+import { getDiameterForSize, getCircumferenceForSize } from '@/lib/ring-sizes'
 
 // Server-side Supabase client for static/public data (safe for unstable_cache)
 const supabaseServer = createServerClient(
@@ -95,6 +96,19 @@ export interface ProductData {
   material_type?: string
   purity?: string
   weight_grams?: number
+  // Dynamic Pricing & Control Overrides
+  is_dynamic_pricing?: boolean
+  pricing_type?: 'size_based' | 'length_based' | 'fixed' | 'none'
+  making_type?: 'Plain' | 'Designer' | 'Handcrafted'
+  base_size?: number
+  base_weight?: number
+  weight_per_unit?: number
+  packaging_cost_override?: number
+  platform_fee_pct_override?: number
+  margin_percent_override?: number
+  min_price_threshold?: number
+  tax_pct_override?: number
+  fixed_price_override?: number | null
 }
 
 export async function getTestProductCount() {
@@ -212,24 +226,25 @@ export async function getCurrentUserProfile() {
 
     if (!user) return null
 
-    const { data, error } = await client
-      .from('profiles')
-      .select('full_name, email, phone_number')
-      .eq('id', user.id)
-      .single()
+    const [profileRes, adminRes] = await Promise.all([
+      client.from('profiles').select('full_name, email, phone_number, is_banned').eq('id', user.id).maybeSingle(),
+      client.from('admin_users').select('role').eq('id', user.id).maybeSingle()
+    ])
 
-    if (error) {
-      // Don't log expected errors during build
-      if (error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', error)
-      }
-      return null
+    const data = profileRes.data
+    const adminData = adminRes.data
+
+    if (profileRes.error && profileRes.error.code !== 'PGRST116') {
+      console.error('Error fetching profile:', profileRes.error)
     }
 
     return {
-      name: data.full_name,
-      email: data.email,
-      phone: data.phone_number
+      id: user.id,
+      name: data?.full_name,
+      email: data?.email,
+      phone: data?.phone_number,
+      isBanned: !!data?.is_banned,
+      isAdmin: !!adminData
     }
   } catch (err) {
     // Silent fail for dynamic server usage errors during build
@@ -512,7 +527,7 @@ export const getUsedTags = unstable_cache(
         .select('tags')
         .not('tags', 'is', null)
 
-      if (error) throw error
+      if (error || !data) return []
 
       const allTags = data.flatMap(p => p.tags || [])
       const uniqueTags = Array.from(new Set(allTags.map(t => t.toLowerCase())))
@@ -575,6 +590,10 @@ export async function getSubCategories(categoryId?: string) {
       const { data, error } = await query
 
       if (error) {
+        // If table doesn't exist yet, return empty array gracefully
+        if (error.code === 'PGRST116' || (error.message && error.message.includes('relation "sub_categories" does not exist'))) {
+          return []
+        }
         console.error('Error fetching sub-categories:', error)
         return []
       }
@@ -694,7 +713,7 @@ export async function getGoldRates() {
 
     if (isStale) {
       console.log(`[SYNC] Data is stale. Triggering background sync...`)
-      // Trigger but don't обязательно await if we want fast response, 
+      // Trigger but don't await if we want fast response, 
       // but awaiting is safer for Turbopack consistency
       syncLiveGoldRates().catch(err => console.error('Background sync failed:', err))
     }
@@ -706,11 +725,71 @@ export async function getGoldRates() {
   }
 }
 
+// ============================================
+// GLOBAL CONFIG (Pricing Settings)
+// ============================================
+
+export type GlobalConfig = {
+  packaging_cost: number
+  platform_fee_pct: number
+  margin_percent: number
+  making_plain_pct: number
+  making_designer_pct: number
+  making_handcrafted_pct: number
+  ring_base_price_size16: number
+  tax_percent: number
+  shipping_cost: number
+}
+
+const DEFAULT_CONFIG: GlobalConfig = {
+  packaging_cost: 50,
+  platform_fee_pct: 5,
+  margin_percent: 30,
+  making_plain_pct: 18,
+  making_designer_pct: 28,
+  making_handcrafted_pct: 38,
+  ring_base_price_size16: 1699,
+  tax_percent: 3.0,
+  shipping_cost: 0,
+}
+
+export async function getGlobalConfig(): Promise<GlobalConfig> {
+  try {
+    const { data, error } = await supabaseServer
+      .from('global_config')
+      .select('key, value')
+
+    if (error || !data) return DEFAULT_CONFIG
+
+    const config = { ...DEFAULT_CONFIG }
+    data.forEach((row: any) => {
+      if (row.key in config) {
+        (config as any)[row.key] = Number(row.value)
+      }
+    })
+    return config
+  } catch {
+    return DEFAULT_CONFIG
+  }
+}
+
+export async function updateGlobalConfig(key: string, value: number): Promise<ActionResponse> {
+  const isAdmin = await checkIsAdmin()
+  if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
+  const { error } = await supabaseServer
+    .from('global_config')
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+
+  if (error) return { success: false, error: error.message }
+  return { success: true }
+}
+
 export const getBestsellers = unstable_cache(
   async () => {
     const { data, error } = await supabaseServer
       .from('products')
-      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
       .eq('bestseller', true)
       .limit(4)
 
@@ -730,7 +809,7 @@ export async function getNewReleases(limit: number = 8) {
     async () => {
       const { data, error } = await supabaseServer
         .from('products')
-        .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug), sub_categories(id, name, slug)')
+        .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
         .order('created_at', { ascending: false })
         .limit(limit)
 
@@ -750,7 +829,7 @@ export async function getProducts(categorySlug?: string, sortBy?: string) {
     async () => {
       let query = supabaseServer
         .from('products')
-        .select('id, name, price, image_url, images, slug, weight_grams, tags, categories(id, name, slug), sub_categories(id, name, slug)')
+        .select('id, name, price, image_url, images, slug, weight_grams, tags, categories(id, name, slug)')
 
       if (categorySlug) {
         const { data: cat } = await supabaseServer
@@ -786,6 +865,217 @@ export async function getProducts(categorySlug?: string, sortBy?: string) {
   )()
 }
 
+/**
+ * PRODUCTION-READY: Dynamic Pricing Engine for All Jewelry Categories
+ *
+ * Supports:
+ *   - size_based:   Rings. Weight = base_weight × (1 + (size - 16) × 0.03)
+ *   - length_based: Chains, Bracelets. Weight = weight_per_unit × length_in_inches
+ *   - fixed:        Earrings, Pendants. Weight = base_weight (no variation)
+ *
+ * Price formula:
+ *   metalCost = adjustedWeight × silverRate × purityFactor
+ *   makingCost = metalCost × making_pct
+ *   baseCost = metalCost + makingCost + packagingCost
+ *   withPlatformFee = baseCost × (1 + platform_fee_pct / 100)
+ *   withMargin = withPlatformFee × (1 + margin_pct / 100)
+ *   finalPrice = floor(withMargin / 100) × 100 + 99  (psychological)
+ */
+export type PricingEntry = {
+  price: number
+  weight: number
+  dimensions: string
+  width?: string
+  diameter?: string
+  circumference?: string
+  metalCost?: number
+  makingCost?: number
+  baseCost?: number
+}
+
+interface PricingOptions {
+  pricingType: string
+  purity: string
+  materialType: string
+  baseWeight: number
+  productBasePrice: number
+  weightPerUnit: number | null
+  baseSize: number
+  makingType: string
+  availableSizes: string[]
+  packagingCostOverride: number | null
+  platformFeePctOverride: number | null
+  dimensions?: { width?: string; height?: string; unit?: string }
+  marginPercentOverride?: number | null
+  minPriceThreshold?: number | null
+  taxPctOverride?: number | null
+}
+
+async function getDynamicPricingMap(opts: PricingOptions): Promise<Record<string, PricingEntry> | null> {
+  const {
+    pricingType, purity, materialType, baseWeight, productBasePrice,
+    weightPerUnit, baseSize, makingType, availableSizes,
+    packagingCostOverride, platformFeePctOverride, dimensions,
+    marginPercentOverride, minPriceThreshold, taxPctOverride
+  } = opts
+
+  // 1. Fetch metal rate + global config in parallel
+  const [rateData, config] = await Promise.all([
+    getGoldRates(),
+    getGlobalConfig(),
+  ])
+  if (!rateData) return null
+
+  // 2. Determine silver/gold rate
+  let metalRate = 0
+  const purityLower = purity?.toLowerCase() || ''
+  const materialLower = materialType?.toLowerCase() || ''
+
+  if (materialLower.includes('silver') || purityLower.includes('925') || purityLower.includes('92.5')) {
+    metalRate = rateData.rates['Silver 925'] || rateData.rates['Silver 999'] || 85
+  } else if (materialLower.includes('gold') || materialLower === 'real_gold') {
+    metalRate = rateData.rates[purity] || rateData.rates['22K'] || 6500
+  } else {
+    metalRate = rateData.rates['Silver 925'] || rateData.rates['Silver 999'] || 85
+  }
+
+  // 3. Purity factor
+  const purityFactor = (purityLower.includes('925') || purityLower.includes('92.5')) ? 0.925 : 1.0
+
+  // 4. Config values (Manual overrides vs Global)
+  const packagingCost = packagingCostOverride ?? config.packaging_cost
+  const platformFeePct = platformFeePctOverride ?? config.platform_fee_pct
+  const marginPct = marginPercentOverride ?? config.margin_percent
+  const taxPct = taxPctOverride ?? (config as any).tax_percent ?? 3.0 // Default to 3% GST
+  const shippingCost = (config as any).shipping_cost || 0
+
+  const makingPct = makingType === 'Handcrafted'
+    ? config.making_handcrafted_pct
+    : makingType === 'Designer'
+      ? config.making_designer_pct
+      : config.making_plain_pct
+
+  // Physical Geometry Constants (Indian Standards)
+  const getInnerDiameter = (size: number) => 12.67 + (size * 0.33)
+  const dUnit = dimensions?.unit || 'mm'
+
+  // Normalize base dimensions to mm for internal high-fidelity math
+  const ringThicknessRaw = parseFloat(dimensions?.height || '1.1') || 1.1
+  const ringWidthRaw = parseFloat(dimensions?.width || '0.5') || 0.5
+  const ringThickness = dUnit === 'cm' ? ringThicknessRaw * 10 : ringThicknessRaw
+  const ringWidth = dUnit === 'cm' ? ringWidthRaw * 10 : ringWidthRaw
+
+  // 5. Anchor Logic: Calculate a "Design Premium Multiplier"
+  const calculateFormulaPriceRaw = (weight: number): number => {
+    const metalCost = weight * metalRate * purityFactor
+    const makingCost = metalCost * (makingPct / 100)
+    const baseCost = metalCost + makingCost + packagingCost
+    const withFee = baseCost * (1 + platformFeePct / 100)
+    const withMargin = withFee * (1 + marginPct / 100)
+    const withShipping = withMargin + shippingCost
+    const withTax = withShipping * (1 + taxPct / 100)
+    return withTax
+  }
+
+  const rawBasePrice = calculateFormulaPriceRaw(baseWeight)
+  const anchorPrice = productBasePrice || config.ring_base_price_size16 || 1999
+  const designPremiumMultiplier = anchorPrice / rawBasePrice
+
+  const pricingMap: Record<string, PricingEntry> = {}
+
+  // 6. Generate map
+  const computeEntry = (param: number, label: string, isSize: boolean): PricingEntry => {
+    let adjWeight: number
+    let displayDims: string
+    let diameter: string | undefined
+    let circumference: string | undefined
+
+    if (pricingType === 'size_based') {
+      const baseRefSize = 16
+      const baseCirc = getCircumferenceForSize(baseRefSize)
+      const currentCirc = getCircumferenceForSize(label)
+      const currentInnerD = getDiameterForSize(label)
+
+      // Automatic Physical Scaling (Linear with Circumference)
+      adjWeight = baseWeight * (currentCirc / baseCirc)
+
+      const wOut = ringWidth // Width in mm
+      const dOut = currentInnerD.toFixed(2)
+      const cOut = currentCirc.toFixed(2)
+
+      displayDims = `Width: ${wOut}mm, Diameter: ${dOut}mm, Circumference: ${cOut}mm`
+      diameter = `${dOut} mm`
+      circumference = `${cOut} mm`
+    } else if (pricingType === 'length_based') {
+      adjWeight = (weightPerUnit ?? baseWeight) * param
+      const wOut = dimensions?.width || '0.5'
+      displayDims = `${wOut} x ${wOut} x ${param} "${dUnit === 'mm' ? '(inch)' : dUnit}`
+    } else {
+      adjWeight = baseWeight
+      displayDims = dimensions?.width && dimensions.height
+        ? `${dimensions.width} x ${dimensions.height} x ${dimensions?.height || '0'} ${dUnit}`
+        : 'Standard'
+    }
+
+    adjWeight = Math.round(adjWeight * 100) / 100
+
+    const rawFormulaPrice = calculateFormulaPriceRaw(adjWeight)
+    let finalPrice = rawFormulaPrice * designPremiumMultiplier
+
+    if (minPriceThreshold && finalPrice < minPriceThreshold) {
+      finalPrice = minPriceThreshold
+    }
+
+    // Psychological Rounding (X99 format)
+    finalPrice = Math.floor(finalPrice / 100) * 100 + 99
+
+    // Final safety: Force anchor price for the configured base size ring
+    if (pricingType === 'size_based' && param === baseSize) {
+      finalPrice = Math.floor(anchorPrice / 100) * 100 + 99
+      if (anchorPrice % 100 === 99) finalPrice = anchorPrice
+    }
+
+    // Cost Breakdown
+    const mCost = adjWeight * metalRate * purityFactor
+    const makCost = mCost * (makingPct / 100)
+    const bCost = mCost + makCost + packagingCost
+
+    return {
+      price: finalPrice,
+      weight: adjWeight,
+      dimensions: displayDims,
+      width: pricingType === 'size_based' ? `${ringWidth} mm` : undefined,
+      diameter,
+      circumference,
+      metalCost: Math.round(mCost),
+      makingCost: Math.round(makCost),
+      baseCost: Math.round(bCost),
+    }
+  }
+
+  if (pricingType === 'size_based') {
+    const sizeList = availableSizes.length > 0
+      ? availableSizes
+      : Array.from({ length: 25 }, (_, i) => String(i + 6))
+
+    sizeList.forEach(sizeStr => {
+      const size = parseInt(sizeStr)
+      if (!isNaN(size)) {
+        pricingMap[sizeStr] = computeEntry(size, sizeStr, true)
+      }
+    })
+  } else if (pricingType === 'length_based') {
+    const lengths = [6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
+    lengths.forEach(len => {
+      pricingMap[String(len)] = computeEntry(len, `${len}"`, false)
+    })
+  } else if (pricingType === 'fixed') {
+    pricingMap['default'] = computeEntry(0, 'Standard', false)
+  }
+
+  return pricingMap
+}
+
 export async function getHeroSlides() {
   return unstable_cache(
     async () => {
@@ -807,11 +1097,9 @@ export async function getHeroSlides() {
 }
 
 // Product Actions
-export const getProductBySlug = cache(async (slug: string) => {
+export async function getProductBySlug(slug: string) {
   return unstable_cache(
     async () => {
-      // PERFORMANCE: Narrowing selection to avoid fetching heavy/unnecessary columns.
-      // This reduces memory overhead and improves caching efficiency.
       const { data, error } = await supabaseServer
         .from('products')
         .select(`
@@ -820,18 +1108,93 @@ export const getProductBySlug = cache(async (slug: string) => {
           weight_grams, dimensions_width, dimensions_height, 
           dimensions_length, dimensions_unit, video_url, tags, created_at,
           material_type,
-          categories(slug, name), 
-          sub_categories(slug, name)
+          making_type, pricing_type, base_size, base_weight,
+          weight_per_unit, packaging_cost_override, platform_fee_pct_override,
+          fixed_price_override, is_dynamic_pricing,
+          margin_percent_override, min_price_threshold, tax_pct_override,
+          categories(slug, name)
         `)
         .ilike('slug', slug)
         .single()
-      if (error) return null
-      return data
+      if (error || !data) return null
+
+      // Cast to any: Supabase infers a strict type, but we attach the computed `dynamicPricingMap`
+      const product: any = data
+
+      // === DYNAMIC PRICING ENGINE ===
+      // If fixed override set → skip dynamic
+      if (product.fixed_price_override) {
+        product.dynamicPricingMap = null
+        return product
+      }
+
+      if (product.is_dynamic_pricing && product.pricing_type && product.pricing_type !== 'none') {
+        const effectivePricingType = product.pricing_type
+        const effectiveBaseWeight = (product.base_weight || product.weight_grams) ?? 3.5
+        const dynamicMap = await getDynamicPricingMap({
+          pricingType: effectivePricingType,
+          purity: product.purity || '92.5',
+          materialType: product.material_type || 'silver',
+          baseWeight: effectiveBaseWeight,
+          productBasePrice: product.price,
+          weightPerUnit: product.weight_per_unit ?? null,
+          baseSize: product.base_size ?? 16,
+          makingType: product.making_type || 'Plain',
+          availableSizes: Array.isArray(product.sizes) ? product.sizes : [],
+          packagingCostOverride: product.packaging_cost_override ?? null,
+          platformFeePctOverride: product.platform_fee_pct_override ?? null,
+          dimensions: {
+            width: product.dimensions_width,
+            height: product.dimensions_height,
+            unit: product.dimensions_unit
+          },
+          marginPercentOverride: product.margin_percent_override ?? null,
+          minPriceThreshold: product.min_price_threshold ?? null,
+          taxPctOverride: product.tax_pct_override ?? null
+        })
+        if (dynamicMap) {
+          product.dynamicPricingMap = dynamicMap
+        }
+      } else {
+        // Legacy fallback: auto-detect rings by name/category
+        const nameLower = product.name?.toLowerCase() || ''
+        const categories = product.categories
+        const catSlug = (Array.isArray(categories) ? categories[0]?.slug : categories?.slug) || ''
+        const isRing = catSlug.includes('ring') || nameLower.includes('ring')
+
+        if (isRing) {
+          const effectiveBaseWeight = (product.base_weight || product.weight_grams) ?? 3.5
+          const dynamicMap = await getDynamicPricingMap({
+            pricingType: 'size_based',
+            purity: product.purity || '92.5',
+            materialType: product.material_type || 'silver',
+            baseWeight: effectiveBaseWeight,
+            productBasePrice: product.price,
+            weightPerUnit: null,
+            baseSize: product.base_size ?? 16,
+            makingType: product.making_type || 'Plain',
+            availableSizes: Array.isArray(product.sizes) ? product.sizes : [],
+            packagingCostOverride: product.packaging_cost_override ?? null,
+            platformFeePctOverride: product.platform_fee_pct_override ?? null,
+            dimensions: {
+              width: product.dimensions_width,
+              height: product.dimensions_height,
+              unit: product.dimensions_unit
+            },
+            marginPercentOverride: product.margin_percent_override ?? null,
+            minPriceThreshold: product.min_price_threshold ?? null,
+            taxPctOverride: product.tax_pct_override ?? null
+          })
+          if (dynamicMap) product.dynamicPricingMap = dynamicMap
+        }
+      }
+
+      return product
     },
-    ['product-detail', slug],
-    { revalidate: 3600, tags: ['products'] }
+    [`product-${slug}`],
+    { revalidate: 3600, tags: [`product:${slug}`, 'products'] }
   )()
-})
+}
 
 export async function getAdminProducts() {
   const isAdmin = await checkIsAdmin()
@@ -839,7 +1202,7 @@ export async function getAdminProducts() {
 
   const { data, error } = await supabaseServer
     .from('products')
-    .select('*, categories(name), sub_categories(name)')
+    .select('*, categories(name)', { count: 'exact' })
     .order('created_at', { ascending: false })
 
   if (error) return []
@@ -2238,7 +2601,7 @@ export async function searchProducts(query: string) {
     // This utilizes the GIN functional index if defined on name/description.
     const { data: ftsResults, error: ftsError } = await supabaseServer
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, tags, categories(id, name, slug), sub_categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, tags, categories(id, name, slug)')
       .textSearch('name', query, {
         type: 'websearch',
         config: 'english'
@@ -2252,7 +2615,7 @@ export async function searchProducts(query: string) {
     // 2. Fallback to ILIKE if FTS fails or yields no results
     const { data: ilikeResults, error: ilikeError } = await supabaseServer
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, tags, categories(id, name, slug), sub_categories(id, name, slug)')
+      .select('id, name, price, description, image_url, images, slug, weight_grams, tags, categories(id, name, slug)')
       .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
       .limit(12)
 
@@ -2532,7 +2895,7 @@ export async function getFilteredProducts(options: {
           const ck = `cat:${categorySlug}`
           let catId = _cacheGet<string>(ck)
           if (!catId) {
-            const { data: cat } = await supabaseServer.from('categories').select('id').eq('slug', categorySlug).single()
+            const { data: cat } = await supabaseServer.from('categories').select('id').eq('slug', categorySlug).maybeSingle()
             if (cat) { _cacheSet(ck, cat.id); catId = cat.id }
           }
           if (catId) query = query.eq('category_id', catId)
@@ -2543,7 +2906,8 @@ export async function getFilteredProducts(options: {
           const sk = `subcat:${options.sub_category}`
           let subCatId = _cacheGet<string>(sk)
           if (!subCatId) {
-            const { data: subCat } = await supabaseServer.from('sub_categories').select('id').eq('slug', options.sub_category).single()
+            // Skip subcat if it would cause error (handled gracefully below)
+            const { data: subCat } = await supabaseServer.from('sub_categories').select('id').eq('slug', options.sub_category).maybeSingle()
             if (subCat) { _cacheSet(sk, subCat.id); subCatId = subCat.id }
           }
           if (subCatId) query = query.eq('sub_category_id', subCatId)
@@ -2602,12 +2966,12 @@ export async function getFilteredProducts(options: {
           const singularLast = lastWord.endsWith('s') ? lastWord.slice(0, -1) : lastWord
 
           // 1. Try to match as a category
-          const { data: cat } = await supabaseServer.from('categories').select('id').eq('slug', t).single()
+          const { data: cat } = await supabaseServer.from('categories').select('id').eq('slug', t).maybeSingle()
           if (cat) {
             query = query.eq('category_id', cat.id)
           } else {
             // 2. Try to match as a sub-category
-            const { data: subCat } = await supabaseServer.from('sub_categories').select('id').eq('slug', t).single()
+            const { data: subCat } = await supabaseServer.from('sub_categories').select('id').eq('slug', t).maybeSingle()
             if (subCat) {
               query = query.eq('sub_category_id', subCat.id)
             } else {

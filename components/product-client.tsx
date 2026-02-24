@@ -324,6 +324,63 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const [isSortOpen, setIsSortOpen] = useState(false)
     const [shippingCharge, setShippingCharge] = useState<number | null>(null)
 
+    // Dynamic State based on Selected Size OR Length
+    const dynamicData = React.useMemo(() => {
+        // Fixed price override: admin has locked a specific price
+        if (product.fixed_price_override) {
+            return {
+                price: product.fixed_price_override,
+                weight: product.weight_grams,
+                dimensions: formatDimensions(product.dimensions_length, product.dimensions_width, product.dimensions_height, product.dimensions_unit || 'cm'),
+                metalCost: undefined,
+                makingCost: undefined,
+                baseCost: undefined,
+            }
+        }
+
+        // No pricing map available — return static data
+        if (!product.dynamicPricingMap) {
+            return {
+                price: product.price,
+                weight: product.weight_grams,
+                dimensions: formatDimensions(product.dimensions_length, product.dimensions_width, product.dimensions_height, product.dimensions_unit || 'cm'),
+                metalCost: undefined,
+                makingCost: undefined,
+                baseCost: undefined,
+            }
+        }
+
+        // Determine the lookup key: size (rings) or length (chains), or 'default' (fixed)
+        const lookupKey = selectedSize && selectedSize !== 'Custom' ? selectedSize : 'default'
+        const data = product.dynamicPricingMap?.[lookupKey]
+
+        if (data) {
+            return {
+                price: data.price,
+                weight: data.weight,
+                dimensions: data.dimensions,
+                width: data.width,
+                diameter: data.diameter,
+                circumference: data.circumference,
+                metalCost: data.metalCost,
+                makingCost: data.makingCost,
+                baseCost: data.baseCost,
+            }
+        }
+
+        return {
+            price: product.price,
+            weight: product.weight_grams,
+            dimensions: formatDimensions(product.dimensions_length, product.dimensions_width, product.dimensions_height, product.dimensions_unit || 'cm'),
+            width: undefined,
+            diameter: undefined,
+            circumference: undefined,
+            metalCost: undefined,
+            makingCost: undefined,
+            baseCost: undefined,
+        }
+    }, [selectedSize, product])
+
     // Handle scroll for sticky bar
     useEffect(() => {
         const handleScroll = () => {
@@ -377,12 +434,6 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
         // Deduplicate and filter valid images
         const final = Array.from(new Set(result))
-        console.log('🔹 Product Images DEBUG:', {
-            id: product.id,
-            name: product.name,
-            totalImages: final.length,
-            allUrls: final
-        })
         return final
     }, [product])
 
@@ -664,7 +715,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             </div>
 
                             <p className="text-3xl font-light text-amber-100/80 font-serif italic">
-                                ₹{product.price.toLocaleString('en-IN')}
+                                ₹{dynamicData.price.toLocaleString('en-IN')}
                             </p>
                         </div>
 
@@ -765,14 +816,14 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 {product.weight_grams && (
                                     <div className="space-y-1">
                                         <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Net Weight</p>
-                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{formatWeight(product.weight_grams)}</p>
+                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{formatWeight(dynamicData.weight)}</p>
                                     </div>
                                 )}
-                                {(product.dimensions_width || product.dimensions_height || product.dimensions_length) && (
+                                {(product.dimensions_width || product.dimensions_height || product.dimensions_length) && !dynamicData.diameter && (
                                     <div className="space-y-1">
                                         <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Dimensions</p>
                                         <p className="text-xs md:text-sm font-serif italic text-white/80">
-                                            {formatDimensions(product.dimensions_length, product.dimensions_width, product.dimensions_height, product.dimensions_unit || 'cm')}
+                                            {dynamicData.dimensions}
                                         </p>
                                     </div>
                                 )}
@@ -850,7 +901,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
                         <div className="flex items-center justify-between mb-8">
                             <div className="flex items-baseline gap-4">
-                                <span className="text-2xl font-serif text-white tracking-tight">₹{product.price.toLocaleString()}</span>
+                                <span className="text-2xl font-serif text-white tracking-tight">₹{dynamicData.price.toLocaleString()}</span>
                                 {product.original_price && (
                                     <span className="text-sm text-white/30 line-through">₹{product.original_price.toLocaleString()}</span>
                                 )}
@@ -864,6 +915,63 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                     </p>
                                 </div>
                             )}
+                        </div>
+
+                        {/* LUXURIOUS SELECTED SPEC TABLE - As requested */}
+                        <div className="mb-8 overflow-hidden border border-white/10 bg-white/[0.02] backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <div className="p-4 border-b border-white/5 bg-white/[0.03]">
+                                <h3 className="text-[10px] uppercase tracking-[0.3em] text-amber-500/80 font-bold flex items-center justify-between">
+                                    Product Specifications
+                                    {selectedSize && <span className="italic text-white/40 tracking-widest lowercase font-medium">Selected Size: {selectedSize}</span>}
+                                </h3>
+                            </div>
+                            <table className="w-full text-left border-collapse">
+                                <tbody className="divide-y divide-white/5">
+                                    {/* Weight Row */}
+                                    <tr className="group transition-colors hover:bg-white/[0.01]">
+                                        <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Estimated Weight</td>
+                                        <td className="py-3 px-4 text-xs font-serif italic text-white/90">{formatWeight(dynamicData.weight)}</td>
+                                    </tr>
+
+                                    {/* Component Rows (Rings Only) */}
+                                    {dynamicData.width && (
+                                        <tr className="group transition-colors hover:bg-white/[0.01]">
+                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Width</td>
+                                            <td className="py-3 px-4 text-xs font-mono text-amber-200/80">{dynamicData.width}</td>
+                                        </tr>
+                                    )}
+                                    {dynamicData.diameter && (
+                                        <tr className="group transition-colors hover:bg-white/[0.01]">
+                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Diameter</td>
+                                            <td className="py-3 px-4 text-xs font-mono text-amber-200/80">{dynamicData.diameter}</td>
+                                        </tr>
+                                    )}
+                                    {dynamicData.circumference && (
+                                        <tr className="group transition-colors hover:bg-white/[0.01]">
+                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Circumference</td>
+                                            <td className="py-3 px-4 text-xs font-mono text-amber-200/80">{dynamicData.circumference}</td>
+                                        </tr>
+                                    )}
+
+                                    {/* Fallback for Non-Rings */}
+                                    {!dynamicData.diameter && (
+                                        <tr className="group transition-colors hover:bg-white/[0.01]">
+                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Dimensions</td>
+                                            <td className="py-3 px-4 text-xs text-white/70 font-mono tracking-tight">{dynamicData.dimensions}</td>
+                                        </tr>
+                                    )}
+
+                                    {/* Purity Row */}
+                                    {product.purity && (
+                                        <tr className="group transition-colors hover:bg-white/[0.01]">
+                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Purity</td>
+                                            <td className="py-3 px-4 text-xs font-serif italic text-white/90">{formatPurity(product.purity, product.material_type).label}</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                            {/* Accent Line */}
+                            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
                         </div>
 
                         {/* ACTIONS BELOW PRICE - As requested */}
@@ -991,13 +1099,13 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 </div>
                                 <div className="hidden sm:block min-w-0">
                                     <h4 className="text-xs font-serif italic text-white truncate">{product.name}</h4>
-                                    <p className="text-[10px] text-white/40 tracking-widest uppercase mt-0.5">₹{product.price.toLocaleString()}</p>
+                                    <p className="text-[10px] text-white/40 tracking-widest uppercase mt-0.5">₹{dynamicData.price.toLocaleString()}</p>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-3 flex-1 md:flex-none justify-end">
                                 <div className="text-right mr-4 hidden md:block">
-                                    <p className="text-lg font-serif text-white">₹{product.price.toLocaleString()}</p>
+                                    <p className="text-lg font-serif text-white">₹{dynamicData.price.toLocaleString()}</p>
                                     <p className="text-[9px] text-amber-500/60 uppercase tracking-widest font-bold">
                                         {shippingCharge !== null ? (shippingCharge > 0 ? `+ ₹${shippingCharge} Shipping` : 'Free Shipping') : (product.price >= 50000 ? 'Free Shipping' : 'Standard Shipping')}
                                     </p>
@@ -1181,7 +1289,6 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                 {isSizeGuideOpen && (
                     <SizeGuide
                         category={product.categories?.name}
-                        subCategory={product.sub_categories?.name}
                         onClose={() => setIsSizeGuideOpen(false)}
                     />
                 )}

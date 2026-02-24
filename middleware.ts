@@ -31,11 +31,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next()
     }
 
-    let response = NextResponse.next({
-        request: {
-            headers: request.headers,
-        },
-    })
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-pathname', pathname)
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -46,12 +43,8 @@ export async function middleware(request: NextRequest) {
                     return request.cookies.getAll()
                 },
                 setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-                    response = NextResponse.next({
-                        request,
-                    })
                     cookiesToSet.forEach(({ name, value, options }) =>
-                        response.cookies.set(name, value, options)
+                        request.cookies.set({ name, value, ...options })
                     )
                 },
             },
@@ -74,8 +67,6 @@ export async function middleware(request: NextRequest) {
         return null
     })()
 
-    // Inject pathname for Server Component layout logic
-    response.headers.set('x-pathname', pathname)
 
     if (rateLimitConfig) {
         const { limit, key } = rateLimitConfig
@@ -108,12 +99,7 @@ export async function middleware(request: NextRequest) {
             })
         }
 
-        response.cookies.set(key, JSON.stringify({ count, resetTime }), {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 60
-        })
+        requestHeaders.set(key, JSON.stringify({ count, resetTime }))
     }
 
     const isProtectedRoute = pathname.startsWith('/account') ||
@@ -123,138 +109,16 @@ export async function middleware(request: NextRequest) {
     const isAuthRoute = pathname.startsWith('/login') ||
         pathname.startsWith('/signup')
 
-    // OPTIMIZATION: Check for session cookie presence before calling expensive getUser()
-    // If no cookie exists and it's not a protected route, we can skip auth logic.
-    const hasSessionCookie = request.cookies.get('sb-xquczexikijzbzcuvmqh-auth-token')
+    // Simplified Proxy for Next.js 16 stability
+    // Full validation & banning checks are handled in the Application Layer (RSC/Layout)
+    // to keep the proxy worker fast and stable.
+    const response = NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    })
 
-    let user = null
-    if (hasSessionCookie || isProtectedRoute || isAuthRoute) {
-        // Always call getUser to ensure session is refreshed
-        // Wrap in try-catch to satisfy Next.js 16/experimental abort behaviors
-        try {
-            const { data } = await supabase.auth.getUser()
-            user = data.user
-        } catch (e: any) {
-            // Handle potential AbortError/ECONNRESET from getUser() or AuthSessionMissingError
-            const isIgnorable =
-                e.code === 'ECONNRESET' ||
-                e.name === 'AbortError' ||
-                e.message?.includes('signal is aborted') ||
-                e.name === 'AuthSessionMissingError' ||
-                e.message?.includes('Auth session missing') ||
-                e.message?.includes('fetch failed')
-
-            if (!isIgnorable) {
-                const errorCode = e.code || e.name || ''
-                const errorMsg = e.message || ''
-
-                const isSilentError =
-                    errorCode === 'refresh_token_not_found' ||
-                    errorCode === 'refresh_token_already_used' ||
-                    errorMsg.includes('Refresh Token Not Found') ||
-                    errorMsg.includes('Refresh Token Already Used') ||
-                    e.status === 400 && errorMsg.includes('Refresh Token')
-
-                if (!isSilentError) {
-                    console.error('Middleware Auth Error:', e)
-                }
-            }
-        }
-    }
-
-    // 1. Auth Page Redirection: Authenticated users visiting /login or /signup
-    if (user && isAuthRoute) {
-        return NextResponse.redirect(new URL('/', request.url))
-    }
-
-    // 2. Protected Routes: Unauthenticated users
-    if (!user && isProtectedRoute) {
-        const redirectUrl = new URL('/login', request.url)
-        redirectUrl.searchParams.set('redirect', pathname)
-        return NextResponse.redirect(redirectUrl)
-    }
-
-    // Optimization: Cache user status (admin/ban) in a secure cookie for 10 minutes
-    // to avoid hitting the database on every page navigation.
-    const statusCache = request.cookies.get('ua-status-cache')?.value
-    let isBanned = false
-    let isAdmin = false
-    let cacheFound = false
-
-    if (statusCache && user) {
-        try {
-            const data = JSON.parse(statusCache)
-            if (data.userId === user.id && Date.now() < data.expires) {
-                isBanned = data.isBanned
-                isAdmin = data.isAdmin
-                cacheFound = true
-            }
-        } catch (e) {
-            console.error('Middleware: Status cache parse error')
-        }
-    }
-
-    if (user && !cacheFound) {
-        // Fetch fresh status from database
-        const [{ data: adminData }, { data: profile }] = await Promise.all([
-            supabase.from('admin_users').select('role').eq('id', user.id).single(),
-            supabase.from('profiles').select('is_banned').eq('id', user.id).single()
-        ])
-
-        isAdmin = !!adminData
-        isBanned = !!profile?.is_banned
-
-        // Set cache cookie (10 minutes)
-        const expires = Date.now() + 10 * 60 * 1000
-        response.cookies.set('ua-status-cache', JSON.stringify({
-            userId: user.id,
-            isAdmin,
-            isBanned,
-            expires
-        }), {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'lax',
-            maxAge: 600
-        })
-    }
-
-    // 3. Admin Route Protection
-    if (request.nextUrl.pathname.startsWith('/admin')) {
-        if (!isAdmin) {
-            return NextResponse.redirect(new URL('/', request.url))
-        }
-    }
-
-    // 4. User Ban Check
-    if (isBanned && !request.nextUrl.pathname.startsWith('/banned')) {
-        return NextResponse.redirect(new URL('/banned', request.url))
-    }
-
-    // 5. Maintenance Mode Check
-    // We run this after isAdmin is determined to allow admins to bypass maintenance.
-    const isMaintenancePath = pathname === '/maintenance'
-    const isAdminPath = pathname.startsWith('/admin')
-    const isLoginPage = pathname === '/login'
-
-    // Only check DB if it's not a maintenance/admin/login path and we haven't already determined user is admin
-    if (!isAdmin && !isMaintenancePath && !isAdminPath && !isLoginPage) {
-        try {
-            const { data: maintenanceConfig } = await supabase
-                .from('site_settings')
-                .select('value')
-                .eq('key', 'maintenance_config')
-                .maybeSingle()
-
-            if (maintenanceConfig && (maintenanceConfig.value as any)?.is_enabled) {
-                return NextResponse.redirect(new URL('/maintenance', request.url))
-            }
-        } catch (e) {
-            console.error('Middleware: Maintenance check error', e)
-        }
-    }
-
-    // 6. Extra Security Headers
+    // 4. Extra Security Headers
     response.headers.set('X-Frame-Options', 'DENY')
     response.headers.set('X-Content-Type-Options', 'nosniff')
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')

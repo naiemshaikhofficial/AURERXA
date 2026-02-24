@@ -165,6 +165,7 @@ import { CookieConsent } from '@/components/cookie-consent'
 import { TrackingScripts } from '@/components/scripts/tracking'
 import { BehaviorTracker } from '@/components/behavior-tracker'
 import { getCurrentUserProfile, getSiteSetting } from '@/app/actions'
+import { redirect } from 'next/navigation'
 import { SearchModal } from '@/components/search-modal'
 import { DynamicTitle } from '@/components/dynamic-title'
 import { Footer } from '@/components/footer'
@@ -181,7 +182,7 @@ export default async function RootLayout({
   const pathname = headerList.get('x-pathname') || ''
   const isMaintenance = pathname === '/maintenance'
 
-  const [profile, marketingConfig, contactConfig] = await Promise.all([
+  const [profile, marketingConfig, contactConfig, maintenanceConfig] = await Promise.all([
     getCurrentUserProfile(),
     getSiteSetting('marketing_config', {
       banner_enabled: false,
@@ -193,8 +194,22 @@ export default async function RootLayout({
       email: "support@aurerxa.com",
       whatsapp: "+91 9391032677",
       address: "Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605"
-    })
+    }),
+    getSiteSetting('maintenance_config', { is_enabled: false })
   ])
+
+  const isAdmin = profile?.isAdmin
+  const isBanned = profile?.isBanned
+
+  // Redirect banned users
+  if (isBanned && !pathname.startsWith('/banned')) {
+    redirect('/banned')
+  }
+
+  // Handle Maintenance Mode
+  if (maintenanceConfig.is_enabled && !isAdmin && !isMaintenance && !pathname.startsWith('/admin') && !pathname.startsWith('/login')) {
+    redirect('/maintenance')
+  }
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
   const organizationSchema = {
     '@context': 'https://schema.org',
@@ -326,48 +341,60 @@ export default async function RootLayout({
             <SearchProvider>
               <ConsentProvider initialProfile={profile}>
                 <SmoothScroll>
-                  <AdminRouteGuard>
-                    {!isMaintenance && marketingConfig.banner_enabled && (
-                      <div className="bg-[#D4AF37] text-black py-2 px-4 text-center text-xs font-bold tracking-widest uppercase relative z-[100]">
-                        <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
-                          {marketingConfig.banner_text}
-                        </a>
-                      </div>
-                    )}
-                    {!isMaintenance && <Navbar marketingConfig={marketingConfig} />}
-                    <div className={cn("transition-all duration-300", !isMaintenance && marketingConfig.banner_enabled ? "pt-28 md:pt-32" : !isMaintenance ? "pt-20 md:pt-24" : "pt-0")}>
-                      {!isMaintenance && <CategoryNav />}
-                      <ErrorBoundary componentName="Main Content">
-                        <main>
-                          {children}
-                        </main>
-                      </ErrorBoundary>
-                      {!isMaintenance && <Footer contactConfig={contactConfig} />}
-                    </div>
-                  </AdminRouteGuard>
+                  <ErrorBoundary componentName="Application Root">
+                    {(() => {
+                      const isAdminPath = pathname.startsWith('/admin')
 
-                  <AdminOnlyWrapper>
-                    <ErrorBoundary componentName="Admin Dashboard">
-                      {children}
-                    </ErrorBoundary>
-                  </AdminOnlyWrapper>
+                      if (isAdminPath) {
+                        return (
+                          <AdminOnlyWrapper>
+                            <div className="min-h-screen bg-background">
+                              {children}
+                            </div>
+                          </AdminOnlyWrapper>
+                        )
+                      }
 
-                  <CartSheet />
-                  <MobileInstallPrompt />
-                  <NotificationManager />
-                  <SearchModal />
-                  <DynamicTitle />
-                  <BottomNav />
+                      return (
+                        <AdminRouteGuard>
+                          {!isMaintenance && marketingConfig.banner_enabled && (
+                            <div className="bg-[#D4AF37] text-black py-2 px-4 text-center text-xs font-bold tracking-widest uppercase relative z-[100]">
+                              <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
+                                {marketingConfig.banner_text}
+                              </a>
+                            </div>
+                          )}
+                          {!isMaintenance && <Navbar marketingConfig={marketingConfig} />}
+                          <div className={cn("transition-all duration-300", !isMaintenance && marketingConfig.banner_enabled ? "pt-28 md:pt-32" : !isMaintenance ? "pt-20 md:pt-24" : "pt-0")}>
+                            {!isMaintenance && <CategoryNav />}
+                            <ErrorBoundary componentName="Main Content">
+                              <main>
+                                {children}
+                              </main>
+                            </ErrorBoundary>
+                            {!isMaintenance && <Footer contactConfig={contactConfig} />}
+                          </div>
+                        </AdminRouteGuard>
+                      )
+                    })()}
 
-                  <Toaster />
-                  <SpeedInsights />
-                  <Analytics />
+                    <CartSheet />
+                    <MobileInstallPrompt />
+                    <NotificationManager />
+                    <SearchModal />
+                    <DynamicTitle />
+                    <BottomNav />
 
-                  <CookieConsent />
-                  <TrackingScripts />
-                  <Suspense fallback={null}>
-                    <BehaviorTracker />
-                  </Suspense>
+                    <Toaster />
+                    <SpeedInsights />
+                    <Analytics />
+
+                    <CookieConsent />
+                    <TrackingScripts />
+                    <Suspense fallback={null}>
+                      <BehaviorTracker />
+                    </Suspense>
+                  </ErrorBoundary>
                 </SmoothScroll>
               </ConsentProvider>
             </SearchProvider>

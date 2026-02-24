@@ -11,17 +11,7 @@ interface SizeGuideProps {
     onClose: () => void
 }
 
-const RING_SIZES = [
-    { in: '6', mm: '14.6', circumference: '45.9' },
-    { in: '8', mm: '15.3', circumference: '48.1' },
-    { in: '10', mm: '15.9', circumference: '50.0' },
-    { in: '12', mm: '16.5', circumference: '51.9' },
-    { in: '14', mm: '17.2', circumference: '54.0' },
-    { in: '16', mm: '17.8', circumference: '55.9' },
-    { in: '18', mm: '18.5', circumference: '58.1' },
-    { in: '20', mm: '19.1', circumference: '60.0' },
-    { in: '22', mm: '19.8', circumference: '62.2' },
-]
+import { INDIAN_RING_SIZES, COUPLE_RING_SIZES } from '@/lib/ring-sizes'
 
 const BANGLE_SIZES = [
     { size: '2-2', inches: '2.12', mm: '54.0' },
@@ -111,24 +101,55 @@ export function SizeGuide({ category, subCategory, onClose }: SizeGuideProps) {
                     </div>
 
                     {isRing && (
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="border-b border-white/5">
-                                    <th className="py-4 text-[10px] uppercase tracking-widest text-white/40 font-medium">India Size</th>
-                                    <th className="py-4 text-[10px] uppercase tracking-widest text-white/40 font-medium text-center">Diameter (mm)</th>
-                                    <th className="py-4 text-[10px] uppercase tracking-widest text-white/40 font-medium text-right">Circumference (mm)</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                                {RING_SIZES.map((s) => (
-                                    <tr key={s.in} className="group hover:bg-white/[0.02] transition-colors">
-                                        <td className="py-4 text-sm font-serif italic text-amber-200/80">{s.in}</td>
-                                        <td className="py-4 text-sm text-white/60 text-center font-mono">{s.mm}</td>
-                                        <td className="py-4 text-sm text-white/60 text-right font-mono">{s.circumference}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <div className="space-y-12">
+                            {/* Standard Grid */}
+                            <div className="space-y-6">
+                                <h4 className="text-[10px] text-amber-500/40 font-bold uppercase tracking-[0.3em]">All Sizes Measurement</h4>
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-white/5">
+                                            <th className="py-4 text-[10px] uppercase tracking-widest text-white/40 font-medium">India Size</th>
+                                            <th className="py-4 text-[10px] uppercase tracking-widest text-white/40 font-medium text-center">Diameter (mm)</th>
+                                            <th className="py-4 text-[10px] uppercase tracking-widest text-white/40 font-medium text-right">Circumference (mm)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {INDIAN_RING_SIZES.map((s) => (
+                                            <tr key={s.size} className="group hover:bg-white/[0.02] transition-colors">
+                                                <td className="py-4 text-sm font-serif italic text-amber-200/80">{s.size}</td>
+                                                <td className="py-4 text-sm text-white/60 text-center font-mono">{s.mm}</td>
+                                                <td className="py-4 text-sm text-white/60 text-right font-mono">{s.circumference}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Couple Rings Section */}
+                            <div className="space-y-6">
+                                <h4 className="text-[10px] text-amber-500/40 font-bold uppercase tracking-[0.3em]">Couple Rings Sizes</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <p className="text-[9px] uppercase tracking-widest text-white/30 border-b border-white/5 pb-2">Women's Collection</p>
+                                        {COUPLE_RING_SIZES.women.map((s) => (
+                                            <div key={s.label} className="flex justify-between items-center py-2">
+                                                <span className="text-sm font-serif italic text-amber-200/80">{s.label}</span>
+                                                <span className="text-sm text-white/40 font-mono">{s.mm} mm</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="space-y-4">
+                                        <p className="text-[9px] uppercase tracking-widest text-white/30 border-b border-white/5 pb-2">Men's Collection</p>
+                                        {COUPLE_RING_SIZES.men.map((s) => (
+                                            <div key={s.label} className="flex justify-between items-center py-2">
+                                                <span className="text-sm font-serif italic text-amber-200/80">{s.label}</span>
+                                                <span className="text-sm text-white/40 font-mono">{s.mm} mm</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     )}
 
                     {isBangle && (

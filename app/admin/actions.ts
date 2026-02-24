@@ -661,7 +661,7 @@ export async function getAdminAllProducts(
 
     let query = client
         .from('products')
-        .select('*, categories(name), sub_categories(name)', { count: 'exact' })
+        .select('*, categories(name)', { count: 'exact' })
 
     if (search) query = query.ilike('name', `%${search}%`)
     if (categoryId && categoryId !== 'all') query = query.eq('category_id', categoryId)
