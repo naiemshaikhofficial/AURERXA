@@ -840,7 +840,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                     <div className="space-y-1">
                                         <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Material Quality</p>
                                         <div className="flex flex-col gap-1">
-                                            <MaterialBadge type={product.material_type} />
+                                            <MaterialBadge type={product.material_type} purity={product.purity} />
                                             <p className="text-[8px] text-white/30 uppercase tracking-[0.1em] mt-1">
                                                 {product.material_type === 'real_gold' ? 'BIS Hallmarked Solid Gold' :
                                                     product.material_type === 'gold_plated' ? 'Premium Plating / Brass Base' :

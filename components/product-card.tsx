@@ -14,15 +14,15 @@ import { formatWeight } from '@/lib/material-intelligence'
 
 export type MaterialType = 'real_gold' | 'gold_plated' | 'bentex' | 'silver' | 'diamond' | null
 
-export const MATERIAL_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string; glow: string }> = {
-    real_gold: { label: '22K Gold', color: 'text-amber-200', bg: 'bg-amber-500/10 border-amber-500/30', dot: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.2)]' },
-    gold_plated: { label: 'Gold Plated', color: 'text-orange-200', bg: 'bg-orange-500/10 border-orange-500/30', dot: 'bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.6)]', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.2)]' },
-    bentex: { label: 'Handcrafted', color: 'text-slate-200', bg: 'bg-slate-500/10 border-slate-500/30', dot: 'bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.6)]', glow: 'shadow-[0_0_15px_rgba(148,163,184,0.2)]' },
-    silver: { label: '925 Silver', color: 'text-blue-100', bg: 'bg-blue-400/10 border-blue-400/30', dot: 'bg-blue-300 shadow-[0_0_8px_rgba(147,197,253,0.6)]', glow: 'shadow-[0_0_15px_rgba(147,197,253,0.2)]' },
-    diamond: { label: 'Lab Diamond', color: 'text-cyan-200', bg: 'bg-cyan-500/10 border-cyan-500/30', dot: 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]', glow: 'shadow-[0_0_15px_rgba(34,211,238,0.2)]' },
+export const MATERIAL_CONFIG: Record<string, { label: string; suffix: string; color: string; bg: string; dot: string; glow: string }> = {
+    real_gold: { label: '22K Gold', suffix: 'Gold', color: 'text-amber-200', bg: 'bg-amber-500/10 border-amber-500/30', dot: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.2)]' },
+    gold_plated: { label: 'Gold Plated', suffix: 'Plated', color: 'text-orange-200', bg: 'bg-orange-500/10 border-orange-500/30', dot: 'bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.6)]', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.2)]' },
+    bentex: { label: 'Handcrafted', suffix: 'Fashion', color: 'text-slate-200', bg: 'bg-slate-500/10 border-slate-500/30', dot: 'bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.6)]', glow: 'shadow-[0_0_15px_rgba(148,163,184,0.2)]' },
+    silver: { label: '925 Silver', suffix: 'Silver', color: 'text-blue-100', bg: 'bg-blue-400/10 border-blue-400/30', dot: 'bg-blue-300 shadow-[0_0_8px_rgba(147,197,253,0.6)]', glow: 'shadow-[0_0_15px_rgba(147,197,253,0.2)]' },
+    diamond: { label: 'Lab Diamond', suffix: 'Diamond', color: 'text-cyan-200', bg: 'bg-cyan-500/10 border-cyan-500/30', dot: 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]', glow: 'shadow-[0_0_15px_rgba(34,211,238,0.2)]' },
 }
 
-export function MaterialBadge({ type }: { type: MaterialType }) {
+export function MaterialBadge({ type, purity }: { type: MaterialType; purity?: string }) {
     if (!type || !MATERIAL_CONFIG[type]) return null
     const cfg = MATERIAL_CONFIG[type]
     return (
@@ -33,7 +33,7 @@ export function MaterialBadge({ type }: { type: MaterialType }) {
             "hover:scale-105 hover:bg-white/5 active:scale-95"
         )}>
             <span className={cn("w-1 h-1 rounded-full animate-pulse", cfg.dot)} />
-            {cfg.label}
+            {purity ? `${purity} ${cfg.suffix}` : cfg.label}
         </div>
     )
 
@@ -211,7 +211,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                 {/* Status Badges */}
                 <div className="absolute top-2.5 left-2.5 z-40 flex flex-col gap-1.5">
                     {product.material_type && (
-                        <MaterialBadge type={product.material_type} />
+                        <MaterialBadge type={product.material_type} purity={product.purity} />
                     )}
                     <QualityBadge tags={product.tags} />
                     {product.stock !== undefined && product.stock > 0 && product.stock < 5 && (
@@ -308,7 +308,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                         {product.material_type && (
                             <>
                                 <p className="text-[8px] md:text-[9px] text-primary font-bold tracking-[0.2em] uppercase">
-                                    {MATERIAL_CONFIG[product.material_type].label}
+                                    {product.purity ? `${product.purity} ${MATERIAL_CONFIG[product.material_type].suffix}` : MATERIAL_CONFIG[product.material_type].label}
                                 </p>
                                 <span className="w-1 h-1 rounded-full bg-white/20" />
                             </>
