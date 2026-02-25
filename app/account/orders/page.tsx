@@ -9,6 +9,7 @@ import { Footer } from '@/components/footer'
 import { getOrders, initiatePayment, verifyPayment, getOrderById } from '@/app/actions'
 import { Loader2, Package, ChevronRight, Search, Filter, X, Clock, CreditCard, RefreshCw } from 'lucide-react'
 import supabaseLoader from '@/lib/supabase-loader'
+import { sanitizeImagePath } from '@/lib/utils'
 import { toast } from 'sonner'
 
 // Small sub-component for the live countdown timer
@@ -369,7 +370,7 @@ export default function OrdersPage() {
                                                             <Link href={productLink} className="relative w-20 h-20 bg-muted flex-shrink-0 border border-border group-hover/item:border-primary/30 transition-colors">
                                                                 {item.product_image && (
                                                                     <Image
-                                                                        src={item.product_image}
+                                                                        src={sanitizeImagePath(item.product_image)}
                                                                         alt={item.product_name}
                                                                         fill
                                                                         className="object-cover"

@@ -8,6 +8,15 @@ export function cn(...inputs: ClassValue[]) {
 export function sanitizeImagePath(url: string | null | undefined): string {
   if (!url) return '/logo.png'
   const trimmed = url.trim()
+
+  // If it's a Supabase URL, proxy it to bypass ISP blocking
+  if (trimmed.includes('supabase.co')) {
+    const storageMatch = trimmed.match(/\/storage\/v1\/.*/);
+    if (storageMatch) {
+      return `/api/supabase${storageMatch[0]}`;
+    }
+  }
+
   if (trimmed.startsWith('http') || trimmed.startsWith('blob:')) return trimmed
 
   // Replace all backslashes with forward slashes, then collapse multiple slashes

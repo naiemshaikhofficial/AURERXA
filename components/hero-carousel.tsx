@@ -7,6 +7,7 @@ import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'fra
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PREMIUM_EASE } from '@/lib/animation-constants'
 import { sanitizeImagePath } from '@/lib/utils'
+import supabaseLoader from '@/lib/supabase-loader'
 
 interface Slide {
     id: string
@@ -202,6 +203,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                             alt={slide.title}
                                             fill
                                             priority={isMain}
+                                            loader={supabaseLoader}
                                             unoptimized={slide.image_url.startsWith('blob:') || slide.image_url.includes('imageshack.com')}
                                             className="object-cover object-center hidden md:block"
                                             sizes="100vw"
@@ -211,6 +213,7 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
                                             alt={slide.title}
                                             fill
                                             priority={isMain}
+                                            loader={supabaseLoader}
                                             unoptimized={(slide.mobile_image_url || slide.image_url).startsWith('blob:') || (slide.mobile_image_url || slide.image_url).includes('imageshack.com')}
                                             className="object-cover object-center md:hidden"
                                             sizes="100vw"

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { cn, sanitizeImagePath } from '@/lib/utils'
 
 interface Category {
     id: string
@@ -36,7 +36,7 @@ export function CategoryGrid({ categories, onCategorySelect }: CategoryGridProps
                     <div className="absolute inset-0 transition-transform duration-1000 group-hover:scale-110">
                         {category.image_url ? (
                             <img
-                                src={category.image_url}
+                                src={sanitizeImagePath(category.image_url)}
                                 alt={category.name}
                                 className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700"
                             />

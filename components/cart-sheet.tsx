@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, ShieldCheck, Truck, Lock, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import supabaseLoader from '@/lib/supabase-loader'
+import { sanitizeImagePath } from '@/lib/utils'
 
 export function CartSheet() {
     const { items, isCartOpen, closeCart, updateQuantity, removeItem, cartCount } = useCart()
@@ -86,7 +87,7 @@ export function CartSheet() {
                                         >
                                             <Link href={`/products/${item.products?.slug}`} onClick={closeCart} className="relative w-20 h-24 bg-muted flex-shrink-0 overflow-hidden rounded-sm border border-border/50">
                                                 <Image
-                                                    src={item.products?.image_url || '/placeholder.jpg'}
+                                                    src={sanitizeImagePath(item.products?.image_url)}
                                                     alt={item.products?.name || 'Product'}
                                                     fill
                                                     className="object-cover"

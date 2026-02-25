@@ -13,7 +13,7 @@ import { getOrderById, getOrderTracking, verifyPayment, getOrderPaymentSession, 
 import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle, LifeBuoy, RotateCcw, ExternalLink, ShoppingBag, PackageCheck, HelpCircle, XCircle, Upload, ShieldCheck, IndianRupee } from 'lucide-react'
 import { InvoiceTemplate } from '@/components/invoice-template'
 import { toast } from 'sonner'
-import { cn } from '@/lib/utils'
+import { cn, sanitizeImagePath } from '@/lib/utils'
 import { OrderCancellationDialog } from '@/components/order-cancellation-dialog'
 import { ShipmentTimeline } from '@/components/shipment-timeline'
 import { DigitalCertificate } from '@/components/digital-certificate'
@@ -831,7 +831,7 @@ export default function OrderDetailPage() {
                                                     <Link href={productLink} className="relative w-20 h-20 bg-muted flex-shrink-0 group/img">
                                                         {item.product_image && (
                                                             <Image
-                                                                src={item.product_image}
+                                                                src={sanitizeImagePath(item.product_image)}
                                                                 alt={item.product_name}
                                                                 fill
                                                                 className="object-cover group-hover/img:opacity-80 transition-opacity"
@@ -843,7 +843,7 @@ export default function OrderDetailPage() {
                                                     <div className="relative w-20 h-20 bg-muted flex-shrink-0">
                                                         {item.product_image && (
                                                             <Image
-                                                                src={item.product_image}
+                                                                src={sanitizeImagePath(item.product_image)}
                                                                 alt={item.product_name}
                                                                 fill
                                                                 className="object-cover"

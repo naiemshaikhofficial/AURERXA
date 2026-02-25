@@ -20,7 +20,7 @@ import {
     Briefcase, Building2, Sparkles, User, Home,
     Minus, Trash2
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, sanitizeImagePath } from '@/lib/utils'
 import { DeliveryEstimate } from '@/components/delivery-checker'
 import { AddressForm } from '@/components/checkout/address-form'
 
@@ -824,7 +824,7 @@ export default function CheckoutPage() {
                                         <div key={item.id} className="flex gap-4 p-2 hover:bg-foreground/5 transition-colors group rounded-sm relative">
                                             <Link href={`/products/${item.products?.slug}`} className="relative w-16 h-16 flex-shrink-0 bg-background border border-border overflow-hidden">
                                                 <Image
-                                                    src={item.products?.image_url || '/placeholder.jpg'}
+                                                    src={sanitizeImagePath(item.products?.image_url || '/placeholder.jpg')}
                                                     alt={item.products?.name || 'Product'}
                                                     fill
                                                     className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"

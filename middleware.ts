@@ -21,13 +21,14 @@ export async function middleware(request: NextRequest) {
         return new NextResponse('Forbidden', { status: 403 })
     }
 
-    // --- 1. FAST EXIT FOR STATIC ASSETS ---
     // --- 1. OPTIMIZATION: SKIP AUTH FOR STATIC ASSETS ---
     // This prevents "Too Many Requests" for images, fonts, and manifests
+    // We use a regex to only skip actual static files, not routes with dots
+    const isAsset = /\.(?:ico|png|jpg|jpeg|gif|svg|webp|js|css|woff2?|webmanifest|json|txt|map)$/.test(pathname)
     if (
         pathname.startsWith('/_next') ||
-        pathname.includes('.') ||
-        pathname.startsWith('/api/supabase') // Let the proxy handle its own auth
+        isAsset ||
+        pathname.startsWith('/api/supabase') // Proxy handles its own auth
     ) {
         return NextResponse.next()
     }
@@ -36,7 +37,7 @@ export async function middleware(request: NextRequest) {
         const requestHeaders = new Headers(request.headers)
         requestHeaders.set('x-pathname', pathname)
 
-        // Standard Supabase Response Management
+        // Initial response with the path header
         let response = NextResponse.next({
             request: {
                 headers: requestHeaders,
@@ -52,16 +53,19 @@ export async function middleware(request: NextRequest) {
                         return request.cookies.getAll()
                     },
                     setAll(cookiesToSet) {
+                        // 1. Update request for downstream (headers must be copied to new next() call)
                         cookiesToSet.forEach(({ name, value, options }) =>
                             request.cookies.set({ name, value, ...options })
                         )
-                        // Ensure the project-specific cookie name is used
-                        // This matches lib/supabase.ts
+
+                        // 2. Create a new response with the updated COOKIES in the headers too
                         response = NextResponse.next({
                             request: {
                                 headers: requestHeaders,
                             },
                         })
+
+                        // 3. Update response for the browser
                         cookiesToSet.forEach(({ name, value, options }) =>
                             response.cookies.set({ name, value, ...options })
                         )
@@ -69,17 +73,17 @@ export async function middleware(request: NextRequest) {
                 },
                 cookieOptions: {
                     name: 'sb-xquczexikijzbzcuvmqh-auth-token',
-                },
+                    path: '/',
+                }
             }
         )
 
-        // --- SESSION REFRESH ---
-        // Crucial: triggers setAll if token is expired
+        // Trigger session refresh if needed
         await supabase.auth.getUser()
 
         // --- 2. LIGHTWEIGHT RATE LIMITING ---
         const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous'
-        const safeIp = ip.replace(/[^a-zA-Z0-9._-]/g, '-')
+        const safeIp = ip.split(',')[0].trim().replace(/[^a-zA-Z0-9._-]/g, '-')
 
         const rateLimitConfig = (() => {
             if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/contact')) {
@@ -112,31 +116,24 @@ export async function middleware(request: NextRequest) {
 
             const isDev = process.env.NODE_ENV === 'development'
 
-            // Log rate limit hits for debugging
-            if (count > limit / 2) {
-                console.log(`Middleware: Rate limit warning for ${pathname}`, { count, limit, key, isDev })
-            }
-
             if (count > limit && !isDev) {
-                console.warn(`Middleware: Rate limit exceeded for ${pathname}`, { count, limit, key })
                 return new NextResponse('Too Many Requests', {
                     status: 429,
-                    headers: {
-                        'Retry-After': '60',
-                        'Content-Type': 'text/plain',
-                    }
+                    headers: { 'Retry-After': '60', 'Content-Type': 'text/plain' }
                 })
             }
 
+            // Update rate limit cookie on the current response
             response.cookies.set(key, JSON.stringify({ count, resetTime }), {
                 httpOnly: true,
                 maxAge: 60,
                 path: '/',
-                sameSite: 'strict',
+                sameSite: 'lax',
             })
         }
 
         // --- 3. SECURITY HEADERS ---
+        // Always apply security headers to the final response
         response.headers.set('X-Frame-Options', 'DENY')
         response.headers.set('X-Content-Type-Options', 'nosniff')
         response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')

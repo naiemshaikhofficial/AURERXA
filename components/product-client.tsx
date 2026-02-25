@@ -595,7 +595,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 }
                             }}
                         >
-                            <ZoomableImage src={allImages[selectedImage]} alt={product.name} />
+                            <ZoomableImage src={sanitizeImagePath(allImages[selectedImage])} alt={product.name} />
                         </motion.div>
 
                         {/* Navigation Arrows */}
@@ -638,7 +638,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                         }`}
                                 >
                                     <Image
-                                        src={img}
+                                        src={sanitizeImagePath(img)}
                                         alt={`${product.name} view ${i + 1}`}
                                         fill
                                         className="object-cover"

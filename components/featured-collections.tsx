@@ -7,6 +7,7 @@ import { motion, useScroll, useTransform, useMotionValue, MotionValue, useSpring
 import { getCategories } from '@/app/actions'
 import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-constants'
 import { sanitizeImagePath } from '@/lib/utils'
+import supabaseLoader from '@/lib/supabase-loader'
 
 function CollectionCard({ category, parentScrollProgress }: { category: any, parentScrollProgress?: MotionValue<number> }) {
   // Parallax for Image
@@ -29,6 +30,7 @@ function CollectionCard({ category, parentScrollProgress }: { category: any, par
               src={sanitizeImagePath(category.image_url)}
               alt={category.name}
               fill
+              loader={supabaseLoader}
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
               className="object-cover transition-all duration-1000 group-hover:scale-110 will-change-transform"
               loading="eager"
