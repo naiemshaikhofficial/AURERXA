@@ -23,6 +23,7 @@ import { MATERIAL_CONFIG, MaterialBadge } from '@/components/product-card'
 import { getProductReviews, getReviewStats } from '@/app/actions'
 import { ReviewList } from '@/components/review-list'
 import { ReviewForm } from '@/components/review-form'
+import { CertificationGroup } from '@/components/certification-seals'
 
 
 interface ProductClientProps {
@@ -569,13 +570,20 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     if (!product) return null // Should be handled by server page redirect or 404
 
     return (
-        <div className="min-h-screen bg-neutral-950 text-white selection:bg-amber-500/30">
+        <div className="min-h-screen bg-obsidian text-white selection:bg-amber-500/30 relative">
+            {/* Ambient Noise Layer */}
+            <div className="absolute inset-0 bg-noise opacity-30 pointer-events-none" />
+
+            {/* Cinematic Gradient Orbs */}
+            <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none" />
+
 
             <div className="pt-20 lg:pt-24 min-h-screen flex flex-col lg:flex-row relative z-10">
                 {/* LEFT: Image Gallery */}
-                <div className="w-full lg:w-[55%] lg:h-[calc(100vh-6rem)] lg:sticky lg:top-24 p-0 lg:p-6 flex flex-col gap-6">
+                <div className="w-full lg:w-[55%] lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)] p-0 lg:p-6 flex flex-col min-h-0">
                     {/* Main Image - Adjustable aspect for landscape look on mobile */}
-                    <div className="relative w-full aspect-[3/2] lg:aspect-auto flex-1 bg-neutral-900/20 border border-white/5 overflow-hidden group">
+                    <div className="relative w-full aspect-[3/2] lg:aspect-auto lg:flex-1 bg-neutral-900/20 border border-white/5 overflow-hidden group min-h-0">
                         <motion.div
                             key={selectedImage}
                             initial={{ opacity: 0 }}
@@ -627,33 +635,45 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                         </div>
                     </div>
 
-                    {/* Thumbnails */}
+                    {/* Thumbnails - Refined luxury positioning */}
                     {allImages.length > 1 && (
-                        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar px-6 lg:px-0 scroll-smooth snap-x">
+                        <div className="flex gap-4 overflow-x-auto py-4 no-scrollbar px-6 lg:px-2 scroll-smooth snap-x border-t border-white/5 bg-white/[0.01] flex-shrink-0">
                             {allImages.map((img: string, i: number) => (
-                                <button
+                                <motion.button
                                     key={i}
+                                    whileHover={{ y: -4 }}
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={() => setSelectedImage(i)}
-                                    className={`relative w-20 h-20 md:w-24 md:h-24 flex-shrink-0 border transition-all duration-300 snap-center ${selectedImage === i ? 'border-amber-200/40 opacity-100' : 'border-white/5 opacity-40 hover:opacity-100'
-                                        }`}
+                                    className={cn(
+                                        "relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 transition-all duration-500 snap-center overflow-hidden",
+                                        selectedImage === i
+                                            ? "ring-1 ring-amber-200/40 opacity-100 grayscale-0"
+                                            : "opacity-30 grayscale hover:opacity-100 hover:grayscale-0"
+                                    )}
                                 >
                                     <Image
                                         src={sanitizeImagePath(img)}
                                         alt={`${product.name} view ${i + 1}`}
                                         fill
                                         className="object-cover"
-                                        sizes="96px"
+                                        sizes="80px"
                                         loader={supabaseLoader}
                                     />
-                                </button>
+                                    {selectedImage === i && (
+                                        <motion.div
+                                            layoutId="thumb-border"
+                                            className="absolute inset-0 border border-amber-200/20 z-10"
+                                        />
+                                    )}
+                                </motion.button>
                             ))}
                         </div>
                     )}
                 </div>
 
                 {/* RIGHT: Product Details Scroll - Added safe bottom padding */}
-                <div className="w-full lg:w-[45%] p-6 lg:p-12 lg:pr-24 flex flex-col justify-center pb-32 bg-neutral-950">
-                    <div className="space-y-10 animate-in fade-in slide-in-from-right-10 duration-1000">
+                <div className="w-full lg:w-[45%] p-6 lg:p-12 lg:pr-24 flex flex-col justify-center pb-32 bg-neutral-950/50 backdrop-blur-3xl">
+                    <div className="space-y-12">
                         {/* Header */}
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
@@ -685,9 +705,14 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             </div>
 
                             <div className="flex items-center justify-between">
-                                <h1 className="text-4xl md:text-5xl lg:text-7xl font-serif text-white/90 leading-[0.9] tracking-tight">
+                                <motion.h1
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                                    className="text-4xl md:text-6xl lg:text-8xl font-serif text-white/90 leading-[0.85] tracking-tighter"
+                                >
                                     {product.name}
-                                </h1>
+                                </motion.h1>
                                 {reviewStats.total > 0 && (
                                     <div className="flex flex-col items-end gap-1">
                                         <div className="flex items-center gap-2">
@@ -711,9 +736,136 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 )}
                             </div>
 
-                            <p className="text-3xl font-light text-amber-100/80 font-serif italic">
+                            <p className="text-3xl font-light text-amber-100/80 font-serif italic mb-6">
                                 ₹{dynamicData.price.toLocaleString('en-IN')}
                             </p>
+
+                            {/* HIGH CONVERSION AREA: Selectors & Buy Buttons */}
+                            <div className="space-y-8 bg-white/[0.02] border border-white/5 p-8 backdrop-blur-sm">
+                                {/* NEW: Quick Specs Table (Moved to Top) */}
+                                <div className="mb-4 overflow-hidden border border-white/10 bg-white/[0.03] animate-in fade-in slide-in-from-top-4 duration-700">
+                                    <div className="p-3 border-b border-white/5 bg-white/[0.05]">
+                                        <h3 className="text-[10px] uppercase tracking-[0.3em] text-amber-500/80 font-bold flex items-center justify-between">
+                                            Product Specifications
+                                            {selectedSize && <span className="italic text-white/40 tracking-widest lowercase font-medium">Size: {selectedSize}</span>}
+                                        </h3>
+                                    </div>
+                                    <table className="w-full text-left border-collapse">
+                                        <tbody className="divide-y divide-white/5">
+                                            <tr className="group transition-colors hover:bg-white/[0.01]">
+                                                <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Estimated Weight</td>
+                                                <td className="py-2.5 px-4 text-xs font-serif italic text-white/90">{formatWeight(dynamicData.weight)}</td>
+                                            </tr>
+                                            {dynamicData.width && (
+                                                <tr className="group transition-colors hover:bg-white/[0.01]">
+                                                    <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Width</td>
+                                                    <td className="py-2.5 px-4 text-xs font-mono text-amber-200/80">{dynamicData.width}</td>
+                                                </tr>
+                                            )}
+                                            {dynamicData.diameter && (
+                                                <tr className="group transition-colors hover:bg-white/[0.01]">
+                                                    <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Diameter</td>
+                                                    <td className="py-2.5 px-4 text-xs font-mono text-amber-200/80">{dynamicData.diameter}</td>
+                                                </tr>
+                                            )}
+                                            {dynamicData.circumference && (
+                                                <tr className="group transition-colors hover:bg-white/[0.01]">
+                                                    <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Circumference</td>
+                                                    <td className="py-2.5 px-4 text-xs font-mono text-amber-200/80">{dynamicData.circumference}</td>
+                                                </tr>
+                                            )}
+                                            {product.purity && (
+                                                <tr className="group transition-colors hover:bg-white/[0.01]">
+                                                    <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Purity</td>
+                                                    <td className="py-2.5 px-4 text-xs font-serif italic text-white/90">{formatPurity(product.purity, product.material_type).label}</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {/* Sizes */}
+                                {product.sizes && product.sizes.length > 0 && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 block">Select Size</span>
+                                            <button
+                                                onClick={() => setIsSizeGuideOpen(true)}
+                                                className="text-[9px] uppercase tracking-widest text-amber-500/60 hover:text-amber-500 transition-colors flex items-center gap-2"
+                                            >
+                                                <Ruler className="w-3 h-3" />
+                                                Indian Size Guide
+                                            </button>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {product.sizes.map((size: string) => (
+                                                <button
+                                                    key={size}
+                                                    onClick={() => setSelectedSize(size)}
+                                                    className={`min-w-[3.5rem] px-4 h-12 flex items-center justify-center text-[10px] font-bold border transition-all duration-300 uppercase tracking-widest ${selectedSize === size
+                                                        ? 'bg-white text-black border-white'
+                                                        : 'bg-transparent border-white/10 text-white/40 hover:border-white/40 hover:text-white'
+                                                        }`}
+                                                >
+                                                    {size}
+                                                </button>
+                                            ))}
+                                            <button
+                                                onClick={() => setSelectedSize('Custom')}
+                                                className={`px-6 h-12 flex items-center justify-center text-[10px] font-bold border transition-all duration-300 uppercase tracking-widest ${selectedSize === 'Custom'
+                                                    ? 'bg-white text-black border-white'
+                                                    : 'bg-transparent border-white/10 text-white/40 hover:border-white/40 hover:text-white'
+                                                    }`}
+                                            >
+                                                Custom
+                                            </button>
+                                        </div>
+                                        {selectedSize === 'Custom' && (
+                                            <div className="animate-in fade-in slide-in-from-top-2 pt-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter size (e.g., 18mm)"
+                                                    className="w-full h-12 bg-white/5 border border-white/10 text-white px-4 text-xs tracking-wider focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-all mb-2"
+                                                    onChange={(e) => setCustomSizeInput(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Buy Actions */}
+                                <div className="flex flex-col gap-3">
+                                    {product.stock > 0 ? (
+                                        <>
+                                            <Button
+                                                onClick={handleBuyNow}
+                                                disabled={addingToCart}
+                                                className="w-full bg-white text-black h-14 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-neutral-200 transition-all rounded-none"
+                                            >
+                                                Buy It Now
+                                            </Button>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    onClick={handleAddToCart}
+                                                    disabled={addingToCart}
+                                                    className="flex-[3] bg-transparent border border-white/20 text-white h-12 uppercase tracking-[0.2em] text-[9px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
+                                                >
+                                                    {addingToCart ? <Loader2 className="animate-spin w-3 h-3" /> : 'Add to Bag'}
+                                                </Button>
+                                                <button
+                                                    onClick={handleAddToWishlist}
+                                                    className={`flex-1 h-12 flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-transparent border-white/20 text-white hover:bg-white/5'}`}
+                                                >
+                                                    <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <Button disabled className="w-full bg-neutral-900 text-white/40 h-14 uppercase tracking-[0.3em] text-[10px] font-bold border border-white/5 rounded-none">
+                                            Out of Stock
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="h-px w-24 bg-gradient-to-r from-amber-500/40 to-transparent" />
@@ -780,81 +932,48 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 py-8 border-t border-b border-white/5">
-                                <div className="flex flex-col items-center text-center gap-3 group">
-                                    <Shield className="w-6 h-6 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
-                                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/40">Authenticity Certified</span>
-                                </div>
-                                <div className="flex flex-col items-center text-center gap-3 group">
-                                    <Truck className="w-6 h-6 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
-                                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/40">Insured Shipping</span>
-                                </div>
-                                <div className="flex flex-col items-center text-center gap-3 group">
-                                    <RefreshCw className="w-6 h-6 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
-                                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/40">Lifetime Maintenance</span>
-                                </div>
+                            {/* Brand Credentials */}
+                            <div className="space-y-6 pt-10 border-t border-white/5">
+                                <p className="text-[10px] text-amber-200/40 font-bold uppercase tracking-[0.4em]">Heritage Certification</p>
+                                <CertificationGroup materials={[
+                                    product.material_type?.includes('gold') ? 'gold' : '',
+                                    product.material_type?.includes('diamond') ? 'diamond' : '',
+                                    product.material_type?.includes('silver') ? 'silver' : ''
+                                ].filter(Boolean)} />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 py-10 border-t border-b border-white/5 bg-white/[0.02]">
+                                <motion.div
+                                    whileHover={{ y: -5 }}
+                                    className="flex flex-col items-center text-center gap-3 group"
+                                >
+                                    <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-amber-200/20 transition-colors">
+                                        <Shield className="w-5 h-5 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
+                                    </div>
+                                    <span className="text-[9px] uppercase tracking-[0.3em] text-white/40">Secure Transaction</span>
+                                </motion.div>
+                                <motion.div
+                                    whileHover={{ y: -5 }}
+                                    className="flex flex-col items-center text-center gap-3 group"
+                                >
+                                    <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-amber-200/20 transition-colors">
+                                        <Truck className="w-5 h-5 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
+                                    </div>
+                                    <span className="text-[9px] uppercase tracking-[0.3em] text-white/40">Global Logistics</span>
+                                </motion.div>
+                                <motion.div
+                                    whileHover={{ y: -5 }}
+                                    className="flex flex-col items-center text-center gap-3 group"
+                                >
+                                    <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-amber-200/20 transition-colors">
+                                        <RotateCcw className="w-5 h-5 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
+                                    </div>
+                                    <span className="text-[9px] uppercase tracking-[0.3em] text-white/40">Legacy Support</span>
+                                </motion.div>
                             </div>
                         </div>
 
                         {/* Delivery Check */}
-                        {/* Specifications Grid */}
-                        <div className="space-y-8 pb-12 pt-12 border-t border-white/5">
-                            <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-amber-500/60">Masterpiece Specifications</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                                {product.purity && (
-                                    <div className="space-y-1">
-                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Purity / Karat</p>
-                                        <div className="flex flex-col">
-                                            <p className="text-xs md:text-sm font-serif italic text-white/80">
-                                                {product.purity} {product.categories?.name || formatPurity(product.purity, product.material_type).label}
-                                            </p>
-                                            <p className="text-[9px] text-white/30 uppercase tracking-widest">Handmade Excellence</p>
-                                        </div>
-                                    </div>
-                                )}
-                                {product.weight_grams && (
-                                    <div className="space-y-1">
-                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Net Weight</p>
-                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{formatWeight(dynamicData.weight)}</p>
-                                    </div>
-                                )}
-                                {(product.dimensions_width || product.dimensions_height || product.dimensions_length) && !dynamicData.diameter && (
-                                    <div className="space-y-1">
-                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Dimensions</p>
-                                        <p className="text-xs md:text-sm font-serif italic text-white/80">
-                                            {dynamicData.dimensions}
-                                        </p>
-                                    </div>
-                                )}
-                                {product.gender && (
-                                    <div className="space-y-1">
-                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Gender</p>
-                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{product.gender}</p>
-                                    </div>
-                                )}
-                                {product.sku && (
-                                    <div className="space-y-1">
-                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Reference SKU</p>
-                                        <p className="text-xs md:text-sm font-serif italic text-white/80">{product.sku}</p>
-                                    </div>
-                                )}
-                                {product.material_type && (
-                                    <div className="space-y-1">
-                                        <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Material Quality</p>
-                                        <div className="flex flex-col gap-1">
-                                            <MaterialBadge
-                                                type={product.material_type}
-                                                purity={product.purity}
-                                                materialName={product.categories?.name}
-                                            />
-                                            <p className="text-[9px] text-white/30 uppercase tracking-[0.1em] mt-1 italic">
-                                                Authentic Premium Material
-                                            </p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
 
                         {/* Heritage & Craftsmanship */}
                         <div className="space-y-6 py-12 border-t border-white/5">
@@ -917,160 +1036,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             )}
                         </div>
 
-                        {/* LUXURIOUS SELECTED SPEC TABLE - As requested */}
-                        <div className="mb-8 overflow-hidden border border-white/10 bg-white/[0.02] backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            <div className="p-4 border-b border-white/5 bg-white/[0.03]">
-                                <h3 className="text-[10px] uppercase tracking-[0.3em] text-amber-500/80 font-bold flex items-center justify-between">
-                                    Product Specifications
-                                    {selectedSize && <span className="italic text-white/40 tracking-widest lowercase font-medium">Selected Size: {selectedSize}</span>}
-                                </h3>
-                            </div>
-                            <table className="w-full text-left border-collapse">
-                                <tbody className="divide-y divide-white/5">
-                                    {/* Weight Row */}
-                                    <tr className="group transition-colors hover:bg-white/[0.01]">
-                                        <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Estimated Weight</td>
-                                        <td className="py-3 px-4 text-xs font-serif italic text-white/90">{formatWeight(dynamicData.weight)}</td>
-                                    </tr>
 
-                                    {/* Component Rows (Rings Only) */}
-                                    {dynamicData.width && (
-                                        <tr className="group transition-colors hover:bg-white/[0.01]">
-                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Width</td>
-                                            <td className="py-3 px-4 text-xs font-mono text-amber-200/80">{dynamicData.width}</td>
-                                        </tr>
-                                    )}
-                                    {dynamicData.diameter && (
-                                        <tr className="group transition-colors hover:bg-white/[0.01]">
-                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Diameter</td>
-                                            <td className="py-3 px-4 text-xs font-mono text-amber-200/80">{dynamicData.diameter}</td>
-                                        </tr>
-                                    )}
-                                    {dynamicData.circumference && (
-                                        <tr className="group transition-colors hover:bg-white/[0.01]">
-                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Circumference</td>
-                                            <td className="py-3 px-4 text-xs font-mono text-amber-200/80">{dynamicData.circumference}</td>
-                                        </tr>
-                                    )}
 
-                                    {/* Fallback for Non-Rings */}
-                                    {!dynamicData.diameter && (
-                                        <tr className="group transition-colors hover:bg-white/[0.01]">
-                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Dimensions</td>
-                                            <td className="py-3 px-4 text-xs text-white/70 font-mono tracking-tight">{dynamicData.dimensions}</td>
-                                        </tr>
-                                    )}
-
-                                    {/* Purity Row */}
-                                    {product.purity && (
-                                        <tr className="group transition-colors hover:bg-white/[0.01]">
-                                            <td className="py-3 px-4 text-[9px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Purity</td>
-                                            <td className="py-3 px-4 text-xs font-serif italic text-white/90">{formatPurity(product.purity, product.material_type).label}</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                            {/* Accent Line */}
-                            <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
-                        </div>
-
-                        {/* ACTIONS BELOW PRICE - As requested */}
-                        <div className="flex flex-col gap-3 mb-12">
-                            {product.stock > 0 ? (
-                                <>
-                                    <Button
-                                        onClick={handleBuyNow}
-                                        disabled={addingToCart}
-                                        className="w-full bg-white text-black h-14 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-neutral-200 transition-all rounded-none"
-                                    >
-                                        Buy It Now
-                                    </Button>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            onClick={handleAddToCart}
-                                            disabled={addingToCart}
-                                            className="flex-[3] bg-transparent border border-white/20 text-white h-12 uppercase tracking-[0.2em] text-[9px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
-                                        >
-                                            {addingToCart ? <Loader2 className="animate-spin w-3 h-3" /> : 'Add to Bag'}
-                                        </Button>
-                                        <button
-                                            onClick={handleAddToWishlist}
-                                            className={`flex-1 h-12 flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-transparent border-white/20 text-white hover:bg-white/5'}`}
-                                        >
-                                            <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <Button disabled className="w-full bg-neutral-900 text-white/40 h-14 uppercase tracking-[0.3em] text-[10px] font-bold border border-white/5 rounded-none">
-                                    Out of Stock
-                                </Button>
-                            )}
-                        </div>
-
-                        {/* Selectors Area */}
-                        <div className="space-y-8 pt-4">
-                            {/* Sizes */}
-                            {product.sizes && product.sizes.length > 0 && (
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 block">Select Size</span>
-                                        <button
-                                            onClick={() => setIsSizeGuideOpen(true)}
-                                            className="text-[9px] uppercase tracking-widest text-amber-500/60 hover:text-amber-500 transition-colors flex items-center gap-2"
-                                        >
-                                            <Ruler className="w-3 h-3" />
-                                            Indian Size Guide
-                                        </button>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {product.sizes.map((size: string) => (
-                                            <button
-                                                key={size}
-                                                onClick={() => setSelectedSize(size)}
-                                                className={`min-w-[3.5rem] px-4 h-12 flex items-center justify-center text-[10px] font-bold border transition-all duration-300 uppercase tracking-widest ${selectedSize === size
-                                                    ? 'bg-white text-black border-white'
-                                                    : 'bg-transparent border-white/10 text-white/40 hover:border-white/40 hover:text-white'
-                                                    }`}
-                                            >
-                                                {size}
-                                            </button>
-                                        ))}
-                                        {/* Custom Size Option */}
-                                        <button
-                                            onClick={() => setSelectedSize('Custom')}
-                                            className={`px-6 h-12 flex items-center justify-center text-[10px] font-bold border transition-all duration-300 uppercase tracking-widest ${selectedSize === 'Custom'
-                                                ? 'bg-white text-black border-white'
-                                                : 'bg-transparent border-white/10 text-white/40 hover:border-white/40 hover:text-white'
-                                                }`}
-                                        >
-                                            Custom
-                                        </button>
-                                    </div>
-
-                                    {/* Custom Size Input */}
-                                    {selectedSize === 'Custom' && (
-                                        <div className="animate-in fade-in slide-in-from-top-2 pt-2">
-                                            <input
-                                                type="text"
-                                                placeholder="Enter size (e.g., US 7.5, 18mm)"
-                                                className="w-full h-12 bg-white/5 border border-white/10 text-white px-4 text-xs tracking-wider focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-all mb-2"
-                                                onChange={(e) => setCustomSizeInput(e.target.value)}
-                                            />
-                                            <div className="flex items-center gap-2 text-[9px] text-white/40 uppercase tracking-wider">
-                                                <span className="w-1 h-1 rounded-full bg-amber-500"></span>
-                                                Our concierge will verify measurements
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Additional Info / CTA Area */}
-                            <div className="flex flex-col gap-4 pt-6">
-                                {/* Actions moved above to price area for prominence */}
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

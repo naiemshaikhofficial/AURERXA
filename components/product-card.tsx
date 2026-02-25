@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
@@ -18,7 +18,7 @@ export const MATERIAL_CONFIG: Record<string, { label: string; suffix: string; co
     real_gold: { label: '22K Gold', suffix: 'Gold', color: 'text-amber-200', bg: 'bg-amber-500/10 border-amber-500/30', dot: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.2)]' },
     gold_plated: { label: 'Gold Plated', suffix: 'Plated', color: 'text-orange-200', bg: 'bg-orange-500/10 border-orange-500/30', dot: 'bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.6)]', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.2)]' },
     bentex: { label: 'Handcrafted', suffix: 'Fashion', color: 'text-slate-200', bg: 'bg-slate-500/10 border-slate-500/30', dot: 'bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.6)]', glow: 'shadow-[0_0_15px_rgba(148,163,184,0.2)]' },
-    silver: { label: '925 Silver', suffix: 'Silver', color: 'text-blue-100', bg: 'bg-blue-400/10 border-blue-400/30', dot: 'bg-blue-300 shadow-[0_0_8px_rgba(147,197,253,0.6)]', glow: 'shadow-[0_0_15px_rgba(147,197,253,0.2)]' },
+    silver: { label: '99.99 Silver', suffix: 'Silver', color: 'text-blue-100', bg: 'bg-blue-400/10 border-blue-400/30', dot: 'bg-blue-300 shadow-[0_0_8px_rgba(147,197,253,0.6)]', glow: 'shadow-[0_0_15px_rgba(147,197,253,0.2)]' },
     diamond: { label: 'Lab Diamond', suffix: 'Diamond', color: 'text-cyan-200', bg: 'bg-cyan-500/10 border-cyan-500/30', dot: 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]', glow: 'shadow-[0_0_15px_rgba(34,211,238,0.2)]' },
 }
 
@@ -27,13 +27,22 @@ export function MaterialBadge({ type, purity, materialName }: { type: MaterialTy
     const cfg = MATERIAL_CONFIG[type]
     return (
         <div className={cn(
-            "inline-flex items-center gap-2 px-2.5 py-1 rounded-sm border backdrop-blur-xl transition-all duration-500",
-            "text-[7px] font-black uppercase tracking-[0.25em]",
-            cfg.bg, cfg.color, cfg.glow,
-            "hover:scale-105 hover:bg-white/5 active:scale-95"
+            "inline-flex items-center gap-2 px-3 py-1 rounded-none border border-white/10 backdrop-blur-2xl transition-all duration-700",
+            "text-[7px] font-black uppercase tracking-[0.3em] relative overflow-hidden group/badge",
+            cfg.bg, cfg.color, "hover:border-white/30"
         )}>
-            <span className={cn("w-1 h-1 rounded-full animate-pulse", cfg.dot)} />
-            {purity ? `${purity} ${materialName || cfg.suffix}` : (materialName || cfg.label)}
+            {/* Inner Etching */}
+            <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
+
+            <span className={cn("w-1 h-1 rounded-full animate-pulse", cfg.dot, cfg.glow)} />
+            <span className="relative z-10">
+                {purity ? (
+                    purity.includes(cfg.label.split(' ')[0]) ? purity : `${purity} ${materialName || cfg.suffix}`
+                ) : (materialName || cfg.label)}
+            </span>
+
+            {/* Subtle Shine Flare */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/badge:translate-x-full transition-transform duration-1000" />
         </div>
     )
 
@@ -127,8 +136,6 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
         router.push('/checkout')
     }
 
-    const [isHovered, setIsHovered] = useState(false)
-    const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
     const allImages = useMemo(() => {
         if (!product) return []
@@ -172,11 +179,36 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
     // Scroll Parallax Logic Removed for Performance
     const containerRef = useRef<HTMLDivElement>(null)
 
+    const [isHovered, setIsHovered] = useState(false)
+    const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+    // 3D Tilt Motion Values
+    const x = useScroll().scrollX // Dummy to get motion values access if needed, though we use mouse
+    const mouseX = useMotionValue(0)
+    const mouseY = useMotionValue(0)
+
+    const rotateX = useTransform(mouseY, [0, 400], [5, -5])
+    const rotateY = useTransform(mouseX, [0, 400], [-5, 5])
+
+    function handleMouseMove(event: React.MouseEvent<HTMLDivElement>) {
+        if (!containerRef.current) return
+        const rect = containerRef.current.getBoundingClientRect()
+        mouseX.set(event.clientX - rect.left)
+        mouseY.set(event.clientY - rect.top)
+    }
+
+    function handleMouseLeave() {
+        setIsHovered(false)
+        setCurrentImageIndex(0)
+        mouseX.set(200) // Reset to center (vague)
+        mouseY.set(200)
+    }
+
     // Auto-Cycle Logic (Faster on hover)
     useEffect(() => {
         if (allImages.length <= 1) return
 
-        const intervalTime = isHovered ? 1000 : 4000
+        const intervalTime = isHovered ? 1200 : 4000
         const interval = setInterval(() => {
             setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
         }, intervalTime + (index * 20))
@@ -192,12 +224,16 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
             viewport={{ once: true }}
             variants={fadeInUp}
             onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => {
-                setIsHovered(false)
-                setCurrentImageIndex(0) // Optional: reset to main image on leave
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            style={{
+                perspective: 1000,
+                rotateX: isHovered ? rotateX : 0,
+                rotateY: isHovered ? rotateY : 0,
             }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className={cn(
-                "group relative bg-card border border-border overflow-hidden flex flex-col hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] transition-shadow duration-700 will-change-transform",
+                "group relative bg-card border border-border overflow-hidden flex flex-col hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)] transition-all duration-700 will-change-transform",
                 viewMode === 'list' ? 'md:flex-row md:items-center' : '',
                 className
             )}
@@ -229,6 +265,16 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/sold:translate-x-full transition-transform duration-1000 ease-in-out" />
                         </div>
                     )}
+                </div>
+
+                {/* Cinematic Shimmer Flare */}
+                <div className="absolute inset-0 pointer-events-none z-30 overflow-hidden">
+                    <motion.div
+                        initial={false}
+                        animate={isHovered ? { x: ['-100%', '200%'] } : { x: '-100%' }}
+                        transition={{ duration: 1.5, ease: "easeInOut" }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent w-full skew-x-12"
+                    />
                 </div>
 
                 {/* Progress Segments */}
@@ -313,7 +359,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                             <>
                                 <p className="text-[8px] md:text-[9px] text-primary font-bold tracking-[0.2em] uppercase">
                                     {product.purity
-                                        ? `${product.purity} ${product.categories?.name || MATERIAL_CONFIG[product.material_type].suffix}`
+                                        ? (product.purity.includes('99.99') ? '99.99 Silver' : `${product.purity} ${product.categories?.name || MATERIAL_CONFIG[product.material_type].suffix}`)
                                         : (product.categories?.name || MATERIAL_CONFIG[product.material_type].label)}
                                 </p>
                                 <span className="w-1 h-1 rounded-full bg-white/20" />
@@ -325,7 +371,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                     </div>
 
                     <Link href={`/products/${product.slug}`} onClick={onClose}>
-                        <h3 className="text-[11px] md:text-base font-serif text-foreground/90 font-medium group-hover:text-primary transition-colors duration-500 leading-snug tracking-tight">
+                        <h3 className="text-sm md:text-lg font-serif text-white/90 font-medium group-hover:text-primary transition-colors duration-700 leading-tight tracking-tight">
                             {product.name}
                         </h3>
                     </Link>
@@ -379,7 +425,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                     </div>
                 )}
             </div>
-        </motion.div>
+        </motion.div >
     )
 
 })

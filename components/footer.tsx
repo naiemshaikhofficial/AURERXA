@@ -19,8 +19,9 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
   if (isNative) return null;
 
   return (
-    <footer className="py-24 px-6 lg:px-12 bg-background text-foreground relative overflow-hidden">
+    <footer className="py-24 px-6 lg:px-12 bg-obsidian text-foreground relative overflow-hidden border-t border-white/5">
       {/* Black Edition Background Effect - Subtle Noise */}
+      <div className="absolute inset-0 bg-noise opacity-30 pointer-events-none" />
 
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -36,7 +37,7 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
                 className="h-12 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700"
               />
             </Link>
-            <p className="text-xs text-muted-foreground font-light leading-loose tracking-widest uppercase">
+            <p className="text-[10px] text-white/30 font-light leading-relaxed tracking-[0.4em] uppercase">
               A 50-year legacy forged in respect.<br />Handcrafted masterpieces.
             </p>
           </div>

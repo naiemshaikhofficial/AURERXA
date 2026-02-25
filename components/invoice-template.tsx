@@ -69,7 +69,7 @@ export function InvoiceTemplate({ order, type }: InvoiceProps) {
         const product = item.products?.[0] || item.products || {}
         const totalItemPrice = (item.price || 0) * (item.quantity || 1)
 
-        const purity = product.purity || "925 Silver"
+        const purity = product.purity || (product.material_type === 'silver' ? "99.99 Silver" : "Pure Quality")
         const purityLower = purity.toLowerCase()
         const nameLower = (product.name || '').toLowerCase()
         const categoryLower = (product.categories?.name || '').toLowerCase()

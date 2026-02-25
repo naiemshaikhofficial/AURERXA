@@ -21,9 +21,11 @@ export const PURITY_MAPPING: Record<string, { label: string; subLabel: string; t
     '92.5': { label: '925 Sterling Silver', subLabel: 'Premium Quality', type: 'Silver' },
     '92.5%': { label: '925 Sterling Silver', subLabel: 'Premium Quality', type: 'Silver' },
     '925': { label: '925 Sterling Silver', subLabel: 'Premium Quality', type: 'Silver' },
+    '99.99': { label: '99.99 Fine Silver', subLabel: 'Pure Heritage Standard', type: 'Silver' },
+    '99.99%': { label: '99.99 Fine Silver', subLabel: 'Pure Heritage Standard', type: 'Silver' },
     '99.9': { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' },
     '99.9%': { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' },
-    '999': { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' }, // Default to Silver as per user request if both exist
+    '999': { label: 'Fine Silver', subLabel: '99.9% Pure', type: 'Silver' },
 
     // Platinum Standards
     '950': { label: '950 Platinum', subLabel: 'Highly Pure & Rare', type: 'Platinum' },
@@ -60,6 +62,7 @@ export function formatPurity(value: string | number | null | undefined, material
     // Try numeric match (e.g. 22 -> 22K)
     const num = parseFloat(strValue)
     if (!isNaN(num)) {
+        if (num === 99.99) return { label: '99.99 Fine Silver', subLabel: 'Pure Heritage Standard', type: 'Silver' as const }
         if (num <= 24 && num >= 1) return { label: `${num}K Gold Purity`, subLabel: 'Certified Quality', type: 'Gold' as const }
         if (num >= 900) {
             if (isSilverType) return { label: `${num} Fine Silver`, subLabel: 'Premium Quality', type: 'Silver' as const }

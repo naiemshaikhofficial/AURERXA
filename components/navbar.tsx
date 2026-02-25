@@ -237,9 +237,15 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
     scrollY,
     [0, 100],
     [
-      `rgba(${isDark ? '8, 8, 8' : '255, 255, 255'}, 0)`,
-      `rgba(${isDark ? '8, 8, 8' : '255, 255, 255'}, 0.95)`
+      `rgba(${isDark ? '0, 0, 0' : '255, 255, 255'}, 0)`,
+      `rgba(${isDark ? '0, 0, 0' : '255, 255, 255'}, 0.8)`
     ]
+  )
+  const navBlur = useTransform(scrollY, [0, 100], ['blur(0px)', 'blur(20px)'])
+  const navBorder = useTransform(
+    scrollY,
+    [0, 100],
+    ['border-bottom: 1px solid rgba(255,255,255,0)', 'border-bottom: 1px solid rgba(255,255,255,0.05)']
   )
 
   useMotionValueEvent(scrollY, "change", (latest) => {
@@ -284,8 +290,9 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
         style={{
           height: navHeight,
           backgroundColor: navBg,
+          backdropFilter: navBlur,
         }}
-        className="fixed top-0 left-0 right-0 z-50 md:backdrop-blur-md flex items-center p-4 md:p-0"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center p-4 md:p-0 transition-all duration-700 border-b border-white/0"
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
@@ -474,7 +481,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                   key={item}
                   href={item === 'Home' ? '/' : item === 'Our Story' ? '/about' : `/${item.toLowerCase().replace(' ', '-')}`}
                   aria-current={pathname === (item === 'Home' ? '/' : item === 'Our Story' ? '/about' : `/${item.toLowerCase().replace(' ', '-')}`) ? 'page' : undefined}
-                  className="text-[11px] font-premium-sans text-muted-foreground hover:text-primary transition-colors duration-500 tracking-[0.2em] luxe-underline"
+                  className="text-[10px] font-premium-sans text-white/40 hover:text-white transition-all duration-700 tracking-[0.4em] uppercase luxe-underline"
                 >
                   {item}
                 </Link>

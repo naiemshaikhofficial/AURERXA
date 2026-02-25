@@ -938,15 +938,15 @@ async function getDynamicPricingMap(opts: PricingOptions): Promise<Record<string
   const purityLower = purity?.toLowerCase() || ''
   const materialLower = materialType?.toLowerCase() || ''
 
-  if (materialLower.includes('silver') || purityLower.includes('925') || purityLower.includes('92.5')) {
-    metalRate = rateData.rates['Silver 925'] || rateData.rates['Silver 999'] || 85
+  if (materialLower.includes('silver') || purityLower.includes('925') || purityLower.includes('92.5') || purityLower.includes('99.99')) {
+    metalRate = rateData.rates['Silver 99.99'] || rateData.rates['Silver 925'] || rateData.rates['Silver 999'] || 85
   } else if (materialLower.includes('gold') || materialLower === 'real_gold') {
     metalRate = rateData.rates[purity] || rateData.rates['22K'] || 6500
   } else {
     metalRate = rateData.rates['Silver 925'] || rateData.rates['Silver 999'] || 85
   }
 
-  // 3. Purity factor
+  // 3. Purity factor (Adjusted for Brand Standard: 99.99 Silver is 1.0 baseline)
   const purityFactor = (purityLower.includes('925') || purityLower.includes('92.5')) ? 0.925 : 1.0
 
   // 4. Config values (Manual overrides vs Global)
@@ -1148,7 +1148,7 @@ export async function getProductBySlug(slug: string) {
         const effectiveBaseWeight = (product.base_weight || product.weight_grams) ?? 3.5
         const dynamicMap = await getDynamicPricingMap({
           pricingType: effectivePricingType,
-          purity: product.purity || '92.5',
+          purity: product.purity || '99.99',
           materialType: product.material_type || 'silver',
           baseWeight: effectiveBaseWeight,
           productBasePrice: product.price,
@@ -1181,7 +1181,7 @@ export async function getProductBySlug(slug: string) {
           const effectiveBaseWeight = (product.base_weight || product.weight_grams) ?? 3.5
           const dynamicMap = await getDynamicPricingMap({
             pricingType: 'size_based',
-            purity: product.purity || '92.5',
+            purity: product.purity || '99.99',
             materialType: product.material_type || 'silver',
             baseWeight: effectiveBaseWeight,
             productBasePrice: product.price,
@@ -2584,6 +2584,7 @@ export async function syncLiveGoldRates() {
         // Silver purities
         const silverPurities: Record<string, number> = {
           'Silver 999': 1.0,
+          'Silver 99.99': 0.9999,
           'Silver 925': 0.925,
         }
         for (const [label, factor] of Object.entries(silverPurities)) {
