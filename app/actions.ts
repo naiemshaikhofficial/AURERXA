@@ -18,8 +18,10 @@ const supabaseServer = createServerClient(
   {
     cookies: {
       getAll() { return [] },
-      setAll() { },
     },
+    cookieOptions: {
+      name: 'sb-xquczexikijzbzcuvmqh-auth-token',
+    }
   }
 )
 
@@ -165,16 +167,18 @@ async function getAuthClient() {
           setAll(cookiesToSet) {
             try {
               cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
+                cookieStore.set({ name, value, ...options })
               )
             } catch {
-              // Ignore cookie set errors during static generation
+              // The `setAll` method was called from a Server Component.
+              // This can be ignored if you have middleware refreshing
+              // user sessions.
             }
           },
         },
         cookieOptions: {
           name: 'sb-xquczexikijzbzcuvmqh-auth-token',
-        },
+        }
       }
     )
   } catch (e) {

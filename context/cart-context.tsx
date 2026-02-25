@@ -40,6 +40,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([])
     const [loading, setLoading] = useState(true)
     const [user, setUser] = useState<any>(null)
+    const [isRefreshing, setIsRefreshing] = useState(false)
     const [isCartOpen, setIsCartOpen] = useState(false)
 
     const openCart = () => setIsCartOpen(true)
@@ -70,7 +71,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         refreshCart(false) // Initial load should show loader
-    }, [user])
+    }, [user?.id]) // ONLY watch for ID change to prevent loops on token refreshes
 
     const syncCart = async () => {
         const localCart = localStorage.getItem('aurerxa_cart')
@@ -138,7 +139,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }, [items, user])
 
     const refreshCart = async (silent: boolean = true) => {
+        if (isRefreshing) return
         if (!silent) setLoading(true)
+        setIsRefreshing(true)
         try {
             if (user) {
                 // Sync guest items if any exist before loading from DB
@@ -164,6 +167,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             console.error('Error refreshing cart:', error)
         } finally {
             setLoading(false)
+            setIsRefreshing(false)
         }
     }
 

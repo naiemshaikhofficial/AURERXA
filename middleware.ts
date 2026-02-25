@@ -22,10 +22,12 @@ export async function middleware(request: NextRequest) {
     }
 
     // --- 1. FAST EXIT FOR STATIC ASSETS ---
+    // --- 1. OPTIMIZATION: SKIP AUTH FOR STATIC ASSETS ---
+    // This prevents "Too Many Requests" for images, fonts, and manifests
     if (
         pathname.startsWith('/_next') ||
         pathname.includes('.') ||
-        pathname === '/favicon.ico'
+        pathname.startsWith('/api/supabase') // Let the proxy handle its own auth
     ) {
         return NextResponse.next()
     }
@@ -50,17 +52,16 @@ export async function middleware(request: NextRequest) {
                         return request.cookies.getAll()
                     },
                     setAll(cookiesToSet) {
-                        // 1. Update request cookies for downstream (middleware/server actions)
                         cookiesToSet.forEach(({ name, value, options }) =>
                             request.cookies.set({ name, value, ...options })
                         )
-                        // 2. Refresh response object to include updated headers
+                        // Ensure the project-specific cookie name is used
+                        // This matches lib/supabase.ts
                         response = NextResponse.next({
                             request: {
                                 headers: requestHeaders,
                             },
                         })
-                        // 3. Set updated cookies on the response for the browser
                         cookiesToSet.forEach(({ name, value, options }) =>
                             response.cookies.set({ name, value, ...options })
                         )
@@ -82,10 +83,10 @@ export async function middleware(request: NextRequest) {
 
         const rateLimitConfig = (() => {
             if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/contact')) {
-                return { limit: 20, key: `rl_auth_${safeIp}` }
+                return { limit: 100, key: `rl_auth_${safeIp}` }
             }
             if (pathname.startsWith('/checkout') || pathname.startsWith('/api/payment') || pathname.startsWith('/api/order')) {
-                return { limit: 100, key: `rl_payment_${safeIp}` }
+                return { limit: 200, key: `rl_payment_${safeIp}` }
             }
             return null
         })()
@@ -109,7 +110,15 @@ export async function middleware(request: NextRequest) {
                 } catch (e) { /* ignore */ }
             }
 
-            if (count > limit) {
+            const isDev = process.env.NODE_ENV === 'development'
+
+            // Log rate limit hits for debugging
+            if (count > limit / 2) {
+                console.log(`Middleware: Rate limit warning for ${pathname}`, { count, limit, key, isDev })
+            }
+
+            if (count > limit && !isDev) {
+                console.warn(`Middleware: Rate limit exceeded for ${pathname}`, { count, limit, key })
                 return new NextResponse('Too Many Requests', {
                     status: 429,
                     headers: {

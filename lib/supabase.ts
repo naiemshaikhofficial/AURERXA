@@ -13,6 +13,9 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     cookieOptions: {
         name: 'sb-xquczexikijzbzcuvmqh-auth-token',
+        path: '/',
+        sameSite: 'lax',
+        secure: typeof window !== 'undefined' ? window.location.protocol === 'https:' : true,
     },
     auth: {
         persistSession: true,
