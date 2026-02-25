@@ -31,6 +31,9 @@ export function CartSheet() {
                 <SheetHeader className="px-6 py-4 border-b border-border/40 flex flex-row items-center justify-between space-y-0">
                     <div className="flex items-center gap-3">
                         <SheetTitle className="font-serif text-2xl font-light italic text-foreground">Your Selection</SheetTitle>
+                        <SheetDescription className="sr-only">
+                            Review your selected items and proceed to checkout.
+                        </SheetDescription>
                         <span className="bg-primary/10 text-primary text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full font-bold">
                             {cartCount} Items
                         </span>

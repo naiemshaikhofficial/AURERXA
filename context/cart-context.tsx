@@ -50,9 +50,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         const checkUser = async () => {
             const { data: { session } } = await supabase.auth.getSession()
+            console.log('CartProvider: Initial session check', { hasSession: !!session, userId: session?.user?.id })
             setUser(session?.user || null)
 
-            const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+            const { data } = supabase.auth.onAuthStateChange((event, session) => {
+                console.log('CartProvider: Auth state changed', { event, userId: session?.user?.id })
                 setUser(session?.user || null)
             })
             authListener = data
@@ -73,19 +75,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const syncCart = async () => {
         const localCart = localStorage.getItem('aurerxa_cart')
         if (localCart && user) {
+            console.log('CartProvider: Syncing guest cart to user account', { userId: user.id })
             try {
                 const guestItems = JSON.parse(localCart)
+                if (!Array.isArray(guestItems)) {
+                    console.warn('CartProvider: Local cart data is not an array, clearing.')
+                    localStorage.removeItem('aurerxa_cart')
+                    return
+                }
+
                 let allSuccess = true
                 for (const item of guestItems) {
                     const result = await addToCartAction(item.product_id, item.size, item.quantity)
-                    if (!result.success) allSuccess = false
+                    if (!result.success) {
+                        console.error('CartProvider: Failed to sync item', item.product_id, result.error)
+                        allSuccess = false
+                    }
                 }
-                // Only clear if we processed everything
+
                 if (allSuccess) {
+                    console.log('CartProvider: Successfully synced all guest items')
                     localStorage.removeItem('aurerxa_cart')
                 }
             } catch (error) {
-                console.error('Error syncing cart:', error)
+                console.error('CartProvider: Error syncing cart:', error)
             }
         }
     }
@@ -134,12 +147,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     await syncCart()
                 }
                 const data = await getCart()
+                console.log('CartProvider: Loaded authenticated cart', { count: data?.length || 0 })
                 setItems(data as any)
             } else {
                 // Load from localStorage for guests
                 const localCart = localStorage.getItem('aurerxa_cart')
                 if (localCart) {
-                    setItems(JSON.parse(localCart))
+                    const parsed = JSON.parse(localCart)
+                    console.log('CartProvider: Loaded guest cart', { count: parsed?.length || 0 })
+                    setItems(parsed)
                 } else {
                     setItems([])
                 }
@@ -176,15 +192,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
         try {
             const result = await addToCartAction(productId, size, quantity)
+            console.log('CartProvider: addItem result', result)
             if (result.success) {
                 // If we got the new item back, we could use it, but for now just refresh silently
                 await refreshCart(true)
             } else {
+                console.error('CartProvider: addItem failed', result.error)
                 // Revert optimistic update on failure
                 await refreshCart(true)
             }
         } catch (error) {
-            console.error('Error adding item:', error)
+            console.error('CartProvider: addItem exception', error)
             await refreshCart(true)
         }
     }

@@ -14,8 +14,19 @@ import { ProductCard, Product } from '@/components/product-card'
 
 export function Bestsellers({ products: initialProducts }: { products?: Product[] }) {
   const sectionRef = useRef<HTMLElement>(null)
+  const [isMounted, setIsMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   const { scrollYProgress } = useScroll({
-    target: sectionRef,
+    target: isMounted ? sectionRef : undefined,
     offset: ["start end", "end start"]
   })
 
@@ -24,15 +35,6 @@ export function Bestsellers({ products: initialProducts }: { products?: Product[
     damping: 30,
     restDelta: 0.001
   })
-
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   const yHeader = useTransform(smoothProgress, [0, 1], [isMobile ? 0 : 100, isMobile ? 0 : -100])
   const opacity = useTransform(smoothProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])

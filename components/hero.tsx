@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
@@ -8,8 +8,14 @@ import { fadeInUp, staggerContainer, PREMIUM_EASE } from '@/lib/animation-consta
 
 export function Hero() {
   const ref = useRef(null)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const { scrollYProgress } = useScroll({
-    target: ref,
+    target: isMounted ? ref : undefined,
     offset: ['start start', 'end start'],
   })
 

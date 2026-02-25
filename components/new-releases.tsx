@@ -7,23 +7,28 @@ import Link from 'next/link'
 import { PREMIUM_EASE } from '@/lib/animation-constants'
 import { ProductCard } from '@/components/product-card'
 
-// This would typically be a server component, but we need client-side animation
-// We'll accept data as props or fetch in a wrapper
 export function NewReleases({ products }: { products: any[] }) {
     const sectionRef = useRef<HTMLElement>(null)
-    const { scrollYProgress } = useScroll({
-        target: sectionRef,
-        offset: ["start end", "end start"]
-    })
-
+    // isMounted guard: useScroll with target ref must only activate after hydration
+    // Otherwise framer-motion throws "Target ref is defined but not hydrated"
+    const [isMounted, setIsMounted] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
 
     useEffect(() => {
+        setIsMounted(true)
         const checkMobile = () => setIsMobile(window.innerWidth < 768)
         checkMobile()
         window.addEventListener('resize', checkMobile)
         return () => window.removeEventListener('resize', checkMobile)
     }, [])
+
+    // Always call useScroll unconditionally (rules of hooks), but only pass the
+    // target ref once we're mounted so framer-motion never tries to observe a
+    // null element during hydration.
+    const { scrollYProgress } = useScroll({
+        target: isMounted ? sectionRef : undefined,
+        offset: ["start end", "end start"]
+    })
 
     const smoothProgress = useSpring(scrollYProgress, {
         stiffness: 100,
@@ -59,7 +64,6 @@ export function NewReleases({ products }: { products: any[] }) {
                     </div>
                 </div>
 
-                {/* Grid Layout (Replaces Horizontal Scroll on Mobile) - Tighter Spacing */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}

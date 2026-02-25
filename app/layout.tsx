@@ -302,17 +302,10 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable} ${cormorant.variable}`}>
       <head>
-        <link rel="preconnect" href="https://xquczexikijzbzcuvmqh.supabase.co" crossOrigin="" />
-        <link rel="dns-prefetch" href="https://xquczexikijzbzcuvmqh.supabase.co" />
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL!} crossOrigin="" />
+        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL!} />
         <link rel="preconnect" href="https://img.icons8.com" />
-        {/* Preload critical fonts for smooth FCP/LCP */}
-        <link
-          rel="preload"
-          href="/fonts/Inter-Variable.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}

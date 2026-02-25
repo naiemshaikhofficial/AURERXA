@@ -172,6 +172,9 @@ async function getAuthClient() {
             }
           },
         },
+        cookieOptions: {
+          name: 'sb-xquczexikijzbzcuvmqh-auth-token',
+        },
       }
     )
   } catch (e) {
@@ -1330,11 +1333,18 @@ export async function getRelatedProducts(categoryId: string, excludeId: string) 
 
 export async function getCart() {
   const client = await getAuthClient()
-  const { data: { user } } = await client.auth.getUser()
+  const { data: { user }, error: authError } = await client.auth.getUser()
+
+  if (authError) {
+    console.error('getCart: Auth error', authError)
+  }
+
   if (!user) {
-    console.log('getCart: No user found')
+    console.log('getCart: No user found in session')
     return []
   }
+
+  console.log('getCart: Fetching cart for user', user.id)
 
   const { data, error } = await client
     .from('cart')
@@ -1351,12 +1361,20 @@ export async function getCart() {
 }
 
 export async function addToCart(productId: string, size?: string, quantity: number = 1) {
+  console.log('addToCart: Request received', { productId, size, quantity })
   const client = await getAuthClient()
-  const { data: { user } = {} } = await client.auth.getUser()
+  const { data: { user } = {}, error: authError } = await client.auth.getUser()
+
+  if (authError) {
+    console.error('addToCart: Auth error', authError)
+  }
 
   if (!user) {
+    console.warn('addToCart: No user found, add failed')
     return { success: false, error: 'Please login to add items to cart' }
   }
+
+  console.log('addToCart: Adding item for user', user.id)
 
   // Check if item already in cart
   const { data: existing } = await client

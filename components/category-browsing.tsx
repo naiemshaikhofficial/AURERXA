@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
@@ -11,8 +11,11 @@ export interface CategoryBrowsingProps {
 
 export function CategoryBrowsing({ categories }: CategoryBrowsingProps) {
     const containerRef = useRef<HTMLElement>(null)
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => { setIsMounted(true) }, [])
+
     const { scrollYProgress } = useScroll({
-        target: containerRef,
+        target: isMounted ? containerRef : undefined,
         offset: ["start end", "center center"]
     })
 

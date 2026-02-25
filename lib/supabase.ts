@@ -2,10 +2,18 @@
 
 import { createBrowserClient } from '@supabase/ssr'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+// Use the proxy URL we created to bypass ISP blocking on the client side
+// This points to Vercel/Next.js which then forwards to Supabase
+const supabaseUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}/api/supabase`
+    : process.env.NEXT_PUBLIC_SUPABASE_URL!
+
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+    cookieOptions: {
+        name: 'sb-xquczexikijzbzcuvmqh-auth-token',
+    },
     auth: {
         persistSession: true,
         autoRefreshToken: true,

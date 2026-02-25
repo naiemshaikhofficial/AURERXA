@@ -1,14 +1,16 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import Image from 'next/image'
 import { fadeInUp, staggerContainer, PREMIUM_EASE } from '../lib/animation-constants'
 
 export function Heritage() {
     const ref = useRef(null)
+    const [isMounted, setIsMounted] = useState(false)
+    useEffect(() => { setIsMounted(true) }, [])
     const { scrollYProgress } = useScroll({
-        target: ref,
+        target: isMounted ? ref : undefined,
         offset: ['start end', 'end start'],
     })
 
