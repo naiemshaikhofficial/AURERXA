@@ -672,8 +672,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                         </span>
                                     )}
                                     {product.stock === 0 && (
-                                        <span className="px-3 py-1 bg-red-950/20 border border-red-500/30 text-[9px] uppercase tracking-widest text-red-500 font-bold">
-                                            Out of Stock
+                                        <span className="px-4 py-1.5 bg-neutral-900/40 border border-white/10 text-[8px] font-black uppercase tracking-[0.4em] text-white/30 backdrop-blur-xl shadow-2xl">
+                                            Private Archive / Sold Out
                                         </span>
                                     )}
                                     {product.stock < 5 && product.stock > 0 && (
@@ -1109,17 +1109,17 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 </div>
                                 <Button
                                     onClick={handleAddToCart}
-                                    disabled={addingToCart}
-                                    className="hidden md:flex bg-transparent border border-white/20 text-white h-12 px-8 uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
+                                    disabled={addingToCart || product.stock === 0}
+                                    className="hidden md:flex bg-transparent border border-white/20 text-white h-12 px-8 uppercase tracking-[0.2em] text-[10px] font-bold hover:bg-white hover:text-black transition-all rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {addingToCart ? <Loader2 className="animate-spin w-3 h-3" /> : 'Add to Bag'}
+                                    {product.stock === 0 ? 'Out of Stock' : (addingToCart ? <Loader2 className="animate-spin w-3 h-3" /> : 'Add to Bag')}
                                 </Button>
                                 <Button
                                     onClick={handleBuyNow}
-                                    disabled={addingToCart}
-                                    className="flex-1 md:flex-none bg-white text-black h-12 px-10 md:px-12 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-neutral-200 transition-all rounded-none shadow-[0_4px_20px_rgba(255,255,255,0.1)]"
+                                    disabled={addingToCart || product.stock === 0}
+                                    className="flex-1 md:flex-none bg-white text-black h-12 px-10 md:px-12 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-neutral-200 transition-all rounded-none shadow-[0_4px_20px_rgba(255,255,255,0.1)] disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    Buy It Now
+                                    {product.stock === 0 ? 'Sold Out' : 'Buy It Now'}
                                 </Button>
                             </div>
                         </div>

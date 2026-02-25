@@ -1380,6 +1380,23 @@ export async function addToCart(productId: string, size?: string, quantity: numb
 
   console.log('addToCart: Adding item for user', user.id)
 
+  // SECURE STOCK CHECK
+  const { data: product, error: productError } = await client
+    .from('products')
+    .select('stock, name')
+    .eq('id', productId)
+    .single()
+
+  if (productError || !product) {
+    console.error('addToCart: Product not found', productId)
+    return { success: false, error: 'Product not found' }
+  }
+
+  if (product.stock === 0) {
+    console.warn(`addToCart: Attempted to add out-of-stock item: ${product.name}`)
+    return { success: false, error: 'Product is currently out of stock' }
+  }
+
   // Check if item already in cart
   const { data: existing } = await client
     .from('cart')

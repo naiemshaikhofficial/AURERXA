@@ -14,20 +14,25 @@ import { formatWeight } from '@/lib/material-intelligence'
 
 export type MaterialType = 'real_gold' | 'gold_plated' | 'bentex' | 'silver' | 'diamond' | null
 
-export const MATERIAL_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-    real_gold: { label: '22K Gold', color: 'text-amber-300', bg: 'bg-amber-500/20 border-amber-400/30', dot: 'bg-amber-400' },
-    gold_plated: { label: 'Gold Plated', color: 'text-orange-300', bg: 'bg-orange-500/20 border-orange-400/30', dot: 'bg-orange-400' },
-    bentex: { label: 'Fashion', color: 'text-slate-300', bg: 'bg-slate-500/20 border-slate-400/30', dot: 'bg-slate-400' },
-    silver: { label: 'Silver', color: 'text-blue-200', bg: 'bg-blue-500/20 border-blue-400/30', dot: 'bg-blue-300' },
-    diamond: { label: 'Diamond', color: 'text-cyan-300', bg: 'bg-cyan-500/20 border-cyan-400/30', dot: 'bg-cyan-400' },
+export const MATERIAL_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string; glow: string }> = {
+    real_gold: { label: '22K Gold', color: 'text-amber-200', bg: 'bg-amber-500/10 border-amber-500/30', dot: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]', glow: 'shadow-[0_0_15px_rgba(251,191,36,0.2)]' },
+    gold_plated: { label: 'Gold Plated', color: 'text-orange-200', bg: 'bg-orange-500/10 border-orange-500/30', dot: 'bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.6)]', glow: 'shadow-[0_0_15px_rgba(251,146,60,0.2)]' },
+    bentex: { label: 'Handcrafted', color: 'text-slate-200', bg: 'bg-slate-500/10 border-slate-500/30', dot: 'bg-slate-400 shadow-[0_0_8px_rgba(148,163,184,0.6)]', glow: 'shadow-[0_0_15px_rgba(148,163,184,0.2)]' },
+    silver: { label: '925 Silver', color: 'text-blue-100', bg: 'bg-blue-400/10 border-blue-400/30', dot: 'bg-blue-300 shadow-[0_0_8px_rgba(147,197,253,0.6)]', glow: 'shadow-[0_0_15px_rgba(147,197,253,0.2)]' },
+    diamond: { label: 'Lab Diamond', color: 'text-cyan-200', bg: 'bg-cyan-500/10 border-cyan-500/30', dot: 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]', glow: 'shadow-[0_0_15px_rgba(34,211,238,0.2)]' },
 }
 
 export function MaterialBadge({ type }: { type: MaterialType }) {
     if (!type || !MATERIAL_CONFIG[type]) return null
     const cfg = MATERIAL_CONFIG[type]
     return (
-        <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full border backdrop-blur-md text-[8px] font-bold uppercase tracking-[0.15em] ${cfg.bg} ${cfg.color}`}>
-            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+        <div className={cn(
+            "inline-flex items-center gap-2 px-2.5 py-1 rounded-sm border backdrop-blur-xl transition-all duration-500",
+            "text-[7px] font-black uppercase tracking-[0.25em]",
+            cfg.bg, cfg.color, cfg.glow,
+            "hover:scale-105 hover:bg-white/5 active:scale-95"
+        )}>
+            <span className={cn("w-1 h-1 rounded-full animate-pulse", cfg.dot)} />
             {cfg.label}
         </div>
     )
@@ -106,6 +111,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
+        if (product.stock === 0) return
         setIsAdding(true)
         await addItem(product.id, 'Standard', 1, product)
         setIsAdding(false)
@@ -114,6 +120,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
     const handleBuyNow = async (e: React.MouseEvent) => {
         e.preventDefault()
         e.stopPropagation()
+        if (product.stock === 0) return
         setIsBuying(true)
         await addItem(product.id, 'Standard', 1, product)
         if (onClose) onClose()
@@ -213,8 +220,9 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                         </div>
                     )}
                     {product.stock === 0 && (
-                        <div className="inline-flex items-center px-2 py-1 rounded-full border border-red-500/50 bg-neutral-950/80 backdrop-blur-md text-[7px] font-bold uppercase tracking-[0.1em] text-red-500">
-                            Sold Out
+                        <div className="inline-flex items-center px-3 py-1.5 rounded-sm border border-white/20 bg-neutral-950/90 backdrop-blur-xl text-[8px] font-black uppercase tracking-[0.3em] text-white/40 shadow-2xl overflow-hidden relative group/sold">
+                            <span className="relative z-10">Sold Out</span>
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/sold:translate-x-full transition-transform duration-1000 ease-in-out" />
                         </div>
                     )}
                 </div>
@@ -334,19 +342,19 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                         <div className="grid grid-cols-2 gap-px bg-white/5 backdrop-blur-md border-t border-white/10">
                             <Button
                                 onClick={handleAddToCart}
-                                disabled={isAdding}
-                                aria-label={`Add ${product.name} to cart`}
-                                className="bg-transparent text-foreground hover:bg-white/10 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 focus-visible:ring-1 focus-visible:ring-primary"
+                                disabled={isAdding || product.stock === 0}
+                                aria-label={product.stock === 0 ? 'Out of stock' : `Add ${product.name} to cart`}
+                                className="bg-transparent text-foreground hover:bg-white/10 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 focus-visible:ring-1 focus-visible:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isAdding ? 'Adding' : 'Add to Cart'}
+                                {product.stock === 0 ? 'Out of Stock' : (isAdding ? 'Adding' : 'Add to Cart')}
                             </Button>
                             <Button
                                 onClick={handleBuyNow}
-                                disabled={isBuying}
-                                aria-label={`Buy ${product.name} now`}
-                                className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 border-l border-white/10 focus-visible:ring-1 focus-visible:ring-primary"
+                                disabled={isBuying || product.stock === 0}
+                                aria-label={product.stock === 0 ? 'Out of stock' : `Buy ${product.name} now`}
+                                className="bg-primary/10 text-primary hover:bg-primary/20 transition-colors duration-300 h-11 text-[9px] uppercase font-premium-sans tracking-[0.2em] rounded-none border-0 border-l border-white/10 focus-visible:ring-1 focus-visible:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isBuying ? 'Wait' : 'Buy Now'}
+                                {product.stock === 0 ? 'Sold' : (isBuying ? 'Wait' : 'Buy Now')}
                             </Button>
                         </div>
                     </div>
@@ -356,11 +364,11 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                     <div className="md:hidden mt-auto pt-2">
                         <Button
                             onClick={handleAddToCart}
-                            disabled={isAdding}
-                            aria-label={`Add ${product.name} to cart`}
-                            className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-9 text-[7.5px] uppercase font-black tracking-wider rounded-none flex items-center justify-center focus-visible:ring-1 focus-visible:ring-primary overflow-hidden px-1"
+                            disabled={isAdding || product.stock === 0}
+                            aria-label={product.stock === 0 ? 'Out of stock' : `Add ${product.name} to cart`}
+                            className="w-full bg-primary/5 border border-primary/10 text-primary/80 hover:bg-primary hover:text-black transition-all h-9 text-[7.5px] uppercase font-black tracking-wider rounded-none flex items-center justify-center focus-visible:ring-1 focus-visible:ring-primary overflow-hidden px-1 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <span className="whitespace-nowrap">{isAdding ? 'Adding...' : 'Add to Cart'}</span>
+                            <span className="whitespace-nowrap">{product.stock === 0 ? 'Sold Out' : (isAdding ? 'Adding...' : 'Add to Cart')}</span>
                         </Button>
                     </div>
                 )}
