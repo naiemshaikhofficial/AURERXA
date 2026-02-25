@@ -2934,7 +2934,7 @@ export async function getFilteredProducts(options: {
       try {
         let query = supabaseServer
           .from('products')
-          .select('id, name, price, image_url, images, slug, weight_grams, material_type, stock, tags, categories(name)')
+          .select('id, name, price, image_url, images, slug, weight_grams, material_type, purity, stock, tags, categories(id, name, slug)')
 
         // Category filter — in-memory cache eliminates repeated DB lookups for same slug
         const categorySlug = options.category || options.material

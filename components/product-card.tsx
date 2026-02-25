@@ -22,7 +22,7 @@ export const MATERIAL_CONFIG: Record<string, { label: string; suffix: string; co
     diamond: { label: 'Lab Diamond', suffix: 'Diamond', color: 'text-cyan-200', bg: 'bg-cyan-500/10 border-cyan-500/30', dot: 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]', glow: 'shadow-[0_0_15px_rgba(34,211,238,0.2)]' },
 }
 
-export function MaterialBadge({ type, purity }: { type: MaterialType; purity?: string }) {
+export function MaterialBadge({ type, purity, materialName }: { type: MaterialType; purity?: string; materialName?: string }) {
     if (!type || !MATERIAL_CONFIG[type]) return null
     const cfg = MATERIAL_CONFIG[type]
     return (
@@ -33,7 +33,7 @@ export function MaterialBadge({ type, purity }: { type: MaterialType; purity?: s
             "hover:scale-105 hover:bg-white/5 active:scale-95"
         )}>
             <span className={cn("w-1 h-1 rounded-full animate-pulse", cfg.dot)} />
-            {purity ? `${purity} ${cfg.suffix}` : cfg.label}
+            {purity ? `${purity} ${materialName || cfg.suffix}` : (materialName || cfg.label)}
         </div>
     )
 
@@ -211,7 +211,11 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                 {/* Status Badges */}
                 <div className="absolute top-2.5 left-2.5 z-40 flex flex-col gap-1.5">
                     {product.material_type && (
-                        <MaterialBadge type={product.material_type} purity={product.purity} />
+                        <MaterialBadge
+                            type={product.material_type}
+                            purity={product.purity}
+                            materialName={product.categories?.name}
+                        />
                     )}
                     <QualityBadge tags={product.tags} />
                     {product.stock !== undefined && product.stock > 0 && product.stock < 5 && (
@@ -308,7 +312,9 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                         {product.material_type && (
                             <>
                                 <p className="text-[8px] md:text-[9px] text-primary font-bold tracking-[0.2em] uppercase">
-                                    {product.purity ? `${product.purity} ${MATERIAL_CONFIG[product.material_type].suffix}` : MATERIAL_CONFIG[product.material_type].label}
+                                    {product.purity
+                                        ? `${product.purity} ${product.categories?.name || MATERIAL_CONFIG[product.material_type].suffix}`
+                                        : (product.categories?.name || MATERIAL_CONFIG[product.material_type].label)}
                                 </p>
                                 <span className="w-1 h-1 rounded-full bg-white/20" />
                             </>
