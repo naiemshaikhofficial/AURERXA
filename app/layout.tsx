@@ -156,6 +156,7 @@ export const viewport: Viewport = {
 import { CartProvider } from '@/context/cart-context'
 import { SearchProvider } from '@/context/search-context'
 import { ThemeProvider } from "@/components/theme-provider"
+import { AuthProvider } from '@/context/auth-context'
 import { Navbar } from '@/components/navbar'
 import { CategoryNav } from '@/components/category-nav'
 import { BottomNav } from '@/components/bottom-nav'
@@ -332,64 +333,66 @@ export default async function RootLayout({
         >
           <CartProvider>
             <SearchProvider>
-              <ConsentProvider initialProfile={profile}>
-                <SmoothScroll>
-                  <ErrorBoundary componentName="Application Root">
-                    {(() => {
-                      const isAdminPath = pathname.startsWith('/admin')
+              <AuthProvider initialProfile={profile}>
+                <ConsentProvider initialProfile={profile}>
+                  <SmoothScroll>
+                    <ErrorBoundary componentName="Application Root">
+                      {(() => {
+                        const isAdminPath = pathname.startsWith('/admin')
 
-                      if (isAdminPath) {
-                        return (
-                          <AdminOnlyWrapper>
-                            <div className="min-h-screen bg-background">
-                              {children}
-                            </div>
-                          </AdminOnlyWrapper>
-                        )
-                      }
-
-                      return (
-                        <AdminRouteGuard>
-                          {!isMaintenance && marketingConfig.banner_enabled && (
-                            <div className="bg-[#D4AF37] text-black py-2 px-4 text-center text-xs font-bold tracking-widest uppercase relative z-[100]">
-                              <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
-                                {marketingConfig.banner_text}
-                              </a>
-                            </div>
-                          )}
-                          {!isMaintenance && <Navbar marketingConfig={marketingConfig} />}
-                          <div className={cn("transition-all duration-300", !isMaintenance && marketingConfig.banner_enabled ? "pt-28 md:pt-32" : !isMaintenance ? "pt-20 md:pt-24" : "pt-0")}>
-                            {!isMaintenance && <CategoryNav />}
-                            <ErrorBoundary componentName="Main Content">
-                              <main>
+                        if (isAdminPath) {
+                          return (
+                            <AdminOnlyWrapper>
+                              <div className="min-h-screen bg-background">
                                 {children}
-                              </main>
-                            </ErrorBoundary>
-                            {!isMaintenance && <Footer contactConfig={contactConfig} />}
-                          </div>
-                        </AdminRouteGuard>
-                      )
-                    })()}
+                              </div>
+                            </AdminOnlyWrapper>
+                          )
+                        }
 
-                    <CartSheet />
-                    <MobileInstallPrompt />
-                    <NotificationManager />
-                    <SearchModal />
-                    <DynamicTitle />
-                    <BottomNav />
+                        return (
+                          <AdminRouteGuard>
+                            {!isMaintenance && marketingConfig.banner_enabled && (
+                              <div className="bg-[#D4AF37] text-black py-2 px-4 text-center text-xs font-bold tracking-widest uppercase relative z-[100]">
+                                <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
+                                  {marketingConfig.banner_text}
+                                </a>
+                              </div>
+                            )}
+                            {!isMaintenance && <Navbar marketingConfig={marketingConfig} />}
+                            <div className={cn("transition-all duration-300", !isMaintenance && marketingConfig.banner_enabled ? "pt-28 md:pt-32" : !isMaintenance ? "pt-20 md:pt-24" : "pt-0")}>
+                              {!isMaintenance && <CategoryNav />}
+                              <ErrorBoundary componentName="Main Content">
+                                <main>
+                                  {children}
+                                </main>
+                              </ErrorBoundary>
+                              {!isMaintenance && <Footer contactConfig={contactConfig} />}
+                            </div>
+                          </AdminRouteGuard>
+                        )
+                      })()}
 
-                    <Toaster />
-                    <SpeedInsights />
-                    <Analytics />
+                      <CartSheet />
+                      <MobileInstallPrompt />
+                      <NotificationManager />
+                      <SearchModal />
+                      <DynamicTitle />
+                      <BottomNav />
 
-                    <CookieConsent />
-                    <TrackingScripts />
-                    <Suspense fallback={null}>
-                      <BehaviorTracker />
-                    </Suspense>
-                  </ErrorBoundary>
-                </SmoothScroll>
-              </ConsentProvider>
+                      <Toaster />
+                      <SpeedInsights />
+                      <Analytics />
+
+                      <CookieConsent />
+                      <TrackingScripts />
+                      <Suspense fallback={null}>
+                        <BehaviorTracker />
+                      </Suspense>
+                    </ErrorBoundary>
+                  </SmoothScroll>
+                </ConsentProvider>
+              </AuthProvider>
             </SearchProvider>
           </CartProvider>
         </ThemeProvider>

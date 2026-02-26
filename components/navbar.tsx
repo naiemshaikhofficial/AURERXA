@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { LogOut, User, ShoppingBag, Heart, Package, Search, Settings, Shield, Loader2, X } from 'lucide-react'
 import { useCart } from '@/context/cart-context'
 import { useSearch } from '@/context/search-context'
+import { useAuth } from '@/context/auth-context'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 import { getOrdersPollingData } from '@/app/admin/actions'
@@ -36,111 +37,13 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
   const pathname = usePathname()
   const { cartCount, openCart } = useCart()
   const { openSearch } = useSearch()
+  const { user, profile, isAdmin, loading: authLoading, signOut: handleSignOut } = useAuth()
   const { resolvedTheme } = useTheme()
-  const [user, setUser] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const [authLoading, setAuthLoading] = useState(true)
   const [notificationCount, setNotificationCount] = useState(0)
-  const lastKnownTotal = React.useRef<number | null>(null)
 
   useEffect(() => {
     setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    let isMounted = true
-
-    const fetchUser = async () => {
-      try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-        if (!isMounted) return
-
-        if (sessionError) {
-          if (!sessionError.message.includes('Auth session missing')) {
-            console.error('Navbar getSession error:', sessionError)
-          }
-          setAuthLoading(false)
-          return
-        }
-
-        const currentUser = session?.user || null
-        if (!currentUser) {
-          setAuthLoading(false)
-          return
-        }
-
-        // Parallel fetch for profile and admin status - Using maybeSingle() to prevent Promise.all rejection if not admin
-        const [profileResult, adminResult] = await Promise.all([
-          supabase.from('profiles').select('*').eq('id', currentUser.id).maybeSingle(),
-          supabase.from('admin_users').select('role').eq('id', currentUser.id).maybeSingle()
-        ])
-
-        if (isMounted) {
-          if (profileResult.data) setProfile(profileResult.data)
-          if (adminResult.data) setIsAdmin(true)
-        }
-      } catch (err: any) {
-        if (err.name !== 'AbortError' && !err.message?.includes('aborted')) {
-          console.error('Navbar session check error:', err)
-        }
-      } finally {
-        if (isMounted) setAuthLoading(false)
-      }
-    }
-
-    fetchUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!isMounted) return
-
-      if (event === 'SIGNED_OUT' || (event === 'USER_UPDATED' && !session)) {
-        setUser(null)
-        setProfile(null)
-        setIsAdmin(false)
-        return
-      }
-
-      if (session?.user) {
-        setUser(session.user)
-        try {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
-
-          if (isMounted) {
-            if (profileData) {
-              setProfile(profileData)
-            } else {
-              setProfile({ full_name: session.user.user_metadata?.full_name || session.user.email })
-            }
-          }
-
-          const { data: adminData } = await supabase
-            .from('admin_users')
-            .select('role')
-            .eq('id', session.user.id)
-            .maybeSingle()
-          if (isMounted) setIsAdmin(!!adminData)
-        } catch (e: any) {
-          if (e.name !== 'AbortError' && !e.message?.includes('aborted')) {
-            console.error('Navbar onAuthStateChange error:', e)
-          }
-        }
-      } else {
-        setUser(null)
-        setProfile(null)
-        setIsAdmin(false)
-      }
-    })
-
-    return () => {
-      isMounted = false
-      subscription.unsubscribe()
-    }
   }, [])
 
   // Keyboard shortcut for search
@@ -164,10 +67,6 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
 
     const pollNotifications = async () => {
       try {
-        // Double check if we still have a user before calling server action
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) return
-
         const data = await getOrdersPollingData()
         if (!data) return
 
@@ -187,29 +86,6 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
     const interval = setInterval(pollNotifications, 60000)
     return () => clearInterval(interval)
   }, [isAdmin, mounted, user])
-
-  const handleSignOut = async () => {
-    try {
-      // 1. Instant UI update
-      setUser(null)
-      setProfile(null)
-      setIsAdmin(false)
-
-      // 2. Client-side sign out
-      await supabase.auth.signOut()
-
-      // 3. Server-side sign out (clears cookies)
-      const { signOutAction } = await import('@/app/actions')
-      await signOutAction()
-
-      // 4. Use router.replace for a smooth SPA transition followed by refresh
-      router.replace('/')
-      router.refresh()
-    } catch (error) {
-      console.error('Sign out error:', error)
-      router.push('/')
-    }
-  }
 
   const getInitials = () => {
     if (profile?.full_name) {
@@ -242,11 +118,6 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
     ]
   )
   const navBlur = useTransform(scrollY, [0, 100], ['blur(0px)', 'blur(20px)'])
-  const navBorder = useTransform(
-    scrollY,
-    [0, 100],
-    ['border-bottom: 1px solid rgba(255,255,255,0)', 'border-bottom: 1px solid rgba(255,255,255,0.05)']
-  )
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0
@@ -347,14 +218,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
               </Link>
 
               {mounted && (
-                <Sheet open={isMobileMenuOpen} onOpenChange={(open) => {
-                  setIsMobileMenuOpen(open)
-                  // Re-check admin status if opening and we have a user but no admin status yet
-                  if (open && user && !isAdmin) {
-                    supabase.from('admin_users').select('role').eq('id', user.id).maybeSingle()
-                      .then(({ data }) => { if (data) setIsAdmin(true) })
-                  }
-                }}>
+                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                   <SheetTrigger asChild>
                     <button className="text-foreground/80 hover:text-primary transition-colors p-2 relative" aria-label="Open navigation menu">
                       <Menu className="w-6 h-6 stroke-1" />

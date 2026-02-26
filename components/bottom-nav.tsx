@@ -8,33 +8,17 @@ import { cn, isCapacitor } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { useSearch } from '@/context/search-context'
 
+import { useAuth } from '@/context/auth-context'
+
 export function BottomNav() {
     const pathname = usePathname()
     const { cartCount } = useCart()
     const { openSearch } = useSearch()
-    const [user, setUser] = useState<any>(null)
+    const { user } = useAuth()
     const [isNative, setIsNative] = useState(false)
 
     useEffect(() => {
         setIsNative(isCapacitor())
-        let authListener: { subscription: { unsubscribe: () => void } } | null = null
-
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            setUser(user)
-        }
-        getUser()
-
-        const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null)
-        })
-        authListener = data
-
-        return () => {
-            if (authListener) {
-                authListener.subscription.unsubscribe()
-            }
-        }
     }, [])
 
     const links = [
