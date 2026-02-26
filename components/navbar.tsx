@@ -120,30 +120,14 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
   )
   const navBlur = useTransform(scrollY, [0, 100], ['blur(0px)', 'blur(20px)'])
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious() ?? 0
-    if (latest > previous && latest > 150) {
-      setHidden(true)
-    } else {
-      setHidden(false)
-    }
+  // Stability: Disable auto-hide to keep header strictly fixed
+  useMotionValueEvent(scrollY, "change", () => {
+    setHidden(false)
   })
 
-  // Reveal navbar when scrolling stops
+  // Keep navbar always visible
   useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout
-    const handleScroll = () => {
-      clearTimeout(scrollTimeout)
-      scrollTimeout = setTimeout(() => {
-        setHidden(false)
-      }, 100)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      clearTimeout(scrollTimeout)
-    }
+    setHidden(false)
   }, [])
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -157,14 +141,13 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
     <>
       <motion.nav
         initial={{ y: 0 }}
-        animate={{ y: hidden ? '-100%' : '0%' }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        animate={{ y: 0 }}
         style={{
-          height: navHeight,
+          height: '5rem',
           backgroundColor: navBg,
           backdropFilter: navBlur,
         }}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center p-4 md:p-0 border-b border-white/0"
+        className="fixed left-0 right-0 z-50 flex items-center p-4 md:p-0 border-b border-white/0"
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">

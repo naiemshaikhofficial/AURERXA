@@ -358,14 +358,18 @@ export default async function RootLayout({
                         return (
                           <AdminRouteGuard>
                             {!isMaintenance && marketingConfig.banner_enabled && (
-                              <div className="bg-[#D4AF37] text-black py-2 px-4 text-center text-xs font-bold tracking-widest uppercase relative z-[100]">
+                              <div className="fixed top-0 left-0 right-0 h-8 bg-[#D4AF37] text-black flex items-center justify-center text-[10px] md:text-xs font-bold tracking-widest uppercase z-[110]">
                                 <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
                                   {marketingConfig.banner_text}
                                 </a>
                               </div>
                             )}
-                            {!isMaintenance && <Navbar marketingConfig={marketingConfig} />}
-                            <div className={cn(!isMaintenance && marketingConfig.banner_enabled ? "pt-28 md:pt-32" : !isMaintenance ? "pt-20 md:pt-24" : "pt-0")}>
+                            {!isMaintenance && (
+                              <div className={cn("fixed left-0 right-0 z-[100]", marketingConfig.banner_enabled ? "top-8" : "top-0")}>
+                                <Navbar marketingConfig={marketingConfig} />
+                              </div>
+                            )}
+                            <div className={cn(!isMaintenance && marketingConfig.banner_enabled ? "pt-[112px]" : !isMaintenance ? "pt-[80px]" : "pt-0")}>
                               {!isMaintenance && <CategoryNav />}
                               <ErrorBoundary componentName="Main Content">
                                 <main>
