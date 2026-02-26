@@ -138,14 +138,12 @@ export default function CheckoutPage() {
 
     // Script loading state
     const [razorpayLoaded, setRazorpayLoaded] = useState(false)
-    const [cashfreeLoaded, setCashfreeLoaded] = useState(false)
     const [enableCod, setEnableCod] = useState(false)
 
     // Check for scripts if they were already loaded by the layout
     useEffect(() => {
         if (typeof window !== 'undefined') {
             if ((window as any).Razorpay) setRazorpayLoaded(true)
-            if ((window as any).Cashfree) setCashfreeLoaded(true)
         }
     }, [])
 
@@ -408,25 +406,6 @@ export default function CheckoutPage() {
             } else if (paymentResult.gateway === 'free') {
                 // Zero-amount order — already confirmed server-side
                 router.push(`/account/orders/${result.orderId}?success=true`);
-            } else if (paymentResult.gateway === 'cashfree') {
-                const cf = paymentResult as any;
-
-                const isCFReady = typeof window !== 'undefined' && (window as any).Cashfree;
-                if (!isCFReady) {
-                    setError('Payment system still loading. Please wait a moment...');
-                    setPlacing(false);
-                    return;
-                }
-
-                // @ts-ignore
-                const cashfree = (window as any).Cashfree({
-                    mode: cf.mode || "sandbox"
-                });
-
-                cashfree.checkout({
-                    paymentSessionId: cf.paymentSessionId,
-                    redirectTarget: "_self",
-                });
             }
         } catch (err: any) {
             console.error('Payment Error:', err);
@@ -952,12 +931,12 @@ export default function CheckoutPage() {
 
                                 <Button
                                     onClick={handlePlaceOrder}
-                                    disabled={placing || !selectedAddress || !termsAccepted || (paymentMethod === 'online' && !razorpayLoaded && !cashfreeLoaded && !(typeof window !== 'undefined' && ((window as any).Razorpay || (window as any).Cashfree)))}
+                                    disabled={placing || !selectedAddress || !termsAccepted || (paymentMethod === 'online' && !razorpayLoaded && !(typeof window !== 'undefined' && (window as any).Razorpay))}
                                     className="w-full mt-8 bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-[0.25em] h-14 rounded-none disabled:opacity-50 disabled:cursor-not-allowed group transition-all"
                                 >
                                     {placing ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (paymentMethod === 'online' && !razorpayLoaded && !cashfreeLoaded && !(typeof window !== 'undefined' && ((window as any).Razorpay || (window as any).Cashfree))) ? (
+                                    ) : (paymentMethod === 'online' && !razorpayLoaded && !(typeof window !== 'undefined' && (window as any).Razorpay)) ? (
                                         <div className="flex items-center gap-2">
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                             <span>Initializing...</span>

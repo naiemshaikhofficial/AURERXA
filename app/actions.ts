@@ -4389,18 +4389,13 @@ export type PaymentResult =
 
 export async function getPaymentGatewayConfig() {
   return {
-    gateway: (process.env.PAYMENT_GATEWAY as 'cashfree' | 'razorpay') || 'cashfree',
-    mode: process.env.CASHFREE_MODE || 'sandbox',
+    gateway: 'razorpay' as const,
     razorpayKeyId: process.env.RAZORPAY_KEY_ID,
     enableCod: process.env.ENABLE_COD === 'true'
   }
 }
 
-export async function initiatePayment(orderId: string, gatewayOverride?: 'cashfree' | 'razorpay'): Promise<PaymentResult> {
-  const config = await getPaymentGatewayConfig()
-  const gateway = gatewayOverride || config.gateway
-  console.log('initiatePayment: Target gateway is', gateway)
-
+export async function initiatePayment(orderId: string): Promise<PaymentResult> {
   // --- ZERO-AMOUNT ORDER: Auto-confirm without hitting payment gateway ---
   try {
     const client = await getAuthClient()
@@ -4435,44 +4430,21 @@ export async function initiatePayment(orderId: string, gatewayOverride?: 'cashfr
     console.error('Zero-amount check failed, proceeding to gateway:', e)
   }
 
-  if (gateway === 'razorpay') {
-    if (!process.env.RAZORPAY_KEY_ID) {
-      console.error('initiatePayment: Razorpay Key ID is missing');
-      return { success: false, error: 'Razorpay configuration error' };
-    }
-    const result = await initiateRazorpayPayment(orderId)
-    return result as PaymentResult
+  if (!process.env.RAZORPAY_KEY_ID) {
+    console.error('initiatePayment: Razorpay Key ID is missing');
+    return { success: false, error: 'Razorpay configuration error' };
   }
-
-  if (!process.env.CASHFREE_APP_ID) {
-    console.error('initiatePayment: Cashfree App ID is missing');
-    return { success: false, error: 'Cashfree configuration error' };
-  }
-  const result = await initiateCashfreePayment(orderId)
+  const result = await initiateRazorpayPayment(orderId)
   return result as PaymentResult
 }
 
 export async function verifyPayment(orderId: string, params?: any) {
-  const config = await getPaymentGatewayConfig()
-  console.log('verifyPayment: Selected gateway is', config.gateway, 'for order', orderId)
-
-  if (config.gateway === 'razorpay') {
-    const result = await verifyRazorpayPayment(orderId, params)
-    if (result.success) {
-      console.log('verifyPayment: Razorpay verification successful');
-      await clearCart()
-    } else {
-      console.warn('verifyPayment: Razorpay verification failed', result.error);
-    }
-    return result
-  }
-
-  const result = await verifyCashfreePayment(orderId)
+  const result = await verifyRazorpayPayment(orderId, params)
   if (result.success) {
-    console.log('verifyPayment: Cashfree verification successful');
+    console.log('verifyPayment: Razorpay verification successful');
     await clearCart()
   } else {
-    console.warn('verifyPayment: Cashfree verification failed', result.error);
+    console.warn('verifyPayment: Razorpay verification failed', result.error);
   }
   return result
 }

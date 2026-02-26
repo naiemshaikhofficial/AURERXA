@@ -4,23 +4,19 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import Script from 'next/script'
-import supabaseLoader from '@/lib/supabase-loader'
 import { getOrderById, initiatePayment, verifyPayment } from '@/app/actions'
-import { Loader2, AlertCircle, ChevronRight, CreditCard, ShieldCheck, ArrowLeft, RefreshCw, CheckCircle2 } from 'lucide-react'
+import { Loader2, ShieldCheck, ChevronRight, CreditCard, ArrowLeft, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function PaymentRetryPage() {
     const params = useParams()
     const router = useRouter()
-    const searchParams = useSearchParams()
     const orderId = params.id as string
 
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [retrying, setRetrying] = useState(false)
     const [verifying, setVerifying] = useState(false)
-    const [selectedGateway, setSelectedGateway] = useState<'razorpay' | 'cashfree'>('cashfree')
 
     useEffect(() => {
         async function loadOrder() {
@@ -28,8 +24,6 @@ export default function PaymentRetryPage() {
             const data = await getOrderById(orderId)
             if (data) {
                 setOrder(data)
-                // Default to last attempted gateway or config default
-                // For now we default to cashfree as per plan
             } else {
                 toast.error('Order not found')
                 router.push('/account/orders')
@@ -42,7 +36,7 @@ export default function PaymentRetryPage() {
     const handleRetry = async () => {
         setRetrying(true)
         try {
-            const paymentResult = await initiatePayment(orderId, selectedGateway)
+            const paymentResult = await initiatePayment(orderId)
 
             if (!paymentResult.success) {
                 toast.error(paymentResult.error || 'Failed to initiate payment')
@@ -75,6 +69,7 @@ export default function PaymentRetryPage() {
                         } else {
                             toast.error(verifyResult.error || 'Verification failed')
                             setVerifying(false)
+                            setRetrying(false)
                         }
                     },
                     prefill: {
@@ -93,29 +88,12 @@ export default function PaymentRetryPage() {
                 const rzp = new (window as any).Razorpay(options)
                 rzp.open()
             } else if (paymentResult.gateway === 'free') {
-                // Zero-amount order — already confirmed server-side
                 toast.success('Order confirmed! No payment required.')
                 router.push(`/account/orders/${orderId}?success=true`)
-            } else if (paymentResult.gateway === 'cashfree') {
-                const cf = paymentResult as any
-                if (!(window as any).Cashfree) {
-                    toast.error('Payment gateway loading...')
-                    setRetrying(false)
-                    return
-                }
-
-                const cashfree = (window as any).Cashfree({
-                    mode: cf.mode || "sandbox"
-                })
-
-                cashfree.checkout({
-                    paymentSessionId: cf.paymentSessionId,
-                    redirectTarget: "_self",
-                })
             }
-        } catch (error) {
-            console.error('Retry Error:', error)
-            toast.error('An unexpected error occurred')
+        } catch (err: any) {
+            console.error('Retry Error:', err)
+            toast.error('Could not initiate payment. Please try again later.')
             setRetrying(false)
         }
     }
@@ -132,8 +110,6 @@ export default function PaymentRetryPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
-            {/* Scripts moved to layout for preloading */}
-
             <main className="pt-32 pb-24 px-4">
                 <div className="max-w-4xl mx-auto">
                     {/* Header */}
@@ -141,81 +117,33 @@ export default function PaymentRetryPage() {
                         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-destructive/10 border border-destructive/20 mb-6 group">
                             <ShieldCheck className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-500" />
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-serif font-light mb-4 italic tracking-tight">Complete Your Purchase</h1>
+                        <h1 className="text-4xl md:text-5xl font-serif font-light mb-4 italic tracking-tight text-white">Complete Your Purchase</h1>
                         <p className="text-muted-foreground uppercase tracking-[0.3em] text-[10px] md:text-xs">Secure Payment Portal • Order #{order.order_number}</p>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                        {/* Left: Selection */}
-                        <div className="lg:col-span-3 space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
+                        {/* Left: Info & Actions */}
+                        <div className="lg:col-span-3 space-y-8">
                             <div className="bg-card/30 border border-white/5 p-8 backdrop-blur-sm relative overflow-hidden group">
                                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-50" />
 
-                                <h2 className="text-xl font-serif font-light mb-8 flex items-center gap-3 italic">
-                                    <CreditCard className="w-5 h-5 text-primary opacity-70" />
-                                    Choose Payment Method
+                                <h2 className="text-xl font-serif font-light mb-4 flex items-center gap-3 italic text-foreground">
+                                    <ShieldCheck className="w-5 h-5 text-primary opacity-70" />
+                                    Secure Razorpay Gateway
                                 </h2>
-
-                                <div className="space-y-4">
-                                    {/* Razorpay Option */}
-                                    <label
-                                        onClick={() => setSelectedGateway('razorpay')}
-                                        className={`group relative flex flex-col p-6 border transition-all duration-500 cursor-pointer overflow-hidden ${selectedGateway === 'razorpay' ? 'border-primary bg-primary/5 shadow-2xl shadow-primary/5' : 'border-white/5 hover:border-white/10 bg-white/[0.02]'
-                                            }`}>
-                                        <div className="flex items-center justify-between z-10">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-500 ${selectedGateway === 'razorpay' ? 'border-primary bg-primary' : 'border-white/20'}`}>
-                                                    {selectedGateway === 'razorpay' && <div className="w-2 h-2 rounded-full bg-black" />}
-                                                </div>
-                                                <div>
-                                                    <p className={`font-premium-sans tracking-wide uppercase text-sm ${selectedGateway === 'razorpay' ? 'text-primary' : 'text-white/70'}`}>Razorpay Secure</p>
-                                                    <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mt-1 italic">UPI, Cards, Netbanking</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700">
-                                                <CreditCard className="w-5 h-5 text-primary" />
-                                            </div>
-                                        </div>
-                                        {selectedGateway === 'razorpay' && (
-                                            <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-primary/10 rounded-full blur-3xl opacity-50" />
-                                        )}
-                                    </label>
-
-                                    {/* Cashfree Option */}
-                                    <label
-                                        onClick={() => setSelectedGateway('cashfree')}
-                                        className={`group relative flex flex-col p-6 border transition-all duration-500 cursor-pointer overflow-hidden ${selectedGateway === 'cashfree' ? 'border-primary bg-primary/5 shadow-2xl shadow-primary/5' : 'border-white/5 hover:border-white/10 bg-white/[0.02]'
-                                            }`}>
-                                        <div className="flex items-center justify-between z-10">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all duration-500 ${selectedGateway === 'cashfree' ? 'border-primary bg-primary' : 'border-white/20'}`}>
-                                                    {selectedGateway === 'cashfree' && <div className="w-2 h-2 rounded-full bg-black" />}
-                                                </div>
-                                                <div>
-                                                    <p className={`font-premium-sans tracking-wide uppercase text-sm ${selectedGateway === 'cashfree' ? 'text-primary' : 'text-white/70'}`}>Cashfree Payments</p>
-                                                    <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] mt-1 italic">Fast & Reliable UPI, Cards</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-3 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700">
-                                                <CreditCard className="w-5 h-5 text-primary" />
-                                            </div>
-                                        </div>
-                                        {selectedGateway === 'cashfree' && (
-                                            <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-primary/10 rounded-full blur-3xl opacity-50" />
-                                        )}
-                                    </label>
-                                </div>
+                                <p className="text-sm text-muted-foreground leading-relaxed italic">
+                                    Your order is ready for fulfillment. Please use the secure portal to complete your transaction with India&apos;s most trusted payment network.
+                                </p>
 
                                 <div className="mt-8 pt-6 border-t border-white/5 flex items-center gap-3 text-white/30">
                                     <ShieldCheck className="w-4 h-4 text-emerald-500/50" />
                                     <p className="text-[10px] uppercase tracking-widest leading-loose">
-                                        Your transactions are encrypted with 256-bit SSL security.
-                                        AURERXA does not store your card details.
+                                        256-bit SSL Encrypted • Insured Fulfillment
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between pt-4">
                                 <Link
                                     href={`/account/orders/${orderId}`}
                                     className="flex items-center gap-2 text-[10px] uppercase tracking-[0.3em] text-white/30 hover:text-primary transition-all group"
@@ -223,16 +151,14 @@ export default function PaymentRetryPage() {
                                     <ArrowLeft className="w-3 h-3 group-hover:-translate-x-1 transition-transform" />
                                     Return to Order
                                 </Link>
-                                <div className="flex items-center gap-4">
-                                    <p className="text-[10px] text-white/20 uppercase tracking-widest hidden md:block">Verified by Trusted Partners</p>
-                                </div>
+                                <p className="text-[10px] text-white/20 uppercase tracking-widest hidden md:block italic">Verified Heritage Brand</p>
                             </div>
                         </div>
 
-                        {/* Right: Summary */}
+                        {/* Right: Summary & Pay */}
                         <div className="lg:col-span-2 space-y-6">
                             <div className="bg-white/[0.03] border border-white/5 p-8 backdrop-blur-sm sticky top-32">
-                                <h3 className="text-lg font-serif italic mb-8 border-b border-white/5 pb-4">Order Summary</h3>
+                                <h3 className="text-lg font-serif italic mb-8 border-b border-white/5 pb-4 text-foreground/90">Order Summary</h3>
 
                                 <div className="space-y-4 mb-8">
                                     <div className="flex justify-between text-sm">
@@ -252,7 +178,7 @@ export default function PaymentRetryPage() {
                                         </div>
                                     )}
                                     <div className="pt-4 border-t border-white/10 flex justify-between items-baseline mt-4">
-                                        <span className="text-xs uppercase tracking-[0.2em] font-premium-sans text-white/50">Payable Amount</span>
+                                        <span className="text-xs uppercase tracking-[0.2em] font-premium-sans text-white/50">Payable</span>
                                         <span className="text-3xl font-serif text-primary italic">₹{Number(order.total).toLocaleString('en-IN')}</span>
                                     </div>
                                 </div>
@@ -262,7 +188,7 @@ export default function PaymentRetryPage() {
                                     disabled={retrying || verifying}
                                     className="w-full py-5 bg-primary text-black font-premium-sans uppercase tracking-[0.3em] text-sm hover:bg-white transition-all duration-700 disabled:opacity-50 disabled:grayscale relative overflow-hidden group shadow-2xl shadow-primary/20"
                                 >
-                                    <span className="relative z-10 flex items-center justify-center gap-3">
+                                    <span className="relative z-10 flex items-center justify-center gap-3 font-bold">
                                         {retrying || verifying ? (
                                             <>
                                                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -270,14 +196,14 @@ export default function PaymentRetryPage() {
                                             </>
                                         ) : (
                                             <>
-                                                Secure Payment
+                                                Pay Securely
                                                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                             </>
                                         )}
                                     </span>
                                 </button>
 
-                                <div className="mt-6 flex items-center justify-center gap-2 opacity-30 grayscale hover:opacity-80 hover:grayscale-0 transition-all duration-700">
+                                <div className="mt-6 flex items-center justify-center gap-3 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
                                     <div className="relative w-8 h-4">
                                         <Image src="/upi-icon.svg" alt="UPI" fill className="object-contain invert" unoptimized />
                                     </div>

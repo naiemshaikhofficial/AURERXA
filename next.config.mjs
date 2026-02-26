@@ -46,15 +46,15 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://checkout.razorpay.com https://*.cashfree.com https://va.vercel-scripts.com https://www.googletagmanager.com https://connect.facebook.net https://www.google-analytics.com",
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://checkout.razorpay.com https://va.vercel-scripts.com https://www.googletagmanager.com https://connect.facebook.net https://www.google-analytics.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               // Removed wildcard * — explicit trusted image hostnames only
               "img-src 'self' blob: data: https://*.supabase.co https://img.icons8.com https://images.pexels.com https://images.unsplash.com https://encrypted-tbn0.gstatic.com https://encrypted-tbn1.gstatic.com https://encrypted-tbn2.gstatic.com https://encrypted-tbn3.gstatic.com https://m.media-amazon.com https://*.razorpay.com https://img.youtube.com https://imagizer.imageshack.com https://imageshack.com https://maps.gstatic.com https://*.googleapis.com https://lh3.googleusercontent.com https://lh4.googleusercontent.com https://lh5.googleusercontent.com https://lh6.googleusercontent.com",
               "font-src 'self' https://fonts.gstatic.com data:",
-              "connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net https://*.razorpay.com https://*.cashfree.com https://*.google.com https://*.googleapis.com https://www.goldapi.io https://va.vercel-scripts.com https://vitals.vercel-insights.com https://www.google-analytics.com https://connect.facebook.net",
+              "connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net https://*.razorpay.com https://*.google.com https://*.googleapis.com https://www.goldapi.io https://va.vercel-scripts.com https://vitals.vercel-insights.com https://www.google-analytics.com https://connect.facebook.net",
               "media-src 'self' blob: data: https://*.supabase.co",
               "worker-src 'self' blob:",
-              "frame-src 'self' https://*.cashfree.com https://*.razorpay.com https://www.youtube.com https://youtube.com https://www.google.com https://maps.google.com",
+              "frame-src 'self' https://*.razorpay.com https://www.youtube.com https://youtube.com https://www.google.com https://maps.google.com",
               "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self'",
