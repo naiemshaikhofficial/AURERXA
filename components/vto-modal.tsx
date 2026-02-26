@@ -176,7 +176,7 @@ export function VTOModal({ isOpen, onClose, productImage, productName }: VTOModa
             try {
                 // 1. Load MediaPipe Scripts dynamically
                 setDebugMsg('Loading Vision Models...')
-                if (!window.FaceMesh) {
+                if (!(window as any).FaceMesh) {
                     await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js')
                     await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js')
                     await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js')

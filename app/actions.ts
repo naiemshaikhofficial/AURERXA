@@ -4383,7 +4383,6 @@ export async function verifyCashfreePayment(orderId: string) {
 // Payment Gateway Configuration
 export type PaymentResult =
   | { success: true; gateway: 'razorpay'; keyId: string; amount: number; currency: string; razorpayOrderId: string; productName: string; customer: { name: string; email: string; contact: string }; mode?: string; paymentSessionId?: never }
-  | { success: true; gateway: 'cashfree'; paymentSessionId: string; cfOrderId: string; mode: string; keyId?: never; amount?: never }
   | { success: true; gateway: 'free'; orderId: string; keyId?: never; amount?: never; paymentSessionId?: never }
   | { success: false; error: string; gateway?: never; keyId?: never };
 
