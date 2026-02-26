@@ -422,8 +422,25 @@ export default function CheckoutPage() {
 
     if (loading || cartLoading) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <div className="min-h-screen bg-background text-foreground flex flex-col">
+                <header className="border-b border-border/40 bg-background/80 backdrop-blur-md sticky top-0 z-50">
+                    <div className="max-w-6xl mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
+                        <Link href="/" className="relative z-10">
+                            <Image src="/logo-new-v2.png" alt="AURERXA" width={140} height={40} className="w-24 md:w-32 h-auto opacity-90 dark:invert-0" priority />
+                        </Link>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 text-primary/80">
+                                <ShieldCheck className="w-4 h-4" />
+                                <span className="text-[10px] md:text-xs font-premium-sans tracking-widest uppercase hidden sm:inline-block">Secure Checkout</span>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                <main className="flex-1 flex flex-col items-center justify-center py-24">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
+                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground/60">Securing Session...</p>
+                </main>
+                <Footer />
             </div>
         )
     }
