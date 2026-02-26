@@ -260,7 +260,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                         </div>
                     )}
                     {product.stock === 0 && (
-                        <div className="inline-flex items-center px-3 py-1.5 rounded-sm border border-white/20 bg-neutral-950/90 backdrop-blur-xl text-[8px] font-black uppercase tracking-[0.3em] text-white/40 shadow-2xl overflow-hidden relative group/sold">
+                        <div className="inline-flex items-center px-3 py-1.5 rounded-sm border border-border bg-neutral-950/90 dark:bg-neutral-950/90 backdrop-blur-xl text-[8px] font-black uppercase tracking-[0.3em] text-foreground/40 shadow-2xl overflow-hidden relative group/sold">
                             <span className="relative z-10">Sold Out</span>
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover/sold:translate-x-full transition-transform duration-1000 ease-in-out" />
                         </div>
@@ -356,7 +356,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                                         ? (product.purity.includes('99.99') ? '99.99 Silver' : `${product.purity} ${product.categories?.name || MATERIAL_CONFIG[product.material_type].suffix}`)
                                         : (product.categories?.name || MATERIAL_CONFIG[product.material_type].label)}
                                 </p>
-                                <span className="w-1 h-1 rounded-full bg-white/20" />
+                                <span className="w-1 h-1 rounded-full bg-foreground/20" />
                             </>
                         )}
                         <p className="text-[8px] md:text-[9px] text-muted-foreground font-premium-sans tracking-[0.2em] uppercase truncate">
@@ -365,7 +365,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                     </div>
 
                     <Link href={`/products/${product.slug}`} onClick={onClose}>
-                        <h3 className="text-sm md:text-lg font-serif text-white/90 font-medium group-hover:text-primary transition-colors duration-700 leading-tight tracking-tight">
+                        <h3 className="text-sm md:text-lg font-serif text-foreground font-medium group-hover:text-primary transition-colors duration-700 leading-tight tracking-tight">
                             {product.name}
                         </h3>
                     </Link>
@@ -385,7 +385,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                 {/* Modern Slide-up Buttons */}
                 {viewMode !== 'compact' && (
                     <div className="hidden md:block absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-700 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] z-20">
-                        <div className="grid grid-cols-2 gap-px bg-white/5 backdrop-blur-md border-t border-white/10">
+                        <div className="grid grid-cols-2 gap-px bg-foreground/5 backdrop-blur-md border-t border-border">
                             <Button
                                 onClick={handleAddToCart}
                                 disabled={isAdding || product.stock === 0}

@@ -38,7 +38,7 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
                 className="h-12 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-700"
               />
             </Link>
-            <p className="text-[10px] text-white/30 font-light leading-relaxed tracking-[0.4em] uppercase">
+            <p className="text-[10px] text-foreground/40 font-light leading-relaxed tracking-[0.4em] uppercase">
               A 50-year legacy forged in respect.<br />Handcrafted masterpieces.
             </p>
           </div>
@@ -178,7 +178,7 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
         </div>
 
         {/* Bottom copyright section */}
-        <div className="pt-12 flex flex-col md:flex-row justify-between items-center gap-8 text-muted-foreground/40 text-[10px] uppercase tracking-widest border-t border-border/50">
+        <div className="pt-12 flex flex-col md:flex-row justify-between items-center gap-8 text-muted-foreground/60 text-[10px] uppercase tracking-widest border-t border-border/10">
           <span>© {new Date().getFullYear()} AURERXA. All Rights Reserved.</span>
           <div className="flex gap-12">
             <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>

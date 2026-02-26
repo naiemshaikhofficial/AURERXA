@@ -78,7 +78,7 @@ export function TopStylesClient({ dataMap }: TopStylesClientProps) {
                                 ))
                             ) : (
                                 <div className="col-span-full py-32 text-center">
-                                    <p className="text-[10px] md:text-xs uppercase tracking-[0.5em] text-muted-foreground/40 font-bold italic">
+                                    <p className="text-[10px] md:text-xs uppercase tracking-[0.5em] text-foreground/20 font-bold italic">
                                         Curating Masterpieces...
                                     </p>
                                 </div>
@@ -92,7 +92,7 @@ export function TopStylesClient({ dataMap }: TopStylesClientProps) {
                     <Link href={`/collections${activeFilter.slug !== 'all' ? `?search=${activeFilter.slug}` : ''}`}>
                         <Button
                             variant="outline"
-                            className="px-10 py-7 border-white/10 hover:border-primary hover:bg-primary/5 transition-all duration-700 rounded-none text-[10px] md:text-xs uppercase tracking-[0.4em] font-black group bg-transparent text-foreground/80"
+                            className="px-10 py-7 border-border hover:border-primary hover:bg-primary/5 transition-all duration-700 rounded-none text-[10px] md:text-xs uppercase tracking-[0.4em] font-black group bg-transparent text-foreground/60 hover:text-foreground"
                         >
                             Explore Full Collection
                             <ChevronRight className="ml-3 w-4 h-4 group-hover:translate-x-2 transition-transform duration-500 text-primary" />

@@ -190,7 +190,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                   width={180}
                   height={50}
                   priority
-                  className="h-10 md:h-12 w-auto object-contain transition-opacity dark:invert-0"
+                  className="h-10 md:h-12 w-auto object-contain transition-opacity invert dark:invert-0"
                 />
               </Link>
             </div>
@@ -199,11 +199,11 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
             <div className="hidden md:flex flex-1 justify-center max-w-xl">
               <button
                 onClick={openSearch}
-                className="w-full flex items-center gap-3 px-6 py-2.5 rounded-full bg-card/40 border border-border/40 hover:border-primary/30 hover:bg-card/60 transition-all duration-300 group shadow-sm"
+                className="w-full flex items-center gap-3 px-6 py-2.5 rounded-full bg-card/10 border border-border/60 hover:border-primary/40 hover:bg-card/20 transition-all duration-300 group shadow-sm"
               >
-                <Search className="w-4 h-4 text-white/60 group-hover:text-primary transition-colors stroke-[1.5px]" />
+                <Search className="w-4 h-4 text-foreground/60 group-hover:text-primary transition-colors stroke-[1.5px]" />
                 <div className="relative h-4 w-full flex items-center overflow-hidden">
-                  <span className="text-[11px] text-white/40 font-light tracking-widest uppercase items-center flex mr-2 shrink-0">
+                  <span className="text-[11px] text-foreground/40 font-light tracking-widest uppercase items-center flex mr-2 shrink-0">
                     Search for
                   </span>
                   <AnimatePresence mode="wait">
@@ -213,7 +213,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                       animate={{ y: 0, opacity: 1 }}
                       exit={{ y: -20, opacity: 0 }}
                       transition={{ duration: 0.5, ease: "easeInOut" }}
-                      className="text-[11px] text-white/60 font-light tracking-widest uppercase whitespace-nowrap"
+                      className="text-[11px] text-foreground/60 font-light tracking-widest uppercase whitespace-nowrap"
                     >
                       {searchTerms[searchTermIndex]}
                     </motion.span>
@@ -354,11 +354,11 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                 className="md:hidden p-2 text-muted-foreground hover:text-primary transition-colors tactile-press"
                 aria-label="Search"
               >
-                <Search className="w-6 h-6 text-white/70 stroke-[1.5px]" />
+                <Search className="w-6 h-6 text-foreground/70 stroke-[1.5px]" />
               </button>
 
               {/* Wishlist */}
-              <Link href="/wishlist" className="relative p-2 text-white/70 hover:text-primary transition-colors group tactile-press" aria-label="Wishlist">
+              <Link href="/wishlist" className="relative p-2 text-foreground/70 hover:text-primary transition-colors group tactile-press" aria-label="Wishlist">
                 <Heart className="w-5 h-5 md:w-6 md:h-6 stroke-[1.2px] group-hover:stroke-primary transition-colors" />
               </Link>
 
@@ -416,14 +416,14 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : (
-                  <Link href="/login" className="p-2 text-white/70 hover:text-primary transition-colors">
+                  <Link href="/login" className="p-2 text-foreground/70 hover:text-primary transition-colors">
                     <User className="w-5 h-5 md:w-6 md:h-6 stroke-[1.2px]" />
                   </Link>
                 )}
               </div>
 
               {/* Cart */}
-              <Link href="/cart" className="relative p-2 text-white/70 hover:text-primary transition-colors group tactile-press" aria-label={`Shopping Cart with ${cartCount} items`}>
+              <Link href="/cart" className="relative p-2 text-foreground/70 hover:text-primary transition-colors group tactile-press" aria-label={`Shopping Cart with ${cartCount} items`}>
                 <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 stroke-[1.2px] group-hover:stroke-primary transition-colors" />
                 {cartCount > 0 && (
                   <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-primary-foreground text-[8px] font-bold rounded-full flex items-center justify-center border border-background">
