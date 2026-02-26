@@ -175,12 +175,6 @@ export default function OrdersPage() {
         <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
-            {/* Payment SDKs */}
-            <Script
-                src="https://checkout.razorpay.com/v1/checkout.js"
-                strategy="afterInteractive"
-            />
-
 
             {/* Verifying Overlay */}
             {verifying && (

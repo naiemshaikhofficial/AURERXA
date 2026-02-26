@@ -10,7 +10,7 @@ export default function Loading() {
             <main className="flex-1 flex items-center justify-center py-32">
                 <div className="flex flex-col items-center gap-4 opacity-50">
                     <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                    <span className="text-[10px] font-premium-sans tracking-[0.3em] uppercase">Acquiring Details...</span>
+                    <span className="text-[10px] font-premium-sans tracking-[0.3em] uppercase">Loading Orders...</span>
                 </div>
             </main>
             <Footer />

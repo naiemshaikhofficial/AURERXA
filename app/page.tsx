@@ -1,3 +1,4 @@
+export const revalidate = 3600; // Cache homepage for 1 hour to prevent excessive DB calls
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { Hero } from '@/components/hero'
@@ -97,7 +98,6 @@ async function HeroCarouselSection() {
   let slides = await getHeroSlides()
 
   if (!slides || slides.length === 0) {
-    console.log('DEBUG: No hero slides found, providing mock data for verification')
     slides = [
       {
         id: 'mock-1',
@@ -136,8 +136,6 @@ async function HeroCarouselSection() {
         overlay_opacity: 0.3
       }
     ]
-  } else {
-    console.log(`DEBUG: Found ${slides.length} hero slides`)
   }
 
   return <HeroCarousel slides={slides} />

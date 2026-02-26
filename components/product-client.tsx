@@ -13,7 +13,8 @@ import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 import supabaseLoader from '@/lib/supabase-loader'
-import { VTOModal } from '@/components/vto-modal'
+import dynamic from 'next/dynamic'
+const VTOModal = dynamic(() => import('@/components/vto-modal').then(mod => mod.VTOModal), { ssr: false })
 import { ProductCard } from '@/components/product-card'
 import { SizeGuide } from '@/components/size-guide'
 import { formatPurity, formatWeight, formatDimensions } from '@/lib/material-intelligence'
