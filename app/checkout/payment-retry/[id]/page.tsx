@@ -132,8 +132,7 @@ export default function PaymentRetryPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
-            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-            <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="lazyOnload" />
+            {/* Scripts moved to layout for preloading */}
 
             <main className="pt-32 pb-24 px-4">
                 <div className="max-w-4xl mx-auto">
@@ -174,7 +173,7 @@ export default function PaymentRetryPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700">
-                                                <img src="https://img.icons8.com/?size=100&id=D6nveVwN39k6&format=png&color=000000" alt="Razorpay" className="h-4 object-contain invert" />
+                                                <CreditCard className="w-5 h-5 text-primary" />
                                             </div>
                                         </div>
                                         {selectedGateway === 'razorpay' && (
@@ -198,7 +197,7 @@ export default function PaymentRetryPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3 grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700">
-                                                <img src="https://img.icons8.com/?size=100&id=TgHJI44zOCgU&format=png&color=000000" alt="Cashfree" className="h-4 object-contain" />
+                                                <CreditCard className="w-5 h-5 text-primary" />
                                             </div>
                                         </div>
                                         {selectedGateway === 'cashfree' && (
@@ -285,9 +284,7 @@ export default function PaymentRetryPage() {
                                     <div className="relative w-8 h-4">
                                         <Image src="/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" unoptimized />
                                     </div>
-                                    <div className="relative w-8 h-4">
-                                        <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-full object-contain" />
-                                    </div>
+                                    <CreditCard className="w-5 h-5 text-white/50" />
                                 </div>
                             </div>
                         </div>

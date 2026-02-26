@@ -141,6 +141,14 @@ export default function CheckoutPage() {
     const [cashfreeLoaded, setCashfreeLoaded] = useState(false)
     const [enableCod, setEnableCod] = useState(false)
 
+    // Check for scripts if they were already loaded by the layout
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            if ((window as any).Razorpay) setRazorpayLoaded(true)
+            if ((window as any).Cashfree) setCashfreeLoaded(true)
+        }
+    }, [])
+
 
     const [newAddress, setNewAddress] = useState({
         label: 'Home',
@@ -467,22 +475,7 @@ export default function CheckoutPage() {
             <main className="pt-32 pb-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center mb-12">
-                        <Script
-                            src="https://checkout.razorpay.com/v1/checkout.js"
-                            strategy="afterInteractive"
-                            onLoad={() => {
-                                console.log('Razorpay script loaded successfully');
-                                setRazorpayLoaded(true);
-                            }}
-                        />
-                        <Script
-                            src="https://sdk.cashfree.com/js/v3/cashfree.js"
-                            strategy="afterInteractive"
-                            onLoad={() => {
-                                console.log('Cashfree script loaded successfully');
-                                setCashfreeLoaded(true);
-                            }}
-                        />
+                        {/* Razorpay and Cashfree scripts moved to RootLayout for earlier preloading */}
                         <h1 className="text-3xl md:text-5xl font-serif text-foreground tracking-tight mb-8">
                             Secure <span className="text-primary italic">Checkout</span>
                         </h1>
@@ -737,17 +730,12 @@ export default function CheckoutPage() {
                                                 <div className="flex items-center justify-between">
                                                     <span className={`font-medium ${paymentMethod === 'online' ? 'text-primary' : 'text-foreground'}`}>Secure Online Payment</span>
                                                     <div className="flex items-center gap-2 grayscale-0 group-hover:opacity-100 transition-all">
-                                                        <div className="relative w-8 h-4">
-                                                            <img src="https://img.icons8.com/?size=100&id=TgHJI44zOCgU&format=png&color=000000" alt="Cashfree" className="h-full object-contain" />
-                                                        </div>
+                                                        <CreditCard className="w-5 h-5 text-primary" />
                                                         <div className="relative w-8 h-4">
                                                             <Image src="/upi-icon.svg" alt="UPI" fill className="object-contain dark:invert invert-0" unoptimized />
                                                         </div>
                                                         <div className="relative w-8 h-4">
                                                             <Image src="/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" sizes="32px" unoptimized />
-                                                        </div>
-                                                        <div className="relative w-8 h-4">
-                                                            <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-full object-contain invert dark:invert-0" />
                                                         </div>
                                                         <div className="relative w-8 h-4">
                                                             <img src="/Rupay-Logo.png" alt="RuPay" className="h-full object-contain" />

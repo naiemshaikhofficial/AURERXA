@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import NextImage from 'next/image'
 import { useSearch } from '@/context/search-context'
+import { MapPin, Phone, Mail, Search, Smartphone, Facebook, Instagram, Youtube, Linkedin } from 'lucide-react'
 import { isCapacitor } from '@/lib/utils'
 import { usePathname } from 'next/navigation'
 
@@ -84,10 +85,8 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
             <h2 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Concierge</h2>
             <div className="space-y-6">
               <div className="flex items-start gap-4 group cursor-pointer">
-                <img
-                  src="https://img.icons8.com/?size=100&id=7880&format=png&color=BF9B65"
-                  alt="Location"
-                  className="w-5 h-5 mt-1 opacity-40 group-hover:opacity-80 transition-opacity"
+                <MapPin
+                  className="w-5 h-5 mt-1 text-primary opacity-40 group-hover:opacity-80 transition-opacity"
                 />
                 <a
                   href="https://maps.app.goo.gl/PdTNoNuey3ecsxkt6"
@@ -100,26 +99,20 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
                 </a>
               </div>
               <div className="flex items-center gap-4 group">
-                <img
-                  src="https://img.icons8.com/?size=100&id=9729&format=png&color=BF9B65"
-                  alt="Phone"
-                  className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
+                <Phone
+                  className="w-5 h-5 text-primary opacity-40 group-hover:opacity-80 transition-opacity"
                 />
                 <a href={`tel:${contactConfig?.phone || '+919391032677'}`} className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase" aria-label={`Call us at ${contactConfig?.phone || '+91 93910 32677'}`}>{contactConfig?.phone || '+91 93910 32677'}</a>
               </div>
               <div className="flex items-center gap-4 group">
-                <img
-                  src="https://img.icons8.com/?size=100&id=12580&format=png&color=BF9B65"
-                  alt="Email"
-                  className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
+                <Mail
+                  className="w-5 h-5 text-primary opacity-40 group-hover:opacity-80 transition-opacity"
                 />
                 <a href={`mailto:${contactConfig?.email || 'support@aurerxa.com'}`} className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase" aria-label={`Email us at ${contactConfig?.email || 'support@aurerxa.com'}`}>{contactConfig?.email || 'support@aurerxa.com'}</a>
               </div>
               <div className="flex items-center gap-4 group cursor-pointer tactile-press" onClick={openSearch}>
-                <img
-                  src="https://img.icons8.com/?size=100&id=132&format=png&color=BF9B65"
-                  alt="Search"
-                  className="w-5 h-5 opacity-40 group-hover:opacity-80 transition-opacity"
+                <Search
+                  className="w-5 h-5 text-primary opacity-40 group-hover:opacity-80 transition-opacity"
                 />
                 <span className="text-[11px] text-muted-foreground group-hover:text-foreground transition-colors tracking-widest uppercase luxe-underline">Search Our Heritage</span>
               </div>
@@ -130,10 +123,8 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
                   className="inline-flex items-center gap-4 px-6 py-3 bg-primary/5 border border-primary/10 rounded-2xl hover:bg-primary/10 transition-all duration-500 group group"
                 >
                   <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                    <img
-                      src="https://img.icons8.com/?size=100&id=17836&format=png&color=BF9B65"
-                      alt="Android"
-                      className="w-5 h-5 opacity-90"
+                    <Smartphone
+                      className="w-5 h-5 text-primary opacity-90"
                     />
                   </div>
                   <div className="flex flex-col text-left">
@@ -147,10 +138,12 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
                     <p className="text-[9px] text-muted-foreground uppercase tracking-[0.3em] font-medium opacity-60">Soon Available On</p>
                     <div className="w-5 h-px bg-primary/20" />
                   </div>
-                  <img
+                  <NextImage
                     src="/App-Store-and-Google-Play-badges-removebg-preview.png"
                     alt="App Store and Google Play"
-                    className="h-30 w-auto object-contain opacity-40 hover:opacity-70 transition-opacity duration-700 grayscale hover:grayscale-0"
+                    width={180}
+                    height={60}
+                    className="h-10 w-auto object-contain opacity-40 hover:opacity-70 transition-opacity duration-700 grayscale hover:grayscale-0"
                   />
                 </div>
               </div>
@@ -163,10 +156,10 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
           <span className="text-[10px] font-premium-sans text-primary/60 uppercase tracking-[0.2em] w-full md:w-auto mb-4 md:mb-0 text-center md:text-left">Follow the Legacy</span>
           <div className="flex gap-10 items-center">
             {[
-              { id: '59780', label: 'Facebook', href: 'https://facebook.com/aurerxa' },
-              { id: '32309', label: 'Instagram', href: 'https://instagram.com/aurerxa' },
-              { id: '37326', label: 'YouTube', href: 'https://youtube.com/@aurerxa' },
-              { id: '8808', label: 'LinkedIn', href: 'https://linkedin.com/company/aurerxa' }
+              { icon: Facebook, label: 'Facebook', href: 'https://facebook.com/aurerxa' },
+              { icon: Instagram, label: 'Instagram', href: 'https://instagram.com/aurerxa' },
+              { icon: Youtube, label: 'YouTube', href: 'https://youtube.com/@aurerxa' },
+              { icon: Linkedin, label: 'LinkedIn', href: 'https://linkedin.com/company/aurerxa' }
             ].map((social) => (
               <a
                 key={social.label}
@@ -176,10 +169,8 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
                 className="group relative flex items-center justify-center transition-all duration-500"
                 aria-label={social.label}
               >
-                <img
-                  src={`https://img.icons8.com/?size=100&id=${social.id}&format=png&color=BF9B65`}
-                  alt={social.label}
-                  className="w-5 h-5 opacity-40 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110"
+                <social.icon
+                  className="w-5 h-5 text-primary opacity-40 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110"
                 />
                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[8px] opacity-0 group-hover:opacity-100 transition-opacity tracking-widest text-primary/60 uppercase pointer-events-none">
                   {social.label}

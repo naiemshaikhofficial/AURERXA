@@ -8,7 +8,7 @@ import type { ShopByGenderProps } from '@/components/shop-by-gender'
 import { Metadata } from 'next'
 
 // Lazy load ALL below-hero components to reduce initial JS bundle and TBT
-const Heritage = dynamic(() => import('@/components/heritage').then(mod => mod.Heritage))
+import { Heritage } from '@/components/heritage'
 const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
 const CategoryBrowsing = dynamic<CategoryBrowsingProps>(() => import('@/components/category-browsing').then(mod => mod.CategoryBrowsing))
 const ShopByGender = dynamic<ShopByGenderProps>(() => import('@/components/shop-by-gender').then(mod => mod.ShopByGender))
@@ -229,22 +229,22 @@ export default function HomePage() {
         <Hero />
       </section>
 
-      <section id="brand-heritage">
+      <section id="brand-heritage" className="relative z-10">
         <Heritage />
       </section>
 
       {/* Dynamic Hero Carousel (Bridal Series & More) */}
       <section id="bridal-collections" className="bg-background">
-        <Suspense fallback={<div className="h-[80vh] w-full bg-background animate-pulse" />}>
+        <Suspense fallback={<div className="h-[80vh] w-full bg-background"><SectionSkeleton type="collection" columns={1} /></div>}>
           <HeroCarouselSection />
         </Suspense>
       </section>
 
 
-      <Suspense fallback={<div className="py-24 h-96 bg-background animate-pulse" />}>
+      <Suspense fallback={<div className="py-24 px-6 max-w-7xl mx-auto"><SectionSkeleton type="collection" columns={4} /></div>}>
         <CategoryBrowsingSection />
       </Suspense>
-      <Suspense fallback={<div className="py-24 h-96 bg-background animate-pulse" />}>
+      <Suspense fallback={<div className="py-24 px-6 max-w-7xl mx-auto"><SectionSkeleton type="collection" columns={2} /></div>}>
         <ShopByGenderSection />
       </Suspense>
       <OccasionBrowsing />
@@ -261,7 +261,7 @@ export default function HomePage() {
         <BestsellersSection />
       </Suspense>
 
-      <Suspense fallback={<div className="h-screen w-full bg-background animate-pulse" />}>
+      <Suspense fallback={<div className="py-24 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
         <MaterialShowcaseSection />
       </Suspense>
 

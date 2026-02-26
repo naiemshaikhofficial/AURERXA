@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, usePathname } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -168,9 +169,12 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">
             <Link href="/" className="flex-shrink-0 group relative z-50 pt-1 md:pt-0" aria-label="AURERXA Home">
-              <img
+              <Image
                 src="/logo-new-v2.png"
                 alt="AURERXA Logo"
+                width={200}
+                height={60}
+                priority
                 className="h-12 md:h-14 w-auto object-contain opacity-90 group-hover:opacity-100 transition-opacity dark:invert-0"
               />
             </Link>
@@ -183,11 +187,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                 className="p-2 transition-colors duration-300 group tactile-press"
                 aria-label="Search"
               >
-                <img
-                  src="https://img.icons8.com/?size=100&id=VNGluvySmxmA&format=png&color=BF9B65"
-                  alt="Search"
-                  className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
-                />
+                <Search className="w-6 h-6 text-[#BF9B65] transition-transform duration-300 group-hover:scale-110" />
               </button>
 
               {/* Shop / Collections */}
@@ -196,20 +196,12 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                 className="p-2 transition-colors duration-300 group tactile-press"
                 aria-label="Shop Collections"
               >
-                <img
-                  src="https://img.icons8.com/?size=100&id=121367&format=png&color=BF9B65"
-                  alt="Shop"
-                  className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
-                />
+                <ShoppingBag className="w-6 h-6 text-[#BF9B65] transition-transform duration-300 group-hover:scale-110" />
               </Link>
 
               {/* Cart */}
               <Link href="/cart" className="relative p-2 transition-colors duration-300 group tactile-press" aria-label={`Cart with ${cartCount} items`}>
-                <img
-                  src="https://img.icons8.com/?size=100&id=Ot2P5D5MPltM&format=png&color=BF9B65"
-                  alt="Cart"
-                  className="w-6 h-6 transition-transform duration-300 group-hover:scale-110"
-                />
+                <ShoppingBag className="w-6 h-6 text-[#BF9B65] transition-transform duration-300 group-hover:scale-110" />
                 {cartCount > 0 && (
                   <span className="absolute top-0 right-0 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center border border-background shadow-lg">
                     {cartCount > 9 ? '9+' : cartCount}

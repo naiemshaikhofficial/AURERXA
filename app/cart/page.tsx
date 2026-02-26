@@ -8,7 +8,7 @@ import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
-import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight, Search } from 'lucide-react'
+import { Minus, Plus, Trash2, ShoppingBag, Loader2, ArrowRight, Search, CreditCard } from 'lucide-react'
 import { useSearch } from '@/context/search-context'
 import { DeliveryChecker } from '@/components/delivery-checker'
 
@@ -185,7 +185,7 @@ export default function CartPage() {
                                     </Link>
 
                                     <div className="mt-8 pt-6 border-t border-border flex items-center justify-center gap-4 opacity-30 grayscale hover:grayscale-0 hover:opacity-60 transition-all duration-500">
-                                        <img src="https://img.icons8.com/?size=100&id=13611&format=png&color=FFFFFF" alt="Visa" className="h-6 invert dark:invert-0" />
+                                        <CreditCard className="w-6 h-6 text-foreground" />
                                         <img src="/Mastercard-logo.svg" alt="Mastercard" className="h-6 invert dark:invert-0" />
                                         <img src="/upi-icon.svg" alt="UPI" className="h-6 invert dark:invert-0" />
                                         <img src="/Rupay-Logo.png" alt="RuPay" className="h-6" />

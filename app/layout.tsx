@@ -13,6 +13,7 @@ import { Analytics } from "@vercel/analytics/next"
 const MobileInstallPrompt = dynamic(() => import('@/components/mobile-install-prompt').then(mod => mod.MobileInstallPrompt))
 const NotificationManager = dynamic(() => import('@/components/notification-manager').then(mod => mod.NotificationManager))
 const CartSheet = dynamic(() => import('@/components/cart-sheet').then(mod => mod.CartSheet))
+import Script from 'next/script'
 
 const geist = Geist({
   subsets: ['latin'],
@@ -305,7 +306,6 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL!} crossOrigin="" />
         <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL!} />
-        <link rel="preconnect" href="https://img.icons8.com" />
 
         <script
           type="application/ld+json"
@@ -325,16 +325,24 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="afterInteractive"
+        />
+        <Script
+          src="https://sdk.cashfree.com/js/v3/cashfree.js"
+          strategy="afterInteractive"
+        />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
-          <CartProvider>
-            <SearchProvider>
-              <AuthProvider initialProfile={profile}>
-                <ConsentProvider initialProfile={profile}>
+          <SearchProvider>
+            <AuthProvider initialProfile={profile}>
+              <ConsentProvider initialProfile={profile}>
+                <CartProvider>
                   <SmoothScroll>
                     <ErrorBoundary componentName="Application Root">
                       {(() => {
@@ -391,10 +399,10 @@ export default async function RootLayout({
                       </Suspense>
                     </ErrorBoundary>
                   </SmoothScroll>
-                </ConsentProvider>
-              </AuthProvider>
-            </SearchProvider>
-          </CartProvider>
+                </CartProvider>
+              </ConsentProvider>
+            </AuthProvider>
+          </SearchProvider>
         </ThemeProvider>
       </body>
     </html>
