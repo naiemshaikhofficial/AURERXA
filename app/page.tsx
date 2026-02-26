@@ -18,6 +18,7 @@ const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod =>
 const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => mod.Newsletter))
 const RecentlyViewed = dynamic(() => import('@/components/recently-viewed').then(mod => mod.RecentlyViewed))
 const MaterialShowcase = dynamic<any>(() => import('@/components/material-showcase').then(mod => mod.MaterialShowcase))
+const TopStyles = dynamic(() => import('@/components/top-styles').then(mod => mod.TopStyles))
 
 async function NewReleasesSection() {
   const { getNewReleases } = await import('./actions')
@@ -87,6 +88,11 @@ async function FeaturedCollectionsSection() {
   const { getCategories } = await import('./actions')
   const categories = await getCategories()
   return <FeaturedCollections categories={categories} />
+}
+
+async function TopStylesSection() {
+  const { TopStyles } = await import('@/components/top-styles')
+  return <TopStyles />
 }
 
 async function HeroCarouselSection() {
@@ -246,6 +252,10 @@ export default function HomePage() {
 
       <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="collection" columns={4} /></div>}>
         <FeaturedCollectionsSection />
+      </Suspense>
+
+      <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
+        <TopStylesSection />
       </Suspense>
 
       <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
