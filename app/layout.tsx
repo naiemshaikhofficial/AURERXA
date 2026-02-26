@@ -329,10 +329,6 @@ export default async function RootLayout({
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="afterInteractive"
         />
-        <Script
-          src="https://sdk.cashfree.com/js/v3/cashfree.js"
-          strategy="afterInteractive"
-        />
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
