@@ -6,16 +6,16 @@ import Lenis from 'lenis'
 export function SmoothScroll({ children }: { children: ReactNode }) {
     useEffect(() => {
         const lenis = new Lenis({
-            duration: 1.2, // Slightly longer for luxurious feel
+            duration: 1.0, // Snappier response
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
             orientation: 'vertical',
             gestureOrientation: 'vertical',
             smoothWheel: true,
             wheelMultiplier: 1,
-            touchMultiplier: 1.5,
+            touchMultiplier: 1.0, // Reverted to standard to avoid jitter
             infinite: false,
-            syncTouch: true,
-            lerp: 0.1, // Added lerp for smoother release
+            syncTouch: false, // CRITICAL: Disable to prevent click masking on mobile
+            lerp: 0.1,
         })
 
         let rafId: number
