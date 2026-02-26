@@ -149,7 +149,7 @@ async function checkIsAdmin() {
 }
 
 // Helper to get authenticated supabaseServer client
-async function getAuthClient() {
+const getAuthClient = cache(async () => {
   try {
     const cookieStore = await cookies()
     return createServerClient(
@@ -194,7 +194,7 @@ async function getAuthClient() {
       }
     )
   }
-}
+})
 
 // Check if user has a pending order for a specific product
 export async function checkPendingOrder(productId: string) {
@@ -226,7 +226,7 @@ export async function checkPendingOrder(productId: string) {
   }
 }
 
-export async function getCurrentUserProfile() {
+export const getCurrentUserProfile = cache(async () => {
   try {
     const client = await getAuthClient()
     const { data: { user } } = await client.auth.getUser()
@@ -257,7 +257,7 @@ export async function getCurrentUserProfile() {
     // Silent fail for dynamic server usage errors during build
     return null
   }
-}
+})
 
 export async function signOutAction() {
   try {

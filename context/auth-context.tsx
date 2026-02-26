@@ -44,7 +44,7 @@ export function AuthProvider({
 
                 if (currentUser) {
                     const [profileRes, adminRes] = await Promise.all([
-                        supabase.from('profiles').select('*').eq('id', currentUser.id).maybeSingle(),
+                        supabase.from('profiles').select('id, full_name, email, phone_number, is_banned').eq('id', currentUser.id).maybeSingle(),
                         supabase.from('admin_users').select('role').eq('id', currentUser.id).maybeSingle()
                     ])
 
@@ -91,7 +91,7 @@ export function AuthProvider({
                 setUser(currentUser)
                 if (currentUser) {
                     const [profileRes, adminRes] = await Promise.all([
-                        supabase.from('profiles').select('*').eq('id', currentUser.id).maybeSingle(),
+                        supabase.from('profiles').select('id, full_name, email, phone_number, is_banned').eq('id', currentUser.id).maybeSingle(),
                         supabase.from('admin_users').select('role').eq('id', currentUser.id).maybeSingle()
                     ])
                     if (profileRes.data) {

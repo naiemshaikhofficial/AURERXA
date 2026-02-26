@@ -1,6 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 import { createServerClient } from '@supabase/ssr'
 import { createDelhiveryShipment } from '../actions'
 
@@ -27,7 +28,7 @@ function bustCache(...prefixes: string[]) {
     }
 }
 
-async function getAuthClient() {
+const getAuthClient = cache(async () => {
     const cookieStore = await cookies()
     return createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,13 +44,13 @@ async function getAuthClient() {
             },
         }
     )
-}
+})
 
 // ============================================
 // AUTH & ROLE CHECKS
 // ============================================
 
-export async function checkAdminRole() {
+export const checkAdminRole = cache(async () => {
     try {
         const client = await getAuthClient()
         const { data: { user }, error: authError } = await client.auth.getUser()
@@ -71,7 +72,7 @@ export async function checkAdminRole() {
     } catch (err) {
         return null
     }
-}
+})
 
 // ============================================
 // DASHBOARD STATS
@@ -426,7 +427,7 @@ export async function getAdminOrders(
 
     let query = client
         .from('orders')
-        .select('*, order_items(*, products(name, image_url, weight_grams, purity))', { count: 'exact' })
+        .select('id, order_number, total, status, created_at, tracking_number, payment_method, user_id, order_items(id, product_id, quantity, price, products(name, image_url, weight_grams, purity))', { count: 'exact' })
 
     if (status && status !== 'all') query = query.eq('status', status)
     if (dateFrom) query = query.gte('created_at', dateFrom)
@@ -661,7 +662,7 @@ export async function getAdminAllProducts(
 
     let query = client
         .from('products')
-        .select('*, categories(name)', { count: 'exact' })
+        .select('id, name, price, stock, image_url, category_id, sub_category_id, created_at, categories(name)', { count: 'exact' })
 
     if (search) query = query.ilike('name', `%${search}%`)
     if (categoryId && categoryId !== 'all') query = query.eq('category_id', categoryId)

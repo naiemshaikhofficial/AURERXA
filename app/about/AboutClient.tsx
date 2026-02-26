@@ -77,6 +77,7 @@ export function AboutClient() {
                         fill
                         className="object-cover opacity-30 grayscale contrast-125 brightness-[0.4] object-top md:object-center dark:invert-0 invert"
                         priority
+                        sizes="100vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background" />
                 </motion.div>
@@ -133,6 +134,7 @@ export function AboutClient() {
                                     alt="Senior Artist Bapan Hembromb"
                                     fill
                                     className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100 object-center scale-105"
+                                    sizes="(max-width: 768px) 100vw, 50vw"
                                 />
                             </ParallaxScroll>
                             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-background/20 to-transparent pointer-events-none" />
@@ -176,6 +178,7 @@ export function AboutClient() {
                                     alt="Forging integrity"
                                     fill
                                     className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 brightness-75 opacity-90 group-hover:opacity-100 object-top scale-105"
+                                    sizes="(max-width: 768px) 100vw, 50vw"
                                 />
                             </ParallaxScroll>
                             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-1000" />
@@ -215,6 +218,7 @@ export function AboutClient() {
                                 fill
                                 className="object-cover opacity-15 grayscale brightness-50 object-center scale-105"
                                 style={{ willChange: 'transform' }}
+                                sizes="100vw"
                             />
                         </ParallaxScroll>
                         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/40 to-background" />
@@ -255,6 +259,7 @@ export function AboutClient() {
                                         alt="Senior Artist Bapan Hembromb"
                                         fill
                                         className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:opacity-100 object-center scale-105"
+                                        sizes="(max-width: 1024px) 100vw, 450px"
                                     />
                                 </ParallaxScroll>
                                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-background/40 to-transparent pointer-events-none" />
@@ -278,6 +283,7 @@ export function AboutClient() {
                                         alt="Nijam Shaikh - Founder & CEO"
                                         fill
                                         className="object-cover object-top filter contrast-[1.1] grayscale transition-all duration-1000 scale-105 group-hover:scale-100 group-hover:grayscale-0"
+                                        sizes="(max-width: 1024px) 100vw, 50vw"
                                     />
                                 </ParallaxScroll>
                                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-background/10 to-transparent pointer-events-none" />

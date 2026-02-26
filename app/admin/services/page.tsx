@@ -47,10 +47,10 @@ export default function ServicesAdminPage() {
         setLoading(true)
 
         const [tryOn, goldHarvest, jewelryCare, boutique] = await Promise.all([
-            supabase.from('virtual_try_on_requests').select('*').order('created_at', { ascending: false }),
-            supabase.from('gold_harvest_leads').select('*').order('created_at', { ascending: false }),
-            supabase.from('jewelry_care_appointments').select('*').order('created_at', { ascending: false }),
-            supabase.from('boutique_appointments').select('*').order('created_at', { ascending: false }),
+            supabase.from('virtual_try_on_requests').select('id, name, email, phone, status, preferred_date, preferred_time, notes, created_at').order('created_at', { ascending: false }),
+            supabase.from('gold_harvest_leads').select('id, name, email, phone, status, monthly_amount, duration, created_at').order('created_at', { ascending: false }),
+            supabase.from('jewelry_care_appointments').select('id, name, email, phone, status, service_type, preferred_date, notes, created_at').order('created_at', { ascending: false }),
+            supabase.from('boutique_appointments').select('id, name, email, phone, status, preferred_date, preferred_time, visit_reason, created_at').order('created_at', { ascending: false }),
         ])
 
         setData({

@@ -1,6 +1,7 @@
 'use server'
 
 import { cookies } from 'next/headers'
+import { cache } from 'react'
 import { createServerClient } from '@supabase/ssr'
 import webpush from 'web-push'
 
@@ -14,7 +15,7 @@ if (process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     )
 }
 
-async function getSupabase() {
+const getSupabase = cache(async () => {
     const cookieStore = await cookies()
     return createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,7 +31,7 @@ async function getSupabase() {
             },
         }
     )
-}
+})
 
 export async function saveSubscription(subscription: any) {
     const supabase = await getSupabase()
@@ -57,7 +58,7 @@ export async function sendNotification(title: string, body: string, url: string 
     const supabase = await getSupabase()
     const { data: subscriptions, error } = await supabase
         .from('push_subscriptions')
-        .select('*')
+        .select('endpoint, p256dh, auth')
 
     if (error) {
         console.error('Fetch subscriptions error:', error)
@@ -114,7 +115,7 @@ export async function notifyOrderStatusChange(userId: string, orderNumber: strin
     const supabase = await getSupabase()
     const { data: subscriptions } = await supabase
         .from('push_subscriptions')
-        .select('*')
+        .select('endpoint, p256dh, auth')
         .eq('user_id', userId)
 
     if (!subscriptions || subscriptions.length === 0) return { success: false, error: 'No subscriptions found' }
@@ -158,7 +159,7 @@ export async function notifyAbandonedCart(userId: string, productName: string, p
     const supabase = await getSupabase()
     const { data: subscriptions } = await supabase
         .from('push_subscriptions')
-        .select('*')
+        .select('endpoint, p256dh, auth')
         .eq('user_id', userId)
 
     if (!subscriptions || subscriptions.length === 0) return { success: false }
