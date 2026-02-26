@@ -215,7 +215,8 @@ export default function CheckoutPage() {
         if (addr) {
             updateShippingRate(addr.pincode, paymentMethod === 'cod')
         }
-    }, [addresses, selectedAddress, paymentMethod, updateShippingRate])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [addresses, selectedAddress, paymentMethod])
 
     const handleSaveAddress = useCallback(async (formData: any) => {
         setError(null)
