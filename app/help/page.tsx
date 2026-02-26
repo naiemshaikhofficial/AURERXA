@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -44,7 +42,6 @@ export default function HelpPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
             <main className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-2xl mx-auto">
                     <div className="text-center mb-12">
@@ -141,7 +138,6 @@ export default function HelpPage() {
                     </div>
                 </div>
             </main>
-            <Footer />
         </div>
     )
 }

@@ -199,27 +199,31 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
             <div className="hidden md:flex flex-1 justify-center max-w-xl">
               <button
                 onClick={openSearch}
-                className="w-full flex items-center gap-3 px-6 py-2.5 rounded-full bg-card/10 border border-border/60 hover:border-primary/40 hover:bg-card/20 transition-all duration-300 group shadow-sm"
+                className="w-full flex items-center justify-center gap-3 px-6 py-2.5 rounded-full bg-card/10 border border-border/60 hover:border-primary/40 hover:bg-card/20 transition-all duration-300 group shadow-sm relative"
               >
-                <Search className="w-4 h-4 text-foreground/60 group-hover:text-primary transition-colors stroke-[1.5px]" />
-                <div className="relative h-4 w-full flex items-center overflow-hidden">
-                  <span className="text-[11px] text-foreground/40 font-light tracking-widest uppercase items-center flex mr-2 shrink-0">
-                    Search for
-                  </span>
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={searchTermIndex}
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -20, opacity: 0 }}
-                      transition={{ duration: 0.5, ease: "easeInOut" }}
-                      className="text-[11px] text-foreground/60 font-light tracking-widest uppercase whitespace-nowrap"
-                    >
-                      {searchTerms[searchTermIndex]}
-                    </motion.span>
-                  </AnimatePresence>
+                <div className="flex items-center gap-3 w-full justify-center">
+                  <Search className="w-4 h-4 text-foreground/60 group-hover:text-primary transition-colors stroke-[1.5px] shrink-0" />
+                  <div className="flex items-center">
+                    <span className="text-[11px] text-foreground/40 font-light tracking-widest uppercase shrink-0 mr-2">
+                      Search for
+                    </span>
+                    <div className="relative h-4 overflow-hidden min-w-[120px]">
+                      <AnimatePresence mode="wait">
+                        <motion.span
+                          key={searchTermIndex}
+                          initial={{ y: 20, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: -20, opacity: 0 }}
+                          transition={{ duration: 0.5, ease: "easeInOut" }}
+                          className="absolute inset-0 text-[11px] text-foreground/60 font-light tracking-widest uppercase whitespace-nowrap flex items-center"
+                        >
+                          {searchTerms[searchTermIndex]}
+                        </motion.span>
+                      </AnimatePresence>
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-auto flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="text-[8px] text-muted-foreground border border-border rounded px-1">⌘K</span>
                 </div>
               </button>

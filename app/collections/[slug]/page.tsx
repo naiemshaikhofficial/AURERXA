@@ -1,6 +1,5 @@
 import { CollectionsClient } from '../collections-client'
 import { getFilteredProducts, getCategories, getSubCategories, getUsedTags } from '@/app/actions'
-import { Navbar } from '@/components/navbar'
 
 interface PageProps {
     params: Promise<{
@@ -71,7 +70,6 @@ export default async function DynamicCollectionsPage({ params }: PageProps) {
 
     return (
         <main>
-            <Navbar />
             <CollectionsClient
                 initialProducts={products as any}
                 categories={subCategories as any}

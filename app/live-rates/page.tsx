@@ -1,6 +1,4 @@
 import { Metadata } from 'next'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { GoldRateCard } from '@/components/gold-rate-card'
 import Script from 'next/script'
 
@@ -51,8 +49,6 @@ export default function LiveRatesPage() {
                 strategy="afterInteractive"
             />
 
-            <Navbar />
-
             <main className="pt-20">
                 {/* Hero / Information Section for SEO */}
                 <section className="px-6 pt-16 lg:pt-24 max-w-5xl mx-auto text-center space-y-6">
@@ -88,8 +84,6 @@ export default function LiveRatesPage() {
 
 
             </main>
-
-            <Footer />
         </div>
     )
 }

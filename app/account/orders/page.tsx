@@ -4,8 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Script from 'next/script'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { getOrders, initiatePayment, verifyPayment, getOrderById } from '@/app/actions'
 import { Loader2, Package, ChevronRight, Search, Filter, X, Clock, CreditCard, RefreshCw } from 'lucide-react'
 import supabaseLoader from '@/lib/supabase-loader'
@@ -178,7 +176,6 @@ export default function OrdersPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
 
 
             {/* Verifying Overlay */}
@@ -427,7 +424,6 @@ export default function OrdersPage() {
                 </div>
             </main>
 
-            <Footer />
         </div>
     )
 }

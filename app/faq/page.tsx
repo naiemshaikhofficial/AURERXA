@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { ChevronDown } from 'lucide-react'
 
 const faqs = [
@@ -175,8 +173,6 @@ export default function FAQPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
-
             <main className="pt-24 pb-24">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h1 className="text-4xl font-serif font-bold mb-4 text-center">Frequently Asked Questions</h1>
@@ -221,8 +217,6 @@ export default function FAQPage() {
                     </div>
                 </div>
             </main>
-
-            <Footer />
         </div>
     )
 }

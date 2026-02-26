@@ -1,8 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Compass } from 'lucide-react'
 
@@ -16,7 +14,6 @@ export default function NotFound() {
             <CartProvider>
                 <SearchProvider>
                     <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
-                        <Navbar />
 
                         <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-24 text-center">
                             {/* Decorative Background Elements */}
@@ -64,7 +61,6 @@ export default function NotFound() {
                             <div className="absolute top-24 left-24 bottom-24 right-24 border border-border/50 pointer-events-none hidden md:block" />
                         </main>
 
-                        <Footer />
                     </div>
                 </SearchProvider>
             </CartProvider>

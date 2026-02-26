@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
@@ -38,7 +36,6 @@ export default function CartPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
-            <Navbar />
             <main className="pb-24 pt-32 min-h-[70vh]">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between mb-12">
@@ -196,8 +193,6 @@ export default function CartPage() {
                     )}
                 </div>
             </main>
-
-            <Footer />
         </div>
     )
 }

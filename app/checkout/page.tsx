@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import Script from 'next/script'
 import { useRouter } from 'next/navigation'
-import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -440,7 +439,6 @@ export default function CheckoutPage() {
                     <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
                     <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground/60">Securing Session...</p>
                 </main>
-                <Footer />
             </div>
         )
     }
@@ -462,7 +460,6 @@ export default function CheckoutPage() {
                         </Button>
                     </Link>
                 </main>
-                <Footer />
             </div>
         )
     }
@@ -991,7 +988,6 @@ export default function CheckoutPage() {
                 </div>
             </main>
 
-            <Footer />
         </div>
     )
 }

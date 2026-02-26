@@ -6,8 +6,6 @@ import { useParams, useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import Script from 'next/script'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
 import { getOrderById, getOrderTracking, verifyPayment, getOrderPaymentSession, initiatePayment, requestReturn, getReturnByOrderId } from '@/app/actions'
 import { Loader2, Package, ChevronRight, CheckCircle, Truck, MapPin, CreditCard, Gift, Clock, AlertCircle, RefreshCw, FileText, Printer, ShieldAlert, Gavel, Scale, PlayCircle, LifeBuoy, RotateCcw, ExternalLink, ShoppingBag, PackageCheck, HelpCircle, XCircle, Upload, ShieldCheck, IndianRupee } from 'lucide-react'
@@ -266,7 +264,6 @@ export default function OrderDetailPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
 
             <main className="pt-16 md:pt-24 pb-24">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1357,7 +1354,6 @@ export default function OrderDetailPage() {
                 </div>
             )}
 
-            <Footer />
         </div>
     )
 }

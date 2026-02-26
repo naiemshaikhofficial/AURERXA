@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import supabaseLoader from '@/lib/supabase-loader'
 import { Button } from '@/components/ui/button'
 import { getWishlist, removeFromWishlist } from '@/app/actions'
@@ -141,7 +139,6 @@ export default function WishlistPage() {
                 </div>
             </main>
 
-            <Footer />
         </div>
     )
 }

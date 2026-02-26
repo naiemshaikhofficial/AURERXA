@@ -2,8 +2,6 @@ import React, { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { getProducts, getCurrentUserProfile } from '@/app/actions'
 import { BulkOrderForm } from '@/components/bulk-order-form'
-import { Footer } from '@/components/footer'
-import { Navbar } from '@/components/navbar'
 
 export const metadata: Metadata = {
     title: 'Bulk & Wholesale Orders | AURERXA',
@@ -21,7 +19,6 @@ async function BulkOrderContent() {
 export default function BulkOrderPage() {
     return (
         <div className="min-h-screen bg-background pb-24">
-            <Navbar />
             {/* Hero Section */}
             <section className="relative pt-24 md:pt-32 pb-16 px-6 lg:px-12">
                 <div className="max-w-5xl mx-auto text-center">
@@ -72,7 +69,6 @@ export default function BulkOrderPage() {
                 </Suspense>
             </section>
 
-            <Footer />
         </div>
     )
 }

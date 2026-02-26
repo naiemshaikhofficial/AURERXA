@@ -1,8 +1,6 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { getReturnRequests } from '@/app/actions'
 import { Loader2, Package, ArrowLeft, Clock, CheckCircle, Truck, RefreshCw, AlertCircle, FileText, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
@@ -53,7 +51,6 @@ export default function ReturnsPortal() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
 
             <main className="pt-24 pb-24">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -178,7 +175,6 @@ export default function ReturnsPortal() {
                 </div>
             </main>
 
-            <Footer />
         </div>
     )
 }

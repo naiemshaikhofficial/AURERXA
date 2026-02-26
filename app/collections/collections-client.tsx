@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Search } from 'lucide-react'
-import { Footer } from '@/components/footer'
 import { useSearch } from '@/context/search-context'
 import { getFilteredProducts } from '@/app/actions'
 import { HeritageHighlights } from '@/components/heritage-highlights'
@@ -251,7 +250,6 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
                 </AnimatePresence>
             </div>
             <HeritageHighlights />
-            <Footer />
         </div>
     )
 }

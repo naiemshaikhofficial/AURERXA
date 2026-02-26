@@ -2,8 +2,6 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { SearchProvider } from '@/context/search-context'
@@ -27,7 +25,6 @@ export default function RootError({
             <CartProvider>
                 <SearchProvider>
                     <div className="min-h-screen bg-background text-foreground selection:bg-destructive/30">
-                        <Navbar />
 
                         <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-24 text-center">
                             {/* Decorative Background Elements */}
@@ -85,7 +82,6 @@ export default function RootError({
                             </div>
                         </main>
 
-                        <Footer />
                     </div>
                 </SearchProvider>
             </CartProvider>

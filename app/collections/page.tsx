@@ -1,6 +1,5 @@
 import { CollectionsClient } from './collections-client'
 import { getFilteredProducts, getCategories, getUsedTags, getSubCategories } from '@/app/actions'
-import { Navbar } from '@/components/navbar'
 
 interface PageProps {
     searchParams: Promise<{
@@ -138,7 +137,6 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
             />
-            <Navbar />
             <CollectionsClient
                 initialProducts={products as any}
                 categories={subCategories as any}
