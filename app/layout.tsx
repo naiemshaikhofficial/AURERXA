@@ -173,6 +173,7 @@ import { SearchModal } from '@/components/search-modal'
 import { DynamicTitle } from '@/components/dynamic-title'
 import { Footer } from '@/components/footer'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { ConciergeHub } from '@/components/concierge-hub'
 import { cn } from '@/lib/utils' // Added import
 import { headers } from 'next/headers'
 
@@ -388,6 +389,7 @@ export default async function RootLayout({
                       <SearchModal />
                       <DynamicTitle />
                       <BottomNav />
+                      <ConciergeHub />
 
                       <Toaster />
                       <SpeedInsights />

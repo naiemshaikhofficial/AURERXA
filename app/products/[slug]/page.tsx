@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { getProductBySlug, getRelatedProducts, isInWishlist } from '@/app/actions'
+import { getProductBySlug, getRelatedProducts, isInWishlist, getReviewStats } from '@/app/actions'
 import { ProductClient } from '@/components/product-client'
 import { notFound } from 'next/navigation'
 
@@ -132,7 +132,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         )
     }
 
-    const isWishlisted = await isInWishlist(product.id)
+    const [isWishlisted, reviewStats] = await Promise.all([
+        isInWishlist(product.id),
+        getReviewStats(product.id)
+    ])
 
     const baseUrl = 'https://www.aurerxa.com'
     const productUrl = `${baseUrl}/products/${product.slug}`
@@ -162,13 +165,13 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             name: 'AURERXA',
         },
         // Deep Schema: Ratings & Review Placeholders
-        aggregateRating: {
+        aggregateRating: reviewStats?.total > 0 ? {
             '@type': 'AggregateRating',
-            ratingValue: '4.9',
-            reviewCount: '12',
+            ratingValue: reviewStats.average,
+            reviewCount: reviewStats.total,
             bestRating: '5',
             worstRating: '1'
-        },
+        } : undefined,
         review: {
             '@type': 'Review',
             author: { '@type': 'Person', name: 'AURERXA Guest' },
@@ -230,7 +233,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             weight: {
                 '@type': 'QuantitativeValue',
                 value: product.weight_grams,
-                unitCode: 'GRM',
+                unitText: 'g',
             }
         } : {}),
         ...(product.dimensions_width && product.dimensions_height ? {

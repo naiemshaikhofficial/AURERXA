@@ -259,6 +259,59 @@ export const getCurrentUserProfile = cache(async () => {
   }
 })
 
+// ============================================
+// CONCIERGE & SUPPORT
+// ============================================
+
+export async function createSupportTicket(formData: any): Promise<ActionResponse> {
+  try {
+    const { subject, message, category, orderNumber, guestName, guestEmail, guestPhone } = formData
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+
+    const { error } = await supabaseServer
+      .from('tickets')
+      .insert({
+        user_id: user?.id || null,
+        subject,
+        message: sanitize(message),
+        category: category || 'General',
+        order_number: orderNumber || null,
+        guest_name: user ? null : guestName,
+        guest_email: user ? null : guestEmail,
+        guest_phone: user ? null : guestPhone,
+        status: 'open',
+        created_at: new Date().toISOString()
+      })
+
+    if (error) throw error
+    revalidatePath('/admin/tickets')
+    return { success: true }
+  } catch (err: any) {
+    console.error('Ticket creation error:', err)
+    return { success: false, error: err.message || 'Failed to create ticket' }
+  }
+}
+
+const BOT_KNOWLEDGE: Record<string, string> = {
+  "purity": "All AURERXA gold jewelry is BIS Hallmarked (22K/18K). Our silver is 99.99% pure ('Aurerxa Heritage Standard'). You will receive a digital certificate with every purchase.",
+  "shipping": "We offer Free Insured Shipping across India. Delivery usually takes 3-5 business days for ready masterpieces and 10-14 days for bespoke orders.",
+  "returns": "We provide a 15-day 'no-questions-asked' return policy for all standard collections. Custom/Bespoke items are eligible for lifetime buyback but not direct returns.",
+  "gold rate": "Our gold rates are updated every 10 minutes to match live market benchmarks, ensuring you always get the fairest heritage value.",
+  "care": "To maintain the shimmer, avoid contact with perfumes and chemicals. Clean gently with a soft silk cloth. We offer lifetime polishing services at our boutique."
+}
+
+export async function getBotResponse(query: string): Promise<string> {
+  const q = query.toLowerCase()
+  if (q.includes('purity') || q.includes('gold') || q.includes('silver')) return BOT_KNOWLEDGE["purity"]
+  if (q.includes('shipping') || q.includes('delivery') || q.includes('time')) return BOT_KNOWLEDGE["shipping"]
+  if (q.includes('return') || q.includes('refund') || q.includes('exchange')) return BOT_KNOWLEDGE["returns"]
+  if (q.includes('rate') || q.includes('price')) return BOT_KNOWLEDGE["gold rate"]
+  if (q.includes('care') || q.includes('clean') || q.includes('polish')) return BOT_KNOWLEDGE["care"]
+
+  return "I am the AURERXA Concierge Bot. I can assist you with information on Purity, Shipping, Returns, and Jewelry Care. For complex inquiries, please create a Support Ticket below or start a Live Chat."
+}
+
 export async function signOutAction() {
   try {
     const client = await getAuthClient()
@@ -732,7 +785,7 @@ export async function getGoldRates() {
       }
     },
     ['gold-rates'],
-    { revalidate: 3600, tags: ['rates'] }
+    { revalidate: 600, tags: ['rates'] }
   )()
 }
 
@@ -786,7 +839,7 @@ export async function getGlobalConfig(): Promise<GlobalConfig> {
       }
     },
     ['global-config'],
-    { revalidate: 3600, tags: ['settings', 'config'] }
+    { revalidate: 600, tags: ['settings', 'config'] }
   )()
 }
 
@@ -818,7 +871,7 @@ export const getBestsellers = unstable_cache(
     return data || []
   },
   ['bestsellers'],
-  { revalidate: 3600, tags: ['products', 'bestsellers'] }
+  { revalidate: 600, tags: ['products', 'bestsellers'] }
 )
 
 export async function getNewReleases(limit: number = 8) {

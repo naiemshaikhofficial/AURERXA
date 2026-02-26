@@ -272,8 +272,17 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                     <motion.div
                         initial={false}
                         animate={isHovered ? { x: ['-100%', '200%'] } : { x: '-100%' }}
-                        transition={{ duration: 1.5, ease: "easeInOut" }}
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent w-full skew-x-12"
+                        transition={{ duration: 1.2, ease: "easeInOut" }}
+                        className={cn(
+                            "absolute inset-0 w-full skew-x-12 opacity-0 group-hover:opacity-100 transition-opacity",
+                            product.material_type === 'silver' ? "bg-gradient-to-r from-transparent via-blue-100/20 to-transparent" : "bg-gradient-to-r from-transparent via-amber-200/20 to-transparent"
+                        )}
+                    />
+                    <motion.div
+                        initial={false}
+                        animate={isHovered ? { x: ['-150%', '250%'] } : { x: '-150%' }}
+                        transition={{ duration: 0.8, delay: 0.1, ease: "easeOut" }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-1/2 -skew-x-12 opacity-0 group-hover:opacity-100 transition-opacity"
                     />
                 </div>
 
