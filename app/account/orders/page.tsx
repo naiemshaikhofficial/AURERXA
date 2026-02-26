@@ -132,22 +132,6 @@ export default function OrdersPage() {
                 }
                 const rzp = new (window as any).Razorpay(options)
                 rzp.open()
-            } else if (paymentResult.gateway === 'cashfree') {
-                const cf = paymentResult as any
-                if (!(window as any).Cashfree) {
-                    toast.error('Payment system loading...')
-                    setRetryingOrderId(null)
-                    return
-                }
-
-                const cashfree = (window as any).Cashfree({
-                    mode: cf.mode || "sandbox"
-                })
-
-                cashfree.checkout({
-                    paymentSessionId: cf.paymentSessionId,
-                    redirectTarget: "_self",
-                })
             }
         } catch (error) {
             console.error('Retry Payment Error:', error)
@@ -196,10 +180,7 @@ export default function OrdersPage() {
                 src="https://checkout.razorpay.com/v1/checkout.js"
                 strategy="afterInteractive"
             />
-            <Script
-                src="https://sdk.cashfree.com/js/v3/cashfree.js"
-                strategy="afterInteractive"
-            />
+
 
             {/* Verifying Overlay */}
             {verifying && (
