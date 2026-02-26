@@ -48,6 +48,7 @@ export function ConsentProvider({
     const [userDetails, setUserDetails] = useState<UserDetails>({})
     const [sessionId, setSessionId] = useState<string | null>(null)
     const [showPreferenceManager, setShowPreferenceManager] = useState(false)
+    const hasInitializedRef = React.useRef(false)
 
     // Helper to sync to DB
     const syncToDB = useCallback(async (status: ConsentStatus, details: UserDetails, sid: string, prefs: ConsentPreferences) => {
@@ -81,6 +82,9 @@ export function ConsentProvider({
 
     // Initialize from cookies
     useEffect(() => {
+        if (hasInitializedRef.current) return
+        hasInitializedRef.current = true
+
         const cookiesStr = document.cookie.split('; ')
         const consentCookie = cookiesStr.find(row => row.startsWith('ua-consent='))
         const prefsCookie = cookiesStr.find(row => row.startsWith('ua-preferences='))
@@ -134,7 +138,8 @@ export function ConsentProvider({
         } else if (status !== 'undecided') {
             syncToDB(status, currentDetails, sid, currentPrefs)
         }
-    }, [initialProfile, syncToDB])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const setConsent = (status: ConsentStatus, prefs?: ConsentPreferences) => {
         const finalPrefs = prefs || (status === 'granted'
