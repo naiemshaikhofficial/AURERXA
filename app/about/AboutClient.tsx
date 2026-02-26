@@ -1,8 +1,6 @@
 'use client'
 
 import React, { useRef } from 'react'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import Image from 'next/image'
 import { ParallaxScroll } from '@/components/parallax-scroll'
 import { motion, useScroll, useTransform } from 'framer-motion'
@@ -63,7 +61,6 @@ export function AboutClient() {
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 overflow-x-hidden">
-            <Navbar />
 
             {/* Global Smoothness Overlays */}
             <div className="fixed inset-0 z-50 pointer-events-none opacity-[0.02] bg-[url('/scanline.png')] bg-repeat mix-blend-overlay" />
@@ -349,7 +346,6 @@ export function AboutClient() {
             <section className="pb-24 text-center opacity-30">
                 <span className="text-[9px] uppercase tracking-[0.6em] text-foreground">Aurerxa Promise</span>
             </section>
-            <Footer />
         </div>
     )
 }

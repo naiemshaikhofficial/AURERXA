@@ -1,8 +1,6 @@
 'use client'
 
 import React, { useRef } from 'react'
-import { Navbar } from '@/components/navbar'
-import { Footer } from '@/components/footer'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { Gem, Hammer, Hourglass } from 'lucide-react'
 
@@ -21,7 +19,6 @@ export default function PriceOfPerfectionPage() {
 
     return (
         <div className="min-h-screen bg-neutral-950 text-foreground selection:bg-primary/20">
-            <Navbar />
 
             <section ref={containerRef} className="pt-32 pb-16 md:py-48 relative overflow-hidden">
                 {/* Background Ambience with Parallax */}
@@ -138,7 +135,6 @@ export default function PriceOfPerfectionPage() {
                 </div>
             </section>
 
-            <Footer />
         </div>
     )
 }

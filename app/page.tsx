@@ -224,10 +224,6 @@ export default function HomePage() {
         <Hero />
       </section>
 
-      <section id="boutique-hero" aria-label="AURERXA Luxury Boutique Hero">
-        <Hero />
-      </section>
-
       {/* Dynamic Hero Carousel (Bridal Series & More) */}
       <section id="bridal-collections" className="bg-background">
         <Suspense fallback={<div className="h-[80vh] w-full bg-background"><SectionSkeleton type="collection" columns={1} /></div>}>
