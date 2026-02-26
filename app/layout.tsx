@@ -14,6 +14,7 @@ const MobileInstallPrompt = dynamic(() => import('@/components/mobile-install-pr
 const NotificationManager = dynamic(() => import('@/components/notification-manager').then(mod => mod.NotificationManager))
 const CartSheet = dynamic(() => import('@/components/cart-sheet').then(mod => mod.CartSheet))
 import Script from 'next/script'
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const geist = Geist({
   subsets: ['latin'],
@@ -388,6 +389,7 @@ export default async function RootLayout({
                       <SpeedInsights />
                       <Analytics />
 
+                      <GoogleAnalytics gaId="GT-WPLW7ZX3" />
                       <CookieConsent />
                       <TrackingScripts />
                       <Suspense fallback={null}>
