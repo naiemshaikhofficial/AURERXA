@@ -178,7 +178,7 @@ export function CustomOrderForm() {
           <h2 className="text-3xl sm:text-5xl md:text-7xl font-serif font-light mb-8 text-foreground tracking-widest italic">
             Custom <span className="text-primary">Jewelry</span>
           </h2>
-          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto font-light leading-relaxed tracking-widest italic">
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto font-light leading-relaxed tracking-[0.2em] uppercase">
             Bring your vision to life. Our master craftsmen will create a bespoke piece just for you.
           </p>
         </div>

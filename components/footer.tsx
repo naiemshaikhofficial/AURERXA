@@ -62,13 +62,10 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
             <h2 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Services</h2>
             <ul className="space-y-4">
               {[
-                { name: 'Personalized Visit', href: '/services/personalized-visit' },
-                { name: 'Gold Harvest Scheme', href: '/services/gold-harvest' },
-                { name: 'Ring Size Calculator', href: '/ring-size-calculator' },
-                { name: 'Jewellery Care', href: '/services/jewelry-care' },
                 { name: 'Bulk Orders', href: '/bulk-order' },
-                { name: 'Find a Boutique', href: '/stores' },
-                { name: 'Virtual Try-On', href: '/services/virtual-try-on' },
+                { name: 'Custom Jewelry', href: '/custom-jewelry' },
+                { name: 'Ring Size Calculator', href: '/ring-size-calculator' },
+                { name: 'The Price of Perfection', href: '/the-price-of-perfection' },
                 { name: 'Live Gold Rates', href: '/live-rates' }
               ].map((service) => (
                 <li key={service.name}>

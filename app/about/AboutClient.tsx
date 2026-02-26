@@ -346,6 +346,9 @@ export function AboutClient() {
                 </section>
             </main>
 
+            <section className="pb-24 text-center opacity-30">
+                <span className="text-[9px] uppercase tracking-[0.6em] text-foreground">Aurerxa Promise</span>
+            </section>
             <Footer />
         </div>
     )

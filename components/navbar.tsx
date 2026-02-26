@@ -220,9 +220,10 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                         {[
                           { name: 'Home', href: '/' },
                           { name: 'Shop Collections', href: '/collections' },
-                          { name: 'Ring Size Calculator', href: '/ring-size-calculator' },
                           { name: 'Custom Jewelry', href: '/custom-jewelry' },
+                          { name: 'The Price of Perfection', href: '/the-price-of-perfection' },
                           { name: 'Our Story', href: '/about' },
+                          { name: 'Ring Size Calculator', href: '/ring-size-calculator' },
                           { name: 'Blog', href: '/blog' },
                           { name: 'Contact Us', href: '/contact-us' },
                           { name: 'FAQs', href: '/faq' }
@@ -314,13 +315,13 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
             </div>
 
             {/* Desktop Menu */}
-            <div className="hidden md:flex gap-12 items-center">
-              {['Home', 'Our Story', 'Collections', 'Blog'].map((item) => (
+            <div className="hidden md:flex gap-10 lg:gap-12 items-center">
+              {['Home', 'Our Story', 'Collections', 'Custom Jewelry', 'Blog'].map((item) => (
                 <Link
                   key={item}
-                  href={item === 'Home' ? '/' : item === 'Our Story' ? '/about' : `/${item.toLowerCase().replace(' ', '-')}`}
-                  aria-current={pathname === (item === 'Home' ? '/' : item === 'Our Story' ? '/about' : `/${item.toLowerCase().replace(' ', '-')}`) ? 'page' : undefined}
-                  className="text-[10px] font-premium-sans text-white/40 hover:text-white transition-all duration-700 tracking-[0.4em] uppercase luxe-underline"
+                  href={item === 'Home' ? '/' : item === 'Our Story' ? '/about' : item === 'Custom Jewelry' ? '/custom-jewelry' : `/${item.toLowerCase().replace(' ', '-')}`}
+                  aria-current={pathname === (item === 'Home' ? '/' : item === 'Our Story' ? '/about' : item === 'Custom Jewelry' ? '/custom-jewelry' : `/${item.toLowerCase().replace(' ', '-')}`) ? 'page' : undefined}
+                  className="text-[9px] lg:text-[10px] font-premium-sans text-white/40 hover:text-white transition-all duration-700 tracking-[0.4em] uppercase luxe-underline whitespace-nowrap"
                 >
                   {item}
                 </Link>

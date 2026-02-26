@@ -9,18 +9,15 @@ import type { ShopByGenderProps } from '@/components/shop-by-gender'
 import { Metadata } from 'next'
 
 // Lazy load ALL below-hero components to reduce initial JS bundle and TBT
-import { Heritage } from '@/components/heritage'
 const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
 const CategoryBrowsing = dynamic<CategoryBrowsingProps>(() => import('@/components/category-browsing').then(mod => mod.CategoryBrowsing))
 const ShopByGender = dynamic<ShopByGenderProps>(() => import('@/components/shop-by-gender').then(mod => mod.ShopByGender))
 const OccasionBrowsing = dynamic(() => import('@/components/occasion-browsing').then(mod => mod.OccasionBrowsing))
 const FeaturedCollections = dynamic(() => import('@/components/featured-collections').then(mod => mod.FeaturedCollections))
 const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod => mod.Bestsellers))
-const CustomOrderForm = dynamic(() => import('@/components/custom-order-form').then(mod => mod.CustomOrderForm))
 const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => mod.Newsletter))
 const RecentlyViewed = dynamic(() => import('@/components/recently-viewed').then(mod => mod.RecentlyViewed))
-const CraftsmanshipStory = dynamic(() => import('@/components/craftsmanship-story').then(mod => mod.CraftsmanshipStory))
-const MaterialShowcase = dynamic(() => import('@/components/material-showcase').then(mod => mod.MaterialShowcase))
+const MaterialShowcase = dynamic<any>(() => import('@/components/material-showcase').then(mod => mod.MaterialShowcase))
 
 async function NewReleasesSection() {
   const { getNewReleases } = await import('./actions')
@@ -227,8 +224,8 @@ export default function HomePage() {
         <Hero />
       </section>
 
-      <section id="brand-heritage" className="relative z-10">
-        <Heritage />
+      <section id="boutique-hero" aria-label="AURERXA Luxury Boutique Hero">
+        <Hero />
       </section>
 
       {/* Dynamic Hero Carousel (Bridal Series & More) */}
@@ -263,11 +260,6 @@ export default function HomePage() {
         <MaterialShowcaseSection />
       </Suspense>
 
-      <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="blog" columns={3} /></div>}>
-        <CraftsmanshipStory />
-      </Suspense>
-
-      <CustomOrderForm />
       <RecentlyViewed />
       <Newsletter />
     </div>
