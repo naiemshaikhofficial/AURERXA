@@ -684,52 +684,56 @@ export async function deleteSubCategory(id: string) {
  * Public function to get gold rates and trigger background sync if stale
  */
 export async function getGoldRates() {
-  try {
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabaseServer = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    )
+  return unstable_cache(
+    async () => {
+      try {
+        const { createClient } = await import('@supabase/supabase-js')
+        const supabaseServer = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        )
 
-    const { data, error } = await supabaseServer
-      .from('gold_rates')
-      .select('purity, rate, updated_at')
+        const { data, error } = await supabaseServer
+          .from('gold_rates')
+          .select('purity, rate, updated_at')
 
-    if (error) throw error;
+        if (error) throw error;
 
-    const ratesObj: Record<string, number> = {}
-    let lastUpdatedValue: number = 0
+        const ratesObj: Record<string, number> = {}
+        let lastUpdatedValue: number = 0
 
-    if (data) {
-      data.forEach((item: any) => {
-        ratesObj[item.purity] = item.rate
-        if (item.updated_at) {
-          const updatedTime = new Date(item.updated_at).getTime()
-          if (updatedTime > lastUpdatedValue) {
-            lastUpdatedValue = updatedTime
-          }
+        if (data) {
+          data.forEach((item: any) => {
+            ratesObj[item.purity] = item.rate
+            if (item.updated_at) {
+              const updatedTime = new Date(item.updated_at).getTime()
+              if (updatedTime > lastUpdatedValue) {
+                lastUpdatedValue = updatedTime
+              }
+            }
+          })
         }
-      })
-    }
 
-    const lastUpdated = lastUpdatedValue > 0 ? new Date(lastUpdatedValue).toISOString() : null
+        const lastUpdated = lastUpdatedValue > 0 ? new Date(lastUpdatedValue).toISOString() : null
 
-    // Lazy Background Sync: If rates are older than 8 hours
-    const eightHoursAgo = Date.now() - (8 * 3600000)
-    const isStale = !data || data.length === 0 || lastUpdatedValue < eightHoursAgo
+        // Lazy Background Sync: If rates are older than 8 hours
+        const eightHoursAgo = Date.now() - (8 * 3600000)
+        const isStale = !data || data.length === 0 || lastUpdatedValue < eightHoursAgo
 
-    if (isStale) {
-      console.log(`[SYNC] Data is stale. Triggering background sync...`)
-      // Trigger but don't await if we want fast response, 
-      // but awaiting is safer for Turbopack consistency
-      syncLiveGoldRates().catch(err => console.error('Background sync failed:', err))
-    }
+        if (isStale) {
+          console.log(`[SYNC] Data is stale. Triggering background sync...`)
+          syncLiveGoldRates().catch(err => console.error('Background sync failed:', err))
+        }
 
-    return { rates: ratesObj, lastUpdated }
-  } catch (err) {
-    console.error('Error in getGoldRates:', err)
-    return null
-  }
+        return { rates: ratesObj, lastUpdated }
+      } catch (err) {
+        console.error('Error in getGoldRates:', err)
+        return null
+      }
+    },
+    ['gold-rates'],
+    { revalidate: 3600, tags: ['rates'] }
+  )()
 }
 
 // ============================================
@@ -761,23 +765,29 @@ const DEFAULT_CONFIG: GlobalConfig = {
 }
 
 export async function getGlobalConfig(): Promise<GlobalConfig> {
-  try {
-    const { data, error } = await supabaseServer
-      .from('global_config')
-      .select('key, value')
+  return unstable_cache(
+    async () => {
+      try {
+        const { data, error } = await supabaseServer
+          .from('global_config')
+          .select('key, value')
 
-    if (error || !data) return DEFAULT_CONFIG
+        if (error || !data) return DEFAULT_CONFIG
 
-    const config = { ...DEFAULT_CONFIG }
-    data.forEach((row: any) => {
-      if (row.key in config) {
-        (config as any)[row.key] = Number(row.value)
+        const config = { ...DEFAULT_CONFIG }
+        data.forEach((row: any) => {
+          if (row.key in config) {
+            (config as any)[row.key] = Number(row.value)
+          }
+        })
+        return config
+      } catch {
+        return DEFAULT_CONFIG
       }
-    })
-    return config
-  } catch {
-    return DEFAULT_CONFIG
-  }
+    },
+    ['global-config'],
+    { revalidate: 3600, tags: ['settings', 'config'] }
+  )()
 }
 
 export async function updateGlobalConfig(key: string, value: number): Promise<ActionResponse> {
@@ -1217,7 +1227,7 @@ export async function getAdminProducts() {
 
   const { data, error } = await supabaseServer
     .from('products')
-    .select('*, categories(name)', { count: 'exact' })
+    .select('id, name, price, stock, image_url, slug, created_at, categories(name)', { count: 'exact' })
     .order('created_at', { ascending: false })
 
   if (error) return []
@@ -1299,36 +1309,48 @@ export async function deleteProduct(productId: string) {
 
 
 export async function getProductById(id: string) {
-  const { data, error } = await supabaseServer
-    .from('products')
-    .select('*, categories(*)')
-    .eq('id', id)
-    .single()
+  return unstable_cache(
+    async () => {
+      const { data, error } = await supabaseServer
+        .from('products')
+        .select('*, categories(*)')
+        .eq('id', id)
+        .single()
 
-  if (error) return null
-  return data
+      if (error) return null
+      return data
+    },
+    [`product-id-${id}`],
+    { revalidate: 3600, tags: [`product:${id}`, 'products'] }
+  )()
 }
 
 export async function getRelatedProducts(categoryId: string, excludeId: string) {
   if (!categoryId) return [] // Safety guard for products without categories
 
-  try {
-    const { data, error } = await supabaseServer
-      .from('products')
-      .select('*')
-      .eq('category_id', categoryId)
-      .neq('id', excludeId)
-      .limit(4)
+  return unstable_cache(
+    async () => {
+      try {
+        const { data, error } = await supabaseServer
+          .from('products')
+          .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
+          .eq('category_id', categoryId)
+          .neq('id', excludeId)
+          .limit(4)
 
-    if (error) {
-      console.error('Error fetching related products:', error)
-      return []
-    }
-    return data || []
-  } catch (error) {
-    console.error('Unexpected error fetching related products:', error)
-    return []
-  }
+        if (error) {
+          console.error('Error fetching related products:', error)
+          return []
+        }
+        return data || []
+      } catch (error) {
+        console.error('Unexpected error fetching related products:', error)
+        return []
+      }
+    },
+    [`related-products-${categoryId}-${excludeId}`],
+    { revalidate: 86400, tags: ['products', 'related-products'] }
+  )()
 }
 
 // ============================================
@@ -1495,24 +1517,42 @@ export async function getCartCount() {
 // ============================================
 
 export async function getAllProductSlugs() {
-  const { data } = await supabaseServer
-    .from('products')
-    .select('slug, updated_at')
-  return data || []
+  return unstable_cache(
+    async () => {
+      const { data } = await supabaseServer
+        .from('products')
+        .select('slug, updated_at')
+      return data || []
+    },
+    ['all-product-slugs'],
+    { revalidate: 86400, tags: ['products', 'sitemap'] }
+  )()
 }
 
 export async function getAllCategorySlugs() {
-  const { data } = await supabaseServer
-    .from('categories')
-    .select('slug')
-  return data || []
+  return unstable_cache(
+    async () => {
+      const { data } = await supabaseServer
+        .from('categories')
+        .select('slug')
+      return data || []
+    },
+    ['all-category-slugs'],
+    { revalidate: 86400, tags: ['categories', 'sitemap'] }
+  )()
 }
 
 export async function getAllBlogSlugs() {
-  const { data } = await supabaseServer
-    .from('blog')
-    .select('slug, updated_at')
-  return data || []
+  return unstable_cache(
+    async () => {
+      const { data } = await supabaseServer
+        .from('blog')
+        .select('slug, updated_at')
+      return data || []
+    },
+    ['all-blog-slugs'],
+    { revalidate: 86400, tags: ['blog', 'sitemap'] }
+  )()
 }
 
 // ============================================
