@@ -365,7 +365,7 @@ export default async function RootLayout({
                               </div>
                             )}
                             {!isMaintenance && <Navbar marketingConfig={marketingConfig} />}
-                            <div className={cn("transition-all duration-300", !isMaintenance && marketingConfig.banner_enabled ? "pt-28 md:pt-32" : !isMaintenance ? "pt-20 md:pt-24" : "pt-0")}>
+                            <div className={cn(!isMaintenance && marketingConfig.banner_enabled ? "pt-28 md:pt-32" : !isMaintenance ? "pt-20 md:pt-24" : "pt-0")}>
                               {!isMaintenance && <CategoryNav />}
                               <ErrorBoundary componentName="Main Content">
                                 <main>

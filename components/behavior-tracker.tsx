@@ -25,10 +25,15 @@ export function BehaviorTracker() {
     const { consentStatus, sessionId } = useConsent()
     const lastPathRef = useRef<string>('')
     const hasSyncedExternalRef = useRef<boolean>(false)
+    const lastSessionIdRef = useRef<string | null>(null)
 
     // 1. Cross-Browser Intelligence (Topics API & Referrer Analysis)
     useEffect(() => {
         if (consentStatus !== 'granted' || !sessionId || hasSyncedExternalRef.current) return
+
+        // Anti-loop guard: Don't sync again if we already did for this specific session ID
+        if (lastSessionIdRef.current === sessionId) return
+        lastSessionIdRef.current = sessionId
 
         const captureExternalIntelligence = async () => {
             const externalData: any = {

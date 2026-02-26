@@ -157,14 +157,14 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
     <>
       <motion.nav
         initial={{ y: 0 }}
-        animate={{ y: '0%' }}
-        transition={{ duration: 0.3, ease: PREMIUM_EASE }}
+        animate={{ y: hidden ? '-100%' : '0%' }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         style={{
           height: navHeight,
           backgroundColor: navBg,
           backdropFilter: navBlur,
         }}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center p-4 md:p-0 transition-all duration-700 border-b border-white/0"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center p-4 md:p-0 border-b border-white/0"
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 w-full">
           <div className="flex justify-between items-start md:items-center h-full">

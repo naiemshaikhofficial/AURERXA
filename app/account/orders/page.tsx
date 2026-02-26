@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Script from 'next/script'
@@ -18,6 +18,11 @@ function CountdownTimer({ createdAt, onExpire }: { createdAt: string, onExpire?:
     const [isExpired, setIsExpired] = useState(false)
     const timerRef = useRef<NodeJS.Timeout | null>(null)
 
+    const onExpireRef = useRef(onExpire)
+    useEffect(() => {
+        onExpireRef.current = onExpire
+    }, [onExpire])
+
     useEffect(() => {
         const calculateTime = () => {
             const start = new Date(createdAt).getTime()
@@ -29,7 +34,7 @@ function CountdownTimer({ createdAt, onExpire }: { createdAt: string, onExpire?:
                 setIsExpired(true)
                 setTimeLeft('00:00')
                 if (timerRef.current) clearInterval(timerRef.current)
-                if (onExpire) onExpire()
+                if (onExpireRef.current) onExpireRef.current()
                 return
             }
 
@@ -44,7 +49,7 @@ function CountdownTimer({ createdAt, onExpire }: { createdAt: string, onExpire?:
         return () => {
             if (timerRef.current) clearInterval(timerRef.current)
         }
-    }, [createdAt, onExpire])
+    }, [createdAt])
 
     if (isExpired) return <span className="text-destructive font-bold text-[10px] uppercase tracking-widest">Expired</span>
 
@@ -64,15 +69,15 @@ export default function OrdersPage() {
     const [verifying, setVerifying] = useState(false)
     const [retryingOrderId, setRetryingOrderId] = useState<string | null>(null)
 
-    async function loadOrders() {
+    const loadOrders = useCallback(async () => {
         const data = await getOrders()
         setOrders(data)
         setLoading(false)
-    }
+    }, [])
 
     useEffect(() => {
         loadOrders()
-    }, [])
+    }, [loadOrders])
 
     const handleRetryPayment = async (orderId: string) => {
         setRetryingOrderId(orderId)

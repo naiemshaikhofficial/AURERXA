@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { getCart, addToCart as addToCartAction, updateCartItem as updateCartItemAction, removeFromCart as removeFromCartAction } from '@/app/actions'
 import { supabase } from '@/lib/supabase'
 
@@ -69,9 +69,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [])
 
+    const hasRefreshedRef = useRef<string | null>(null)
     useEffect(() => {
+        // Prevent redundant refreshes for the same user ID (includes null)
+        const currentId = user?.id || 'guest'
+        if (hasRefreshedRef.current === currentId) return
+        hasRefreshedRef.current = currentId
+
         refreshCart(false) // Initial load should show loader
-    }, [user?.id]) // ONLY watch for ID change to prevent loops on token refreshes
+    }, [user?.id])
 
     const syncCart = async () => {
         const localCart = localStorage.getItem('aurerxa_cart')
