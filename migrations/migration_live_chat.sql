@@ -14,6 +14,9 @@ CREATE TABLE IF NOT EXISTS public.chat_sessions (
     updated_at timestamptz DEFAULT now()
 );
 
+-- 1.1 Add presence tracking to admin_users
+ALTER TABLE public.admin_users ADD COLUMN IF NOT EXISTS last_active_at timestamptz DEFAULT now();
+
 -- 2. Create chat_messages table
 CREATE TABLE IF NOT EXISTS public.chat_messages (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

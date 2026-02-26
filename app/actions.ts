@@ -10,6 +10,7 @@ import { redirect } from 'next/navigation'
 import { cache } from 'react'
 import { sanitize, sanitizeObject } from '@/lib/sanitizer'
 import { getDiameterForSize, getCircumferenceForSize } from '@/lib/ring-sizes'
+import { runFullIngestion } from '@/lib/ai-knowledge'
 
 // Server-side Supabase client for static/public data (safe for unstable_cache)
 const supabaseServer = createServerClient(
@@ -259,57 +260,245 @@ export const getCurrentUserProfile = cache(async () => {
   }
 })
 
-// ============================================
-// CONCIERGE & SUPPORT
-// ============================================
+// =====================================================
+// CONCIERGE & CHAT ACTIONS
+// =====================================================
 
-export async function createSupportTicket(formData: any): Promise<ActionResponse> {
-  try {
-    const { subject, message, category, orderNumber, guestName, guestEmail, guestPhone } = formData
-    const client = await getAuthClient()
-    const { data: { user } } = await client.auth.getUser()
 
-    const { error } = await supabaseServer
-      .from('tickets')
-      .insert({
-        user_id: user?.id || null,
-        subject,
-        message: sanitize(message),
-        category: category || 'General',
-        order_number: orderNumber || null,
-        guest_name: user ? null : guestName,
-        guest_email: user ? null : guestEmail,
-        guest_phone: user ? null : guestPhone,
-        status: 'open',
-        created_at: new Date().toISOString()
-      })
+const BOT_KNOWLEDGE: Record<string, string> = {
+  greetings: "Namaste! I am AURXY, your personal guide to the world of AURERXA Heritage Jewelry. How may I assist you in your journey today?",
+  purity: "At AURERXA, every masterpiece is a promise of purity. Our gold (14K to 24K) is BIS Hallmarked with a unique HUID for verification via the BIS Care app. Our diamonds are certified by world-renowned laboratories like IGI or GIA.",
+  shipping: "We offer complimentary Insured Shipping across India for orders above ₹50,000. For others, a flat ₹500 fee applies. Delivery typically takes 5-10 business days as each piece is a handcrafted work of art.",
+  returns: "Due to the artisanal nature and high value of our jewelry, we follow a strict no-refund policy. Returns are only considered for manufacturing defects reported within 24h with a mandatory unboxing video.",
+  rates: "Our live gold and silver rates are calibrated every 10 minutes based on global spot prices and market benchmarks. This ensures you always receive the fairest heritage value.",
+  custom: "Bespoke creations are our soul. You can share your vision on our 'Custom Jewelry' page, and our master artisans will provide a feasibility report and quote within 48 hours.",
+  unboxing: "To protect your investment, a continuous, uncut unboxing video is MANDATORY for all claims. This ensures transparency and helps us resolve any transit issues immediately.",
+  location: "Experience our legacy in person at our heritage boutique: Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605. We also offer virtual consultations via WhatsApp Video.",
+  sizing: "Unsure of your fit? We have a detailed Size Guide on our website with a printable sizer. You can also visit any local jeweler for professional measurement before placing your heritage order.",
+  expert: "I can certainly connect you with one of our specialized jewelry consultants for further assistance. Would you like to talk to a human expert now?",
+  collections: "Explore our curated masterpieces across our diverse collections: [View All Collections](/collections). We have everything from heritage necklaces to everyday elegance.",
+  account: "You can manage your heritage orders, track shipments, and view your wishlists in your [Private Account](/account).",
+  store_pickup: "We offer 'Store Pickup' at our Sangamner boutique. Choose this option at checkout to personally collect your masterpiece. A valid ID is required for verification."
+}
 
-    if (error) throw error
-    revalidatePath('/admin/tickets')
-    return { success: true }
-  } catch (err: any) {
-    console.error('Ticket creation error:', err)
-    return { success: false, error: err.message || 'Failed to create ticket' }
+export interface BotResponse {
+  text: string
+  actions?: { label: string, link?: string, action?: string }[]
+}
+
+/**
+ * Intelligent bot response logic with enhanced keyword matching, context, and dynamic actions
+ */
+export async function getBotResponse(query: string): Promise<BotResponse> {
+  const q = query.toLowerCase().trim()
+
+  // Greetings
+  if (q.match(/^(hi|hello|hey|namaste|hola|good morning|good evening|good afternoon)/)) {
+    return {
+      text: BOT_KNOWLEDGE.greetings,
+      actions: [
+        { label: "Browse Collections", link: "/collections" },
+        { label: "Custom Jewelry", link: "/custom-jewelry" }
+      ]
+    }
+  }
+
+  // Purity & Authenticity
+  if (q.includes('purity') || q.includes('gold') || q.includes('pure') || q.includes('authentic') || q.includes('hallmark') || q.includes('huid') || q.includes('diamond') || q.includes('certificate')) {
+    return {
+      text: BOT_KNOWLEDGE.purity,
+      actions: [
+        { label: "View Certificates", link: "/help#certificates" },
+        { label: "Live Gold Rates", link: "/live-rates" }
+      ]
+    }
+  }
+
+  // Shipping & Delivery
+  if (q.includes('ship') || q.includes('delivery') || q.includes('time') || q.includes('track') || q.includes('order status')) {
+    return {
+      text: BOT_KNOWLEDGE.shipping,
+      actions: [
+        { label: "Track My Order", link: "/account/orders" },
+        { label: "Shipping Policy", link: "/shipping" }
+      ]
+    }
+  }
+
+  // Returns & Refunds
+  if (q.includes('return') || q.includes('refund') || q.includes('exchange') || q.includes('cancel')) {
+    return {
+      text: q.includes('unboxing') || q.includes('video') || q.includes('damage') ? BOT_KNOWLEDGE.unboxing : BOT_KNOWLEDGE.returns,
+      actions: [
+        { label: "Return Policy", link: "/returns" },
+        { label: "Contact Support", action: "expert" }
+      ]
+    }
+  }
+
+  // Gold Rates
+  if (q.includes('rate') || q.includes('price') || q.includes('live') || q.includes('today')) {
+    return {
+      text: BOT_KNOWLEDGE.rates,
+      actions: [
+        { label: "Live Rates Page", link: "/live-rates" },
+        { label: "Inquire Bespoke", link: "/custom-jewelry" }
+      ]
+    }
+  }
+
+  // Customization
+  if (q.includes('custom') || q.includes('bespoke') || q.includes('make my own') || q.includes('design')) {
+    return {
+      text: BOT_KNOWLEDGE.custom,
+      actions: [
+        { label: "Start Designing", link: "/custom-jewelry" },
+        { label: "Talk to Artisan", action: "expert" }
+      ]
+    }
+  }
+
+  // Location & Store
+  if (q.includes('location') || q.includes('address') || q.includes('store') || q.includes('boutique') || q.includes('visit') || q.includes('sangamner')) {
+    return {
+      text: q.includes('pickup') ? BOT_KNOWLEDGE.store_pickup : BOT_KNOWLEDGE.location,
+      actions: [
+        { label: "Get Directions", link: "https://maps.google.com" },
+        { label: "Book Appointment", link: "/contact" }
+      ]
+    }
+  }
+
+  // Sizing
+  if (q.includes('size') || q.includes('fit') || q.includes('ring size') || q.includes('measure')) {
+    return {
+      text: BOT_KNOWLEDGE.sizing,
+      actions: [
+        { label: "Ring Sizer", link: "/ring-size-calculator" },
+        { label: "Size Guide", link: "/size-guide" }
+      ]
+    }
+  }
+
+  // Navigation Help
+  if (q.includes('collection') || q.includes('catalog') || q.includes('products') || q.includes('jewelry')) {
+    return {
+      text: BOT_KNOWLEDGE.collections,
+      actions: [
+        { label: "Chains", link: "/collections/chains" },
+        { label: "Rings", link: "/collections/rings" },
+        { label: "View All", link: "/collections" }
+      ]
+    }
+  }
+  if (q.includes('account') || q.includes('my order') || q.includes('wishlist') || q.includes('profile')) {
+    return {
+      text: BOT_KNOWLEDGE.account,
+      actions: [
+        { label: "My Orders", link: "/account/orders" },
+        { label: "Manage Profile", link: "/account" }
+      ]
+    }
+  }
+
+  // Human Expert Request
+  if (q.includes('expert') || q.includes('human') || q.includes('agent') || q.includes('talk to') || q.includes('person')) {
+    return {
+      text: BOT_KNOWLEDGE.expert,
+      actions: [
+        { label: "Connect with Expert", action: "expert" }
+      ]
+    }
+  }
+
+  // --- RAG FALLBACK (Intelligent Search) ---
+  const matches = await searchAIKnowledge(query)
+  if (matches && matches.length > 0) {
+    return {
+      text: matches[0].content,
+      actions: [
+        { label: "View Details", link: matches[0].metadata?.url || "/help" },
+        { label: "Talk to Expert", action: "expert" }
+      ]
+    }
+  }
+
+  // Fallback for unknown queries
+  return {
+    text: "That's an interesting inquiry about our heritage creations. While I'm still perfecting my knowledge of specific rare pieces, I can guide you through our main collections or connect you with a specialized consultant. What would you prefer?",
+    actions: [
+      { label: "View Collections", link: "/collections" },
+      { label: "Talk to Expert", action: "expert" }
+    ]
   }
 }
 
-const BOT_KNOWLEDGE: Record<string, string> = {
-  "purity": "All AURERXA gold jewelry is BIS Hallmarked (22K/18K). Our silver is 99.99% pure ('Aurerxa Heritage Standard'). You will receive a digital certificate with every purchase.",
-  "shipping": "We offer Free Insured Shipping across India. Delivery usually takes 3-5 business days for ready masterpieces and 10-14 days for bespoke orders.",
-  "returns": "We provide a 15-day 'no-questions-asked' return policy for all standard collections. Custom/Bespoke items are eligible for lifetime buyback but not direct returns.",
-  "gold rate": "Our gold rates are updated every 10 minutes to match live market benchmarks, ensuring you always get the fairest heritage value.",
-  "care": "To maintain the shimmer, avoid contact with perfumes and chemicals. Clean gently with a soft silk cloth. We offer lifetime polishing services at our boutique."
+
+/**
+ * Creates a support ticket from the chatbot when no agent is available.
+ */
+export async function createSupportTicket(data: {
+  subject: string,
+  description: string,
+  category: string,
+  name: string,
+  email: string,
+  phone: string,
+  userId?: string,
+  chatHistory?: string
+}) {
+  try {
+    const { data: ticket, error } = await supabaseServer
+      .from('tickets')
+      .insert([{
+        subject: sanitize(data.subject),
+        description: sanitize(data.description),
+        category: data.category,
+        status: 'open',
+        priority: 'normal',
+        user_id: data.userId || null,
+        guest_name: data.name,
+        guest_email: data.email,
+        guest_phone: data.phone
+      }])
+      .select()
+      .single()
+
+    if (error) throw error
+    return { success: true, ticketId: ticket.id }
+  } catch (err: any) {
+    console.error('Failed to create support ticket:', err)
+    return { success: false, error: err.message }
+  }
 }
 
-export async function getBotResponse(query: string): Promise<string> {
-  const q = query.toLowerCase()
-  if (q.includes('purity') || q.includes('gold') || q.includes('silver')) return BOT_KNOWLEDGE["purity"]
-  if (q.includes('shipping') || q.includes('delivery') || q.includes('time')) return BOT_KNOWLEDGE["shipping"]
-  if (q.includes('return') || q.includes('refund') || q.includes('exchange')) return BOT_KNOWLEDGE["returns"]
-  if (q.includes('rate') || q.includes('price')) return BOT_KNOWLEDGE["gold rate"]
-  if (q.includes('care') || q.includes('clean') || q.includes('polish')) return BOT_KNOWLEDGE["care"]
+/**
+ * Creates a new chat session and saves the initial inquiry.
+ */
+export async function startChatSession(data: { name: string, email: string, phone: string, initialMessage?: string }) {
+  const { data: session, error } = await supabaseServer
+    .from('chat_sessions')
+    .insert([{
+      guest_name: data.name,
+      guest_email: data.email,
+      guest_phone: data.phone,
+      status: 'open'
+    }])
+    .select()
+    .single()
 
-  return "I am the AURERXA Concierge Bot. I can assist you with information on Purity, Shipping, Returns, and Jewelry Care. For complex inquiries, please create a Support Ticket below or start a Live Chat."
+  if (error) throw error
+
+  if (data.initialMessage) {
+    await supabaseServer.from('chat_messages').insert([{
+      session_id: session.id,
+      role: 'user',
+      content: data.initialMessage,
+      sender_name: data.name
+    }])
+  }
+
+  return session
 }
 
 export async function signOutAction() {
@@ -4836,4 +5025,74 @@ export async function triggerDatabaseMaintenance() {
     console.error('Crash in triggerDatabaseMaintenance:', err)
     return { success: false, error: err.message }
   }
+}
+
+/**
+ * Checks if any admin is currently active in the chat system.
+ */
+export async function checkAgentAvailability(): Promise<boolean> {
+  try {
+    const { data: activeAgents, error } = await supabaseServer
+      .from('profiles')
+      .select('id')
+      .eq('role', 'admin')
+      .gt('last_active_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Active in last 5 mins
+
+    if (error) return false
+    return activeAgents && activeAgents.length > 0
+  } catch (err) {
+    return false
+  }
+}
+
+/**
+ * Performs a similarity search on the AI Knowledge Base using pgvector.
+ */
+export async function searchAIKnowledge(query: string, limit: number = 3) {
+  try {
+    if (!process.env.OPENAI_API_KEY) return []
+
+    // 1. Generate embedding for user query
+    const response = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        input: query.replace(/\n/g, ' '),
+        model: 'text-embedding-3-small'
+      })
+    })
+
+    if (!response.ok) return []
+    const embData = await response.json()
+    const embedding = embData.data[0].embedding
+
+    // 2. Query Supabase RPC for matching context
+    const { data: matches, error } = await supabaseServer.rpc('match_ai_knowledge', {
+      query_embedding: embedding,
+      match_threshold: 0.7,
+      match_count: limit
+    })
+
+    if (error) throw error
+    return matches || []
+  } catch (err) {
+    console.error("Vector search failed:", err)
+    return []
+  }
+}
+
+/**
+ * Trigger knowledge ingestion (Admin only)
+ */
+export async function triggerAIContentIngestion() {
+  const { data: { user } } = await supabaseServer.auth.getUser()
+  if (!user) return { success: false, error: "Unauthorized" }
+
+  const { data: profile } = await supabaseServer.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') return { success: false, error: "Requires Admin Role" }
+
+  return await runFullIngestion()
 }
