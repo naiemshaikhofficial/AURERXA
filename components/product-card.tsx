@@ -299,22 +299,16 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                 <AnimatePresence initial={false}>
                     <motion.div
                         key={allImages[currentImageIndex]}
-                        initial={{ x: '100%', rotateY: 10, scale: 0.95, opacity: 0 }}
-                        animate={{ x: 0, rotateY: 0, scale: 1, opacity: 1 }}
-                        exit={{ x: '-100%', rotateY: -10, scale: 1.05, opacity: 0 }}
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
                         transition={{
-                            duration: 0.5,
+                            duration: 0.6,
                             ease: [0.16, 1, 0.3, 1]
                         }}
                         className="absolute inset-0 overflow-hidden"
-                        style={{ perspective: '1200px', transformStyle: 'preserve-3d' }}
                     >
                         <motion.div
-                            key={currentImageIndex}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.4 }}
                             className="relative w-full h-full"
                             drag="x"
                             dragConstraints={{ left: 0, right: 0 }}

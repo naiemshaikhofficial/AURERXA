@@ -367,10 +367,10 @@ export default async function RootLayout({
                             {!isMaintenance && (
                               <div className={cn("fixed left-0 right-0 z-[100]", marketingConfig.banner_enabled ? "top-8" : "top-0")}>
                                 <Navbar marketingConfig={marketingConfig} />
+                                <CategoryNav />
                               </div>
                             )}
-                            <div className={cn(!isMaintenance && marketingConfig.banner_enabled ? "pt-[112px]" : !isMaintenance ? "pt-[80px]" : "pt-0")}>
-                              {!isMaintenance && <CategoryNav />}
+                            <div className={cn(!isMaintenance && marketingConfig.banner_enabled ? "pt-[144px] md:pt-[160px]" : !isMaintenance ? "pt-[112px] md:pt-[128px]" : "pt-0")}>
                               <ErrorBoundary componentName="Main Content">
                                 <main>
                                   {children}

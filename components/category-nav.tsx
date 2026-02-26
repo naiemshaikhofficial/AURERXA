@@ -28,38 +28,29 @@ export function CategoryNav() {
     const [isInteracting, setIsInteracting] = useState(false)
 
     useEffect(() => {
-        let scrollTimeout: NodeJS.Timeout
-
         const handleScroll = () => {
             const currentScrollY = window.scrollY
 
-            // Hide on scroll down, show on scroll up
             if (isInteracting) {
                 setIsVisible(true)
                 return
             }
 
-            if (currentScrollY < 50) {
+            // More stable thresholds to prevent jitter
+            if (currentScrollY < 10) {
                 setIsVisible(true)
-            } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+            } else if (currentScrollY > lastScrollY && currentScrollY > 150) {
                 setIsVisible(false)
-            } else if (currentScrollY < lastScrollY) {
+            } else if (currentScrollY < lastScrollY - 20) {
                 setIsVisible(true)
             }
 
             setLastScrollY(currentScrollY)
-
-            // Reveal instantly when scrolling stops
-            clearTimeout(scrollTimeout)
-            scrollTimeout = setTimeout(() => {
-                setIsVisible(true)
-            }, 50) // Very small delay for "instant" feel
         }
 
         window.addEventListener('scroll', handleScroll, { passive: true })
         return () => {
             window.removeEventListener('scroll', handleScroll)
-            clearTimeout(scrollTimeout)
         }
     }, [lastScrollY, isInteracting])
 
@@ -67,15 +58,15 @@ export function CategoryNav() {
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    initial={{ y: -100, opacity: 0 }}
+                    initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -100, opacity: 0 }}
+                    exit={{ y: -20, opacity: 0 }}
                     transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                     onMouseEnter={() => setIsInteracting(true)}
                     onMouseLeave={() => setIsInteracting(false)}
                     onTouchStart={() => setIsInteracting(true)}
                     onTouchEnd={() => setIsInteracting(false)}
-                    className="fixed top-20 md:top-24 left-0 right-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/40 h-20 md:h-24 flex items-center overflow-hidden"
+                    className="w-full relative z-40 bg-background/95 backdrop-blur-md border-b border-border/40 h-16 md:h-20 flex items-center overflow-hidden"
                 >
                     <div
                         className="w-full overflow-x-auto no-scrollbar overscroll-x-contain touch-pan-x"
