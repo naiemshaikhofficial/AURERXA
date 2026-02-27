@@ -337,6 +337,7 @@ export default function CheckoutPage() {
             }
 
             if (paymentMethod === 'cod') {
+                await refreshCart(true); // Clear Navbar icon
                 router.push(`/account/orders/${result.orderId}?success=true`);
                 return;
             }
@@ -373,6 +374,7 @@ export default function CheckoutPage() {
                         setPlacing(true);
                         const verifyResult = await verifyPayment(result.orderId, response);
                         if (verifyResult.success) {
+                            await refreshCart(true); // Clear Navbar icon
                             router.push(`/account/orders/${result.orderId}?success=true`);
                         } else {
                             setError(verifyResult.error || 'Verification failed. Redirecting to retry page...');
@@ -405,6 +407,7 @@ export default function CheckoutPage() {
                 rzp.open();
             } else if (paymentResult.gateway === 'free') {
                 // Zero-amount order — already confirmed server-side
+                await refreshCart(true); // Clear Navbar icon
                 router.push(`/account/orders/${result.orderId}?success=true`);
             }
         } catch (err: any) {

@@ -97,7 +97,8 @@ async function handleProxy(request: NextRequest, path: string[]) {
         response.headers.forEach((value, key) => {
             const lowKey = key.toLowerCase();
             if (!['content-encoding', 'transfer-encoding', 'content-length', 'connection'].includes(lowKey)) {
-                responseHeaders.set(key, value);
+                // Use append instead of set to allow multiple headers of the same name (like set-cookie)
+                responseHeaders.append(key, value);
             }
         });
 

@@ -11,20 +11,15 @@ import { cache } from 'react'
 import { sanitize, sanitizeObject } from '@/lib/sanitizer'
 import { getDiameterForSize, getCircumferenceForSize } from '@/lib/ring-sizes'
 import { runFullIngestion } from '@/lib/ai-knowledge'
+import { sendInvoiceEmail } from '@/lib/email'
+import { getInvoiceEmailHtml } from '@/lib/templates/invoice-email'
+import { generateInvoicePdf } from '@/lib/pdf-generator'
+
+import { createSupabaseServerClient, createSupabasePublicClient, createSupabaseAdminClient } from '@/lib/supabase-server'
+import { logDiagnostic } from '@/lib/logger'
 
 // Server-side Supabase client for static/public data (safe for unstable_cache)
-const supabaseServer = createServerClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  {
-    cookies: {
-      getAll() { return [] },
-    },
-    cookieOptions: {
-      name: 'sb-xquczexikijzbzcuvmqh-auth-token',
-    }
-  }
-)
+const supabaseServer = createSupabasePublicClient()
 
 export interface ActionResponse<T = any> {
   success: boolean
@@ -151,50 +146,7 @@ async function checkIsAdmin() {
 
 // Helper to get authenticated supabaseServer client
 const getAuthClient = cache(async () => {
-  try {
-    const cookieStore = await cookies()
-    return createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            try {
-              return cookieStore.getAll()
-            } catch {
-              return []
-            }
-          },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set({ name, value, ...options })
-              )
-            } catch {
-              // The `setAll` method was called from a Server Component.
-              // This can be ignored if you have middleware refreshing
-              // user sessions.
-            }
-          },
-        },
-        cookieOptions: {
-          name: 'sb-xquczexikijzbzcuvmqh-auth-token',
-        }
-      }
-    )
-  } catch (e) {
-    // If cookies() fails during static generation, return a public client
-    return createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return [] },
-          setAll() { },
-        },
-      }
-    )
-  }
+  return createSupabaseServerClient()
 })
 
 // Check if user has a pending order for a specific product
@@ -1600,31 +1552,27 @@ export async function getRelatedProducts(categoryId: string, excludeId: string) 
 // ============================================
 
 export async function getCart() {
-  const client = await getAuthClient()
-  const { data: { user }, error: authError } = await client.auth.getUser()
-
-  if (authError) {
-    console.error('getCart: Auth error', authError)
-  }
+  const authClient = await getAuthClient()
+  const { data: { user } } = await authClient.auth.getUser()
 
   if (!user) {
-    console.log('getCart: No user found in session')
+    console.warn('[CART] getCart: No user found.')
     return []
   }
 
-  console.log('getCart: Fetching cart for user', user.id)
-
-  const { data, error } = await client
+  // HARDENED: Use Admin client to fetch cart items. 
+  // This bypasses RLS synchronization issues that often occur in Server Actions/Background tasks.
+  const adminClient = createSupabaseAdminClient()
+  const { data, error } = await adminClient
     .from('cart')
     .select('id, product_id, quantity, size, products(id, name, price, slug, image_url, categories(id, name, slug))')
     .eq('user_id', user.id)
 
   if (error) {
-    console.error('Error fetching cart:', error)
+    console.error('[CART] Error fetching items:', error)
     return []
   }
 
-  console.log(`getCart: Found ${data?.length || 0} items for user ${user.id}`)
   return data || []
 }
 
@@ -1728,16 +1676,27 @@ export async function removeFromCart(cartId: string) {
 }
 
 export async function clearCart() {
-  const client = await getAuthClient()
-  const { data: { user } } = await client.auth.getUser()
-  if (!user) return { success: false }
+  const authClient = await getAuthClient()
+  const { data: { user } } = await authClient.auth.getUser()
+  if (!user) {
+    console.warn('[CART] clearCart: No user found.')
+    return { success: false }
+  }
 
-  const { error } = await client
+  // HARDENED: Use Admin client to clear cart items. 
+  // This ensures the cart is emptied even if session cookies are unstable during redirect.
+  const adminClient = createSupabaseAdminClient()
+  const { error } = await adminClient
     .from('cart')
     .delete()
     .eq('user_id', user.id)
 
-  if (error) return { success: false }
+  if (error) {
+    console.error('[CART] Error clearing items:', error)
+    return { success: false }
+  }
+
+  console.log(`[CART] Success: Cart cleared for user ${user.id}`)
   return { success: true }
 }
 
@@ -2144,6 +2103,39 @@ export async function getOrderById(orderId: string) {
   return data
 }
 
+export async function getCart() {
+  console.log('[DEBUG] getCart: Initiating...')
+  const client = await getAuthClient()
+  const { data: { user }, error: authError } = await client.auth.getUser()
+
+  if (authError) {
+    console.error('[DEBUG] getCart: Auth error:', authError)
+  }
+
+  if (!user) {
+    console.log('[DEBUG] getCart: No user found in session context.')
+    return []
+  }
+
+  console.log('[DEBUG] getCart: User identified as', user.id, '. Fetching from DB...')
+
+  const { data, error } = await client
+    .from('cart')
+    .select('id, product_id, quantity, size, products(id, name, price, slug, image_url, categories(id, name, slug))')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('[DEBUG] getCart: Supabase error:', error)
+    return []
+  }
+
+  console.log(`[DEBUG] getCart: Found ${data?.length || 0} items for user ${user.id}`)
+  if (data && data.length > 0) {
+    data.forEach((item, idx) => console.log(`  Item ${idx}:`, item.product_id, 'x', item.quantity))
+  }
+  return data || []
+}
+
 export async function createOrder(
   addressId: string,
   paymentMethod: string = 'online',
@@ -2155,12 +2147,25 @@ export async function createOrder(
     couponDiscount?: number
   }
 ) {
+  console.log('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+  console.log('!!!! CREATE ORDER ACTION TRIGGERED LOCAL !!!!')
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n')
+  console.log('[DEBUG] createOrder: Initiating order for address', addressId)
+
+  // LOG ALL COOKIES TO SEE WHAT SERVER SEES
+  const cookieStore = await cookies()
+  const allCookies = cookieStore.getAll()
+  console.log('[DEBUG] Cookies reaching Server Action:', allCookies.map(c => c.name).join(', '))
+
   const client = await getAuthClient()
   const { data: { user } } = await client.auth.getUser()
 
   if (!user) {
+    console.error('[DEBUG] createOrder: User not logged in.')
     return { success: false, error: 'Please login' }
   }
+
+  console.log('[DEBUG] createOrder: User is', user.id, '. Checking cart...')
 
   // --- SECURITY: UUID Validation ---
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -2184,14 +2189,22 @@ export async function createOrder(
   let cart = await getCart()
 
   if (!cart || cart.length === 0) {
-    console.log('createOrder: Cart empty, immediate retry...')
-    cart = await getCart()
+    console.warn('[DEBUG] createOrder: Cart empty, attempting immediate retry...')
+    // Force a fresh client and bypass cache if possible (though getAuthClient is cached)
+    const freshClient = await createSupabaseServerClient()
+    const { data: retryCart } = await freshClient
+      .from('cart')
+      .select('*, products(price)')
+      .eq('user_id', user.id)
+    cart = retryCart as any
   }
 
   if (!cart || cart.length === 0) {
-    console.error('createOrder failed: Cart is definitively empty for user', user.id)
+    console.error('[DEBUG] createOrder: FAILURE - Cart is definitively empty for user', user.id)
     return { success: false, error: 'Your cart is empty. Please add items before checkout.' }
   }
+
+  console.log('[DEBUG] createOrder: Cart confirmed with', cart.length, 'items. Proceeding...')
 
   // Get address
   const { data: address } = await client
@@ -2320,6 +2333,9 @@ export async function createOrder(
     if (options?.couponCode) {
       await client.rpc('increment_coupon_usage', { coupon_code: options.couponCode })
     }
+
+    // TRIGGER INVOICE FOR COD
+    triggerOrderInvoice(order.id).catch(err => console.error('COD Invoice trigger error:', err))
   }
 
   return { success: true, orderId: order.id, orderNumber }
@@ -2794,8 +2810,15 @@ export async function syncLiveGoldRates() {
   const goldMult = parseFloat(process.env.GOLD_PRICE_MULTIPLIER || '1.0')
   const silverMult = parseFloat(process.env.SILVER_PRICE_MULTIPLIER || '1.0')
   const platinumMult = parseFloat(process.env.PLATINUM_PRICE_MULTIPLIER || '1.0')
-  const markupPercent = parseFloat(process.env.GOLD_LOCAL_MARKUP_PERCENT || '5.8')
-  const markupFactor = 1 + (markupPercent / 100)
+
+  // Separate Markups
+  const goldMarkup = parseFloat(process.env.GOLD_LOCAL_MARKUP_PERCENT || '5.0')
+  const silverMarkup = parseFloat(process.env.SILVER_LOCAL_MARKUP_PERCENT || '3.0')
+  const platinumMarkup = parseFloat(process.env.PLATINUM_LOCAL_MARKUP_PERCENT || '2.0')
+
+  const goldFactor = (1 + (goldMarkup / 100)) * goldMult
+  const silverFactor = (1 + (silverMarkup / 100)) * silverMult
+  const platinumFactor = (1 + (platinumMarkup / 100)) * platinumMult
 
   if (!apiKey || apiKey === 'YOUR_GOLD_API_KEY') {
     return { success: false, error: 'Gold API Key not configured' }
@@ -2822,7 +2845,7 @@ export async function syncLiveGoldRates() {
       const price24K = data.price_gram_24k
       if (price24K) {
         // Calibrate to local market
-        const calibratedPrice = price24K * goldMult * markupFactor
+        const calibratedPrice = price24K * goldFactor
 
         // All standard gold carats with their purity fractions
         const goldCarats: Record<string, number> = {
@@ -2855,12 +2878,12 @@ export async function syncLiveGoldRates() {
       next: { revalidate: 3600 }
     })
     if (silverRes.ok) {
-      const data = await silverRes.json()
-      if (data.error && data.error.includes('quota')) {
+      const data = await silverRes.ok ? await silverRes.json() : null
+      if (data && data.error && data.error.includes('quota')) {
         console.error('[SYNC ERROR] Silver Sync Aborted: Quota Exceeded')
-      } else if (data.price_gram_24k) {
+      } else if (data && data.price_gram_24k) {
         // Calibrate to local market
-        const calibratedPrice = data.price_gram_24k * silverMult * markupFactor
+        const calibratedPrice = data.price_gram_24k * silverFactor
         console.log(`[SYNC DEBUG] Silver Calibrated Base: ${calibratedPrice}`)
 
         // Silver purities
@@ -2893,7 +2916,7 @@ export async function syncLiveGoldRates() {
         console.error('[SYNC ERROR] Platinum Sync Aborted: Quota Exceeded')
       } else if (data.price_gram_24k) {
         // Calibrate to local market
-        const calibratedPrice = data.price_gram_24k * platinumMult * markupFactor
+        const calibratedPrice = data.price_gram_24k * platinumFactor
         console.log(`[SYNC DEBUG] Platinum Calibrated Base: ${calibratedPrice}`)
 
         const platinumPurities: Record<string, number> = {
@@ -4468,158 +4491,8 @@ export async function broadcastNotification(title: string, body: string, url: st
 }
 
 // ============================================
-// CASHFREE PAYMENTS
+// PAYMENT GATEWAY CONFIGURATION
 // ============================================
-
-export async function initiateCashfreePayment(orderId: string) {
-  try {
-    const client = await getAuthClient()
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // Get order details
-    const { data: order, error: orderError } = await client
-      .from('orders')
-      .select('*, order_items(*)')
-      .eq('id', orderId)
-      .eq('user_id', user.id)
-      .single()
-
-    if (orderError || !order) {
-      return { success: false, error: 'Order not found' }
-    }
-
-    const customerDetails = {
-      customer_id: user.id,
-      customer_phone: order.shipping_address.phone || '9999999999',
-      customer_email: user.email,
-      customer_name: order.shipping_address.full_name || 'Customer'
-    }
-
-    const cashfreeOrder = await createCashfreeOrder({
-      order_id: order.order_number,
-      order_amount: Number(order.total),
-      order_currency: 'INR',
-      customer_details: customerDetails,
-      order_meta: {
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/account/orders/${order.id}?payment=success`,
-        notify_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/webhooks/cashfree`
-      }
-    })
-
-    // Store the Cashfree order ID in our database if needed
-    // In this case, we use order_number as the order_id in Cashfree
-
-    // Increment attempts and store gateway order ID
-    await client
-      .from('orders')
-      .update({
-        payment_gateway_order_id: cashfreeOrder.cf_order_id,
-        payment_attempts: (order.payment_attempts || 0) + 1,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', orderId)
-
-    return {
-      success: true,
-      gateway: 'cashfree',
-      paymentSessionId: cashfreeOrder.payment_session_id,
-      cfOrderId: cashfreeOrder.cf_order_id,
-      mode: process.env.CASHFREE_MODE || 'sandbox'
-    }
-  } catch (error: any) {
-    console.error('Payment initiation error:', error)
-    return { success: false, error: error.message }
-  }
-}
-
-export async function verifyCashfreePayment(orderId: string) {
-  try {
-    const client = await getAuthClient()
-    const { data: { user } } = await client.auth.getUser()
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // SECURITY: Idempotency & Existence Check
-    const { data: order, error: orderError } = await client
-      .from('orders')
-      .select('*')
-      .eq('id', orderId)
-      .eq('user_id', user.id)
-      .single()
-
-    if (orderError || !order) {
-      return { success: false, error: 'Order not found' }
-    }
-
-    if (order.status === 'confirmed' || order.payment_status === 'paid') {
-      return { success: true, message: 'Payment already verified' }
-    }
-
-    // Call Cashfree to get payments for this order
-    // Order ID in Cashfree is order.order_number
-    const payments = await getCashfreePayments(order.order_number)
-
-    // Find a successful payment
-    const successPayment = payments.find((p: any) => p.payment_status === 'SUCCESS')
-
-    if (successPayment) {
-      // Extract detailed payment method
-      let detailedMethod = 'online'
-      const pm = successPayment.payment_method
-      if (pm) {
-        if (pm.upi) detailedMethod = 'UPI'
-        else if (pm.card) {
-          const network = pm.card.card_network?.toUpperCase() || ''
-          const type = pm.card.card_type?.charAt(0).toUpperCase() + pm.card.card_type?.slice(1) || 'Card'
-          detailedMethod = `${network} ${type}`.trim()
-        } else if (pm.netbanking) detailedMethod = 'Net Banking'
-        else if (pm.app) detailedMethod = 'Wallet/App'
-      }
-
-      // Verify amount integrity (Safety First)
-      const paymentAmount = Number(successPayment.payment_amount)
-      const orderTotal = Number(order.total)
-      const margin = 1 // 1 rupee tolerance for rounding
-
-      if (Math.abs(paymentAmount - orderTotal) > margin) {
-        console.error(`CRITICAL: Amount mismatch for order ${order.order_number}. Order: ${orderTotal}, Paid: ${paymentAmount}`)
-        await client.from('orders').update({
-          payment_status: 'flagged_mismatch',
-          payment_error_reason: `Amount mismatch: Expected ${orderTotal}, got ${paymentAmount}`
-        }).eq('id', order.id)
-        return { success: false, error: 'Security alert: Payment amount mismatch. Please contact support.' }
-      }
-
-      // Update order status
-      const { error: updateError } = await client
-        .from('orders')
-        .update({
-          status: 'confirmed',
-          payment_id: successPayment.cf_payment_id,
-          payment_status: 'paid',
-          payment_method: detailedMethod,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', order.id)
-
-      if (!updateError) {
-        // Increment coupon usage if applied
-        if (order.coupon_code) {
-          await client.rpc('increment_coupon_usage', { coupon_code: order.coupon_code })
-        }
-      }
-
-      if (updateError) throw updateError
-
-      return { success: true, status: 'confirmed' }
-    }
-
-    return { success: false, error: 'Payment not completed or failed' }
-  } catch (error: any) {
-    console.error('Payment verification error:', error)
-    return { success: false, error: error.message }
-  }
-}
 
 
 // Payment Gateway Configuration
@@ -4662,8 +4535,9 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
         await client.rpc('increment_coupon_usage', { coupon_code: order.coupon_code })
       }
 
-      // Clear cart
+      // Clear Cart and Trigger Invoice for Free Order
       await clearCart()
+      triggerOrderInvoice(orderId).catch(err => console.error('Free Order Invoice trigger error:', err))
 
       return { success: true, gateway: 'free', orderId }
     }
@@ -4680,6 +4554,9 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
 }
 
 export async function verifyPayment(orderId: string, params?: any) {
+  console.log('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+  console.log('!!!! VERIFY PAYMENT ACTION TRIGGERED LOCAL !!!!')
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n')
   const result = await verifyRazorpayPayment(orderId, params)
   if (result.success) {
     console.log('verifyPayment: Razorpay verification successful');
@@ -4790,6 +4667,9 @@ export async function verifyRazorpayPayment(orderId: string, params: { razorpay_
         .eq('id', orderId)
 
       if (!updateError) {
+        // TRIGGER INVOICE FOR ONLINE PAYMENT
+        triggerOrderInvoice(orderId).catch(err => console.error('Online Invoice trigger error:', err))
+
         // Increment coupon usage if applied
         const { data: orderWithCoupon } = await client.from('orders').select('coupon_code').eq('id', orderId).single()
         if (orderWithCoupon?.coupon_code) {
@@ -4805,6 +4685,109 @@ export async function verifyRazorpayPayment(orderId: string, params: { razorpay_
   } catch (err: any) {
     console.error('Verification Error:', err)
     return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Internal helper to fetch order details and send the invoice email.
+ * This runs asynchronously to not block the main request.
+ */
+async function triggerOrderInvoice(orderId: string) {
+  logDiagnostic('INVOICE', `Triggering for order ID: ${orderId}`)
+  try {
+    const client = createSupabaseAdminClient()
+
+    // 1. Fetch Order with items
+    logDiagnostic('INVOICE', 'Fetching order details...')
+    const { data: order, error } = await client
+      .from('orders')
+      .select(`
+        *,
+        order_items(*)
+      `)
+      .eq('id', orderId)
+      .single()
+
+    if (error || !order) {
+      logDiagnostic('INVOICE_ERROR', 'Order fetch failed', error)
+      return
+    }
+
+    logDiagnostic('INVOICE', `Order found: ${order.order_number}. Preparing payload...`)
+
+    // 2. Fetch customer details if name is missing
+    let name = order.shipping_address?.full_name || 'Valued Customer'
+    let email = ''
+
+    const { data: profile } = await client
+      .from('profiles')
+      .select('email, full_name')
+      .eq('id', order.user_id)
+      .single()
+
+    if (profile) {
+      if (name === 'Valued Customer' && profile.full_name) name = profile.full_name
+      email = profile.email
+    }
+
+    if (!email) {
+      console.error(`[INVOICE SYSTEM ERROR] No customer email found for user ${order.user_id}`);
+      return
+    }
+
+    // 3. Prepare Template Data
+    const invoiceData = {
+      orderNumber: order.order_number,
+      date: new Date(order.created_at).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      }),
+      customerName: name,
+      customerEmail: email,
+      shippingAddress: {
+        line1: order.shipping_address?.street_address || order.shipping_address?.address_line1 || '',
+        city: order.shipping_address?.city || '',
+        state: order.shipping_address?.state || '',
+        postal_code: order.shipping_address?.pincode || '',
+        phone: order.shipping_address?.phone || ''
+      },
+      items: order.order_items.map((item: any) => ({
+        name: item.product_name,
+        quantity: item.quantity,
+        size: item.size,
+        price: Number(item.price)
+      })),
+      subtotal: Number(order.subtotal),
+      shipping: Number(order.shipping),
+      discount: Number(order.coupon_discount || 0),
+      tax: Math.round(Number(order.total) * 0.03 / 1.03), // Assuming 3% GST is included
+      total: Number(order.total)
+    }
+
+    logDiagnostic('INVOICE', 'Components generated. Generating PDF and HTML body...')
+
+    // 4. Send Email with PDF Attachment
+    const emailHtml = getInvoiceEmailHtml({
+      customerName: name,
+      orderNumber: order.order_number,
+      total: invoiceData.total
+    })
+
+    const pdfBuffer = await generateInvoicePdf(invoiceData)
+
+    logDiagnostic('INVOICE', `PDF and HTML generated. Sending email to ${email}...`)
+
+    const sendResult = await sendInvoiceEmail(email, order.order_number, emailHtml, pdfBuffer)
+
+    if (sendResult.success) {
+      logDiagnostic('INVOICE_SUCCESS', `Email sent successfully for #${order.order_number}`)
+    } else {
+      logDiagnostic('INVOICE_FAILURE', `Email send failed for #${order.order_number}`, sendResult.error)
+    }
+
+  } catch (err: any) {
+    logDiagnostic('INVOICE_CRITICAL', `System failure for order ${orderId}`, err.message)
   }
 }
 

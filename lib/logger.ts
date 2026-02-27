@@ -1,44 +1,25 @@
-import { createClient } from '@supabase/supabase-js'
+import fs from 'fs'
+import path from 'path'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const LOG_FILE = path.join(process.cwd(), 'tmp', 'invoice_debug.log')
 
-// Use a separate client to avoid interaction with main auth flow if needed
-const loggerClient = createClient(supabaseUrl, supabaseKey)
-
-interface LogOptions {
-    pathname?: string
-    userId?: string
-    metadata?: Record<string, any>
-}
-
-export async function logError(error: Error | any, options: LogOptions = {}) {
-    const { pathname, userId, metadata } = options
-
-    if (process.env.NODE_ENV === 'development') {
-        console.error('[AURERXA LOGGER]:', error, metadata)
-    }
+/**
+ * Robust file-based logger to capture deep diagnostics in production-like environments.
+ */
+export function logDiagnostic(category: string, message: string, data?: any) {
+    const timestamp = new Date().toISOString()
+    const logEntry = `[${timestamp}] [${category}] ${message} ${data ? JSON.stringify(data, null, 2) : ''}\n`
 
     try {
-        const { error: logError } = await loggerClient
-            .from('error_logs')
-            .insert({
-                error_message: error.message || String(error),
-                error_stack: error.stack,
-                pathname: pathname || (typeof window !== 'undefined' ? window.location.pathname : undefined),
-                user_id: userId,
-                metadata: {
-                    ...metadata,
-                    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
-                    timestamp: new Date().toISOString()
-                }
-            })
-
-        if (logError) {
-            console.error('Failed to send log to Supabase:', logError)
+        // Ensure tmp directory exists
+        const tmpDir = path.dirname(LOG_FILE)
+        if (!fs.existsSync(tmpDir)) {
+            fs.mkdirSync(tmpDir, { recursive: true })
         }
+
+        fs.appendFileSync(LOG_FILE, logEntry)
+        console.log(`[DIAGNOSTIC] ${category}: ${message}`)
     } catch (err) {
-        // Fail silently in production to avoid crashing the app due to logging failure
-        console.error('Logging system failed:', err)
+        console.error('Failed to write to diagnostic log:', err)
     }
 }

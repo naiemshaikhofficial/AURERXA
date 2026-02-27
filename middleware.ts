@@ -22,28 +22,29 @@ export async function middleware(request: NextRequest) {
     }
 
     // --- 1. OPTIMIZATION: SKIP AUTH FOR STATIC ASSETS ---
-    // This prevents "Too Many Requests" for images, fonts, and manifests
-    // We use a regex to only skip actual static files, not routes with dots
     const isAsset = /\.(?:ico|png|jpg|jpeg|gif|svg|webp|js|css|woff2?|webmanifest|json|txt|map)$/.test(pathname)
     if (
         pathname.startsWith('/_next') ||
         isAsset ||
-        pathname.startsWith('/api/supabase') // Proxy handles its own auth
+        pathname.startsWith('/api/supabase')
     ) {
-        return NextResponse.next()
+        const response = NextResponse.next()
+        response.headers.set('x-pathname', pathname)
+        return response
     }
 
+    // --- 2. AUTHENTICATION (SUPABASE SSR) ---
+    // We create an initial response that we can modify
+    let response = NextResponse.next({
+        request: {
+            headers: new Headers(request.headers),
+        },
+    })
+
+    // Set pathname header for RootLayout
+    response.headers.set('x-pathname', pathname)
+
     try {
-        const requestHeaders = new Headers(request.headers)
-        requestHeaders.set('x-pathname', pathname)
-
-        // Initial response with the path header
-        let response = NextResponse.next({
-            request: {
-                headers: requestHeaders,
-            },
-        })
-
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
             process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -53,97 +54,49 @@ export async function middleware(request: NextRequest) {
                         return request.cookies.getAll()
                     },
                     setAll(cookiesToSet) {
-                        // 1. Update request for downstream (headers must be copied to new next() call)
-                        cookiesToSet.forEach(({ name, value, options }) =>
-                            request.cookies.set({ name, value, ...options })
+                        // Update request cookies for the next() handler downstream
+                        cookiesToSet.forEach(({ name, value }) =>
+                            request.cookies.set(name, value)
                         )
 
-                        // 2. Create a new response with the updated COOKIES in the headers too
+                        // Re-create the response to ensure cookies are included in the downstream request
                         response = NextResponse.next({
-                            request: {
-                                headers: requestHeaders,
-                            },
+                            request,
                         })
 
-                        // 3. Update response for the browser
+                        // Set response cookies for the browser
                         cookiesToSet.forEach(({ name, value, options }) =>
-                            response.cookies.set({ name, value, ...options })
+                            response.cookies.set(name, value, {
+                                ...options,
+                                sameSite: 'lax',
+                                secure: process.env.NODE_ENV === 'production'
+                            })
                         )
+
+                        // Re-apply pathname header after re-creating response
+                        response.headers.set('x-pathname', pathname)
                     },
                 },
                 cookieOptions: {
                     name: 'sb-xquczexikijzbzcuvmqh-auth-token',
                     path: '/',
+                    sameSite: 'lax',
+                    secure: process.env.NODE_ENV === 'production',
                 }
             }
         )
 
-        // Trigger session refresh if needed
+        // Refresh session if expired - this is what ensures persistence
         await supabase.auth.getUser()
 
-        // --- 2. LIGHTWEIGHT RATE LIMITING ---
-        const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'anonymous'
-        const safeIp = ip.split(',')[0].trim().replace(/[^a-zA-Z0-9._-]/g, '-')
-
-        const rateLimitConfig = (() => {
-            if (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname.startsWith('/contact')) {
-                return { limit: 100, key: `rl_auth_${safeIp}` }
-            }
-            if (pathname.startsWith('/checkout') || pathname.startsWith('/api/payment') || pathname.startsWith('/api/order')) {
-                return { limit: 200, key: `rl_payment_${safeIp}` }
-            }
-            return null
-        })()
-
-        if (rateLimitConfig) {
-            const { limit, key } = rateLimitConfig
-            const now = Date.now()
-            const windowSize = 60 * 1000
-
-            const rlData = request.cookies.get(key)?.value
-            let count = 1
-            let resetTime = now + windowSize
-
-            if (rlData) {
-                try {
-                    const parsed = JSON.parse(rlData)
-                    if (now < parsed.resetTime) {
-                        count = parsed.count + 1
-                        resetTime = parsed.resetTime
-                    }
-                } catch (e) { /* ignore */ }
-            }
-
-            const isDev = process.env.NODE_ENV === 'development'
-
-            if (count > limit && !isDev) {
-                return new NextResponse('Too Many Requests', {
-                    status: 429,
-                    headers: { 'Retry-After': '60', 'Content-Type': 'text/plain' }
-                })
-            }
-
-            // Update rate limit cookie on the current response
-            response.cookies.set(key, JSON.stringify({ count, resetTime }), {
-                httpOnly: true,
-                maxAge: 60,
-                path: '/',
-                sameSite: 'lax',
-            })
-        }
-
-        // --- 3. SECURITY HEADERS ---
-        // Always apply security headers to the final response
+        // Security Headers
         response.headers.set('X-Frame-Options', 'DENY')
         response.headers.set('X-Content-Type-Options', 'nosniff')
         response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-        response.headers.set('X-Permitted-Cross-Domain-Policies', 'none')
 
         return response
     } catch (error) {
-        console.error('Middleware Critical Failure:', error)
-        const response = NextResponse.next()
-        response.headers.set('x-pathname', pathname)
+        console.error('Middleware Auth Error:', error)
         return response
     }
 }

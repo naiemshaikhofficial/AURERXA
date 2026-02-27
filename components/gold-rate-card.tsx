@@ -179,11 +179,22 @@ export function GoldRateCard() {
                                         <span className="text-muted-foreground text-[9px] tracking-[0.2em] uppercase group-hover:text-primary transition-colors duration-500">
                                             {getLabel(purity)}
                                         </span>
-                                        <div className="flex flex-col items-center gap-0.5">
-                                            <span className="text-xl md:text-2xl font-serif text-foreground/90 tracking-tight font-light">
-                                                {rate > 0 ? `₹${rate.toLocaleString('en-IN')}` : '—'}
-                                            </span>
-                                            <span className="text-[9px] text-muted-foreground/50 font-light tracking-wider uppercase">Per Gram</span>
+                                        <div className="flex flex-col items-center gap-1 w-full">
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-xl md:text-2xl font-serif text-foreground/90 tracking-tight font-light">
+                                                    {rate > 0 ? `₹${rate.toLocaleString('en-IN')}` : '—'}
+                                                </span>
+                                                <span className="text-[8px] text-muted-foreground/40 font-light tracking-wider uppercase">Base Rate</span>
+                                            </div>
+
+                                            <div className="w-8 h-px bg-white/5 my-1" />
+
+                                            <div className="flex flex-col items-center">
+                                                <span className="text-sm md:text-base font-serif text-primary/80 tracking-tight">
+                                                    {rate > 0 ? `₹${Math.round(rate * 1.03).toLocaleString('en-IN')}` : '—'}
+                                                </span>
+                                                <span className="text-[8px] text-primary/40 font-medium tracking-widest uppercase">Incl. 3% GST</span>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 ))}
@@ -192,9 +203,12 @@ export function GoldRateCard() {
                     </div>
 
                     {/* Disclosure */}
-                    <div className="mt-16 flex items-center justify-center gap-4 opacity-20">
-                        <span className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-light">
-                            Indicative Market Rates
+                    <div className="mt-16 flex flex-col items-center justify-center gap-2 opacity-30">
+                        <span className="text-[9px] uppercase tracking-[0.4em] text-muted-foreground font-light text-center">
+                            Transparent Pricing · All Indian Taxes Displayed
+                        </span>
+                        <span className="text-[8px] uppercase tracking-[0.2em] text-primary/60 font-medium">
+                            Market rates update live every 8 hours
                         </span>
                     </div>
                 </motion.div>
