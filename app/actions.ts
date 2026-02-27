@@ -4815,7 +4815,9 @@ export async function triggerOrderInvoice(orderId: string) {
       shipping: Number(order.shipping),
       discount: Number(order.coupon_discount || 0),
       tax: Math.round(Number(order.total) * 0.03 / 1.03), // Assuming 3% GST is included
-      total: Number(order.total)
+      total: Number(order.total),
+      paymentMethod: order.payment_method || 'N/A',
+      transactionNumber: order.payment_id || 'N/A'
     }
 
     logDiagnostic('INVOICE', 'Components generated. Generating PDF and HTML body...')
@@ -4824,7 +4826,9 @@ export async function triggerOrderInvoice(orderId: string) {
     const emailHtml = getInvoiceEmailHtml({
       customerName: name,
       orderNumber: order.order_number,
-      total: invoiceData.total
+      total: invoiceData.total,
+      transactionId: invoiceData.transactionNumber,
+      paymentMethod: invoiceData.paymentMethod
     })
 
     const pdfBuffer = await generateInvoicePdf(invoiceData)

@@ -26,6 +26,8 @@ export interface InvoicePdfData {
     discount: number;
     tax: number;
     total: number;
+    paymentMethod: string;
+    transactionNumber: string;
 }
 
 /**
@@ -51,18 +53,20 @@ export async function generateInvoicePdf(data: InvoicePdfData): Promise<Buffer> 
 
     // --- Order Details ---
     doc.setFontSize(10);
-    doc.text(`Order: #${data.orderNumber}`, 20, 55);
-    doc.text(`Date: ${data.date}`, 20, 60);
+    doc.text(`Order ID Number: #${data.orderNumber}`, 20, 55);
+    doc.text(`Transaction Number: ${data.transactionNumber || 'N/A'}`, 20, 60);
+    doc.text(`Payment Method: ${data.paymentMethod || 'N/A'}`, 20, 65);
+    doc.text(`Date: ${data.date}`, 20, 70);
 
     // --- Customer Details ---
-    doc.text('BILL TO:', 20, 75);
+    doc.text('BILL TO:', 20, 85);
     doc.setFont('helvetica', 'bold');
-    doc.text(data.customerName, 20, 80);
+    doc.text(data.customerName, 20, 90);
     doc.setFont('helvetica', 'normal');
-    doc.text(data.customerEmail, 20, 85);
-    doc.text(data.shippingAddress.line1, 20, 90);
-    doc.text(`${data.shippingAddress.city}, ${data.shippingAddress.state} - ${data.shippingAddress.postal_code}`, 20, 95);
-    doc.text(`Phone: ${data.shippingAddress.phone}`, 20, 100);
+    doc.text(data.customerEmail, 20, 95);
+    doc.text(data.shippingAddress.line1, 20, 100);
+    doc.text(`${data.shippingAddress.city}, ${data.shippingAddress.state} - ${data.shippingAddress.postal_code}`, 20, 105);
+    doc.text(`Phone: ${data.shippingAddress.phone}`, 20, 110);
 
     // --- Items Table ---
     const tableData = data.items.map(item => [
@@ -73,7 +77,7 @@ export async function generateInvoicePdf(data: InvoicePdfData): Promise<Buffer> 
     ]);
 
     autoTable(doc, {
-        startY: 110,
+        startY: 120,
         head: [['Item Description', 'Qty', 'Unit Price', 'Amount']],
         body: tableData,
         theme: 'striped',

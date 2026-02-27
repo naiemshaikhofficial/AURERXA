@@ -1,31 +1,31 @@
 export interface InvoiceData {
-    orderNumber: string;
-    date: string;
-    customerName: string;
-    customerEmail: string;
-    shippingAddress: {
-        line1: string;
-        city: string;
-        state: string;
-        postal_code: string;
-        phone: string;
-    };
-    items: Array<{
-        name: string;
-        quantity: number;
-        size?: string;
-        price: number;
-        image?: string;
-    }>;
-    subtotal: number;
-    shipping: number;
-    discount: number;
-    tax: number;
-    total: number;
+  orderNumber: string;
+  date: string;
+  customerName: string;
+  customerEmail: string;
+  shippingAddress: {
+    line1: string;
+    city: string;
+    state: string;
+    postal_code: string;
+    phone: string;
+  };
+  items: Array<{
+    name: string;
+    quantity: number;
+    size?: string;
+    price: number;
+    image?: string;
+  }>;
+  subtotal: number;
+  shipping: number;
+  discount: number;
+  tax: number;
+  total: number;
 }
 
 export function getInvoiceHtml(data: InvoiceData) {
-    const itemsHtml = data.items.map(item => `
+  const itemsHtml = data.items.map(item => `
     <tr>
       <td style="padding: 15px 0; border-bottom: 1px solid #f0f0f0;">
         <div style="display: flex; align-items: center;">
@@ -40,7 +40,7 @@ export function getInvoiceHtml(data: InvoiceData) {
     </tr>
   `).join('');
 
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -85,12 +85,20 @@ export function getInvoiceHtml(data: InvoiceData) {
       
       <div style="background: #fcfcfc; border: 1px solid #f0f0f0; padding: 20px; border-radius: 8px;">
         <div class="details-row">
-          <span class="details-label">Order Number</span>
+          <span class="details-label">Order ID Number</span>
           <span class="details-value">#${data.orderNumber}</span>
         </div>
         <div class="details-row">
           <span class="details-label">Order Date</span>
           <span class="details-value">${data.date}</span>
+        </div>
+        <div class="details-row">
+          <span class="details-label">Payment Method</span>
+          <span class="details-value">${(data as any).paymentMethod || 'N/A'}</span>
+        </div>
+        <div class="details-row">
+          <span class="details-label">Transaction Number</span>
+          <span class="details-value">${(data as any).transactionNumber || 'N/A'}</span>
         </div>
         <div class="details-row" style="margin-top: 15px; border-top: 1px solid #f0f0f0; padding-top: 15px;">
           <span class="details-label">Shipping To</span>

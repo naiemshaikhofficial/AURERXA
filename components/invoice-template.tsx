@@ -141,11 +141,14 @@ export function InvoiceTemplate({ order, type }: InvoiceProps) {
                 </div>
                 {!isShipping && (
                     <div className="text-right">
-                        <div className="bg-slate-900 text-white px-3 py-1 inline-block rounded mb-2">
-                            <h2 className="text-xs font-black uppercase tracking-widest leading-none">Tax Invoice</h2>
+                        <div className="bg-slate-900 text-white px-3 py-1 inline-block rounded mb-4">
+                            <h2 className="text-[10px] font-black uppercase tracking-widest leading-none">Tax Invoice</h2>
                         </div>
-                        <p className="text-xs font-black text-slate-900">#{order.id.slice(0, 8).toUpperCase()}</p>
-                        <p className="text-[10px] font-bold text-slate-400">{formatDate(order.created_at)}</p>
+                        <div className="space-y-0.5">
+                            <p className="text-[9px] font-black uppercase text-slate-400">Order ID Number</p>
+                            <p className="text-xs font-black text-slate-900">#{order.order_number}</p>
+                            <p className="text-[10px] font-bold text-slate-400">{formatDate(order.created_at)}</p>
+                        </div>
                     </div>
                 )}
             </div>
@@ -200,10 +203,10 @@ export function InvoiceTemplate({ order, type }: InvoiceProps) {
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 border-b border-slate-200 pb-1">Seller Details</h3>
                                 <div className="flex justify-between font-bold"><span className="text-slate-400">GSTIN:</span> <span>{sellerDetails.gstin}</span></div>
                                 <div className="flex justify-between font-bold uppercase"><span className="text-slate-400">PAN:</span> <span>{sellerDetails.pan}</span></div>
-                                <div className="flex justify-between font-bold text-emerald-600 uppercase"><span className="text-slate-400">STATUS:</span> <span>{order.payment_method}</span></div>
+                                <div className="flex justify-between font-bold text-slate-900 uppercase"><span className="text-slate-400">Payment Method:</span> <span>{order.payment_method}</span></div>
                                 {order.payment_id && (
                                     <div className="flex justify-between font-bold text-slate-800 uppercase mt-1 pt-1 border-t border-slate-100">
-                                        <span className="text-slate-400">Txn ID:</span>
+                                        <span className="text-slate-400">Transaction Number:</span>
                                         <span className="text-[9px]">{order.payment_id}</span>
                                     </div>
                                 )}

@@ -5,6 +5,8 @@ export function getInvoiceEmailHtml(data: {
     customerName: string;
     orderNumber: string;
     total: number;
+    transactionId: string;
+    paymentMethod: string;
 }) {
     const primaryColor = '#BF9B65'; // AURERXA gold
     const bgColor = '#000000';
@@ -47,10 +49,18 @@ export function getInvoiceEmailHtml(data: {
                 Your request for luxury has been received. We are currently preparing your masterpiece with the utmost care and precision.
             </p>
             <div class="order-box">
-                <div class="order-label">Order Reference</div>
+                <div class="order-label">Order ID Number</div>
                 <div class="order-value">#${data.orderNumber}</div>
                 <div style="margin-top: 10px;">
-                    <div class="order-label">Final Amount</div>
+                    <div class="order-label">Transaction Number</div>
+                    <div class="order-value">${data.transactionId || 'N/A'}</div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <div class="order-label">Payment Method</div>
+                    <div class="order-value">${data.paymentMethod || 'N/A'}</div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <div class="order-label">Amount Paid</div>
                     <div class="order-value">₹${data.total.toLocaleString('en-IN')}</div>
                 </div>
             </div>
