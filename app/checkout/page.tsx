@@ -336,8 +336,10 @@ export default function CheckoutPage() {
 
             // Online Payment Flow
             const paymentResult = await initiatePayment(result.orderId);
+            console.log('[DEBUG] initiatePayment result:', paymentResult.success ? 'Success' : 'Failure');
 
             if (!paymentResult.success) {
+                console.error('[DEBUG] Payment initiation failed:', paymentResult.error);
                 setError(paymentResult.error || 'Failed to initiate payment');
                 setPlacing(false);
                 router.push(`/checkout/payment-retry/${result.orderId}`); // Redirect on initiation failure
@@ -346,6 +348,7 @@ export default function CheckoutPage() {
 
             if (paymentResult.gateway === 'ccavenue') {
                 const cv = paymentResult as any;
+                console.log('[DEBUG] CCAvenue redirecting to:', cv.actionUrl);
 
                 // Create hidden form and submit to CCAvenue
                 const form = document.createElement('form');
@@ -364,7 +367,14 @@ export default function CheckoutPage() {
                 accessCodeInput.value = cv.accessCode;
                 form.appendChild(accessCodeInput);
 
+                const merchantIdInput = document.createElement('input');
+                merchantIdInput.type = 'hidden';
+                merchantIdInput.name = 'merchant_id';
+                merchantIdInput.value = cv.merchantId;
+                form.appendChild(merchantIdInput);
+
                 document.body.appendChild(form);
+                console.log('[DEBUG] Form appending and submitting...');
                 form.submit();
             } else if (paymentResult.gateway === 'free') {
                 // Zero-amount order — already confirmed server-side

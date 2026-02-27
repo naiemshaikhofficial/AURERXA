@@ -4559,10 +4559,12 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     const merchantId = process.env.CCAVENUE_MERCHANT_ID
     const accessCode = process.env.CCAVENUE_ACCESS_CODE
     const workingKey = process.env.CCAVENUE_WORKING_KEY
+    console.log(`[DEBUG] initiatePayment: Starting for order ${orderId}`);
+    console.log(`[DEBUG] initiatePayment: Merchant ${merchantId?.substring(0, 4)}... AccessCode ${accessCode?.substring(0, 4)}...`);
 
     const requestParams = [
       `merchant_id=${merchantId}`,
-      `order_id=${orderId}`,
+      `order_id=${order.order_number}`,
       `currency=INR`,
       `amount=${order.total}`,
       `redirect_url=${encodeURIComponent(redirectUrl)}`,
@@ -4581,7 +4583,8 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
       gateway: 'ccavenue',
       encRequest,
       accessCode,
-      actionUrl: 'https://secure.ccavenue.com/gTransaction.do?command=initiateTransaction'
+      merchantId,
+      actionUrl: 'https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction'
     }
   } catch (err) {
     console.error('Payment initiation error details:', err)

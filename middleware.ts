@@ -89,10 +89,12 @@ export async function middleware(request: NextRequest) {
         // Refresh session if expired - this is what ensures persistence
         await supabase.auth.getUser()
 
-        // Security Headers
-        response.headers.set('X-Frame-Options', 'DENY')
-        response.headers.set('X-Content-Type-Options', 'nosniff')
-        response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+        // 3. Security Headers (Skip for payment callback to avoid framing/POST issues)
+        if (!pathname.startsWith('/api/payment/ccavenue/callback')) {
+            response.headers.set('X-Frame-Options', 'DENY')
+            response.headers.set('X-Content-Type-Options', 'nosniff')
+            response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+        }
 
         return response
     } catch (error) {
