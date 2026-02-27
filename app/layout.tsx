@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     default: 'AURERXA | Authentic Luxury & Bespoke Jewelry Heritage',
     template: '%s | AURERXA',
   },
-  description: 'AURERXA: Elevating Indian luxury. Explore our legacy of gold necklaces, diamond earrings, and bespoke bridal jewelry. Handcrafted perfection with worldwide insured shipping.',
+  description: 'AURERXA: Elevating Indian luxury. Explore our legacy of silver necklaces, earrings, and bespoke jewelry. Handcrafted perfection with worldwide insured shipping.',
   applicationName: 'AURERXA',
   authors: [{ name: 'AURERXA Artisans', url: 'https://aurerxa.com' }],
   generator: 'Next.js',
@@ -46,8 +46,8 @@ export const metadata: Metadata = {
     'Aurerxa India', 'Aurerxa Luxury', 'Aurerxa Fine Jewelry',
     'rexa', 'aurer', 'aure',
     // Jewelry Types
-    'Gold Necklace', 'Diamond Earrings', 'Silver Rings', 'Bridal Jewelry Sets',
-    'Mangalsutra Online', 'Gold Bangles', 'Pendant Necklace', 'Stud Earrings',
+    'Silver Necklace', 'Silver Earrings', 'Silver Rings', 'Bridal Jewelry Sets',
+    'Mangalsutra Online', 'Silver Bangles', 'Pendant Necklace', 'Stud Earrings',
     'Hoop Earrings', 'Chain Necklace', 'Choker Necklace', 'Statement Jewelry',
     'Cocktail Rings', 'Engagement Rings', 'Wedding Bands',
     // Fashion & Lifestyle
@@ -59,11 +59,10 @@ export const metadata: Metadata = {
     'Valentine Gift', 'Diwali Jewelry', 'Raksha Bandhan Gift', 'Karva Chauth Jewelry',
     'Office Wear Jewelry', 'Daily Wear Jewelry', 'Casual Jewelry', 'Date Night Jewelry',
     // Material Based
-    'Gold Plated Jewelry', 'Real Gold Jewelry', '22K Gold Jewelry', '18K Gold Jewelry',
-    'Diamond Jewelry', 'Silver Jewelry', 'Artificial Jewelry', 'Imitation Jewelry',
+    'Silver Jewelry', 'Artificial Jewelry', 'Imitation Jewelry',
     'American Diamond', 'CZ Jewelry', 'Kundan Jewelry', 'Polki Jewelry',
     // Premium & Luxury
-    'Premium Luxury Jewelry', 'Bespoke Jewelry Design', 'Artisan Gold Jewelry',
+    'Premium Luxury Jewelry', 'Bespoke Jewelry Design', 'Artisan Silver Jewelry',
     'Luxury Jewelry Brand', 'Handcrafted Fine Jewelry', 'Ethical Diamond Jewelry',
     'High-End Jewelry', 'Custom Jewelry Maker', 'Fine Jewelry Collections',
     'Heirloom Quality Jewelry', 'Luxury Indian Boutique',
@@ -72,14 +71,14 @@ export const metadata: Metadata = {
     'Jewelry Online Shopping', 'Best Jewelry Brand India', 'Cheap Luxury Jewelry',
     'Affordable Designer Jewelry', 'Free Shipping Jewelry India',
     // Regional
-    'AURERXA Jewelry India', 'Buy Jewelry Online India', 'Best Jewelry Shop Mumbai',
-    'Certified Gold Jewelry Online India', 'Conflict Free Diamond Jewelry',
+    'AURERXA Jewelry India', 'Buy Silver Jewelry Online India', 'Best Jewelry Shop Mumbai',
+    'Certified Silver Jewelry Online India', 'Conflict Free Jewelry',
     'Luxury Gift for Her India', 'Custom Engagement Rings India',
     'Traditional Maharashtrian Jewelry', 'Bespoke Jewelry Designers India',
     'Free Insured Shipping Jewelry', 'Jewelry Store Sangamner',
     'Aurerxa Heritage', 'Fine Jewelry Collections 2026',
-    'Handcrafted Masterpieces', 'Gold Plated Jewelry Online India',
-    'Bentex Jewelry Online', 'Real Gold Jewelry Online',
+    'Handcrafted Masterpieces', 'Silver Jewelry Online India',
+    'Bentex Jewelry Online', 'Real Silver Jewelry Online',
   ],
   creator: 'AURERXA',
   publisher: 'AURERXA',
@@ -223,7 +222,7 @@ export default async function RootLayout({
     'alternateName': ['AURERXA Luxury', 'AURERXA Heritage', 'AURERXA Jewelry'],
     'url': baseUrl,
     'logo': `${baseUrl}/icon-512.png`,
-    'description': 'AURERXA is a premium luxury jewelry brand specializing in bespoke gold and conflict-free diamond masterpieces.',
+    'description': 'AURERXA is a premium luxury jewelry brand specializing in bespoke silver jewelry and handcrafted masterpieces.',
     'sameAs': [
       'https://facebook.com/aurerxa',
       'https://instagram.com/aurerxa',
@@ -297,9 +296,8 @@ export default async function RootLayout({
     "@type": "ItemList",
     "itemListElement": [
       { "@type": "SiteNavigationElement", "position": 1, "name": "Latest Collections", "url": `${baseUrl}/collections` },
-      { "@type": "SiteNavigationElement", "position": 2, "name": "Gold Coins", "url": `${baseUrl}/collections?category=coins` },
-      { "@type": "SiteNavigationElement", "position": 3, "name": "Bespoke Jewelry", "url": `${baseUrl}/concierge` },
-      { "@type": "SiteNavigationElement", "position": 4, "name": "Luxury Watches", "url": `${baseUrl}/collections?category=watches` }
+      { "@type": "SiteNavigationElement", "position": 2, "name": "Bespoke Jewelry", "url": `${baseUrl}/concierge` },
+      { "@type": "SiteNavigationElement", "position": 3, "name": "Luxury Watches", "url": `${baseUrl}/collections?category=watches` }
     ]
   }
 
@@ -327,10 +325,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
-        <Script
-          src="https://checkout.razorpay.com/v1/checkout.js"
-          strategy="afterInteractive"
-        />
+        {/* CCAvenue Integration replaces Razorpay */}
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

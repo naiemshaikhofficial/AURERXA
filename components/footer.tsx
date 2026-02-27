@@ -47,7 +47,7 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
           <div className="space-y-10">
             <h2 className="text-[10px] font-premium-sans text-primary/80 uppercase tracking-[0.2em]">Shop by Category</h2>
             <ul className="grid grid-cols-2 gap-x-8 gap-y-4">
-              {['Earrings', 'Rings', 'Pendants', 'Bangles', 'Necklaces', 'Mangalsutra', 'Bracelets', 'Gold Coins', 'Kids Collection'].map((item) => (
+              {['Earrings', 'Rings', 'Pendants', 'Bangles', 'Necklaces', 'Mangalsutra', 'Bracelets', 'Kids Collection'].map((item) => (
                 <li key={item}>
                   <Link href={item === 'Kids Collection' ? '/collections?gender=Kids' : `/collections?type=${item}`} className="text-[11px] text-muted-foreground hover:text-primary transition-colors tracking-widest uppercase luxe-underline">
                     {item}
@@ -66,7 +66,7 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
                 { name: 'Custom Jewelry', href: '/custom-jewelry' },
                 { name: 'Ring Size Calculator', href: '/ring-size-calculator' },
                 { name: 'The Price of Perfection', href: '/the-price-of-perfection' },
-                { name: 'Live Gold Rates', href: '/live-rates' }
+                { name: 'Live Rates', href: '/live-rates' }
               ].map((service) => (
                 <li key={service.name}>
                   <Link href={service.href} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase luxe-underline">

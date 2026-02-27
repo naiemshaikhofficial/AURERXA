@@ -123,10 +123,7 @@ export function SearchModal() {
                                                     onClick={onClose}
                                                     className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 hover:border-primary/40 rounded-full transition-all group"
                                                 >
-                                                    <div className={`w-1 h-1 rounded-full ${mat.value === 'real_gold' ? 'bg-amber-400' :
-                                                        mat.value === 'gold_plated' ? 'bg-orange-400' :
-                                                            mat.value === 'bentex' ? 'bg-slate-400' :
-                                                                mat.value === 'silver' ? 'bg-blue-300' : 'bg-cyan-400'
+                                                    <div className={`w-1 h-1 rounded-full ${mat.value === 'silver' ? 'bg-blue-300' : 'bg-cyan-400'
                                                         } group-hover:scale-125 transition-transform`} />
                                                     <span className="text-[9px] uppercase tracking-[0.2em] text-white/60 group-hover:text-white font-bold">
                                                         Shop in {mat.label}
@@ -190,7 +187,7 @@ export function SearchModal() {
                                 <div>
                                     <h4 className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-6">Popular Collections</h4>
                                     <div className="flex flex-col gap-4">
-                                        {(usedTags.length > 0 ? usedTags : ['Gold', 'Silver', 'Diamond', 'Platinum']).map((cat) => (
+                                        {(usedTags.length > 0 ? usedTags : ['Silver', 'Platinum', 'Contemporary']).map((cat) => (
                                             <Link
                                                 key={cat}
                                                 href={`/collections/${cat.toLowerCase()}`}

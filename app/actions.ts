@@ -1002,6 +1002,7 @@ export const getBestsellers = unstable_cache(
       .from('products')
       .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
       .eq('bestseller', true)
+      .eq('material_type', 'silver')
       .limit(4)
 
     if (error) {
@@ -1021,6 +1022,7 @@ export async function getNewReleases(limit: number = 8) {
       const { data, error } = await supabaseServer
         .from('products')
         .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
+        .eq('material_type', 'silver')
         .order('created_at', { ascending: false })
         .limit(limit)
 
@@ -1041,6 +1043,7 @@ export async function getProducts(categorySlug?: string, sortBy?: string) {
       let query = supabaseServer
         .from('products')
         .select('id, name, price, image_url, images, slug, weight_grams, tags, categories(id, name, slug)')
+        .eq('material_type', 'silver')
 
       if (categorySlug) {
         const { data: cat } = await supabaseServer
@@ -1530,6 +1533,7 @@ export async function getRelatedProducts(categoryId: string, excludeId: string) 
           .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
           .eq('category_id', categoryId)
           .neq('id', excludeId)
+          .eq('material_type', 'silver')
           .limit(4)
 
         if (error) {
@@ -2934,6 +2938,7 @@ export async function searchProducts(query: string) {
     const { data: ftsResults, error: ftsError } = await supabaseServer
       .from('products')
       .select('id, name, price, description, image_url, images, slug, weight_grams, tags, categories(id, name, slug)')
+      .eq('material_type', 'silver')
       .textSearch('name', query, {
         type: 'websearch',
         config: 'english'
@@ -2947,9 +2952,9 @@ export async function searchProducts(query: string) {
     // 2. Fallback to ILIKE if FTS fails or yields no results
     const { data: ilikeResults, error: ilikeError } = await supabaseServer
       .from('products')
-      .select('id, name, price, description, image_url, images, slug, weight_grams, tags, categories(id, name, slug)')
-      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
-      .limit(12)
+      .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
+      .eq('material_type', 'silver')
+      .or(`name.ilike.%${query}%,tags.cs.{${query}}`)
 
     if (ilikeError) {
       console.error('Fallback search error:', ilikeError)
@@ -2985,14 +2990,14 @@ export async function getSearchSuggestions(query: string) {
       .limit(5)
 
     // 3. Fetch matching tags from products
-    const { data: tagResults } = await supabaseServer
+    const { data: products, error } = await supabaseServer
       .from('products')
-      .select('tags')
-      .not('tags', 'is', null)
-      .limit(100)
+      .select('name, tags, material_type, categories(name, slug)')
+      .eq('material_type', 'silver')
+      .limit(50)
 
     const matchingTags = Array.from(new Set(
-      (tagResults || [])
+      (products || [])
         .flatMap(p => p.tags)
         .filter(tag => tag.toLowerCase().includes(t))
     )).slice(0, 5)
@@ -3220,6 +3225,7 @@ export async function getFilteredProducts(options: {
         let query = supabaseServer
           .from('products')
           .select('id, name, price, image_url, images, slug, weight_grams, material_type, purity, stock, tags, categories(id, name, slug)')
+          .eq('material_type', 'silver')
 
         // Category filter — in-memory cache eliminates repeated DB lookups for same slug
         const categorySlug = options.category || options.material
@@ -4524,12 +4530,57 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     console.error('Zero-amount check failed, proceeding to gateway:', e)
   }
 
-  if (!process.env.RAZORPAY_KEY_ID) {
-    console.error('initiatePayment: Razorpay Key ID is missing');
-    return { success: false, error: 'Razorpay configuration error' };
+  if (!process.env.CCAVENUE_MERCHANT_ID || !process.env.CCAVENUE_WORKING_KEY || !process.env.CCAVENUE_ACCESS_CODE) {
+    console.error('initiatePayment: CCAvenue configuration is missing');
+    return { success: false, error: 'Payment gateway configuration error' };
   }
-  const result = await initiateRazorpayPayment(orderId)
-  return result as PaymentResult
+
+  try {
+    const client = await getAuthClient()
+    const { data: order } = await client
+      .from('orders')
+      .select('*, order_items(*, product:products(*))')
+      .eq('id', orderId)
+      .single()
+
+    if (!order) return { success: false, error: 'Order not found' }
+
+    const { encrypt } = await import('@/lib/ccavenue')
+
+    // Prepare CCAvenue Request String
+    const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/ccavenue/callback`
+    const cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/ccavenue/callback`
+
+    const merchantId = process.env.CCAVENUE_MERCHANT_ID
+    const accessCode = process.env.CCAVENUE_ACCESS_CODE
+    const workingKey = process.env.CCAVENUE_WORKING_KEY
+
+    const requestParams = [
+      `merchant_id=${merchantId}`,
+      `order_id=${orderId}`,
+      `currency=INR`,
+      `amount=${order.total}`,
+      `redirect_url=${encodeURIComponent(redirectUrl)}`,
+      `cancel_url=${encodeURIComponent(cancelUrl)}`,
+      `language=EN`,
+      `billing_name=${encodeURIComponent(order.billing_name || 'Customer')}`,
+      `billing_email=${encodeURIComponent(order.billing_email || '')}`,
+      `billing_tel=${encodeURIComponent(order.customer_phone || '')}`
+    ].join('&')
+
+    const encRequest = encrypt(requestParams, workingKey)
+
+    return {
+      success: true,
+      gateway: 'ccavenue',
+      encRequest,
+      accessCode,
+      actionUrl: 'https://secure.ccavenue.com/gTransaction.do?command=initiateTransaction'
+    }
+  } catch (err) {
+    console.error('Payment initiation error:', err)
+    return { success: false, error: 'Failed to connect to payment gateway' }
+  }
 }
 
 export async function verifyPayment(orderId: string, params?: any) {
@@ -4668,10 +4719,10 @@ export async function verifyRazorpayPayment(orderId: string, params: { razorpay_
 }
 
 /**
- * Internal helper to fetch order details and send the invoice email.
+ * Fetches order details and sends the invoice email.
  * This runs asynchronously to not block the main request.
  */
-async function triggerOrderInvoice(orderId: string) {
+export async function triggerOrderInvoice(orderId: string) {
   logDiagnostic('INVOICE', `Triggering for order ID: ${orderId}`)
   try {
     const client = createSupabaseAdminClient()

@@ -147,10 +147,10 @@ async function HeroCarouselSection() {
 
 
 export const metadata: Metadata = {
-  title: 'AURERXA | Buy Premium Jewelry Online - Gold, Diamond, Bridal & Fashion Jewelry',
-  description: 'Shop AURERXA for luxury handcrafted jewelry. Browse gold necklaces, diamond earrings, bridal sets, mangalsutra, rings & fashion accessories. Free shipping, easy returns, 100% certified. India\'s most trusted luxury jewelry brand.',
+  title: 'AURERXA | Buy Premium Silver Jewelry Online - Bridal & Fashion Jewelry',
+  description: 'Shop AURERXA for luxury handcrafted silver jewelry. Browse silver necklaces, earrings, bridal sets, mangalsutra, rings & fashion accessories. Free shipping, easy returns, 100% certified. India\'s most trusted luxury jewelry brand.',
   keywords: [
-    'Buy Jewelry Online India', 'Gold Jewelry Online Shopping', 'Diamond Jewelry Store',
+    'Buy Silver Jewelry Online India', 'Silver Jewelry Online Shopping',
     'Bridal Jewelry Sets Online', 'Fashion Jewelry India', 'Luxury Jewelry Brand',
     'AURERXA Official Store', 'Premium Handcrafted Jewelry',
     'Gold Necklace for Women', 'Diamond Stud Earrings', 'Bespoke Design Jewelry',
@@ -182,7 +182,7 @@ export default function HomePage() {
         name: 'Is AURERXA jewelry real gold?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Yes, AURERXA offers authentic real gold jewelry (22K and 18K), as well as premium gold-plated and Bentex collections. Every piece comes with a certificate of authenticity.'
+          text: 'Yes, AURERXA offers authentic luxury silver jewelry. Every piece comes with a certificate of authenticity.'
         }
       },
       {
@@ -262,9 +262,11 @@ export default function HomePage() {
         <BestsellersSection />
       </Suspense>
 
+      {/* 
       <Suspense fallback={<div className="py-24 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
         <MaterialShowcaseSection />
       </Suspense>
+*/}
 
       <RecentlyViewed />
       <Newsletter />

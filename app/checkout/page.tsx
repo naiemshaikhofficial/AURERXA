@@ -135,16 +135,8 @@ export default function CheckoutPage() {
     // Delivery time slot state
     const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('anytime')
 
-    // Script loading state
-    const [razorpayLoaded, setRazorpayLoaded] = useState(false)
-    const [enableCod, setEnableCod] = useState(false)
-
     // Check for scripts if they were already loaded by the layout
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            if ((window as any).Razorpay) setRazorpayLoaded(true)
-        }
-    }, [])
+    const [enableCod, setEnableCod] = useState(false)
 
 
     const [newAddress, setNewAddress] = useState({
@@ -352,59 +344,28 @@ export default function CheckoutPage() {
                 return;
             }
 
-            if (paymentResult.gateway === 'razorpay') {
-                const rp = paymentResult as any;
+            if (paymentResult.gateway === 'ccavenue') {
+                const cv = paymentResult as any;
 
-                // Ensure Razorpay is actually available before proceeding
-                if (!(window as any).Razorpay) {
-                    setError('Payment connection is slow. Please wait a moment and try again.');
-                    setPlacing(false);
-                    return;
-                }
+                // Create hidden form and submit to CCAvenue
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = cv.actionUrl;
 
-                const options = {
-                    key: rp.keyId,
-                    amount: rp.amount,
-                    currency: rp.currency,
-                    name: "AURERXA",
-                    description: rp.productName,
-                    image: typeof window !== 'undefined' ? `${window.location.origin}/favicon%2030x30.ico` : '/favicon%2030x30.ico',
-                    order_id: rp.razorpayOrderId,
-                    handler: async function (response: any) {
-                        setPlacing(true);
-                        const verifyResult = await verifyPayment(result.orderId, response);
-                        if (verifyResult.success) {
-                            await refreshCart(true); // Clear Navbar icon
-                            router.push(`/account/orders/${result.orderId}?success=true`);
-                        } else {
-                            setError(verifyResult.error || 'Verification failed. Redirecting to retry page...');
-                            setTimeout(() => {
-                                router.push(`/checkout/payment-retry/${result.orderId}`);
-                            }, 2000);
-                        }
-                    },
-                    prefill: {
-                        name: rp.customer.name,
-                        email: rp.customer.email,
-                        contact: rp.customer.contact
-                    },
-                    theme: {
-                        color: "#D4AF37"
-                    },
-                    modal: {
-                        ondismiss: function () {
-                            setPlacing(false);
-                            setError('Payment was not completed. Redirecting to secure retry portal...');
-                            setTimeout(() => {
-                                router.push(`/checkout/payment-retry/${result.orderId}`);
-                            }, 2000);
-                        }
-                    }
-                };
+                const encRequestInput = document.createElement('input');
+                encRequestInput.type = 'hidden';
+                encRequestInput.name = 'encRequest';
+                encRequestInput.value = cv.encRequest;
+                form.appendChild(encRequestInput);
 
-                // @ts-ignore
-                const rzp = new window.Razorpay(options);
-                rzp.open();
+                const accessCodeInput = document.createElement('input');
+                accessCodeInput.type = 'hidden';
+                accessCodeInput.name = 'access_code';
+                accessCodeInput.value = cv.accessCode;
+                form.appendChild(accessCodeInput);
+
+                document.body.appendChild(form);
+                form.submit();
             } else if (paymentResult.gateway === 'free') {
                 // Zero-amount order — already confirmed server-side
                 await refreshCart(true); // Clear Navbar icon
@@ -955,16 +916,11 @@ export default function CheckoutPage() {
 
                                 <Button
                                     onClick={handlePlaceOrder}
-                                    disabled={placing || !selectedAddress || !termsAccepted || (paymentMethod === 'online' && !razorpayLoaded && !(typeof window !== 'undefined' && (window as any).Razorpay))}
+                                    disabled={placing || !selectedAddress || !termsAccepted}
                                     className="w-full mt-8 bg-foreground hover:bg-foreground/90 text-background font-bold uppercase tracking-[0.25em] h-14 rounded-none disabled:opacity-50 disabled:cursor-not-allowed group transition-all"
                                 >
                                     {placing ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (paymentMethod === 'online' && !razorpayLoaded && !(typeof window !== 'undefined' && (window as any).Razorpay)) ? (
-                                        <div className="flex items-center gap-2">
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                            <span>Initializing...</span>
-                                        </div>
                                     ) : (
                                         <>
                                             {paymentMethod === 'cod' ? 'Place Order' : 'Secure Payment'}
@@ -994,9 +950,9 @@ export default function CheckoutPage() {
                             </div>
                         </motion.div>
                     </div>
-                </div>
-            </main>
+                </div >
+            </main >
 
-        </div>
+        </div >
     )
 }

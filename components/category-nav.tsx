@@ -9,9 +9,8 @@ import { ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 
 const categories = [
-    { label: 'All Jewellery', href: '/collections', iconId: 'aCPWW0PJ102K' },
-    { label: 'Gold', href: '/collections/gold', iconId: '16356' },
-    { label: 'Diamond', href: '/collections/diamond', iconId: 'FrcEOQDge9Hy' },
+    { label: 'All Jewelry', href: '/collections', iconId: 'aCPWW0PJ102K' },
+    { label: 'Silver', href: '/collections/silver', iconId: '16356' },
     { label: 'Kids', href: '/collections/kids', iconId: 'J2uuDL01xwUL' },
     { label: 'Earrings', href: '/collections/earrings', iconId: 'ksXSIChGyK69' },
     { label: 'Rings', href: '/collections/rings', iconId: '5z5Rvj2F4jZB' },
