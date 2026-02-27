@@ -3,7 +3,6 @@ import { logDiagnostic } from './logger';
 
 // ─── ACTIVE PROVIDER: RESEND ─────────────────────────────────────────
 const SENDER_EMAIL = process.env.SES_SENDER_EMAIL || 'orders@aurerxa.com';
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Sends an invoice email with a PDF attachment using Resend.
@@ -23,6 +22,9 @@ export async function sendInvoiceEmail(
             logDiagnostic('EMAIL_ERROR', 'RESEND_API_KEY is not configured');
             return { success: false, error: 'Resend API Key Missing' };
         }
+
+        // Initialize Resend client lazily (prevents build crash if env var is missing)
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
         // 2. Send email with PDF attachment via Resend
         const { data, error } = await resend.emails.send({
