@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
         const encResponse = formData.get('encResp') as string;
 
         if (!encResponse) {
-            return NextResponse.redirect(new URL('/checkout?error=Payment response missing', req.url));
+            return NextResponse.redirect(new URL('/checkout?error=Payment response missing', req.url), 303);
         }
 
         const workingKey = process.env.CCAVENUE_WORKING_KEY;
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
                 triggerOrderInvoice(actualOrderId).catch((err: any) => console.error('Invoice trigger error:', err));
             }
 
-            return NextResponse.redirect(new URL(`/account/orders/${orderId}?success=true`, req.url));
+            return NextResponse.redirect(new URL(`/account/orders/${orderId}?success=true`, req.url), 303);
         } else {
             // Update order as failed/aborted
             await supabase.from('orders').update({
@@ -70,10 +70,10 @@ export async function POST(req: NextRequest) {
                 updated_at: new Date().toISOString()
             }).eq(queryField, orderId);
 
-            return NextResponse.redirect(new URL(`/checkout/payment-retry/${orderId}?status=${orderStatus}`, req.url));
+            return NextResponse.redirect(new URL(`/checkout/payment-retry/${orderId}?status=${orderStatus}`, req.url), 303);
         }
     } catch (err) {
         console.error('CCAvenue Callback Error:', err);
-        return NextResponse.redirect(new URL('/checkout?error=Internal processing error', req.url));
+        return NextResponse.redirect(new URL('/checkout?error=Internal processing error', req.url), 303);
     }
 }
