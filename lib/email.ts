@@ -15,7 +15,8 @@ const sesClient = new SESv2Client({
 
 /**
  * Sends an invoice email with a PDF attachment using AWS SES v2.
- * Uses Nodemailer as a raw MIME generator to ensure attachments work perfectly.
+ * Tries Raw email first (for PDF attachment), falls back to Simple email if
+ * the IAM user lacks ses:SendRawEmail permission.
  */
 export async function sendInvoiceEmail(
     to: string,
@@ -32,52 +33,98 @@ export async function sendInvoiceEmail(
             return { success: false, error: 'AWS Configuration Missing' };
         }
 
-        // 2. Generate the raw MIME message using Nodemailer stream transport
-        const transporter = nodemailer.createTransport({
-            streamTransport: true,
-            newline: 'unix',
-            buffer: true,
-        });
+        // 2. Try RAW email (with PDF attachment) first
+        try {
+            const transporter = nodemailer.createTransport({
+                streamTransport: true,
+                newline: 'unix',
+                buffer: true,
+            });
 
-        const mailOptions = {
-            from: `"AURERXA" <${SENDER_EMAIL}>`,
-            to,
-            subject: `Invoice for your order #${orderNumber}`,
-            html: htmlBody,
-            attachments: [
-                {
-                    filename: `AURERXA-Invoice-${orderNumber}.pdf`,
-                    content: pdfBuffer,
+            const mailOptions = {
+                from: `"AURERXA" <${SENDER_EMAIL}>`,
+                to,
+                subject: `Invoice for your order #${orderNumber}`,
+                html: htmlBody,
+                attachments: [
+                    {
+                        filename: `AURERXA-Invoice-${orderNumber}.pdf`,
+                        content: pdfBuffer,
+                    },
+                ],
+            };
+
+            const info: any = await transporter.sendMail(mailOptions);
+            const rawMessage = info.message; // Buffer containing raw MIME
+
+            logDiagnostic('EMAIL', `MIME message generated (${rawMessage.length} bytes). Sending via RAW SES...`);
+
+            const rawCommand = new SendEmailCommand({
+                Content: {
+                    Raw: {
+                        Data: rawMessage,
+                    },
                 },
-            ],
-        };
+            });
 
-        const info: any = await transporter.sendMail(mailOptions);
-        const rawMessage = info.message; // Buffer containing raw MIME
+            const response = await sesClient.send(rawCommand);
+            logDiagnostic('EMAIL_SUCCESS', 'SES RAW Send Successful', {
+                messageId: response.MessageId,
+                to,
+            });
 
-        logDiagnostic('EMAIL', `MIME message generated (${rawMessage.length} bytes). Sending via RAW SES...`);
+            return { success: true, messageId: response.MessageId };
+        } catch (rawError: any) {
+            // If the error is an authorization issue specifically for SendRawEmail,
+            // fall back to Simple email (no attachment)
+            const isAuthError = rawError.message?.includes('not authorized') ||
+                rawError.Code === 'AccessDenied' ||
+                rawError.name === 'AccessDeniedException';
 
-        // 3. Send the raw message via SES v2 SendEmailCommand
-        const command = new SendEmailCommand({
-            Content: {
-                Raw: {
-                    Data: rawMessage,
-                },
-            },
-        });
+            if (isAuthError) {
+                logDiagnostic('EMAIL_WARNING', `RAW send not authorized, falling back to SIMPLE email (no PDF attachment). Error: ${rawError.message}`);
 
-        const response = await sesClient.send(command);
-        logDiagnostic('EMAIL_SUCCESS', 'SES Send Successful', {
-            messageId: response.MessageId,
-            to
-        });
+                // Fallback: Send email WITHOUT attachment using Simple content
+                const simpleCommand = new SendEmailCommand({
+                    FromEmailAddress: `"AURERXA" <${SENDER_EMAIL}>`,
+                    Destination: {
+                        ToAddresses: [to],
+                    },
+                    Content: {
+                        Simple: {
+                            Subject: {
+                                Data: `Invoice for your order #${orderNumber}`,
+                                Charset: 'UTF-8',
+                            },
+                            Body: {
+                                Html: {
+                                    Data: htmlBody,
+                                    Charset: 'UTF-8',
+                                },
+                            },
+                        },
+                    },
+                });
 
-        return { success: true, messageId: response.MessageId };
+                const fallbackResponse = await sesClient.send(simpleCommand);
+                logDiagnostic('EMAIL_SUCCESS', 'SES SIMPLE Send Successful (no PDF attachment)', {
+                    messageId: fallbackResponse.MessageId,
+                    to,
+                });
+
+                return { success: true, messageId: fallbackResponse.MessageId, note: 'Sent without PDF attachment (IAM permission missing for ses:SendRawEmail)' };
+            }
+
+            // Re-throw if it's a different kind of error
+            throw rawError;
+        }
     } catch (error: any) {
+        console.error('[SES CRITICAL ERROR]', error);
         logDiagnostic('EMAIL_ERROR', 'SES Send Failed', {
             error: error.message,
-            code: error.code,
-            metadata: error.$metadata,
+            code: error.code || error.Code,
+            name: error.name,
+            stack: error.stack?.substring(0, 500),
             to
         });
         return { success: false, error: error.message };

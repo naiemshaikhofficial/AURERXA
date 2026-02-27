@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 export interface InvoiceItem {
     name: string;
@@ -32,6 +32,7 @@ export interface InvoicePdfData {
  * Generates a professional PDF invoice buffer using jsPDF.
  */
 export async function generateInvoicePdf(data: InvoicePdfData): Promise<Buffer> {
+    console.log(`[PDF] Generating invoice PDF for Order #${data.orderNumber}...`);
     const doc = new jsPDF() as any;
 
     // --- Header & Brand ---
@@ -71,7 +72,7 @@ export async function generateInvoicePdf(data: InvoicePdfData): Promise<Buffer> 
         `₹${(item.price * item.quantity).toLocaleString('en-IN')}`
     ]);
 
-    doc.autoTable({
+    autoTable(doc, {
         startY: 110,
         head: [['Item Description', 'Qty', 'Unit Price', 'Amount']],
         body: tableData,
@@ -120,5 +121,7 @@ export async function generateInvoicePdf(data: InvoicePdfData): Promise<Buffer> 
 
     // Return as Buffer
     const arrayBuffer = doc.output('arraybuffer');
-    return Buffer.from(arrayBuffer);
+    const resultBuffer = Buffer.from(arrayBuffer);
+    console.log(`[PDF] Invoice PDF generated successfully for Order #${data.orderNumber} (${resultBuffer.length} bytes)`);
+    return resultBuffer;
 }

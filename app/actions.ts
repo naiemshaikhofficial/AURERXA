@@ -4705,12 +4705,25 @@ async function triggerOrderInvoice(orderId: string) {
       .single()
 
     if (profile) {
+      logDiagnostic('INVOICE', `Profile found for user ${order.user_id}: ${profile.email}`)
       if (name === 'Valued Customer' && profile.full_name) name = profile.full_name
       email = profile.email
+    } else {
+      logDiagnostic('INVOICE_WARNING', `No profile found for user ${order.user_id}. Fetching from auth.admin...`)
+      const { data: { user }, error: userError } = await client.auth.admin.getUserById(order.user_id)
+      if (user && user.email) {
+        email = user.email
+        if (name === 'Valued Customer' && user.user_metadata?.full_name) {
+          name = user.user_metadata.full_name
+        }
+        logDiagnostic('INVOICE', `User email found in auth: ${email}`)
+      } else {
+        logDiagnostic('INVOICE_ERROR', `Failed to fetch email from auth for ${order.user_id}`, userError)
+      }
     }
 
     if (!email) {
-      console.error(`[INVOICE SYSTEM ERROR] No customer email found for user ${order.user_id}`);
+      logDiagnostic('INVOICE_ERROR', `CRITICAL: No customer email found for user ${order.user_id}. Available shipping data:`, order.shipping_address)
       return
     }
 

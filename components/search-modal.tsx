@@ -14,6 +14,7 @@ import { ProductCard } from '@/components/product-card'
 
 export function SearchModal() {
     const { isSearchOpen: isOpen, closeSearch: onClose } = useSearch()
+    const router = useRouter()
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<any[]>([])
     const [suggestions, setSuggestions] = useState<{ categories: any[], tags: string[], materials?: any[] }>({ categories: [], tags: [], materials: [] })
@@ -79,7 +80,16 @@ export function SearchModal() {
 
                 {/* Search Header */}
                 <div className="relative mb-12 animate-in slide-in-from-bottom-8 duration-500">
-                    <div className="flex items-center gap-6 border-b border-neutral-800 pb-4 group focus-within:border-primary transition-colors">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault()
+                            if (query.trim()) {
+                                onClose()
+                                router.push(`/collections?search=${encodeURIComponent(query.trim())}`)
+                            }
+                        }}
+                        className="flex items-center gap-6 border-b border-neutral-800 pb-4 group focus-within:border-primary transition-colors"
+                    >
                         <Search className="w-6 h-6 text-neutral-500 group-focus-within:text-primary transition-colors" />
                         <input
                             ref={inputRef}
@@ -92,7 +102,8 @@ export function SearchModal() {
                         {loading && (
                             <Loader2 className="w-6 h-6 animate-spin text-primary" />
                         )}
-                    </div>
+                        <button type="submit" className="hidden" aria-hidden="true">Search</button>
+                    </form>
                 </div>
 
                 {/* Results Area */}

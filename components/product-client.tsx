@@ -827,6 +827,12 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                                     placeholder="Enter size (e.g., 18mm)"
                                                     className="w-full h-12 bg-white/5 border border-white/10 text-white px-4 text-xs tracking-wider focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-all mb-2"
                                                     onChange={(e) => setCustomSizeInput(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault()
+                                                            handleAddToCart()
+                                                        }
+                                                    }}
                                                 />
                                             </div>
                                         )}

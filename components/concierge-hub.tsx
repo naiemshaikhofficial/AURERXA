@@ -361,7 +361,14 @@ export function ConciergeHub() {
                                         <p className="text-[10px] text-white/30 uppercase tracking-[0.4em] font-black">Rate your experience</p>
                                         <div className="flex gap-3 justify-center">
                                             {[1, 2, 3, 4, 5].map((star) => (
-                                                <button key={star} onClick={() => setRating(star)} className="p-1 hover:scale-125 transition-transform"><Star className={cn("w-8 h-8 transition-colors", rating >= star ? "fill-amber-500 text-amber-500" : "text-white/5")} /></button>
+                                                <button
+                                                    key={star}
+                                                    onClick={() => setRating(star)}
+                                                    className="p-1 hover:scale-125 focus:scale-125 focus:outline-none transition-transform"
+                                                    aria-label={`Rate ${star} out of 5 stars`}
+                                                >
+                                                    <Star className={cn("w-8 h-8 transition-colors", rating >= star ? "fill-amber-500 text-amber-500" : "text-white/5")} />
+                                                </button>
                                             ))}
                                         </div>
                                     </div>

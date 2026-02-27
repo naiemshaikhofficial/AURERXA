@@ -883,6 +883,12 @@ export default function CheckoutPage() {
                                                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                                                 placeholder="ENTER CODE"
                                                 className="bg-background border-input text-foreground h-10 uppercase text-xs tracking-widest rounded-none focus:border-primary/50 placeholder:text-muted-foreground/40"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault()
+                                                        handleApplyCoupon()
+                                                    }
+                                                }}
                                             />
                                             <Button
                                                 onClick={handleApplyCoupon}
