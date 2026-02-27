@@ -1552,13 +1552,20 @@ export async function getRelatedProducts(categoryId: string, excludeId: string) 
 // ============================================
 
 export async function getCart() {
+  console.log('[DEBUG] getCart: Initiating...')
   const authClient = await getAuthClient()
-  const { data: { user } } = await authClient.auth.getUser()
+  const { data: { user }, error: authError } = await authClient.auth.getUser()
+
+  if (authError) {
+    console.error('[DEBUG] getCart: Auth error:', authError)
+  }
 
   if (!user) {
-    console.warn('[CART] getCart: No user found.')
+    console.warn('[CART] getCart: No user found in session context.')
     return []
   }
+
+  console.log('[DEBUG] getCart: User identified as', user.id, '. Fetching from DB (Admin Bypass)...')
 
   // HARDENED: Use Admin client to fetch cart items. 
   // This bypasses RLS synchronization issues that often occur in Server Actions/Background tasks.
@@ -1569,10 +1576,14 @@ export async function getCart() {
     .eq('user_id', user.id)
 
   if (error) {
-    console.error('[CART] Error fetching items:', error)
+    console.error('[DEBUG] getCart: Supabase error:', error)
     return []
   }
 
+  console.log(`[DEBUG] getCart: Found ${data?.length || 0} items for user ${user.id}`)
+  if (data && data.length > 0) {
+    data.forEach((item, idx) => console.log(`  Item ${idx}:`, item.product_id, 'x', item.quantity))
+  }
   return data || []
 }
 
@@ -2103,38 +2114,6 @@ export async function getOrderById(orderId: string) {
   return data
 }
 
-export async function getCart() {
-  console.log('[DEBUG] getCart: Initiating...')
-  const client = await getAuthClient()
-  const { data: { user }, error: authError } = await client.auth.getUser()
-
-  if (authError) {
-    console.error('[DEBUG] getCart: Auth error:', authError)
-  }
-
-  if (!user) {
-    console.log('[DEBUG] getCart: No user found in session context.')
-    return []
-  }
-
-  console.log('[DEBUG] getCart: User identified as', user.id, '. Fetching from DB...')
-
-  const { data, error } = await client
-    .from('cart')
-    .select('id, product_id, quantity, size, products(id, name, price, slug, image_url, categories(id, name, slug))')
-    .eq('user_id', user.id)
-
-  if (error) {
-    console.error('[DEBUG] getCart: Supabase error:', error)
-    return []
-  }
-
-  console.log(`[DEBUG] getCart: Found ${data?.length || 0} items for user ${user.id}`)
-  if (data && data.length > 0) {
-    data.forEach((item, idx) => console.log(`  Item ${idx}:`, item.product_id, 'x', item.quantity))
-  }
-  return data || []
-}
 
 export async function createOrder(
   addressId: string,
