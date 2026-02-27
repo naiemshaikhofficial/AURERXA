@@ -4482,14 +4482,15 @@ export async function broadcastNotification(title: string, body: string, url: st
 
 // Payment Gateway Configuration
 export type PaymentResult =
+  | { success: true; gateway: 'ccavenue'; encRequest: string; accessCode: string; actionUrl: string }
   | { success: true; gateway: 'razorpay'; keyId: string; amount: number; currency: string; razorpayOrderId: string; productName: string; customer: { name: string; email: string; contact: string }; mode?: string; paymentSessionId?: never }
   | { success: true; gateway: 'free'; orderId: string; keyId?: never; amount?: never; paymentSessionId?: never }
   | { success: false; error: string; gateway?: never; keyId?: never };
 
 export async function getPaymentGatewayConfig() {
   return {
-    gateway: 'razorpay' as const,
-    razorpayKeyId: process.env.RAZORPAY_KEY_ID,
+    gateway: 'ccavenue' as const,
+    accessCode: process.env.CCAVENUE_ACCESS_CODE,
     enableCod: process.env.ENABLE_COD === 'true'
   }
 }

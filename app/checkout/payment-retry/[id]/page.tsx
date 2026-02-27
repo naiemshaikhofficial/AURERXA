@@ -87,6 +87,28 @@ export default function PaymentRetryPage() {
                 }
                 const rzp = new (window as any).Razorpay(options)
                 rzp.open()
+            } else if (paymentResult.gateway === 'ccavenue') {
+                const cv = paymentResult as any;
+
+                // Create hidden form and submit to CCAvenue
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = cv.actionUrl;
+
+                const encRequestInput = document.createElement('input');
+                encRequestInput.type = 'hidden';
+                encRequestInput.name = 'encRequest';
+                encRequestInput.value = cv.encRequest;
+                form.appendChild(encRequestInput);
+
+                const accessCodeInput = document.createElement('input');
+                accessCodeInput.type = 'hidden';
+                accessCodeInput.name = 'access_code';
+                accessCodeInput.value = cv.accessCode;
+                form.appendChild(accessCodeInput);
+
+                document.body.appendChild(form);
+                form.submit();
             } else if (paymentResult.gateway === 'free') {
                 toast.success('Order confirmed! No payment required.')
                 router.push(`/account/orders/${orderId}?success=true`)
