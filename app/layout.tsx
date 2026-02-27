@@ -389,7 +389,7 @@ export default async function RootLayout({
                       <SearchModal />
                       <DynamicTitle />
                       <BottomNav />
-                      <ConciergeHub />
+                      {/* <ConciergeHub /> - Hidden for now, kept for future use */}
 
                       <Toaster />
                       <SpeedInsights />
