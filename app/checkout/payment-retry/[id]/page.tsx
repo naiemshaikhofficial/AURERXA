@@ -151,7 +151,7 @@ export default function PaymentRetryPage() {
 
                                 <h2 className="text-xl font-serif font-light mb-4 flex items-center gap-3 italic text-foreground">
                                     <ShieldCheck className="w-5 h-5 text-primary opacity-70" />
-                                    Secure Razorpay Gateway
+                                    Secure CCAvenue Gateway
                                 </h2>
                                 <p className="text-sm text-muted-foreground leading-relaxed italic">
                                     Your order is ready for fulfillment. Please use the secure portal to complete your transaction with India&apos;s most trusted payment network.
@@ -226,13 +226,11 @@ export default function PaymentRetryPage() {
                                 </button>
 
                                 <div className="mt-6 flex items-center justify-center gap-3 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
-                                    <div className="relative w-8 h-4">
-                                        <Image src="/upi-icon.svg" alt="UPI" fill className="object-contain invert" unoptimized />
+                                    <div className="relative w-24 h-6">
+                                        <Image src="/ccavenue-badge.png" alt="CCAvenue" fill className="object-contain" unoptimized />
                                     </div>
-                                    <div className="relative w-8 h-4">
-                                        <Image src="/Mastercard-logo.svg" alt="Mastercard" fill className="object-contain" unoptimized />
-                                    </div>
-                                    <CreditCard className="w-5 h-5 text-white/50" />
+                                    <div className="h-4 w-px bg-white/10 mx-2" />
+                                    <ShieldCheck className="w-5 h-5 text-emerald-500/50" />
                                 </div>
                             </div>
                         </div>

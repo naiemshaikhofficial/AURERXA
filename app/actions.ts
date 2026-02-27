@@ -2080,9 +2080,13 @@ export async function getOrderById(orderId: string) {
   const { data: { user } } = await client.auth.getUser()
   if (!user) return null
 
+  console.log(`[DEBUG] getOrderById: req_id=${orderId}, user_id=${user.id}`);
+
   // Detect if ID is a UUID or an Order Number
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
   const queryField = isUUID ? 'id' : 'order_number';
+
+  console.log(`[DEBUG] queryField selected: ${queryField}`);
 
   const { data, error } = await client
     .from('orders')
@@ -2091,7 +2095,19 @@ export async function getOrderById(orderId: string) {
     .eq('user_id', user.id)
     .single()
 
-  if (error || !data) return null
+  if (error) {
+    console.error(`[DEBUG] getOrderById Search Error [${queryField}=${orderId}]:`, error.message);
+    // If not found by user_id, check if it exists at all (Service role check for diag)
+    const adminClient = await createSupabaseAdminClient();
+    const { data: exists } = await adminClient.from('orders').select('user_id').eq(queryField, orderId).maybeSingle();
+    if (exists) {
+      console.log(`[DEBUG] Order EXISTS but user mismatch. Owner: ${exists.user_id}, Req: ${user.id}`);
+    } else {
+      console.log(`[DEBUG] Order DOES NOT EXIST in database with ${queryField}=${orderId}`);
+    }
+    return null
+  }
+  if (!data) return null
 
   // 30-Minute Expiry Logic for Pending Orders (Amazon-style)
   if (data.status === 'pending') {
@@ -4545,11 +4561,14 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
   }
 
   try {
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+    const queryField = isUUID ? 'id' : 'order_number';
+
     const client = await getAuthClient()
     const { data: order } = await client
       .from('orders')
       .select('*, order_items(*, product:products(*))')
-      .eq('id', orderId)
+      .eq(queryField, orderId)
       .single()
 
     if (!order) return { success: false, error: 'Order not found' }
