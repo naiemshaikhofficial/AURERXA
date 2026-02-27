@@ -2080,10 +2080,14 @@ export async function getOrderById(orderId: string) {
   const { data: { user } } = await client.auth.getUser()
   if (!user) return null
 
+  // Detect if ID is a UUID or an Order Number
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+  const queryField = isUUID ? 'id' : 'order_number';
+
   const { data, error } = await client
     .from('orders')
     .select('*, order_items(*, products(name, image_url, weight_grams, purity, slug))')
-    .eq('id', orderId)
+    .eq(queryField, orderId)
     .eq('user_id', user.id)
     .single()
 
@@ -4559,14 +4563,12 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     const merchantId = process.env.CCAVENUE_MERCHANT_ID
     const accessCode = process.env.CCAVENUE_ACCESS_CODE
     const workingKey = process.env.CCAVENUE_WORKING_KEY
-    console.log(`[DEBUG] initiatePayment: Starting for order ${orderId}`);
-    console.log(`[DEBUG] initiatePayment: Merchant ${merchantId?.substring(0, 4)}... AccessCode ${accessCode?.substring(0, 4)}...`);
 
     const requestParams = [
       `merchant_id=${merchantId}`,
       `order_id=${order.order_number}`,
       `currency=INR`,
-      `amount=${order.total}`,
+      `amount=${order.total.toFixed(2)}`,
       `redirect_url=${encodeURIComponent(redirectUrl)}`,
       `cancel_url=${encodeURIComponent(cancelUrl)}`,
       `language=EN`,

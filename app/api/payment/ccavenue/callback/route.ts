@@ -28,6 +28,10 @@ export async function POST(req: NextRequest) {
 
         const supabase = await createSupabaseServerClient();
 
+        // Detect if orderId is UUID or Order Number
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId || "");
+        const queryField = isUUID ? 'id' : 'order_number';
+
         if (orderStatus === 'Success') {
             // Update order to confirmed
             await supabase.from('orders').update({
@@ -37,11 +41,24 @@ export async function POST(req: NextRequest) {
                 payment_method: `CCAvenue (${paymentMode})`,
                 bank_ref_no: bankRefNo,
                 updated_at: new Date().toISOString()
-            }).eq('id', orderId);
+            }).eq(queryField, orderId);
 
             // Trigger invoice
             if (orderId) {
-                triggerOrderInvoice(orderId).catch((err: any) => console.error('Invoice trigger error:', err));
+                // If we have an order number, triggerOrderInvoice might need the UUID. 
+                // But triggerOrderInvoice is already written to handle order lookup by ID.
+                // We should find the actual order ID first if we have the order number.
+                let actualOrderId = orderId;
+                if (!isUUID) {
+                    const { data: orderData } = await supabase
+                        .from('orders')
+                        .select('id')
+                        .eq('order_number', orderId)
+                        .single();
+                    if (orderData) actualOrderId = orderData.id;
+                }
+
+                triggerOrderInvoice(actualOrderId).catch((err: any) => console.error('Invoice trigger error:', err));
             }
 
             return NextResponse.redirect(new URL(`/account/orders/${orderId}?success=true`, req.url));
@@ -51,7 +68,7 @@ export async function POST(req: NextRequest) {
                 status: 'payment_failed',
                 payment_status: 'failed',
                 updated_at: new Date().toISOString()
-            }).eq('id', orderId);
+            }).eq(queryField, orderId);
 
             return NextResponse.redirect(new URL(`/checkout/payment-retry/${orderId}?status=${orderStatus}`, req.url));
         }
