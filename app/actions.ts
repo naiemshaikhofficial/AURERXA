@@ -4593,7 +4593,7 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
       `language=EN`,
       `billing_name=${encodeURIComponent(order.billing_name || 'Customer')}`,
       `billing_email=${encodeURIComponent(order.billing_email || '')}`,
-      `billing_tel=${encodeURIComponent(order.customer_phone || '')}`
+      `billing_tel=${encodeURIComponent((order.customer_phone || '').replace(/\D/g, ''))}`
     ].join('&')
 
     const encRequest = encrypt(requestParams, workingKey)

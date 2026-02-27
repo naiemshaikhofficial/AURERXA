@@ -107,6 +107,12 @@ export default function PaymentRetryPage() {
                 accessCodeInput.value = cv.accessCode;
                 form.appendChild(accessCodeInput);
 
+                const merchantIdInput = document.createElement('input');
+                merchantIdInput.type = 'hidden';
+                merchantIdInput.name = 'merchant_id';
+                merchantIdInput.value = cv.merchantId;
+                form.appendChild(merchantIdInput);
+
                 document.body.appendChild(form);
                 form.submit();
             } else if (paymentResult.gateway === 'free') {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { decrypt } from '@/lib/ccavenue';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { createSupabaseAdminClient } from '@/lib/supabase-server';
 import { triggerOrderInvoice } from '@/app/actions';
 
 export async function POST(req: NextRequest) {
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
         const bankRefNo = params.get('bank_ref_no');
         const paymentMode = params.get('payment_mode');
 
-        const supabase = await createSupabaseServerClient();
+        const supabase = await createSupabaseAdminClient();
 
         // Detect if orderId is UUID or Order Number
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId || "");
