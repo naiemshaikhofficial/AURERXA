@@ -4531,7 +4531,11 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
   }
 
   if (!process.env.CCAVENUE_MERCHANT_ID || !process.env.CCAVENUE_WORKING_KEY || !process.env.CCAVENUE_ACCESS_CODE) {
-    console.error('initiatePayment: CCAvenue configuration is missing');
+    console.error('initiatePayment: CCAvenue configuration is missing:', {
+      hasMerchantId: !!process.env.CCAVENUE_MERCHANT_ID,
+      hasWorkingKey: !!process.env.CCAVENUE_WORKING_KEY,
+      hasAccessCode: !!process.env.CCAVENUE_ACCESS_CODE
+    });
     return { success: false, error: 'Payment gateway configuration error' };
   }
 
@@ -4569,6 +4573,7 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     ].join('&')
 
     const encRequest = encrypt(requestParams, workingKey)
+    console.log('initiatePayment: Request encrypted successfully')
 
     return {
       success: true,
@@ -4578,11 +4583,10 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
       actionUrl: 'https://secure.ccavenue.com/gTransaction.do?command=initiateTransaction'
     }
   } catch (err) {
-    console.error('Payment initiation error:', err)
+    console.error('Payment initiation error details:', err)
     return { success: false, error: 'Failed to connect to payment gateway' }
   }
 }
-
 export async function verifyPayment(orderId: string, params?: any) {
   console.log('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
   console.log('!!!! VERIFY PAYMENT ACTION TRIGGERED LOCAL !!!!')
