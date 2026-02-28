@@ -135,6 +135,9 @@ export default function CheckoutPage() {
     // Delivery time slot state
     const [deliveryTimeSlot, setDeliveryTimeSlot] = useState('anytime')
 
+    // Honeypot for bot protection
+    const [honeypot, setHoneypot] = useState('')
+
     // Check for scripts if they were already loaded by the layout
     const [enableCod, setEnableCod] = useState(false)
 
@@ -319,7 +322,8 @@ export default function CheckoutPage() {
                 giftMessage: giftWrap ? giftMessage : undefined,
                 deliveryTimeSlot,
                 couponCode: couponApplied?.code,
-                couponDiscount: couponApplied?.discount
+                couponDiscount: couponApplied?.discount,
+                honeypot // Bot protection
             });
 
             if (!result.success) {
@@ -476,7 +480,18 @@ export default function CheckoutPage() {
                             className="lg:col-span-2 space-y-8"
                         >
                             {/* Delivery Address */}
-                            <div className="bg-card/30 border border-border p-8 backdrop-blur-sm">
+                            <div className="bg-card/30 border border-border p-8 backdrop-blur-sm relative">
+                                {/* Honeypot for bot protection */}
+                                <div style={{ position: 'absolute', opacity: 0, height: 0, width: 0, zIndex: -1, overflow: 'hidden' }}>
+                                    <input
+                                        type="text"
+                                        name="website_url"
+                                        value={honeypot}
+                                        onChange={(e) => setHoneypot(e.target.value)}
+                                        tabIndex={-1}
+                                        autoComplete="off"
+                                    />
+                                </div>
                                 <div className="flex items-center justify-between mb-8">
                                     <h2 className="font-serif text-2xl font-light flex items-center gap-3 text-foreground/90">
                                         <MapPin className="w-5 h-5 text-primary" />

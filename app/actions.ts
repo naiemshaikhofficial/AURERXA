@@ -4,6 +4,7 @@ import { cookies, headers } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 import { notifyNewProduct } from './push-actions'
 import { revalidateTag, revalidatePath, unstable_cache } from 'next/cache'
+import * as nodeCrypto from 'node:crypto'
 
 import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib } from '@/lib/razorpay'
 import { redirect } from 'next/navigation'
@@ -149,6 +150,28 @@ async function checkIsAdmin() {
 const getAuthClient = cache(async () => {
   return createSupabaseServerClient()
 })
+
+/**
+ * Security: Generic Rate Limiter using Supabase RPC
+ */
+async function checkActionRateLimit(identifier: string, action: string, max: number, window: number) {
+  try {
+    const adminClient = await createSupabaseAdminClient()
+    const { data, error } = await adminClient.rpc('check_rate_limit', {
+      p_identifier: identifier,
+      p_action: action,
+      p_max_count: max,
+      p_window_minutes: window
+    })
+    if (error) {
+      console.error('[SECURITY] Rate limit RPC error:', error)
+      return true // Fail open to avoid blocking users on DB glitches
+    }
+    return !!data
+  } catch (e) {
+    return true
+  }
+}
 
 // Check if user has a pending order for a specific product
 export async function checkPendingOrder(productId: string) {
@@ -1577,7 +1600,7 @@ export async function getCart() {
   const adminClient = createSupabaseAdminClient()
   const { data, error } = await adminClient
     .from('cart')
-    .select('id, product_id, quantity, size, products(id, name, price, slug, image_url, categories(id, name, slug))')
+    .select('id, product_id, quantity, size, products(id, name, price, slug, image_url, stock, categories(id, name, slug))')
     .eq('user_id', user.id)
 
   if (error) {
@@ -2149,6 +2172,7 @@ export async function createOrder(
     deliveryTimeSlot?: string
     couponCode?: string
     couponDiscount?: number
+    honeypot?: string
   }
 ) {
   console.log('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
@@ -2177,7 +2201,22 @@ export async function createOrder(
     return { success: false, error: 'Invalid address selected.' }
   }
 
-  // --- SECURITY: Rate Limiting ---
+  // --- SECURITY: Honeypot ---
+  if (options?.honeypot) {
+    console.warn('[SECURITY] Bot detected via honeypot for user', user.id)
+    return { success: false, error: 'Security validation failed.' }
+  }
+  const headerList = await headers()
+  const ip = headerList.get('x-forwarded-for')?.split(',')[0] || headerList.get('x-real-ip') || 'unknown'
+  const ua = headerList.get('user-agent') || 'unknown'
+
+  // Limit: 5 order attempts per 10 minutes per IP
+  const isAllowedIp = await checkActionRateLimit(ip, 'create_order_ip', 5, 10)
+  if (!isAllowedIp) {
+    return { success: false, error: 'Too many requests from this connection. Please try again later.' }
+  }
+
+  // Limit: 3 pending orders per 10 minutes per User (already exists, but we unify it)
   const { count: pendingOrders } = await client
     .from('orders')
     .select('*', { count: 'exact', head: true })
@@ -2185,8 +2224,8 @@ export async function createOrder(
     .eq('status', 'pending')
     .gt('created_at', new Date(Date.now() - 10 * 60 * 1000).toISOString())
 
-  if (pendingOrders !== null && pendingOrders >= 2) {
-    return { success: false, error: 'Too many pending orders. Please complete or wait before creating a new one.' }
+  if (pendingOrders !== null && pendingOrders >= 3) {
+    return { success: false, error: 'You have too many pending orders. Please complete or cancel them before creating more.' }
   }
 
   // Get cart items with a short retry to handle race conditions
@@ -2198,7 +2237,7 @@ export async function createOrder(
     const freshClient = await createSupabaseServerClient()
     const { data: retryCart } = await freshClient
       .from('cart')
-      .select('*, products(price)')
+      .select('*, products(price, stock)')
       .eq('user_id', user.id)
     cart = retryCart as any
   }
@@ -2209,6 +2248,24 @@ export async function createOrder(
   }
 
   console.log('[DEBUG] createOrder: Cart confirmed with', cart.length, 'items. Proceeding...')
+
+  // --- SECURITY: Stock & Idempotency Check ---
+  // Create a hash of the cart to prevent duplicate rapid orders
+  const cartHash = nodeCrypto.createHash('md5').update(JSON.stringify(cart.map(i => ({ p: i.product_id, q: i.quantity, s: i.size })))).digest('hex')
+
+  const { data: profile } = await client.from('profiles').select('last_order_hash, last_order_at').eq('id', user.id).single()
+  if (profile?.last_order_hash === cartHash && profile?.last_order_at && (Date.now() - new Date(profile.last_order_at).getTime() < 120000)) {
+    return { success: false, error: 'A similar order was recently placed. Please check your "My Orders" page.' }
+  }
+
+  // Strict Stock Check
+  for (const item of cart) {
+    const product = Array.isArray(item.products) ? item.products[0] : item.products
+    const currentStock = product?.stock || 0
+    if (currentStock < item.quantity) {
+      return { success: false, error: `Sorry, ${product?.name || 'an item'} is out of stock or quantity not available.` }
+    }
+  }
 
   // Get address
   const { data: address } = await client
@@ -2288,7 +2345,9 @@ export async function createOrder(
       shipping,
       total,
       shipping_address: address,
-      payment_method: paymentMethod,
+      payment_method: ['online', 'cod'].includes(paymentMethod) ? paymentMethod : 'online',
+      ip_address: ip,
+      user_agent: ua,
       status: 'pending',
       gift_wrap: options?.giftWrap || false,
       gift_message: options?.giftMessage ? sanitize(options.giftMessage) : null,
@@ -2341,6 +2400,12 @@ export async function createOrder(
     // TRIGGER INVOICE FOR COD
     triggerOrderInvoice(order.id).catch(err => console.error('COD Invoice trigger error:', err))
   }
+
+  // Record order hash for idempotency
+  await client.from('profiles').update({
+    last_order_hash: cartHash,
+    last_order_at: new Date().toISOString()
+  }).eq('id', user.id)
 
   return { success: true, orderId: order.id, orderNumber }
 }
@@ -2598,6 +2663,11 @@ export async function updateProfile(profileData: {
 // ============================================
 
 export async function subscribeNewsletter(email: string) {
+  const headerList = await headers()
+  const ip = headerList.get('x-forwarded-for')?.split(',')[0] || headerList.get('x-real-ip') || 'unknown'
+
+  const isAllowed = await checkActionRateLimit(ip, 'newsletter', 3, 60) // 3 attempts per hour
+  if (!isAllowed) return { success: false, error: 'Too many attempts. Please try again later.' }
   if (!email || !email.includes('@')) {
     return { success: false, error: 'Please enter a valid email address' }
   }
@@ -2755,6 +2825,11 @@ export async function submitBulkOrder(formData: {
 }
 
 export async function submitContact(formData: any) {
+  const headerList = await headers()
+  const ip = headerList.get('x-forwarded-for')?.split(',')[0] || headerList.get('x-real-ip') || 'unknown'
+
+  const isAllowed = await checkActionRateLimit(ip, 'contact_form', 3, 60) // 3 attempts per hour
+  if (!isAllowed) return { success: false, error: 'Too many messages sent. Please wait or call us directly.' }
   const sanitized = sanitizeObject(formData)
   if (!sanitized.name || !sanitized.email || !sanitized.message) {
     return { success: false, error: 'Please fill in all required fields' }
