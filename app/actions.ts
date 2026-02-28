@@ -2133,16 +2133,16 @@ export async function getOrderById(orderId: string) {
   }
   if (!data) return null
 
-  // 30-Minute Expiry Logic for Pending Orders (Amazon-style)
-  if (data.status === 'pending') {
+  // 30-Minute Expiry Logic for Pending/Failed Orders (Amazon-style)
+  if (data.status === 'pending' || data.status === 'payment_failed') {
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
     if (new Date(data.created_at) < thirtyMinutesAgo) {
-      // SECURITY: Instead of deleting, mark as cancelled for audit trail
+      // SECURITY: Mark as cancelled for audit trail
       await client
         .from('orders')
         .update({
           status: 'cancelled',
-          cancellation_reason: 'Payment session expired (30-minute timeout)',
+          cancellation_reason: 'Payment window expired (30-minute timeout)',
           payment_error_reason: 'Timeout: Payment not completed within 30 minutes',
           updated_at: new Date().toISOString()
         })

@@ -88,7 +88,7 @@ export default function OrderDetailPage() {
 
     // Countdown Timer Logic
     useEffect(() => {
-        if (order?.status === 'pending' && order?.created_at) {
+        if ((order?.status === 'pending' || order?.status === 'payment_failed') && order?.created_at) {
             const calculateTime = () => {
                 const start = new Date(order.created_at).getTime()
                 const now = new Date().getTime()
@@ -130,8 +130,9 @@ export default function OrderDetailPage() {
     const getStatusDescription = (status: string) => {
         switch (status) {
             case 'pending':
+            case 'payment_failed':
                 return order.payment_error_reason
-                    ? `Payment Failed: ${order.payment_error_reason}. You can retry the payment within the time limit.`
+                    ? `Payment Issue: ${order.payment_error_reason}. You can retry within the time limit.`
                     : 'Awaiting payment confirmation. Complete your payment to proceed.'
             case 'confirmed': return 'Your order is confirmed and being prepared for shipment.'
             case 'packed': return 'Your order has been carefully packed and is ready for dispatch.'
@@ -261,8 +262,9 @@ export default function OrderDetailPage() {
     }
 
     const statusStep = getStatusStep(order.status)
-    const steps = ['Order Placed', 'Confirmed', 'Packed', 'Shipped', 'Delivered']
-    const stepIcons = [CheckCircle, PackageCheck, Package, Truck, CheckCircle]
+    const isFailed = order.status === 'payment_failed'
+    const steps = [isFailed ? 'Payment Failed' : 'Order Placed', 'Confirmed', 'Packed', 'Shipped', 'Delivered']
+    const stepIcons = [isFailed ? XCircle : CheckCircle, PackageCheck, Package, Truck, CheckCircle]
 
     return (
         <div className="min-h-screen bg-background text-foreground">
@@ -306,8 +308,8 @@ export default function OrderDetailPage() {
                         strategy="afterInteractive"
                     />
 
-                    {/* Pending Payment Advisory (Amazon-style) */}
-                    {order.status === 'pending' && (
+                    {/* Pending/Failed Payment Advisory (Amazon-style) */}
+                    {(order.status === 'pending' || order.status === 'payment_failed') && (
                         <div className="mb-8 p-6 bg-amber-500/10 border border-amber-500/30">
                             <div className="flex items-start gap-4">
                                 <div className="p-3 bg-amber-500/20 rounded-full">
@@ -315,7 +317,9 @@ export default function OrderDetailPage() {
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
-                                        <h2 className="text-xl font-bold text-foreground">Action Required: Payment Pending</h2>
+                                        <h2 className="text-xl font-bold text-foreground">
+                                            {order.status === 'payment_failed' ? 'Action Required: Payment Failed' : 'Action Required: Payment Pending'}
+                                        </h2>
                                         {timeLeft && !isExpired && (
                                             <div className="flex items-center gap-2 px-3 py-1 bg-amber-500/20 border border-amber-500/50 rounded-full">
                                                 <span className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Time Left:</span>
@@ -324,7 +328,9 @@ export default function OrderDetailPage() {
                                         )}
                                     </div>
                                     <p className="text-muted-foreground text-sm mb-4">
-                                        Your payment session was not completed. To secure your luxury pieces, please complete the payment within 30 minutes.
+                                        {order.status === 'payment_failed'
+                                            ? 'Your last payment attempt failed. To avoid losing your luxury items, please retry the payment within the remaining time.'
+                                            : 'Your payment session was not completed. To secure your luxury pieces, please complete the payment within 30 minutes.'}
                                         <strong> Orders not paid in time will be automatically cancelled.</strong>
                                     </p>
                                     {!isExpired ? (
@@ -779,10 +785,10 @@ export default function OrderDetailPage() {
                                     </div>
                                 ) : (
                                     <div className="mt-6 p-6 border border-border bg-muted/20 text-center">
-                                        <p className="text-muted-foreground text-xs font-medium uppercase tracking-widest">
-                                            {order.status === 'pending'
-                                                ? 'Complete payment at the top of the page to finalize your order.'
-                                                : `The cancellation window for this order has closed as it is already ${order.status}.`}
+                                        <p className="text-muted-foreground text-xs font-medium uppercase tracking-widest leading-relaxed">
+                                            {order.status === 'pending' || order.status === 'payment_failed'
+                                                ? 'Order is created but awaiting secure payment. Complete the transaction at the top of the page.'
+                                                : `The cancellation window for this order has closed as it is already ${order.status.replace('_', ' ')}.`}
                                         </p>
                                     </div>
                                 )}

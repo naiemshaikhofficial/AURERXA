@@ -314,7 +314,9 @@ export default function OrdersPage() {
                                                     <div className="flex items-center gap-2">
                                                         <span className={`w-2 h-2 rounded-full ${order.status === 'delivered' ? 'bg-emerald-500' : 'bg-primary animate-pulse'}`} />
                                                         <h3 className={`text-base font-bold uppercase tracking-tight ${getStatusColor(order.status)}`}>
-                                                            {order.status === 'pending' ? 'Payment Pending' : order.status}
+                                                            {order.status === 'pending' ? 'Payment Pending' :
+                                                                order.status === 'payment_failed' ? 'Payment Failed' :
+                                                                    order.status}
                                                         </h3>
                                                     </div>
                                                     {order.payment_status === 'flagged_mismatch' && (
@@ -327,8 +329,8 @@ export default function OrdersPage() {
                                                             Note: {order.payment_error_reason}
                                                         </p>
                                                     )}
-                                                    {/* Timer for Pending Orders */}
-                                                    {order.status === 'pending' && order.payment_status !== 'flagged_mismatch' && (
+                                                    {/* Timer for Pending/Failed Orders */}
+                                                    {(order.status === 'pending' || order.status === 'payment_failed') && order.payment_status !== 'flagged_mismatch' && (
                                                         <div className="mt-2 text-left">
                                                             <CountdownTimer
                                                                 createdAt={order.created_at}
@@ -367,7 +369,7 @@ export default function OrdersPage() {
                                             </div>
 
                                             <div className="flex flex-col gap-2 min-w-[180px]">
-                                                {order.status === 'pending' ? (
+                                                {order.status === 'pending' || order.status === 'payment_failed' ? (
                                                     (() => {
                                                         const isExpired = new Date(order.created_at).getTime() + (30 * 60 * 1000) < Date.now()
                                                         if (isExpired) return (
