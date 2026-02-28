@@ -970,8 +970,9 @@ export default function OrderDetailPage() {
                                     <CreditCard className="w-4 h-4" />
                                     <span className="capitalize">
                                         {order.payment_method === 'cod' ? 'Cash on Delivery' :
-                                            (order.payment_method === 'online' || order.payment_method === 'ccavenue' || order.payment_method?.toLowerCase().includes('cc'))
-                                                ? 'Paid Online' : 'Online Payment'}
+                                            (order.payment_mode && order.card_name)
+                                                ? `${order.payment_mode} (${order.card_name})`
+                                                : order.payment_method === 'ccavenue' ? 'Online Payment' : order.payment_method}
                                     </span>
                                 </div>
                             </div>

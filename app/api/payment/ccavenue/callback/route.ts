@@ -28,8 +28,9 @@ export async function POST(req: NextRequest) {
         const orderStatus = params.get('order_status'); // Success, Failure, Aborted, Invalid
         const trackingId = params.get('tracking_id');
         const bankRefNo = params.get('bank_ref_no');
-        const paymentMode = params.get('payment_mode');
         const amount = params.get('amount');
+        const cardName = params.get('card_name'); // e.g., Visa, MasterCard, Bank Name
+        const paymentMode = params.get('payment_mode'); // e.g., Credit Card, Net Banking, UPI
 
         if (!orderNumber && !merchantParam1) {
             throw new Error('Order identification missing in callback');
@@ -83,7 +84,9 @@ export async function POST(req: NextRequest) {
                 status: 'confirmed',
                 payment_status: 'paid',
                 payment_id: trackingId,
-                payment_method: `CCAvenue (${paymentMode})`,
+                payment_method: paymentMode || 'Online',
+                payment_mode: paymentMode,
+                card_name: cardName,
                 bank_ref_no: bankRefNo,
                 updated_at: new Date().toISOString()
             };
