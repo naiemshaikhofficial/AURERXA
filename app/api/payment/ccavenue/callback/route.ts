@@ -9,7 +9,10 @@ export async function POST(req: NextRequest) {
         const encResponse = formData.get('encResp') as string;
 
         if (!encResponse) {
-            return NextResponse.redirect(new URL('/checkout?error=Payment response missing', req.url), 303);
+            return new NextResponse(
+                `<html><body><script>window.parent.location.href = "/checkout?error=Payment response missing";</script></body></html>`,
+                { headers: { 'Content-Type': 'text/html' } }
+            );
         }
 
         const workingKey = process.env.CCAVENUE_WORKING_KEY;
@@ -51,7 +54,10 @@ export async function POST(req: NextRequest) {
 
         if (fetchError || !order) {
             console.error(`[CCAvenue Callback] Order not found for ${lookupField}: ${lookupId}`);
-            return NextResponse.redirect(new URL(`/checkout?error=Order not found`, req.url), 303);
+            return new NextResponse(
+                `<html><body><script>window.parent.location.href = "/checkout?error=Order not found";</script></body></html>`,
+                { headers: { 'Content-Type': 'text/html' } }
+            );
         }
 
         const internalOrderId = order.id;
@@ -59,7 +65,11 @@ export async function POST(req: NextRequest) {
         // 2. Idempotency check: Don't process if already paid
         if (order.status === 'confirmed' || order.payment_status === 'paid') {
             console.log(`[CCAvenue Callback] Order ${order.order_number} already processed.`);
-            return NextResponse.redirect(new URL(`/account/orders/${order.order_number || internalOrderId}?success=true`, req.url), 303);
+            const successUrl = `/account/orders/${order.order_number || internalOrderId}?success=true`;
+            return new NextResponse(
+                `<html><body><script>window.parent.location.href = "${successUrl}";</script></body></html>`,
+                { headers: { 'Content-Type': 'text/html' } }
+            );
         }
 
         if (orderStatus === 'Success') {
@@ -80,7 +90,11 @@ export async function POST(req: NextRequest) {
                     updated_at: new Date().toISOString()
                 }).eq('id', internalOrderId);
 
-                return NextResponse.redirect(new URL(`/checkout/payment-retry/${order.order_number || internalOrderId}?status=mismatch`, req.url), 303);
+                const retryUrl = `/checkout/payment-retry/${order.order_number || internalOrderId}?status=mismatch`;
+                return new NextResponse(
+                    `<html><body><script>window.parent.location.href = "${retryUrl}";</script></body></html>`,
+                    { headers: { 'Content-Type': 'text/html' } }
+                );
             }
 
             // Update order to confirmed
@@ -112,7 +126,11 @@ export async function POST(req: NextRequest) {
             // Trigger invoice
             triggerOrderInvoice(internalOrderId).catch((err: any) => console.error('Invoice trigger error:', err));
 
-            return NextResponse.redirect(new URL(`/account/orders/${order.order_number || internalOrderId}?success=true`, req.url), 303);
+            const successUrl = `/account/orders/${order.order_number || internalOrderId}?success=true`;
+            return new NextResponse(
+                `<html><body><script>window.parent.location.href = "${successUrl}";</script></body></html>`,
+                { headers: { 'Content-Type': 'text/html' } }
+            );
         } else {
             console.warn(`[CCAvenue Callback] Payment ${orderStatus} for Order ${order.order_number}`);
 
@@ -123,10 +141,17 @@ export async function POST(req: NextRequest) {
                 updated_at: new Date().toISOString()
             }).eq('id', internalOrderId);
 
-            return NextResponse.redirect(new URL(`/checkout/payment-retry/${order.order_number || internalOrderId}?status=${orderStatus}`, req.url), 303);
+            const retryUrl = `/checkout/payment-retry/${order.order_number || internalOrderId}?status=${orderStatus}`;
+            return new NextResponse(
+                `<html><body><script>window.parent.location.href = "${retryUrl}";</script></body></html>`,
+                { headers: { 'Content-Type': 'text/html' } }
+            );
         }
     } catch (err) {
         console.error('CCAvenue Callback Error:', err);
-        return NextResponse.redirect(new URL('/checkout?error=Internal processing error', req.url), 303);
+        return new NextResponse(
+            `<html><body><script>window.parent.location.href = "/checkout?error=Internal processing error";</script></body></html>`,
+            { headers: { 'Content-Type': 'text/html' } }
+        );
     }
 }

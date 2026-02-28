@@ -4698,7 +4698,8 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
       `billing_email=${encodeURIComponent(order.billing_email || user?.email || '')}`,
       `billing_tel=${encodeURIComponent((order.customer_phone || order.shipping_address?.phone || '').replace(/\D/g, ''))}`,
       `merchant_param1=${order.id}`, // Store internal UUID for deterministic lookup
-      `promo_code=${order.coupon_code || ''}`
+      `promo_code=${order.coupon_code || ''}`,
+      `integration_type=iframe_normal`
     ].join('&')
 
     const encRequest = encrypt(requestParams, workingKey)

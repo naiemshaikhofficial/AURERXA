@@ -17,7 +17,7 @@ import {
     ChevronRight, Tag, Gift, X, AlertCircle, Clock,
     Pencil, ShoppingBag, ShieldCheck, Truck, Trophy,
     Briefcase, Building2, Sparkles, User, Home,
-    Minus, Trash2
+    Minus, Trash2, ShieldAlert, Lock, Copy
 } from 'lucide-react'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 import { DeliveryEstimate } from '@/components/delivery-checker'
@@ -86,6 +86,73 @@ const TrustSeals = () => (
     </div>
 )
 
+const SecurePaymentModal = ({ isOpen, onClose, paymentData }: { isOpen: boolean, onClose: () => void, paymentData: any }) => {
+    if (!isOpen || !paymentData) return null;
+
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/90 backdrop-blur-xl"
+            >
+                <motion.div
+                    initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                    className="w-full max-w-[600px] bg-card border border-primary/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative overflow-hidden flex flex-col"
+                >
+                    {/* Branded Header */}
+                    <div className="p-6 border-b border-white/5 flex flex-col items-center gap-4 bg-obsidian text-center">
+                        <Image src="/logo-new-v2.png" alt="AURERXA" width={150} height={40} className="w-32 h-auto" priority />
+                        <div className="flex flex-col items-center gap-1">
+                            <h3 className="text-[10px] uppercase tracking-[0.4em] text-primary font-premium-sans">Secure Checkout</h3>
+                            <div className="flex items-center gap-2 text-[9px] text-white/40 uppercase tracking-widest mt-1">
+                                <Lock className="w-3 h-3 text-emerald-500" />
+                                <span>End-to-End Encrypted Session</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* iFrame Container */}
+                    <div className="relative w-full aspect-[4/5] sm:aspect-[4/4.5] bg-white flex items-center justify-center">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[#f8f8f8]">
+                            <div className="w-12 h-12 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                            <p className="text-[10px] text-slate-400 uppercase tracking-widest font-premium-sans">Connecting to Secure Gateway...</p>
+                        </div>
+                        <iframe
+                            name="payment_iframe"
+                            id="payment_iframe"
+                            className="relative z-10 w-full h-full border-none shadow-inner"
+                            title="AURERXA Secure Payment"
+                        />
+                    </div>
+
+                    {/* Security Footnote */}
+                    <div className="p-4 bg-black/40 border-t border-white/5 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 border border-white/5 rounded bg-white/[0.02]">
+                                <ShieldCheck className="w-4 h-4 text-primary/60" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[9px] text-white/60 uppercase tracking-tighter">PCI-DSS Compliant</span>
+                                <span className="text-[8px] text-white/20 uppercase tracking-tighter">Verified by CCAvenue Core</span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="text-[10px] uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+                        >
+                            Cancel Payment
+                        </button>
+                    </div>
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
+    );
+};
+
 const AddressIcon = ({ label }: { label: string }) => {
     const l = label.toLowerCase()
     if (l.includes('home')) return <Home className="w-4 h-4" />
@@ -140,6 +207,9 @@ export default function CheckoutPage() {
 
     // Check for scripts if they were already loaded by the layout
     const [enableCod, setEnableCod] = useState(false)
+    // iFrame Payment Modal State
+    const [paymentData, setPaymentData] = useState<any>(null)
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
 
     const [newAddress, setNewAddress] = useState({
@@ -276,6 +346,10 @@ export default function CheckoutPage() {
     }
 
     const subtotal = useMemo(() => cart.reduce((sum: number, item: any) => sum + (item.products?.price || 0) * item.quantity, 0), [cart])
+    const shipping = subtotal >= 50000 ? 0 : shippingCharge
+    const discount = couponApplied?.discount || 0
+    const giftWrapCost = giftWrap ? GIFT_WRAP_PRICE : 0
+    const total = subtotal + shipping + giftWrapCost - discount
 
     const handleApplyCoupon = async () => {
         if (!couponCode.trim()) return
@@ -378,8 +452,17 @@ export default function CheckoutPage() {
                 form.appendChild(merchantIdInput);
 
                 document.body.appendChild(form);
-                console.log('[DEBUG] Form appending and submitting...');
-                form.submit();
+                console.log('[DEBUG] Form appending and submitting to iFrame...');
+
+                setPaymentData(cv);
+                setIsPaymentModalOpen(true);
+
+                // Small delay to ensure iFrame is mounted before form submission
+                setTimeout(() => {
+                    form.target = 'payment_iframe';
+                    form.submit();
+                    document.body.removeChild(form);
+                }, 100);
             } else if (paymentResult.gateway === 'free') {
                 // Zero-amount order — already confirmed server-side
                 await refreshCart(true); // Clear Navbar icon
@@ -392,10 +475,6 @@ export default function CheckoutPage() {
         }
     };
 
-    const shipping = subtotal >= 50000 ? 0 : shippingCharge
-    const discount = couponApplied?.discount || 0
-    const giftWrapCost = giftWrap ? GIFT_WRAP_PRICE : 0
-    const total = subtotal + shipping + giftWrapCost - discount
 
     if (loading || cartLoading) {
         return (
@@ -444,6 +523,13 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/30">
+            {/* Branded iFrame Payment Modal */}
+            <SecurePaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                paymentData={paymentData}
+            />
+
             <main className="pt-32 pb-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col items-center justify-center mb-12">
