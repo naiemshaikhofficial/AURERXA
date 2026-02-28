@@ -9,6 +9,7 @@ import { Loader2, Package, ChevronRight, Search, Filter, X, Clock, CreditCard, R
 import supabaseLoader from '@/lib/supabase-loader'
 import { sanitizeImagePath } from '@/lib/utils'
 import { toast } from 'sonner'
+import SecurePaymentModal from '@/components/checkout/secure-payment-modal'
 
 // Small sub-component for the live countdown timer
 function CountdownTimer({ createdAt, onExpire }: { createdAt: string, onExpire?: () => void }) {
@@ -66,6 +67,8 @@ export default function OrdersPage() {
     const [statusFilter, setStatusFilter] = useState('all')
     const [verifying, setVerifying] = useState(false)
     const [retryingOrderId, setRetryingOrderId] = useState<string | null>(null)
+    const [paymentData, setPaymentData] = useState<any>(null)
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
     const loadOrders = useCallback(async () => {
         const data = await getOrders()
@@ -113,7 +116,8 @@ export default function OrdersPage() {
                             const data = await getOrders()
                             setOrders(data)
                         } else {
-                            toast.error(verifyResult.error || 'Verification failed')
+                            const res = verifyResult as any
+                            toast.error(res.error || 'Verification failed')
                         }
                         setVerifying(false)
                         setRetryingOrderId(null)
@@ -135,6 +139,14 @@ export default function OrdersPage() {
                 }
                 const rzp = new (window as any).Razorpay(options)
                 rzp.open()
+            } else if (paymentResult.gateway === 'ccavenue') {
+                const cv = paymentResult as any
+                setPaymentData(cv)
+                setIsPaymentModalOpen(true)
+                setRetryingOrderId(null) // Reset loading state once modal opens
+            } else {
+                toast.error('Unsupported payment gateway')
+                setRetryingOrderId(null)
             }
         } catch (error) {
             console.error('Retry Payment Error:', error)
@@ -426,6 +438,11 @@ export default function OrdersPage() {
                 </div>
             </main>
 
+            <SecurePaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                paymentData={paymentData}
+            />
         </div>
     )
 }

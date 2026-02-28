@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { getOrderById, initiatePayment, verifyPayment } from '@/app/actions'
 import { Loader2, ShieldCheck, ChevronRight, CreditCard, ArrowLeft, RefreshCw } from 'lucide-react'
 import { toast } from 'sonner'
+import SecurePaymentModal from '@/components/checkout/secure-payment-modal'
 
 export default function PaymentRetryPage() {
     const params = useParams()
@@ -20,6 +21,8 @@ export default function PaymentRetryPage() {
     const [loading, setLoading] = useState(true)
     const [retrying, setRetrying] = useState(false)
     const [verifying, setVerifying] = useState(false)
+    const [paymentData, setPaymentData] = useState<any>(null)
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
     useEffect(() => {
         async function loadOrder() {
@@ -70,7 +73,8 @@ export default function PaymentRetryPage() {
                             toast.success('Payment successful!')
                             router.push(`/account/orders/${orderId}?success=true`)
                         } else {
-                            toast.error(verifyResult.error || 'Verification failed')
+                            const res = verifyResult as any
+                            toast.error(res.error || 'Verification failed')
                             setVerifying(false)
                             setRetrying(false)
                         }
@@ -91,33 +95,10 @@ export default function PaymentRetryPage() {
                 const rzp = new (window as any).Razorpay(options)
                 rzp.open()
             } else if (paymentResult.gateway === 'ccavenue') {
-                const cv = paymentResult as any;
-
-                // Create hidden form and submit to CCAvenue
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = cv.actionUrl;
-
-                const encRequestInput = document.createElement('input');
-                encRequestInput.type = 'hidden';
-                encRequestInput.name = 'encRequest';
-                encRequestInput.value = cv.encRequest;
-                form.appendChild(encRequestInput);
-
-                const accessCodeInput = document.createElement('input');
-                accessCodeInput.type = 'hidden';
-                accessCodeInput.name = 'access_code';
-                accessCodeInput.value = cv.accessCode;
-                form.appendChild(accessCodeInput);
-
-                const merchantIdInput = document.createElement('input');
-                merchantIdInput.type = 'hidden';
-                merchantIdInput.name = 'merchant_id';
-                merchantIdInput.value = cv.merchantId;
-                form.appendChild(merchantIdInput);
-
-                document.body.appendChild(form);
-                form.submit();
+                const cv = paymentResult as any
+                setPaymentData(cv)
+                setIsPaymentModalOpen(true)
+                setRetrying(false) // Reset loading state once modal opens
             } else if (paymentResult.gateway === 'free') {
                 toast.success('Order confirmed! No payment required.')
                 router.push(`/account/orders/${orderId}?success=true`)
@@ -254,6 +235,12 @@ export default function PaymentRetryPage() {
                     </div>
                 </div>
             </main>
+
+            <SecurePaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                paymentData={paymentData}
+            />
         </div>
     )
 }
