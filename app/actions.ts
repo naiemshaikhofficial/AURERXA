@@ -2316,13 +2316,20 @@ export async function createOrder(
     if (validation.valid) {
       couponDiscount = validation.discount || 0
     } else {
-      console.warn(`SECURITY: Potential coupon tampering detected for order. Coupon: ${options.couponCode}, Error: ${validation.error}`)
+      console.warn(`[SECURITY ALERT] Potential coupon tampering detected for user ${user.id}. Coupon: ${options.couponCode}, Error: ${validation.error}`)
       return { success: false, error: `Coupon Error: ${validation.error}` }
     }
   }
 
   const giftWrapCost = options?.giftWrap ? 199 : 0
-  const total = subtotal + shipping + giftWrapCost - couponDiscount
+  const expectedTotal = subtotal + shipping + giftWrapCost - couponDiscount
+  const total = Math.max(0, expectedTotal)
+
+  // SECURITY: Log and Block Price Tampering (if any client-side field was sent)
+  if (options?.couponDiscount !== undefined && Math.abs(options.couponDiscount - couponDiscount) > 1) {
+    console.error(`[SECURITY ALERT] Coupon discount mismatch for user ${user.id}. Client: ${options.couponDiscount}, Server: ${couponDiscount}`)
+    // We proceed with the server's calculated total to maintain integrity, but log the attempt
+  }
 
   // SECURITY: Prevent negative or absurdly high totals (₹0 allowed for free/coupon orders)
   if (total < 0) {
