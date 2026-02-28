@@ -4565,6 +4565,7 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     const queryField = isUUID ? 'id' : 'order_number';
 
     const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
     const { data: order } = await client
       .from('orders')
       .select('*, order_items(*, product:products(*))')
@@ -4603,7 +4604,7 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
       `billing_state=${encodeURIComponent(billingState)}`,
       `billing_zip=${encodeURIComponent(billingZip)}`,
       `billing_country=${encodeURIComponent(billingCountry)}`,
-      `billing_email=${encodeURIComponent(order.billing_email || user.email || '')}`,
+      `billing_email=${encodeURIComponent(order.billing_email || user?.email || '')}`,
       `billing_tel=${encodeURIComponent((order.customer_phone || order.shipping_address?.phone || '').replace(/\D/g, ''))}`,
       `merchant_param1=${order.id}`, // Store internal UUID for deterministic lookup
       `promo_code=${order.coupon_code || ''}`
@@ -4620,9 +4621,9 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
       merchantId,
       actionUrl: 'https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction'
     }
-  } catch (err) {
+  } catch (err: any) {
     console.error('Payment initiation error details:', err)
-    return { success: false, error: 'Failed to connect to payment gateway' }
+    return { success: false, error: `Failed to connect to payment gateway: ${err.message || 'Unknown error'}` }
   }
 }
 export async function verifyPayment(orderId: string, params?: any) {
