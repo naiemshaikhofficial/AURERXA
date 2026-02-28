@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { decrypt } from '@/lib/ccavenue';
 import { createSupabaseAdminClient } from '@/lib/supabase-server';
-import { triggerOrderInvoice } from '@/app/actions';
+import { triggerOrderInvoice, processCCAvenueRefund } from '@/app/actions';
 
 export async function POST(req: NextRequest) {
     try {
@@ -69,6 +69,10 @@ export async function POST(req: NextRequest) {
 
             if (Math.abs(paidAmount - expectedAmount) > 0.01) {
                 console.error(`[SECURITY ALERT] CCAvenue Amount Mismatch for Order ${order.order_number}. Paid: ${paidAmount}, Expected: ${expectedAmount}`);
+
+                // Auto-trigger refund for security mismatch
+                await processCCAvenueRefund(internalOrderId, paidAmount, `Security Alert: Amount Mismatch. Paid ₹${paidAmount} instead of ₹${expectedAmount}`);
+
                 await supabase.from('orders').update({
                     payment_status: 'flagged_mismatch',
                     status: 'payment_failed',

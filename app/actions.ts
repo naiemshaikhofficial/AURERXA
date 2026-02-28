@@ -14,6 +14,7 @@ import { runFullIngestion } from '@/lib/ai-knowledge'
 import { sendInvoiceEmail } from '@/lib/email'
 import { getInvoiceEmailHtml } from '@/lib/templates/invoice-email'
 import { generateInvoicePdf } from '@/lib/pdf-generator'
+import { encrypt, decrypt, refundOrder } from '@/lib/ccavenue'
 
 import { createSupabaseServerClient, createSupabasePublicClient, createSupabaseAdminClient } from '@/lib/supabase-server'
 import { logDiagnostic } from '@/lib/logger'
@@ -2449,9 +2450,24 @@ export async function cancelOrder(orderId: string, reason: string) {
       console.error('Push notification failed for cancellation:', e)
     }
 
-    // Build refund message based on payment method
-    const refundMessage = order.payment_id && order.payment_method !== 'cod'
-      ? ` If any amount was debited, ₹${order.total?.toLocaleString('en-IN')} will be refunded to your original payment method within 5-7 business days.`
+    // 7. Auto-trigger Refund for paid online orders (CCAvenue)
+    let refundInitiated = false;
+    if (order.payment_id && order.payment_method !== 'cod') {
+      try {
+        const refundRes = await processCCAvenueRefund(orderId, order.total, `User Cancelled Order #${order.order_number}`);
+        if (refundRes.success) {
+          refundInitiated = true;
+        }
+      } catch (e) {
+        console.error('[CANCEL REFUND] Auto-refund failed during cancellation:', e);
+      }
+    }
+
+    // Build refund message based on payment method and initiation status
+    const refundMessage = (order.payment_id && order.payment_method !== 'cod')
+      ? (refundInitiated
+        ? ` Refund of ₹${order.total?.toLocaleString('en-IN')} has been INITIATED to your original payment method.`
+        : ` If any amount was debited, ₹${order.total?.toLocaleString('en-IN')} will be refunded to your original payment method within 5-7 business days.`)
       : ''
 
     return {
@@ -4655,6 +4671,76 @@ export async function verifyPayment(orderId: string, params?: any) {
 
   // 3. For others, if it was expected to be successful but isn't yet confirmed
   return { success: false, error: 'Payment not yet confirmed. Please wait a moment or contact support if the amount was debited.' }
+}
+
+/**
+ * Server Action to process a refund via CCAvenue
+ * Can be triggered automatically by system or manually by admin
+ */
+export async function processCCAvenueRefund(orderId: string, amount: number, reason: string): Promise<ActionResponse> {
+  console.log(`[REFUND] Initiating refund for Order ${orderId}. Amount: ${amount}, Reason: ${reason}`);
+
+  try {
+    const adminClient = await createSupabaseAdminClient();
+
+    // 1. Fetch order details to get tracing_id/payment_id
+    const { data: order, error: fetchError } = await adminClient
+      .from('orders')
+      .select('payment_id, total, order_number, status')
+      .eq('id', orderId)
+      .single();
+
+    if (fetchError || !order) {
+      return { success: false, error: 'Order not found for refund.' };
+    }
+
+    if (!order.payment_id) {
+      return { success: false, error: 'No payment ID found for this order. Refund cannot be processed via API.' };
+    }
+
+    // 2. Call CCAvenue Refund API
+    // We use a unique refund reference
+    const refundRefNo = `REF-${order.order_number}-${Date.now()}`;
+    const refundResult = await refundOrder(order.payment_id, amount.toString(), refundRefNo);
+
+    console.log(`[REFUND] CCAvenue Response:`, JSON.stringify(refundResult));
+
+    // 3. Handle CCAvenue specific response
+    // Typical response: { status: '0', message: 'Success' } or similar
+    // Note: CCAvenue response structure varies, so we check for status '0' or "Success" text
+    const isSuccess = refundResult.status === '0' ||
+      refundResult.refund_status === 'Success' ||
+      (typeof refundResult === 'string' && refundResult.includes('Success'));
+
+    if (isSuccess) {
+      // 4. Update Database
+      await adminClient.from('orders').update({
+        payment_status: 'refunded',
+        status: order.status === 'cancelled' ? 'cancelled' : 'refunded',
+        notes: `Refund Processed: ₹${amount} (${reason}). Ref: ${refundRefNo}`
+      }).eq('id', orderId);
+
+      // If there's an associated return request, update it too
+      await adminClient.from('returns').update({
+        status: 'refunded',
+        updated_at: new Date().toISOString()
+      }).eq('order_number', order.order_number);
+
+      return { success: true, data: refundResult };
+    } else {
+      const errorMsg = refundResult.message || refundResult.error || 'CCAvenue Refund Failed';
+
+      // Update order notes with failure
+      await adminClient.from('orders').update({
+        notes: `Refund FAILED: ${errorMsg} (Ref: ${refundRefNo})`
+      }).eq('id', orderId);
+
+      return { success: false, error: errorMsg };
+    }
+  } catch (err: any) {
+    console.error(`[REFUND ERROR]`, err);
+    return { success: false, error: err.message || 'Internal server error during refund.' };
+  }
 }
 
 export async function initiateRazorpayPayment(orderId: string) {

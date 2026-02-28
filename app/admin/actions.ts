@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import { cache } from 'react'
 import { createServerClient } from '@supabase/ssr'
 import { createDelhiveryShipment } from '../actions'
+import { refundOrder } from '@/lib/ccavenue'
 
 // UUID validation to prevent injection
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -1778,6 +1779,30 @@ export async function updateReturnStatus(requestId: string, status: string, admi
 
     // Trigger Notification
     await sendReturnStatusNotification(requestId, status, orderNumber)
+
+    // Handle Real-time Refund via CCAvenue if status is 'refunded'
+    if (status === 'refunded') {
+        try {
+            const { data: orderDetails } = await client
+                .from('orders')
+                .select('payment_id, total, order_number, payment_method')
+                .eq('id', current?.order_id)
+                .single()
+
+            if (orderDetails?.payment_id && orderDetails.payment_method !== 'cod') {
+                const refundRefNo = `REF-${orderDetails.order_number}-${Date.now()}`
+                const refundRes = await refundOrder(orderDetails.payment_id, orderDetails.total.toString(), refundRefNo)
+                console.log(`[Admin Refund] CCAvenue Response:`, refundRes)
+
+                // Optional: Update notes with refund reference
+                await client.from('orders').update({
+                    notes: `Refund Processed via Admin: ₹${orderDetails.total}. Ref: ${refundRefNo}`
+                }).eq('id', current?.order_id)
+            }
+        } catch (e) {
+            console.error('[Admin Refund] Automated refund trigger failed:', e)
+        }
+    }
 
     // Synchronize parent Order status
     if (updatedReq?.order_id) {

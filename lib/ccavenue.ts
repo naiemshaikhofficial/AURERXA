@@ -32,3 +32,62 @@ export function decrypt(encText: string, workingKey: string): string {
     decoded += decipher.final('utf8');
     return decoded;
 }
+
+/**
+ * CCAvenue Refund Implementation (Merchant API V1.2)
+ * Note: Requires the server IP to be whitelisted in CCAvenue dashboard.
+ */
+export async function refundOrder(orderNumber: string, amount: string, refundRefNo: string) {
+    const merchantId = process.env.CCAVENUE_MERCHANT_ID;
+    const workingKey = process.env.CCAVENUE_WORKING_KEY;
+    const accessCode = process.env.CCAVENUE_ACCESS_CODE;
+
+    if (!merchantId || !workingKey || !accessCode) {
+        throw new Error('Merchant credentials missing in environment.');
+    }
+
+    // Parameters for refundOrder command
+    const requestData = [
+        `reference_no=${orderNumber}`,
+        `amount=${amount}`,
+        `refund_ref_no=${refundRefNo}`,
+        `command=refundOrder`
+    ].join('&');
+
+    const encRequest = encrypt(requestData, workingKey);
+
+    const response = await fetch('https://api.ccavenue.com/apis/servlet/DoWebTrans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            enc_request: encRequest,
+            access_code: accessCode,
+            request_type: 'JSON',
+            command: 'refundOrder',
+            merchant_id: merchantId
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`CCAvenue Refund API Error: ${response.statusText}`);
+    }
+
+    const encResponse = await response.text();
+
+    // Attempt decryption if response is encrypted hex
+    if (/^[0-9a-f]+$/i.test(encResponse)) {
+        try {
+            const decrypted = decrypt(encResponse, workingKey);
+            return JSON.parse(decrypted);
+        } catch (e) {
+            return { raw: encResponse, error: 'Decryption/Parse Failed' };
+        }
+    }
+
+    // Check if it's already a JSON string or plain error
+    try {
+        return JSON.parse(encResponse);
+    } catch (e) {
+        return { status: 'unknown', raw: encResponse };
+    }
+}
