@@ -957,6 +957,14 @@ export default function OrderDetailPage() {
                                             </span>
                                         </div>
                                     )}
+                                    {order.bank_ref_no && (
+                                        <div className="pt-2 text-xs text-muted-foreground flex justify-between items-center group">
+                                            <span>Bank Reference</span>
+                                            <span className="font-mono text-xs select-all bg-muted/50 px-1.5 py-0.5 rounded ml-2 max-w-[140px] truncate group-hover:max-w-none transition-all" title={order.bank_ref_no}>
+                                                {order.bank_ref_no}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="mt-4 pt-4 border-t border-border flex items-center gap-2 text-sm text-muted-foreground">
                                     <CreditCard className="w-4 h-4" />

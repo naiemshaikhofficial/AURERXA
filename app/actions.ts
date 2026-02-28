@@ -4502,7 +4502,7 @@ export async function broadcastNotification(title: string, body: string, url: st
 
 // Payment Gateway Configuration
 export type PaymentResult =
-  | { success: true; gateway: 'ccavenue'; encRequest: string; accessCode: string; actionUrl: string }
+  | { success: true; gateway: 'ccavenue'; encRequest: string; accessCode: string; merchantId: string; actionUrl: string }
   | { success: true; gateway: 'razorpay'; keyId: string; amount: number; currency: string; razorpayOrderId: string; productName: string; customer: { name: string; email: string; contact: string }; mode?: string; paymentSessionId?: never }
   | { success: true; gateway: 'free'; orderId: string; keyId?: never; amount?: never; paymentSessionId?: never }
   | { success: false; error: string; gateway?: never; keyId?: never };
@@ -4783,6 +4783,7 @@ export async function verifyRazorpayPayment(orderId: string, params: { razorpay_
  * This runs asynchronously to not block the main request.
  */
 export async function triggerOrderInvoice(orderId: string) {
+  console.log('>>> [DEBUG] triggerOrderInvoice called for:', orderId);
   logDiagnostic('INVOICE', `Triggering for order ID: ${orderId}`)
   try {
     const client = createSupabaseAdminClient()

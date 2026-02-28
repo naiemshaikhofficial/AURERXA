@@ -79,14 +79,24 @@ export async function POST(req: NextRequest) {
             }
 
             // Update order to confirmed
-            const { error: updateError } = await supabase.from('orders').update({
+            const updatePayload: any = {
                 status: 'confirmed',
                 payment_status: 'paid',
                 payment_id: trackingId,
                 payment_method: `CCAvenue (${paymentMode})`,
                 bank_ref_no: bankRefNo,
                 updated_at: new Date().toISOString()
-            }).eq('id', internalOrderId);
+            };
+
+            let { error: updateError } = await supabase.from('orders').update(updatePayload).eq('id', internalOrderId);
+
+            if (updateError && updateError.message.includes('column "bank_ref_no" does not exist')) {
+                console.warn(`[CCAvenue Callback] bank_ref_no column missing, falling back to notes.`);
+                delete updatePayload.bank_ref_no;
+                updatePayload.notes = bankRefNo ? `Bank Ref: ${bankRefNo}` : null;
+                const fallbackResult = await supabase.from('orders').update(updatePayload).eq('id', internalOrderId);
+                updateError = fallbackResult.error;
+            }
 
             if (updateError) {
                 console.error(`[CCAvenue Callback] Update Error for Order ${order.order_number}:`, updateError);
