@@ -124,8 +124,14 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: { isOpen: boolean,
                         <iframe
                             name="payment_iframe"
                             id="payment_iframe"
+                            src={`${paymentData.actionUrl}&merchant_id=${paymentData.merchantId}&encRequest=${paymentData.encRequest}&access_code=${paymentData.accessCode}`}
                             className="relative z-10 w-full h-full border-none shadow-inner"
                             title="AURERXA Secure Payment"
+                            onLoad={(e) => {
+                                // Hide the loading state once iframe is loaded
+                                const loader = e.currentTarget.previousElementSibling;
+                                if (loader) (loader as HTMLElement).style.display = 'none';
+                            }}
                         />
                     </div>
 
@@ -426,43 +432,10 @@ export default function CheckoutPage() {
 
             if (paymentResult.gateway === 'ccavenue') {
                 const cv = paymentResult as any;
-                console.log('[DEBUG] CCAvenue redirecting to:', cv.actionUrl);
-
-                // Create hidden form and submit to CCAvenue
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = cv.actionUrl;
-
-                const encRequestInput = document.createElement('input');
-                encRequestInput.type = 'hidden';
-                encRequestInput.name = 'encRequest';
-                encRequestInput.value = cv.encRequest;
-                form.appendChild(encRequestInput);
-
-                const accessCodeInput = document.createElement('input');
-                accessCodeInput.type = 'hidden';
-                accessCodeInput.name = 'access_code';
-                accessCodeInput.value = cv.accessCode;
-                form.appendChild(accessCodeInput);
-
-                const merchantIdInput = document.createElement('input');
-                merchantIdInput.type = 'hidden';
-                merchantIdInput.name = 'merchant_id';
-                merchantIdInput.value = cv.merchantId;
-                form.appendChild(merchantIdInput);
-
-                document.body.appendChild(form);
-                console.log('[DEBUG] Form appending and submitting to iFrame...');
+                console.log('[DEBUG] Opening Branded Payment Modal...');
 
                 setPaymentData(cv);
                 setIsPaymentModalOpen(true);
-
-                // Small delay to ensure iFrame is mounted before form submission
-                setTimeout(() => {
-                    form.target = 'payment_iframe';
-                    form.submit();
-                    document.body.removeChild(form);
-                }, 100);
             } else if (paymentResult.gateway === 'free') {
                 // Zero-amount order — already confirmed server-side
                 await refreshCart(true); // Clear Navbar icon
