@@ -551,7 +551,10 @@ export default function CheckoutPage() {
                             >
                                 <div className="flex items-center justify-center gap-3">
                                     <AlertCircle size={14} className="text-[#ff4d4d]" />
-                                    <p className="font-premium-sans font-medium">{error}</p>
+                                    <p
+                                        className="font-premium-sans font-medium"
+                                        dangerouslySetInnerHTML={{ __html: error }}
+                                    />
                                 </div>
                             </motion.div>
                         )}

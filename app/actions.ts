@@ -2255,7 +2255,7 @@ export async function createOrder(
 
   const { data: profile } = await client.from('profiles').select('last_order_hash, last_order_at').eq('id', user.id).single()
   if (profile?.last_order_hash === cartHash && profile?.last_order_at && (Date.now() - new Date(profile.last_order_at).getTime() < 120000)) {
-    return { success: false, error: 'A similar order was recently placed. Please check your "My Orders" page.' }
+    return { success: false, error: 'A similar order was recently placed. Please check your <a href="/account/orders" class="underline decoration-primary/50 hover:text-primary transition-colors">My Orders</a> page.' }
   }
 
   // Strict Stock Check
