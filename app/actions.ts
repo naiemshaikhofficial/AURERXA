@@ -4583,6 +4583,12 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     const accessCode = process.env.CCAVENUE_ACCESS_CODE
     const workingKey = process.env.CCAVENUE_WORKING_KEY
 
+    const billingAddress = order.shipping_address?.street_address || order.shipping_address?.address_line1 || 'N/A'
+    const billingCity = order.shipping_address?.city || 'N/A'
+    const billingState = order.shipping_address?.state || 'N/A'
+    const billingZip = order.shipping_address?.pincode || 'N/A'
+    const billingCountry = 'India' // Defaulting to India as per business context
+
     const requestParams = [
       `merchant_id=${merchantId}`,
       `order_id=${order.order_number}`,
@@ -4591,9 +4597,16 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
       `redirect_url=${encodeURIComponent(redirectUrl)}`,
       `cancel_url=${encodeURIComponent(cancelUrl)}`,
       `language=EN`,
-      `billing_name=${encodeURIComponent(order.billing_name || 'Customer')}`,
-      `billing_email=${encodeURIComponent(order.billing_email || '')}`,
-      `billing_tel=${encodeURIComponent((order.customer_phone || '').replace(/\D/g, ''))}`
+      `billing_name=${encodeURIComponent(order.shipping_address?.full_name || order.billing_name || 'Customer')}`,
+      `billing_address=${encodeURIComponent(billingAddress)}`,
+      `billing_city=${encodeURIComponent(billingCity)}`,
+      `billing_state=${encodeURIComponent(billingState)}`,
+      `billing_zip=${encodeURIComponent(billingZip)}`,
+      `billing_country=${encodeURIComponent(billingCountry)}`,
+      `billing_email=${encodeURIComponent(order.billing_email || user.email || '')}`,
+      `billing_tel=${encodeURIComponent((order.customer_phone || order.shipping_address?.phone || '').replace(/\D/g, ''))}`,
+      `merchant_param1=${order.id}`, // Store internal UUID for deterministic lookup
+      `promo_code=${order.coupon_code || ''}`
     ].join('&')
 
     const encRequest = encrypt(requestParams, workingKey)
