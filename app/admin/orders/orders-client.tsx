@@ -836,6 +836,17 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                             </div>
                                         )}
 
+                                        {(selectedOrder.bank_ref_no || selectedOrder.card_name || selectedOrder.payment_mode) && (
+                                            <div className="col-span-2 border-t border-white/5 pt-3 mt-1 space-y-2">
+                                                <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Transaction Attributes</p>
+                                                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                                                    {selectedOrder.bank_ref_no && <div><span className="text-white/20 uppercase">Bank Ref:</span> <span className="text-white/60 font-mono">{selectedOrder.bank_ref_no}</span></div>}
+                                                    {selectedOrder.card_name && <div><span className="text-white/20 uppercase">Card:</span> <span className="text-white/60">{selectedOrder.card_name}</span></div>}
+                                                    {selectedOrder.payment_mode && <div><span className="text-white/20 uppercase">Mode:</span> <span className="text-white/60">{selectedOrder.payment_mode}</span></div>}
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="col-span-2 grid grid-cols-4 gap-2 border-t border-white/5 pt-3 mt-1">
                                             <div className="flex flex-col"><span className="text-[10px] text-white/30 uppercase">Subtotal</span><span className="text-white/70 italic text-xs">₹{Number(selectedOrder.subtotal).toLocaleString('en-IN')}</span></div>
                                             <div className="flex flex-col"><span className="text-[10px] text-white/30 uppercase">Shipping</span><span className="text-white/70 italic text-xs">₹{Number(selectedOrder.shipping || 0).toLocaleString('en-IN')}</span></div>
@@ -854,6 +865,46 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                             </div>
                                             <div className="flex flex-col"><span className="text-[10px] text-white/30 uppercase">Total</span><span className="font-bold text-[#D4AF37]">₹{Number(selectedOrder.total).toLocaleString('en-IN')}</span></div>
                                         </div>
+                                    </div>
+                                </div>
+
+                                {/* Digital Footprint & Security Auditing */}
+                                <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <p className="text-xs text-white/40 flex items-center gap-1.5 uppercase tracking-widest">
+                                            <ShieldAlert className="w-3 h-3 text-[#D4AF37]" /> Digital Footprint
+                                        </p>
+                                        <span className="text-[9px] text-[#D4AF37]/40 uppercase font-bold tracking-tighter italic">Audited by AURERXA Security</span>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between group">
+                                            <span className="text-[10px] text-white/30 uppercase">IP Address</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-mono text-white/70 select-all">{selectedOrder.ip_address || 'Unknown'}</span>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(selectedOrder.ip_address || '')
+                                                        setCopied(true)
+                                                        setTimeout(() => setCopied(false), 2000)
+                                                    }}
+                                                    className="p-1 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                                                >
+                                                    <Copy size={10} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <span className="text-[10px] text-white/30 uppercase">User Agent / Fingerprint</span>
+                                            <div className="p-2.5 bg-white/[0.03] border border-white/5 rounded-lg text-[10px] font-mono text-white/50 leading-relaxed italic break-all max-h-20 overflow-y-auto custom-scrollbar">
+                                                {selectedOrder.user_agent || 'Client fingerprint unavailable'}
+                                            </div>
+                                        </div>
+                                        {selectedOrder.user?.last_order_hash && (
+                                            <div className="p-2 bg-[#D4AF37]/5 border border-[#D4AF37]/10 rounded-lg space-y-1">
+                                                <p className="text-[10px] text-white/30 uppercase tracking-widest">Last Auth Hash</p>
+                                                <p className="text-[10px] font-mono text-[#D4AF37]/60 truncate">{selectedOrder.user.last_order_hash}</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

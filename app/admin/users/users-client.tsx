@@ -325,6 +325,33 @@ export function UsersClient({ initialUsers, total, adminRole }: { initialUsers: 
                                         </div>
                                     </div>
                                 )}
+                                {/* Security Metadata (NEW) */}
+                                <div className="space-y-3">
+                                    <p className="text-xs text-white/40 flex items-center gap-1 uppercase tracking-widest px-1">
+                                        <ShieldCheck className="w-3 h-3 text-[#D4AF37]" /> Security Metadata
+                                    </p>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] text-white/30 uppercase">Last Order Date</span>
+                                            <span className="text-xs text-white/70 italic">
+                                                {userDetails.profile.last_order_at ? new Date(userDetails.profile.last_order_at).toLocaleString() : 'Never'}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <span className="text-[10px] text-white/30 uppercase">Idempotency Fingerprint</span>
+                                            <div className="p-2 bg-white/[0.03] border border-white/5 rounded text-[10px] font-mono text-[#D4AF37]/50 truncate">
+                                                {userDetails.profile.last_order_hash || 'No hash recorded'}
+                                            </div>
+                                        </div>
+                                        {userDetails.profile.is_banned && (
+                                            <div className="p-2 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2">
+                                                <Ban size={12} className="text-red-500" />
+                                                <span className="text-[10px] text-red-500 font-bold uppercase tracking-widest">Account Restricted</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
                                 {/* Internal Notes */}
                                 <div className="pt-6 border-t border-white/5 is-internal-notes">
                                     <InternalNotes entityType="user" entityId={userDetails.profile.id} />

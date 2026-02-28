@@ -428,12 +428,12 @@ export async function getAdminOrders(
 
     let query = client
         .from('orders')
-        .select('id, order_number, total, status, created_at, tracking_number, payment_method, user_id, order_items(id, product_id, quantity, price, products(name, image_url, weight_grams, purity))', { count: 'exact' })
+        .select('id, order_number, total, status, created_at, tracking_number, payment_method, user_id, ip_address, user_agent, payment_mode, card_name, bank_ref_no, order_items(id, product_id, quantity, price, products(name, image_url, weight_grams, purity))', { count: 'exact' })
 
     if (status && status !== 'all') query = query.eq('status', status)
     if (dateFrom) query = query.gte('created_at', dateFrom)
     if (dateTo) query = query.lte('created_at', dateTo)
-    if (search) query = query.or(`order_number.ilike.%${search}%`)
+    if (search) query = query.or(`order_number.ilike.%${search}%,ip_address.ilike.%${search}%`)
     if (minTotal) query = query.gte('total', minTotal)
     if (maxTotal) query = query.lte('total', maxTotal)
 
@@ -781,7 +781,7 @@ export async function getAdminAllUsers(
 
     let query = client
         .from('profiles')
-        .select('id, full_name, email, phone_number, created_at, is_banned, avatar_url', { count: 'exact' })
+        .select('id, full_name, email, phone_number, created_at, is_banned, avatar_url, last_order_at, last_order_hash', { count: 'exact' })
 
     if (search) query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`)
     if (isBanned !== undefined) query = query.eq('is_banned', isBanned)
@@ -849,7 +849,7 @@ export async function getUserDetails(userId: string) {
     const admin = await checkAdminRole()
     if (!admin) return null
 
-    const { data: profile } = await client.from('profiles').select('id, full_name, email, phone_number, avatar_url, is_banned, created_at').eq('id', userId).single()
+    const { data: profile } = await client.from('profiles').select('id, full_name, email, phone_number, avatar_url, is_banned, created_at, last_order_at, last_order_hash').eq('id', userId).single()
     if (!profile) return null
 
     const { data: orders } = await client
