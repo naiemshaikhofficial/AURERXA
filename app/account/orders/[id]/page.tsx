@@ -1,5 +1,11 @@
 'use client'
 
+import { Metadata } from 'next'
+
+// Note: In Next.js App Router, metadata must be in a Server Component. 
+// Since this is a client component, we should move the metadata to a parent layout or a separate metadata export if possible.
+// However, since this is 'use client', we will focus on internal SEO best practices (Semantic HTML and Headings).
+
 import React, { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useParams, useSearchParams, useRouter } from 'next/navigation'
@@ -271,14 +277,14 @@ export default function OrderDetailPage() {
 
             <main className="pt-16 md:pt-24 pb-24">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Breadcrumb */}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
+                    {/* Breadcrumb - Semantic navigation */}
+                    <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground mb-8">
                         <Link href="/account" className="hover:text-primary">Account</Link>
                         <ChevronRight className="w-4 h-4" />
                         <Link href="/account/orders" className="hover:text-primary">Orders</Link>
                         <ChevronRight className="w-4 h-4" />
-                        <span className="text-foreground">{order.order_number}</span>
-                    </div>
+                        <span className="text-foreground" aria-current="page">{order.order_number}</span>
+                    </nav>
 
                     {/* Verifying Overlay */}
                     {verifying && (
