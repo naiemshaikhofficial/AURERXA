@@ -4627,17 +4627,34 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
   }
 }
 export async function verifyPayment(orderId: string, params?: any) {
-  console.log('\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-  console.log('!!!! VERIFY PAYMENT ACTION TRIGGERED LOCAL !!!!')
-  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n')
-  const result = await verifyRazorpayPayment(orderId, params)
-  if (result.success) {
-    console.log('verifyPayment: Razorpay verification successful');
-    await clearCart()
-  } else {
-    console.warn('verifyPayment: Razorpay verification failed', result.error);
+  console.log('verifyPayment: Checking status for order:', orderId)
+
+  const client = await getAuthClient()
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+  const queryField = isUUID ? 'id' : 'order_number';
+
+  // 1. Check if already confirmed
+  const { data: order } = await client
+    .from('orders')
+    .select('status, payment_status, payment_method')
+    .eq(queryField, orderId)
+    .single()
+
+  if (order?.status === 'confirmed') {
+    return { success: true, alreadyConfirmed: true }
   }
-  return result
+
+  // 2. If it's a Razorpay-specific verification request
+  if (params && params.razorpay_payment_id) {
+    const result = await verifyRazorpayPayment(orderId, params)
+    if (result.success) {
+      await clearCart()
+    }
+    return result
+  }
+
+  // 3. For others, if it was expected to be successful but isn't yet confirmed
+  return { success: false, error: 'Payment not yet confirmed. Please wait a moment or contact support if the amount was debited.' }
 }
 
 export async function initiateRazorpayPayment(orderId: string) {

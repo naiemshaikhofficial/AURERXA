@@ -10,8 +10,11 @@ import { toast } from 'sonner'
 
 export default function PaymentRetryPage() {
     const params = useParams()
+    const searchParams = useSearchParams()
     const router = useRouter()
     const orderId = params.id as string
+    const status = searchParams.get('status')
+    const isFailure = status && status !== 'Success'
 
     const [order, setOrder] = useState<any>(null)
     const [loading, setLoading] = useState(true)
@@ -143,10 +146,18 @@ export default function PaymentRetryPage() {
                     {/* Header */}
                     <div className="text-center mb-12">
                         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-destructive/10 border border-destructive/20 mb-6 group">
-                            <ShieldCheck className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-500" />
+                            {isFailure ? (
+                                <RefreshCw className="w-10 h-10 text-destructive group-hover:rotate-180 transition-transform duration-700" />
+                            ) : (
+                                <ShieldCheck className="w-10 h-10 text-primary group-hover:scale-110 transition-transform duration-500" />
+                            )}
                         </div>
-                        <h1 className="text-4xl md:text-5xl font-serif font-light mb-4 italic tracking-tight text-white">Complete Your Purchase</h1>
-                        <p className="text-muted-foreground uppercase tracking-[0.3em] text-[10px] md:text-xs">Secure Payment Portal • Order #{order.order_number}</p>
+                        <h1 className="text-4xl md:text-5xl font-serif font-light mb-4 italic tracking-tight text-white">
+                            {isFailure ? 'Payment Unsuccessful' : 'Complete Your Purchase'}
+                        </h1>
+                        <p className="text-muted-foreground uppercase tracking-[0.3em] text-[10px] md:text-xs">
+                            {isFailure ? `Transaction ${status}` : 'Secure Payment Portal'} • Order #{order.order_number}
+                        </p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
@@ -157,10 +168,13 @@ export default function PaymentRetryPage() {
 
                                 <h2 className="text-xl font-serif font-light mb-4 flex items-center gap-3 italic text-foreground">
                                     <ShieldCheck className="w-5 h-5 text-primary opacity-70" />
-                                    Secure CCAvenue Gateway
+                                    Secure Payment Resolution
                                 </h2>
                                 <p className="text-sm text-muted-foreground leading-relaxed italic">
-                                    Your order is ready for fulfillment. Please use the secure portal to complete your transaction with India&apos;s most trusted payment network.
+                                    {isFailure
+                                        ? "We encountered an issue while processing your payment. Don't worry, your order is saved. You can try completing the transaction again using the button on the right."
+                                        : "Your order is ready for fulfillment. Please use our secure portal to complete your transaction and secure your heritage piece."
+                                    }
                                 </p>
 
                                 <div className="mt-8 pt-6 border-t border-white/5 flex items-center gap-3 text-white/30">
@@ -224,19 +238,16 @@ export default function PaymentRetryPage() {
                                             </>
                                         ) : (
                                             <>
-                                                Pay Securely
+                                                {isFailure ? 'Retry Payment' : 'Pay Securely'}
                                                 <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                                             </>
                                         )}
                                     </span>
                                 </button>
 
-                                <div className="mt-6 flex items-center justify-center gap-3 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-700">
-                                    <div className="relative w-24 h-6">
-                                        <Image src="/ccavenue-badge.png" alt="CCAvenue" fill className="object-contain" unoptimized />
-                                    </div>
-                                    <div className="h-4 w-px bg-white/10 mx-2" />
-                                    <ShieldCheck className="w-5 h-5 text-emerald-500/50" />
+                                <div className="mt-6 flex items-center justify-center gap-3 opacity-20 hover:opacity-100 transition-all duration-700">
+                                    <ShieldCheck className="w-5 h-5 text-primary" />
+                                    <span className="text-[9px] uppercase tracking-[0.2em] text-white/50">100% Secure Checkout</span>
                                 </div>
                             </div>
                         </div>

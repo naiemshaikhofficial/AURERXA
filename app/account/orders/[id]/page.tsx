@@ -53,9 +53,11 @@ export default function OrderDetailPage() {
                 if (data) {
                     setOrder(data)
 
-                    // Auto-verify if payment success param is present
+                    // Auto-verify if payment success param is present (Razorpay 'payment=success' or CCAvenue 'success=true')
                     const paymentStatus = searchParams.get('payment')
-                    if (paymentStatus === 'success' && data.status === 'pending' && data.payment_method === 'online') {
+                    const isSuccessParam = searchParams.get('success') === 'true'
+
+                    if ((paymentStatus === 'success' || isSuccessParam) && data.status === 'pending') {
                         setVerifying(true)
                         const verifyResult = await verifyPayment(params.id as string)
                         if (verifyResult.success) {

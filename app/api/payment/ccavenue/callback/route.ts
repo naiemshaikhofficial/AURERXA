@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
             }
 
             // Update order to confirmed
-            await supabase.from('orders').update({
+            const { error: updateError } = await supabase.from('orders').update({
                 status: 'confirmed',
                 payment_status: 'paid',
                 payment_id: trackingId,
@@ -87,6 +87,10 @@ export async function POST(req: NextRequest) {
                 bank_ref_no: bankRefNo,
                 updated_at: new Date().toISOString()
             }).eq('id', internalOrderId);
+
+            if (updateError) {
+                console.error(`[CCAvenue Callback] Update Error for Order ${order.order_number}:`, updateError);
+            }
 
             // Trigger invoice
             triggerOrderInvoice(internalOrderId).catch((err: any) => console.error('Invoice trigger error:', err));
