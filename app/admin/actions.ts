@@ -428,7 +428,7 @@ export async function getAdminOrders(
 
     let query = client
         .from('orders')
-        .select('id, order_number, total, status, created_at, tracking_number, payment_method, user_id, ip_address, user_agent, payment_mode, card_name, bank_ref_no, order_items(id, product_id, quantity, price, products(name, image_url, weight_grams, purity))', { count: 'exact' })
+        .select('id, order_number, total, status, created_at, tracking_number, payment_method, user_id, ip_address, user_agent, payment_mode, card_name, bank_ref_no, shipping_address, order_items(id, product_id, quantity, price, products(name, image_url, weight_grams, purity))', { count: 'exact' })
 
     if (status && status !== 'all') query = query.eq('status', status)
     if (dateFrom) query = query.gte('created_at', dateFrom)

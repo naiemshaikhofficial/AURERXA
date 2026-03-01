@@ -470,10 +470,24 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                                 {order.user ? (
                                                     <>
                                                         <p className="text-sm text-white/80">{order.user.full_name}</p>
-                                                        <p className="text-xs text-white/30">{order.user.email}</p>
+                                                        <div className="flex items-center gap-2 group/phone">
+                                                            <p className="text-xs text-white/30">{order.user.email}</p>
+                                                            {order.shipping_address?.phone && (
+                                                                <span className="text-[10px] text-[#D4AF37]/50 flex items-center gap-1">
+                                                                    • <Phone className="w-2.5 h-2.5" /> {order.shipping_address.phone}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </>
                                                 ) : (
-                                                    <span className="text-xs text-white/20">Guest / Unknown</span>
+                                                    <div className="space-y-1">
+                                                        <p className="text-sm text-white/80">{order.shipping_address?.full_name || 'Guest'}</p>
+                                                        {order.shipping_address?.phone && (
+                                                            <p className="text-xs text-[#D4AF37]/50 flex items-center gap-1">
+                                                                <Phone className="w-2.5 h-2.5" /> {order.shipping_address.phone}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </td>
                                             <td className="px-4 py-3 text-sm text-white/60">{order.order_items?.length || 0} items</td>
@@ -539,9 +553,23 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
                                         <p className="text-sm font-bold">₹{Number(order.total).toLocaleString('en-IN')}</p>
                                         <p className="text-[11px] text-white/30">{new Date(order.created_at).toLocaleDateString('en-IN')}</p>
                                     </div>
-                                    {order.user && (
-                                        <div className="mt-2 pt-2 border-t border-white/5 text-xs text-white/40">
-                                            {order.user.email}
+                                    {order.user ? (
+                                        <div className="mt-2 pt-2 border-t border-white/5 flex flex-col gap-1">
+                                            <p className="text-xs text-white/40">{order.user.email}</p>
+                                            {order.shipping_address?.phone && (
+                                                <p className="text-[10px] text-[#D4AF37]/70 flex items-center gap-1">
+                                                    <Phone className="w-3 h-3" /> {order.shipping_address.phone}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="mt-2 pt-2 border-t border-white/5 flex flex-col gap-1">
+                                            <p className="text-xs text-white/40">{order.shipping_address?.full_name || 'Guest'}</p>
+                                            {order.shipping_address?.phone && (
+                                                <p className="text-[10px] text-[#D4AF37]/70 flex items-center gap-1">
+                                                    <Phone className="w-3 h-3" /> {order.shipping_address.phone}
+                                                </p>
+                                            )}
                                         </div>
                                     )}
                                 </div>
