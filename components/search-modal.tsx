@@ -61,11 +61,17 @@ export function SearchModal() {
     if (!isOpen) return null
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-24 md:pt-32 animate-in fade-in duration-300">
+        <div
+            className="fixed inset-0 z-[100] flex items-start justify-center pt-24 md:pt-32 animate-in fade-in duration-300"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="search-modal-title"
+        >
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-neutral-950/95 backdrop-blur-xl"
                 onClick={onClose}
+                aria-hidden="true"
             />
 
             <div className="relative w-full max-w-4xl px-4 md:px-6">
@@ -90,24 +96,28 @@ export function SearchModal() {
                         }}
                         className="flex items-center gap-6 border-b border-neutral-800 pb-4 group focus-within:border-primary transition-colors"
                     >
-                        <Search className="w-6 h-6 text-neutral-500 group-focus-within:text-primary transition-colors" />
+                        <Search className="w-6 h-6 text-neutral-500 group-focus-within:text-primary transition-colors" aria-hidden="true" />
+                        <label htmlFor="search-input" id="search-modal-title" className="sr-only">Search our heritage jewelry</label>
                         <input
                             ref={inputRef}
+                            id="search-input"
                             type="text"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="SEARCH OUR HERITAGE..."
                             className="w-full bg-transparent border-none text-2xl md:text-3xl font-serif text-white placeholder:text-white/10 focus:outline-none uppercase tracking-widest"
+                            aria-autocomplete="list"
+                            aria-controls="search-results"
                         />
                         {loading && (
-                            <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                            <Loader2 className="w-6 h-6 animate-spin text-primary" aria-label="Searching..." />
                         )}
                         <button type="submit" className="hidden" aria-hidden="true">Search</button>
                     </form>
                 </div>
 
                 {/* Results Area */}
-                <div className="min-h-[200px]">
+                <div className="min-h-[200px]" id="search-results" aria-live="polite">
                     {query.trim().length >= 2 ? (
                         <div className="animate-in fade-in slide-in-from-top-4 duration-500">
                             {/* Category & Tag Suggestions Area */}

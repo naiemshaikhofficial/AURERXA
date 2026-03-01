@@ -207,15 +207,16 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
             <div className="hidden md:flex flex-1 justify-center max-w-xl">
               <button
                 onClick={openSearch}
+                aria-label="Search jewelry collections (Press Ctrl+K)"
                 className="w-full flex items-center justify-center gap-3 px-6 py-2.5 rounded-full bg-card/10 border border-border/60 hover:border-primary/40 hover:bg-card/20 transition-all duration-300 group shadow-sm relative"
               >
                 <div className="flex items-center gap-3 w-full justify-center">
-                  <Search className="w-4 h-4 text-foreground/60 group-hover:text-primary transition-colors stroke-[1.5px] shrink-0" />
+                  <Search className="w-4 h-4 text-foreground/60 group-hover:text-primary transition-colors stroke-[1.5px] shrink-0" aria-hidden="true" />
                   <div className="flex items-center">
                     <span className="text-[11px] text-foreground/40 font-light tracking-widest uppercase shrink-0 mr-2">
                       Search for
                     </span>
-                    <div className="relative h-4 overflow-hidden min-w-[120px]">
+                    <div className="relative h-4 overflow-hidden min-w-[120px]" aria-live="polite">
                       <AnimatePresence mode="wait">
                         <motion.span
                           key={searchTermIndex}
@@ -231,7 +232,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                     </div>
                   </div>
                 </div>
-                <div className="absolute right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true">
                   <span className="text-[8px] text-muted-foreground border border-border rounded px-1">⌘K</span>
                 </div>
               </button>

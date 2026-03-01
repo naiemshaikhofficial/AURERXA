@@ -22,9 +22,9 @@ import { PairItWith } from '@/components/pair-it-with'
 import { RecentlyViewed } from '@/components/recently-viewed'
 import { MATERIAL_CONFIG, MaterialBadge } from '@/components/product-card'
 import { getProductReviews, getReviewStats } from '@/app/actions'
-import { ReviewList } from '@/components/review-list'
-import { ReviewForm } from '@/components/review-form'
-import { CertificationGroup } from '@/components/certification-seals'
+import { ProductActions } from './product/product-actions'
+import { ProductHighlights } from './product/product-highlights'
+import { ProductReviewsSection } from './product/product-reviews-section'
 
 
 interface ProductClientProps {
@@ -313,7 +313,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const [customSizeInput, setCustomSizeInput] = useState('') // New Feature: Custom Size State
     const [quantity, setQuantity] = useState(1)
     const [addingToCart, setAddingToCart] = useState(false)
-    const [inWishlist, setInWishlist] = useState(isWishlisted)
+    const [inWishlist, setInWishlist] = useState(!!isWishlisted)
     const [message, setMessage] = useState<string | null>(null)
     const [selectedImage, setSelectedImage] = useState(0)
     const [isVTOOpen, setIsVTOOpen] = useState(false)
@@ -749,277 +749,32 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 ₹{dynamicData.price.toLocaleString('en-IN')}
                             </p>
 
-                            {/* HIGH CONVERSION AREA: Selectors & Buy Buttons */}
-                            <div className="space-y-8 bg-white/[0.02] border border-white/5 p-8 backdrop-blur-sm">
-                                {/* NEW: Quick Specs Table (Moved to Top) */}
-                                <div className="mb-4 overflow-hidden border border-white/10 bg-white/[0.03] animate-in fade-in slide-in-from-top-4 duration-700">
-                                    <div className="p-3 border-b border-white/5 bg-white/[0.05]">
-                                        <h3 className="text-[10px] uppercase tracking-[0.3em] text-amber-500/80 font-bold flex items-center justify-between">
-                                            Product Specifications
-                                            {selectedSize && <span className="italic text-white/40 tracking-widest lowercase font-medium">Size: {selectedSize}</span>}
-                                        </h3>
-                                    </div>
-                                    <table className="w-full text-left border-collapse">
-                                        <tbody className="divide-y divide-white/5">
-                                            <tr className="group transition-colors hover:bg-white/[0.01]">
-                                                <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Estimated Weight</td>
-                                                <td className="py-2.5 px-4 text-xs font-serif italic text-white/90">{formatWeight(dynamicData.weight)}</td>
-                                            </tr>
-                                            {dynamicData.width && (
-                                                <tr className="group transition-colors hover:bg-white/[0.01]">
-                                                    <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Width</td>
-                                                    <td className="py-2.5 px-4 text-xs font-mono text-amber-200/80">{dynamicData.width}</td>
-                                                </tr>
-                                            )}
-                                            {dynamicData.diameter && (
-                                                <tr className="group transition-colors hover:bg-white/[0.01]">
-                                                    <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Diameter</td>
-                                                    <td className="py-2.5 px-4 text-xs font-mono text-amber-200/80">{dynamicData.diameter}</td>
-                                                </tr>
-                                            )}
-                                            {dynamicData.circumference && (
-                                                <tr className="group transition-colors hover:bg-white/[0.01]">
-                                                    <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Circumference</td>
-                                                    <td className="py-2.5 px-4 text-xs font-mono text-amber-200/80">{dynamicData.circumference}</td>
-                                                </tr>
-                                            )}
-                                            {product.purity && (
-                                                <tr className="group transition-colors hover:bg-white/[0.01]">
-                                                    <td className="py-2.5 px-4 text-[8px] uppercase tracking-widest text-white/30 font-medium w-1/3 border-r border-white/5">Purity</td>
-                                                    <td className="py-2.5 px-4 text-xs font-serif italic text-white/90">{formatPurity(product.purity, product.material_type).label}</td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                {/* Sizes */}
-                                {product.sizes && product.sizes.length > 0 && (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <span className="text-[10px] uppercase tracking-[0.2em] text-white/30 block">Select Size</span>
-                                            <button
-                                                onClick={() => setIsSizeGuideOpen(true)}
-                                                className="text-[9px] uppercase tracking-widest text-amber-500/60 hover:text-amber-500 transition-colors flex items-center gap-2"
-                                            >
-                                                <Ruler className="w-3 h-3" />
-                                                Indian Size Guide
-                                            </button>
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {product.sizes.map((size: string) => (
-                                                <button
-                                                    key={size}
-                                                    onClick={() => setSelectedSize(size)}
-                                                    className={`min-w-[3.5rem] px-4 h-12 flex items-center justify-center text-[10px] font-bold border transition-all duration-300 uppercase tracking-widest ${selectedSize === size
-                                                        ? 'bg-white text-black border-white'
-                                                        : 'bg-transparent border-white/10 text-white/40 hover:border-white/40 hover:text-white'
-                                                        }`}
-                                                >
-                                                    {size}
-                                                </button>
-                                            ))}
-                                            <button
-                                                onClick={() => setSelectedSize('Custom')}
-                                                className={`px-6 h-12 flex items-center justify-center text-[10px] font-bold border transition-all duration-300 uppercase tracking-widest ${selectedSize === 'Custom'
-                                                    ? 'bg-white text-black border-white'
-                                                    : 'bg-transparent border-white/10 text-white/40 hover:border-white/40 hover:text-white'
-                                                    }`}
-                                            >
-                                                Custom
-                                            </button>
-                                        </div>
-                                        {selectedSize === 'Custom' && (
-                                            <div className="animate-in fade-in slide-in-from-top-2 pt-2">
-                                                <input
-                                                    type="text"
-                                                    placeholder="Enter size (e.g., 18mm)"
-                                                    className="w-full h-12 bg-white/5 border border-white/10 text-white px-4 text-xs tracking-wider focus:outline-none focus:border-white/30 placeholder:text-white/20 transition-all mb-2"
-                                                    onChange={(e) => setCustomSizeInput(e.target.value)}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            e.preventDefault()
-                                                            handleAddToCart()
-                                                        }
-                                                    }}
-                                                />
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Buy Actions */}
-                                <div className="flex flex-col gap-3">
-                                    {product.stock > 0 ? (
-                                        <>
-                                            <Button
-                                                onClick={handleBuyNow}
-                                                disabled={addingToCart}
-                                                className="w-full bg-white text-black h-14 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-neutral-200 transition-all rounded-none"
-                                            >
-                                                Buy It Now
-                                            </Button>
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    onClick={handleAddToCart}
-                                                    disabled={addingToCart}
-                                                    className="flex-[3] bg-transparent border border-white/20 text-white h-12 uppercase tracking-[0.2em] text-[9px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
-                                                >
-                                                    {addingToCart ? <Loader2 className="animate-spin w-3 h-3" /> : 'Add to Bag'}
-                                                </Button>
-                                                <button
-                                                    onClick={handleAddToWishlist}
-                                                    className={`flex-1 h-12 flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-transparent border-white/20 text-white hover:bg-white/5'}`}
-                                                >
-                                                    <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
-                                                </button>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <Button disabled className="w-full bg-neutral-900 text-white/40 h-14 uppercase tracking-[0.3em] text-[10px] font-bold border border-white/5 rounded-none">
-                                            Out of Stock
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
+                            {/* Product Actions (Modularized) */}
+                            <ProductActions
+                                product={product}
+                                dynamicData={dynamicData}
+                                selectedSize={selectedSize}
+                                setSelectedSize={setSelectedSize}
+                                setCustomSizeInput={setCustomSizeInput}
+                                handleAddToCart={handleAddToCart}
+                                handleBuyNow={handleBuyNow}
+                                handleAddToWishlist={handleAddToWishlist}
+                                addingToCart={addingToCart}
+                                inWishlist={inWishlist}
+                                setIsSizeGuideOpen={setIsSizeGuideOpen}
+                            />
                         </div>
 
                         <div className="h-px w-24 bg-gradient-to-r from-amber-500/40 to-transparent" />
 
-                        {/* Description */}
-                        <div className="prose prose-invert prose-sm max-w-none text-white/50 font-light leading-relaxed tracking-wide">
-                            <p>{product.description}</p>
-
-                            {/* NEW: Virtual Try-On Trigger */}
-                            <div className="mt-10">
-                                <button
-                                    onClick={() => setIsVTOOpen(true)}
-                                    className="w-full relative group flex items-center justify-between bg-white/5 border border-white/5 p-6 overflow-hidden transition-all hover:bg-neutral-900"
-                                >
-                                    <div className="relative z-10 flex items-center gap-6">
-                                        <div className="w-12 h-12 rounded-full bg-neutral-950 border border-white/10 flex items-center justify-center text-amber-200/80 group-hover:scale-110 transition-transform duration-500">
-                                            <Maximize2 className="w-5 h-5" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-[10px] text-amber-200/60 font-bold uppercase tracking-[0.3em] mb-2">Interactive Mirror</p>
-                                            <p className="text-lg font-serif italic text-white/90 group-hover:text-amber-100 transition-colors">Virtual Try-On Experience</p>
-                                        </div>
-                                    </div>
-                                    <ArrowRight className="w-5 h-5 text-white/20 group-hover:text-white group-hover:translate-x-2 transition-all duration-500" />
-
-                                    {/* Shine effect */}
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                                </button>
-                            </div>
-
-                            {/* Video Embed */}
-                            {product.video_url && (
-                                <div className="mt-10 space-y-4">
-                                    <p className="text-[10px] text-amber-500/60 font-bold uppercase tracking-[0.3em] font-premium-sans">Visual Experience</p>
-                                    {(() => {
-                                        const url = product.video_url;
-                                        const isShort = url.includes('/shorts/');
-                                        const youtubeRegExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?v=)|(\/shorts\/)|(&v=))([^#&?]*).*/;
-                                        const ytMatch = url.match(youtubeRegExp);
-                                        const youtubeId = (ytMatch && ytMatch[9].length === 11) ? ytMatch[9] : null;
-
-                                        return (
-                                            <div className={`relative w-full ${isShort ? 'aspect-[9/16] max-w-[340px] mx-auto' : 'aspect-video'} bg-neutral-900 border border-white/5 overflow-hidden group`}>
-                                                {youtubeId ? (
-                                                    <iframe
-                                                        src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&controls=0&showinfo=0`}
-                                                        title={product.name}
-                                                        className="absolute inset-0 w-full h-full pointer-events-none scale-105" // Slightly scale up to hide black bars/info if any
-                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                        allowFullScreen
-                                                    />
-                                                ) : (
-                                                    <CachedVideo src={url} isShort={isShort} />
-                                                )}
-
-                                                {/* Luxury Overlay to maintain website integration */}
-                                                <div className="absolute inset-0 bg-black/10 pointer-events-none" />
-                                                <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                                                    <span className="text-[8px] text-white/30 uppercase tracking-[0.3em] font-medium drop-shadow-md">AURERXA Cinema</span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })()}
-                                </div>
-                            )}
-
-                            {/* Brand Credentials */}
-                            <div className="space-y-6 pt-10 border-t border-white/5">
-                                <p className="text-[10px] text-amber-200/40 font-bold uppercase tracking-[0.4em]">Heritage Certification</p>
-                                <CertificationGroup materials={[
-                                    product.material_type?.includes('gold') ? 'gold' : '',
-                                    product.material_type?.includes('diamond') ? 'diamond' : '',
-                                    product.material_type?.includes('silver') ? 'silver' : ''
-                                ].filter(Boolean)} />
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 py-10 border-t border-b border-white/5 bg-white/[0.02]">
-                                <motion.div
-                                    whileHover={{ y: -5 }}
-                                    className="flex flex-col items-center text-center gap-3 group"
-                                >
-                                    <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-amber-200/20 transition-colors">
-                                        <Shield className="w-5 h-5 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
-                                    </div>
-                                    <span className="text-[9px] uppercase tracking-[0.3em] text-white/40">Secure Transaction</span>
-                                </motion.div>
-                                <motion.div
-                                    whileHover={{ y: -5 }}
-                                    className="flex flex-col items-center text-center gap-3 group"
-                                >
-                                    <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-amber-200/20 transition-colors">
-                                        <Truck className="w-5 h-5 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
-                                    </div>
-                                    <span className="text-[9px] uppercase tracking-[0.3em] text-white/40">Global Logistics</span>
-                                </motion.div>
-                                <motion.div
-                                    whileHover={{ y: -5 }}
-                                    className="flex flex-col items-center text-center gap-3 group"
-                                >
-                                    <div className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center group-hover:border-amber-200/20 transition-colors">
-                                        <RotateCcw className="w-5 h-5 text-white/20 group-hover:text-amber-200/60 transition-colors duration-500" />
-                                    </div>
-                                    <span className="text-[9px] uppercase tracking-[0.3em] text-white/40">Legacy Support</span>
-                                </motion.div>
-                            </div>
-                        </div>
-
-                        {/* Delivery Check */}
-
-                        {/* Heritage & Craftsmanship */}
-                        <div className="space-y-6 py-12 border-t border-white/5">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="h-px w-8 bg-amber-500/40" />
-                                <span className="text-[9px] uppercase tracking-[0.4em] text-white/40">Heritage & Craftsmanship</span>
-                            </div>
-                            <p className="text-sm font-serif italic text-white/70 leading-relaxed font-light">
-                                Each Aurerxa creation is a testament to the timeless artistry of Indian jewelry making. This {product.name.toLowerCase()} is handcrafted by master artisans, blending ancestral techniques with contemporary luxury.
-                            </p>
-                            <div className="flex flex-wrap gap-8 pt-4">
-                                <div className="space-y-1">
-                                    <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Technique</p>
-                                    <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">Handmade Artisan</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[8px] text-white/20 uppercase tracking-widest font-medium">Material Integrity</p>
-                                    <div className="flex flex-col">
-                                        <p className="text-[10px] text-amber-200/60 uppercase tracking-widest">
-                                            {product.purity} {product.categories?.name || (product.material_type ? MATERIAL_CONFIG[product.material_type]?.label : formatPurity(product.purity, product.material_type).label)}
-                                        </p>
-                                        {product.material_type === 'gold_plated' && (
-                                            <p className="text-[7px] text-white/30 uppercase tracking-widest mt-0.5 italic">Durable Gold Overlay</p>
-                                        )}
-                                        {product.material_type === 'bentex' && (
-                                            <p className="text-[7px] text-white/30 uppercase tracking-widest mt-0.5 italic">High Fashion Finish</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        {/* Product Highlights (Modularized) */}
+                        <ProductHighlights
+                            product={product}
+                            setIsVTOOpen={setIsVTOOpen}
+                            CachedVideo={CachedVideo}
+                            MATERIAL_CONFIG={MATERIAL_CONFIG}
+                            formatPurity={formatPurity}
+                        />
 
                         <DeliveryChecker
                             product={product}
@@ -1027,29 +782,7 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                         />
 
 
-                        {/* Selectors */}
-                        <div className="flex items-center gap-4 mb-4">
-                            <h1 className="text-2xl md:text-3xl font-serif italic text-white tracking-tight">{product.name}</h1>
-                            <div className="h-px flex-1 bg-white/5" />
-                        </div>
 
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-baseline gap-4">
-                                <span className="text-2xl font-serif text-white tracking-tight">₹{dynamicData.price.toLocaleString()}</span>
-                                {product.original_price && (
-                                    <span className="text-sm text-white/30 line-through">₹{product.original_price.toLocaleString()}</span>
-                                )}
-                                <span className="text-[10px] uppercase tracking-[0.2em] text-amber-500/60 font-medium">Incl. of all taxes</span>
-                            </div>
-                            {shippingCharge !== null && (
-                                <div className="text-right">
-                                    <p className="text-[10px] uppercase tracking-[0.2em] text-white/40 mb-1">Shipping Charge</p>
-                                    <p className="text-xs font-bold text-amber-100/80 tracking-widest">
-                                        {shippingCharge > 0 ? `₹${shippingCharge}` : 'FREE'}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
 
 
 
@@ -1115,140 +848,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             {/* Smart Recommendations - Curated Pairings */}
             <PairItWith productId={product.id} />
 
-            {/* REVIEW SECTION - Refined Palmonas Style */}
-            <section id="reviews" className="max-w-7xl mx-auto px-6 py-24 border-t border-white/5">
-                <div className="flex flex-col gap-12 mb-16">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
-                        {/* Rating Breakdown Toggle */}
-                        <div className="space-y-4">
-                            <button
-                                onClick={() => setIsBreakdownOpen(!isBreakdownOpen)}
-                                className="flex items-center gap-4 group"
-                            >
-                                <div className="flex gap-1">
-                                    {[1, 2, 3, 4, 5].map((s) => (
-                                        <Star
-                                            key={s}
-                                            className={`w-5 h-5 transition-all duration-300 ${s <= Math.round(reviewStats.average) ? 'fill-white text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' : 'text-white/10'}`}
-                                        />
-                                    ))}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xl font-serif text-white">{reviewStats.average.toFixed(1)}</span>
-                                    <span className="text-sm font-medium text-white/40 tracking-widest uppercase">
-                                        {reviewStats.total.toLocaleString()} Reviews
-                                    </span>
-                                    <motion.div
-                                        animate={{ rotate: isBreakdownOpen ? 180 : 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <svg className="w-4 h-4 text-white/20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
-                                    </motion.div>
-                                </div>
-                            </button>
-
-                            <AnimatePresence>
-                                {isBreakdownOpen && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.4, ease: "circOut" }}
-                                        className="overflow-hidden"
-                                    >
-                                        <div className="pt-4 space-y-3 w-full max-w-sm">
-                                            {[5, 4, 3, 2, 1].map((rating) => {
-                                                const counts = reviews.filter(r => r.rating === rating).length;
-                                                const percentage = reviewStats.total > 0 ? (counts / reviewStats.total) * 100 : 0;
-                                                return (
-                                                    <div key={rating} className="flex items-center gap-4 group">
-                                                        <span className="text-[10px] font-bold text-white/40 w-4">{rating}</span>
-                                                        <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-                                                            <motion.div
-                                                                initial={{ width: 0 }}
-                                                                animate={{ width: `${percentage}%` }}
-                                                                transition={{ duration: 1, delay: 0.2 }}
-                                                                className="h-full bg-white/80 rounded-full"
-                                                            />
-                                                        </div>
-                                                        <span className="text-[10px] font-medium text-white/20 w-8">{counts}</span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-
-                        {/* Actions & Filters */}
-                        <div className="flex items-center gap-3">
-                            {/* Sort Dropdown */}
-                            <div className="relative">
-                                <button
-                                    onClick={() => setIsSortOpen(!isSortOpen)}
-                                    className="h-12 px-6 flex items-center gap-3 border border-white/5 rounded-none bg-white/[0.02] hover:bg-white/[0.05] transition-all text-white/60 text-[10px] font-bold uppercase tracking-widest"
-                                >
-                                    Sort: {sortBy}
-                                    <svg className={`w-3 h-3 transition-transform duration-300 ${isSortOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
-                                </button>
-
-                                <AnimatePresence>
-                                    {isSortOpen && (
-                                        <>
-                                            <motion.div
-                                                initial={{ opacity: 0 }}
-                                                animate={{ opacity: 1 }}
-                                                exit={{ opacity: 0 }}
-                                                onClick={() => setIsSortOpen(false)}
-                                                className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
-                                            />
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                className="absolute right-0 top-full mt-2 w-48 z-50 bg-neutral-900 border border-white/10 shadow-2xl py-2"
-                                            >
-                                                {['Featured', 'Newest', 'Highest Ratings', 'Lowest Ratings'].map((option) => (
-                                                    <button
-                                                        key={option}
-                                                        onClick={() => {
-                                                            setSortBy(option);
-                                                            setIsSortOpen(false);
-                                                        }}
-                                                        className={`w-full text-left px-5 py-3 text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-white/5 ${sortBy === option ? 'text-white' : 'text-white/40'}`}
-                                                    >
-                                                        {option}
-                                                    </button>
-                                                ))}
-                                            </motion.div>
-                                        </>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-
-                            <Button
-                                onClick={() => setIsReviewFormOpen(true)}
-                                className="bg-white text-black hover:bg-neutral-200 transition-all rounded-none font-bold text-[10px] uppercase tracking-[0.2em] h-12 px-10"
-                            >
-                                Write a review
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-
-                <ReviewList reviews={reviews} />
-
-                {/* Review Modal */}
-                <ReviewForm
-                    productId={product.id}
-                    isOpen={isReviewFormOpen}
-                    onClose={() => setIsReviewFormOpen(false)}
-                    onSuccess={() => {
-                        loadReviews()
-                    }}
-                />
-            </section>
+            {/* Review Section (Modularized) */}
+            <ProductReviewsSection productId={product.id} />
 
             {/* Recently Viewed - User Journey */}
             <RecentlyViewed />

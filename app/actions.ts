@@ -19,6 +19,33 @@ import { encrypt, decrypt, refundOrder } from '@/lib/ccavenue'
 
 import { createSupabaseServerClient, createSupabasePublicClient, createSupabaseAdminClient } from '@/lib/supabase-server'
 import { logDiagnostic } from '@/lib/logger'
+import { z } from 'zod'
+
+const ReviewSchema = z.object({
+  productId: z.string().uuid(),
+  rating: z.number().min(1).max(5),
+  comment: z.string().max(1000).optional(),
+  images: z.array(z.string().url()).max(5).optional(),
+  firstName: z.string().min(2).max(50).optional(),
+  lastName: z.string().max(50).optional(),
+  email: z.string().email().optional(),
+})
+
+const SupportTicketSchema = z.object({
+  subject: z.string().min(5).max(100),
+  description: z.string().min(10).max(2000),
+  category: z.string(),
+  name: z.string().min(2).max(100),
+  email: z.string().email(),
+  phone: z.string().min(10).max(15),
+  userId: z.string().uuid().optional(),
+})
+
+// Helper to get client ID for rate limiting
+async function getClientIdentifier() {
+  const head = await headers()
+  return head.get('x-forwarded-for')?.split(',')[0] || head.get('x-real-ip') || 'anonymous'
+}
 
 // Server-side Supabase client for static/public data (safe for unstable_cache)
 const supabaseServer = createSupabasePublicClient()
@@ -426,29 +453,31 @@ export async function getBotResponse(query: string): Promise<BotResponse> {
 /**
  * Creates a support ticket from the chatbot when no agent is available.
  */
-export async function createSupportTicket(data: {
-  subject: string,
-  description: string,
-  category: string,
-  name: string,
-  email: string,
-  phone: string,
-  userId?: string,
-  chatHistory?: string
-}) {
+export async function createSupportTicket(data: z.infer<typeof SupportTicketSchema> & { chatHistory?: string }) {
+  // Rate limit check
+  const clientId = await getClientIdentifier()
+  const isAllowed = await checkActionRateLimit(clientId, 'create_ticket', 5, 60) // 5 tickets per hour
+  if (!isAllowed) return { success: false, error: 'Too many requests. Please try again later.' }
+
+  // Validation
+  const validated = SupportTicketSchema.safeParse(data)
+  if (!validated.success) {
+    return { success: false, error: 'Invalid input: ' + validated.error.errors[0].message }
+  }
+
   try {
     const { data: ticket, error } = await supabaseServer
       .from('tickets')
       .insert([{
-        subject: sanitize(data.subject),
-        description: sanitize(data.description),
-        category: data.category,
+        subject: sanitize(validated.data.subject),
+        description: sanitize(validated.data.description),
+        category: validated.data.category,
         status: 'open',
         priority: 'normal',
-        user_id: data.userId || null,
-        guest_name: data.name,
-        guest_email: data.email,
-        guest_phone: data.phone
+        user_id: validated.data.userId || null,
+        guest_name: validated.data.name,
+        guest_email: validated.data.email,
+        guest_phone: validated.data.phone
       }])
       .select()
       .single()
@@ -605,42 +634,43 @@ export async function getReviewStats(productId: string) {
 }
 
 export async function submitReview(formData: FormData): Promise<ActionResponse> {
-  try {
-    const productId = formData.get('productId') as string
-    const rating = parseInt(formData.get('rating') as string)
-    const comment = formData.get('comment') as string
-    const imagesJson = formData.get('images') as string
-    const images = JSON.parse(imagesJson || '[]')
-    const guestFirstName = (formData.get('firstName') as string || '').trim()
-    const guestLastName = (formData.get('lastName') as string || '').trim()
-    const guestEmail = (formData.get('email') as string || '').trim()
+  // Rate limit check
+  const clientId = await getClientIdentifier()
+  const isAllowed = await checkActionRateLimit(clientId, 'submit_review', 3, 30) // 3 reviews per 30 mins
+  if (!isAllowed) return { success: false, error: 'Too many review attempts. Please try again later.' }
 
-    if (!productId || isNaN(rating) || rating < 1 || rating > 5) {
-      return { success: false, error: 'Invalid product or rating' }
+  try {
+    const rawData = {
+      productId: formData.get('productId') as string,
+      rating: parseInt(formData.get('rating') as string),
+      comment: formData.get('comment') as string,
+      images: JSON.parse(formData.get('images') as string || '[]'),
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      email: formData.get('email') as string,
     }
 
-    // Check if user is authenticated (optional for guest reviews)
+    const validated = ReviewSchema.safeParse(rawData)
+    if (!validated.success) {
+      return { success: false, error: 'Invalid review: ' + validated.error.errors[0].message }
+    }
+
+    const { productId, rating, comment, images, firstName, lastName, email } = validated.data
+
+    // Check if user is authenticated
     let userId: string | null = null
     try {
       const client = await getAuthClient()
       const { data: { user } } = await client.auth.getUser()
       if (user) userId = user.id
-    } catch { /* Guest review — no auth */ }
+    } catch { /* Guest review */ }
 
     // For guest reviews, name and email are required
-    if (!userId) {
-      if (!guestFirstName || !guestEmail) {
-        return { success: false, error: 'Name and email are required' }
-      }
-      // Basic email validation
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail)) {
-        return { success: false, error: 'Invalid email address' }
-      }
+    if (!userId && (!firstName || !email)) {
+      return { success: false, error: 'Name and email are required for guest reviews' }
     }
 
-    const guestName = guestLastName
-      ? `${guestFirstName} ${guestLastName.charAt(0)}.`
-      : guestFirstName
+    const guestName = lastName ? `${firstName} ${lastName.charAt(0)}.` : firstName
 
     // Use supabaseServer — RLS policy now allows public inserts
     const { error } = await supabaseServer
@@ -649,10 +679,10 @@ export async function submitReview(formData: FormData): Promise<ActionResponse> 
         product_id: productId,
         user_id: userId,
         guest_name: userId ? null : guestName,
-        guest_email: userId ? null : guestEmail,
+        guest_email: userId ? null : email,
         rating,
-        comment: sanitize(comment),
-        images: images,
+        comment: sanitize(comment || ''),
+        images: images || [],
         status: 'approved',
         created_at: new Date().toISOString()
       })
