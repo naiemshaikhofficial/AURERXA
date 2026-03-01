@@ -5,6 +5,11 @@ import Lenis from 'lenis'
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
     useEffect(() => {
+        // Disable Lenis for Admin routes to ensure native scroll reliability
+        if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+            return
+        }
+
         const lenis = new Lenis({
             duration: 1.0, // Snappier response
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

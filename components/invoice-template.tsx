@@ -154,34 +154,91 @@ export function InvoiceTemplate({ order, type }: InvoiceProps) {
             </div>
 
             {isShipping ? (
-                /* SHIPPING LABEL */
-                <div className="flex flex-col gap-2 flex-grow overflow-hidden">
-                    <div className="border-[3px] border-slate-900 p-3 flex-grow min-h-0 flex flex-col justify-center relative bg-white">
-                        <span className="absolute top-0 left-0 bg-slate-900 text-white text-[7px] font-black px-2 py-0.5 uppercase">Consignee</span>
-                        <div className="space-y-1">
-                            <p className="text-lg font-black leading-none">{order.shipping_address?.full_name}</p>
-                            <p className="text-[11px] font-bold text-slate-700 leading-tight line-clamp-3">{order.shipping_address?.street_address}</p>
-                            <p className="text-base font-black uppercase">
-                                {order.shipping_address?.city}, {order.shipping_address?.state} - {order.shipping_address?.pincode}
-                            </p>
-                            <p className="text-base font-black bg-slate-100 px-1 inline-block mt-1">PH: {order.shipping_address?.phone}</p>
+                /* PROFESSIONAL SHIPPING LABEL */
+                <div className="flex flex-col h-full border-[2px] border-slate-950 bg-white">
+                    {/* Top Section: P | Barcode | Logo */}
+                    <div className="flex border-b-[2px] border-slate-950 h-[30%]">
+                        <div className="w-[20%] border-r-[2px] border-slate-950 flex items-center justify-center">
+                            <span className="text-[60px] font-black leading-none">P</span>
+                        </div>
+                        <div className="w-[55%] border-r-[2px] border-slate-950 flex flex-col items-center justify-center p-2">
+                            {/* Visual Barcode Representation */}
+                            <div className="flex items-end gap-[1px] h-12 w-full justify-center">
+                                {[...Array(35)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="bg-black"
+                                        style={{
+                                            width: i % 3 === 0 ? '2px' : '1px',
+                                            height: (i % 5 === 0 ? '80%' : '100%')
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                            <p className="text-[8px] font-mono mt-1">000 00000-0000 0-0000</p>
+                        </div>
+                        <div className="w-[25%] flex flex-col items-center justify-center p-1">
+                            <img src="/logo-new-v2.png" alt="Logo" className="h-8 object-contain mb-1" />
+                            <p className="text-[10px] font-black leading-tight text-center">AURERXA</p>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-2 h-[120px]">
-                        <div className="bg-slate-50 p-2 border border-slate-200 flex flex-col justify-center">
-                            <p className="text-[7px] font-black text-slate-400 uppercase">Return Address:</p>
-                            <p className="text-[10px] font-bold text-slate-800 leading-tight mt-1">{sellerDetails.address}</p>
-                            <p className="text-[9px] font-black mt-1">{sellerDetails.mobile}</p>
+
+                    {/* Middle Section: From / To */}
+                    <div className="flex border-b-[2px] border-slate-950 h-[45%]">
+                        <div className="w-1/2 border-r-[2px] border-slate-950 p-3 pt-4 relative">
+                            <p className="text-[10px] font-black absolute top-1 left-3">From :</p>
+                            <div className="mt-2 space-y-1">
+                                <div className="grid grid-cols-[40px_1fr] text-[9px] leading-tight">
+                                    <span className="font-bold text-slate-500 uppercase">Name</span>
+                                    <span className="font-black">: {sellerDetails.name}</span>
+                                </div>
+                                <div className="grid grid-cols-[40px_1fr] text-[9px] leading-tight">
+                                    <span className="font-bold text-slate-500 uppercase">Address</span>
+                                    <span className="font-black">: {sellerDetails.address}</span>
+                                </div>
+                                <div className="grid grid-cols-[40px_1fr] text-[9px] leading-tight">
+                                    <span className="font-bold text-slate-500 uppercase">Phone</span>
+                                    <span className="font-black">: {sellerDetails.mobile}</span>
+                                </div>
+                                <div className="grid grid-cols-[40px_1fr] text-[9px] leading-tight">
+                                    <span className="font-bold text-slate-500 uppercase">Email</span>
+                                    <span className="font-black">: support@aurerxa.com</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className={cn(
-                            "flex flex-col items-center justify-center border-b-4",
-                            order.payment_method === 'cod' ? "bg-slate-900 border-[#D4AF37] text-white" : "bg-white border-slate-900 text-slate-900"
-                        )}>
-                            <p className="text-[8px] font-black opacity-60 uppercase">Mode</p>
-                            <p className="text-xl font-black">{order.payment_method === 'cod' ? 'C O D' : 'PREPAID'}</p>
-                            {order.payment_method === 'cod' && (
-                                <p className="text-lg font-black text-[#D4AF37] border-t border-[#D4AF37]/30 mt-1 pt-1">{formatCurrency(grandTotal)}</p>
-                            )}
+                        <div className="w-1/2 p-3 pt-4 relative bg-slate-50/30">
+                            <p className="text-[10px] font-black absolute top-1 left-3">To :</p>
+                            <div className="mt-2 space-y-1">
+                                <div className="grid grid-cols-[40px_1fr] text-[10px] leading-tight">
+                                    <span className="font-bold text-slate-500 uppercase">Name</span>
+                                    <span className="font-black text-lg">: {order.shipping_address?.full_name}</span>
+                                </div>
+                                <div className="grid grid-cols-[40px_1fr] text-[10px] leading-tight">
+                                    <span className="font-bold text-slate-500 uppercase">Address</span>
+                                    <span className="font-black">: {order.shipping_address?.street_address}, {order.shipping_address?.city}, {order.shipping_address?.state}, {order.shipping_address?.pincode}</span>
+                                </div>
+                                <div className="grid grid-cols-[40px_1fr] text-[10px] leading-tight">
+                                    <span className="font-bold text-slate-500 uppercase">Phone</span>
+                                    <span className="font-black">: {order.shipping_address?.phone}</span>
+                                </div>
+                                {order.user?.email && (
+                                    <div className="grid grid-cols-[40px_1fr] text-[10px] leading-tight">
+                                        <span className="font-bold text-slate-500 uppercase">Email</span>
+                                        <span className="font-black">: {order.user.email}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bottom Section: Handle with Care */}
+                    <div className="h-[25%] flex flex-col items-center justify-center p-4">
+                        <h2 className="text-2xl font-black tracking-[0.3em] uppercase text-center border-y-2 border-slate-950 py-2 w-full">
+                            PLEASE HANDLE WITH CARE
+                        </h2>
+                        <div className="flex justify-between w-full mt-2 text-[8px] font-black uppercase text-slate-400">
+                            <span>Order #{order.order_number}</span>
+                            <span>{order.payment_method === 'cod' ? 'C O D' : 'PREPAID'}</span>
                         </div>
                     </div>
                 </div>
