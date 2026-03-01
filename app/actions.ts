@@ -4614,16 +4614,25 @@ export async function getPaymentGatewayConfig() {
 }
 
 export async function initiatePayment(orderId: string): Promise<PaymentResult> {
+  const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
+  const queryField = isUUID ? 'id' : 'order_number';
+
+  // Single auth client + single order fetch for both zero-amount and payment paths
+  const client = await getAuthClient()
+  const [{ data: { user } }, { data: order }] = await Promise.all([
+    client.auth.getUser(),
+    client
+      .from('orders')
+      .select('*, order_items(*, product:products(*))')
+      .eq(queryField, orderId)
+      .single()
+  ])
+
+  if (!order) return { success: false, error: 'Order not found' }
+
   // --- ZERO-AMOUNT ORDER: Auto-confirm without hitting payment gateway ---
   try {
-    const client = await getAuthClient()
-    const { data: order } = await client
-      .from('orders')
-      .select('total, coupon_code')
-      .eq('id', orderId)
-      .single()
-
-    if (order && Number(order.total) <= 0) {
+    if (Number(order.total) <= 0) {
       console.log('initiatePayment: Zero-amount order detected, auto-confirming...')
 
       await client.from('orders').update({
@@ -4632,46 +4641,27 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
         payment_method: 'Free (100% Discount)',
         payment_id: `FREE_${Date.now()}`,
         updated_at: new Date().toISOString()
-      }).eq('id', orderId)
+      }).eq('id', order.id)
 
-      // Increment coupon usage
       if (order.coupon_code) {
         await client.rpc('increment_coupon_usage', { coupon_code: order.coupon_code })
       }
 
-      // Clear Cart and Trigger Invoice for Free Order
       await clearCart()
-      triggerOrderInvoice(orderId).catch(err => console.error('Free Order Invoice trigger error:', err))
+      triggerOrderInvoice(order.id).catch(err => console.error('Free Order Invoice trigger error:', err))
 
-      return { success: true, gateway: 'free', orderId }
+      return { success: true, gateway: 'free', orderId: order.id }
     }
   } catch (e) {
     console.error('Zero-amount check failed, proceeding to gateway:', e)
   }
 
   if (!process.env.CCAVENUE_MERCHANT_ID || !process.env.CCAVENUE_WORKING_KEY || !process.env.CCAVENUE_ACCESS_CODE) {
-    console.error('initiatePayment: CCAvenue configuration is missing:', {
-      hasMerchantId: !!process.env.CCAVENUE_MERCHANT_ID,
-      hasWorkingKey: !!process.env.CCAVENUE_WORKING_KEY,
-      hasAccessCode: !!process.env.CCAVENUE_ACCESS_CODE
-    });
+    console.error('initiatePayment: CCAvenue configuration is missing');
     return { success: false, error: 'Payment gateway configuration error' };
   }
 
   try {
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId);
-    const queryField = isUUID ? 'id' : 'order_number';
-
-    const client = await getAuthClient()
-    const { data: { user } } = await client.auth.getUser()
-    const { data: order } = await client
-      .from('orders')
-      .select('*, order_items(*, product:products(*))')
-      .eq(queryField, orderId)
-      .single()
-
-    if (!order) return { success: false, error: 'Order not found' }
-
     const { encrypt } = await import('@/lib/ccavenue')
 
     // Prepare CCAvenue Request String
@@ -4686,7 +4676,7 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     const billingCity = order.shipping_address?.city || 'N/A'
     const billingState = order.shipping_address?.state || 'N/A'
     const billingZip = order.shipping_address?.pincode || 'N/A'
-    const billingCountry = 'India' // Defaulting to India as per business context
+    const billingCountry = 'India'
 
     const requestParams = [
       `merchant_id=${merchantId}`,
@@ -4704,7 +4694,7 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
       `billing_country=${encodeURIComponent(billingCountry)}`,
       `billing_email=${encodeURIComponent(order.billing_email || user?.email || '')}`,
       `billing_tel=${encodeURIComponent((order.customer_phone || order.shipping_address?.phone || '').replace(/\D/g, ''))}`,
-      `merchant_param1=${order.id}`, // Store internal UUID for deterministic lookup
+      `merchant_param1=${order.id}`,
       `promo_code=${order.coupon_code || ''}`,
       `integration_type=iframe_normal`
     ].join('&')
