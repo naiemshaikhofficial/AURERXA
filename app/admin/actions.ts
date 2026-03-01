@@ -54,26 +54,40 @@ const getAuthClient = cache(async () => {
 export const checkAdminRole = cache(async () => {
     try {
         const client = await getAuthClient()
-        const { data: { user }, error: authError } = await client.auth.getUser()
 
-        if (authError || !user) {
-            return null
-        }
+        // 1. Get user with timeout
+        const authPromise = client.auth.getUser()
+        const authResult = await Promise.race([
+            authPromise,
+            new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Auth Timeout')), 5000))
+        ])
 
-        // Cache the role check for 30 seconds to reduce CPU/DB load for polling
-        return getCached(`role:${user.id}`, 30, async () => {
+        const { data: { user }, error: authError } = authResult
+        if (authError || !user) return null
+
+        // 2. Cache the role check for 30 seconds to reduce CPU/DB load for polling
+        // Also wrap the DB query in a race just in case getCached/Supabase is stuck
+        const rolePromise = getCached(`role:${user.id}`, 30, async () => {
             const { data, error: roleError } = await client
                 .from('admin_users')
                 .select('role')
                 .eq('id', user.id)
                 .single()
 
-            if (roleError || !data) {
-                return null
+            if (roleError || !data) return null
+            return {
+                userId: user.id,
+                email: user.email,
+                role: data.role as 'main_admin' | 'support_admin' | 'staff' | 'product_manager'
             }
-            return { userId: user.id, email: user.email, role: data.role as 'main_admin' | 'support_admin' | 'staff' | 'product_manager' }
         })
-    } catch (err) {
+
+        return await Promise.race([
+            rolePromise,
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000))
+        ])
+    } catch (err: any) {
+        console.warn('Admin Role Check Error or Timeout:', err.message)
         return null
     }
 })

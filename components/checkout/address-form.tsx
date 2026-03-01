@@ -123,6 +123,10 @@ const addressSchema = z.object({
 
 type AddressValues = z.infer<typeof addressSchema>
 
+import { AddressPersonalDetails } from './address-personal-details'
+import { AddressContactDetails } from './address-contact-details'
+import { AddressLocationDetails } from './address-location-details'
+
 export function AddressForm({ initialData, onSave, onCancel, loading }: AddressFormProps) {
     const { items: cartItems } = useCart()
     const { consentStatus, userDetails, updateUserDetails } = useConsent()
@@ -244,284 +248,37 @@ export function AddressForm({ initialData, onSave, onCancel, loading }: AddressF
         >
             <PhoneInputStyles />
 
-            <div className="relative pb-4 flex items-center justify-between">
-                <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-primary/30 via-primary/5 to-transparent" />
-                <h4 className="font-serif italic text-lg text-primary/80 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
-                    Personal Details
-                </h4>
-            </div>
+            <AddressPersonalDetails register={register} errors={errors} variants={itemVariants} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <motion.div variants={itemVariants} className="space-y-8">
-                    <div className="space-y-3 group">
-                        <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
-                            <Tag className="w-3.5 h-3.5" />
-                            Address Label
-                        </Label>
-                        <Input
-                            {...register('label')}
-                            placeholder="e.g. Home, Office, Studio"
-                            className={cn(
-                                "bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all placeholder:text-muted-foreground/20 font-light italic text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center",
-                                errors.label && "border-destructive/50"
-                            )}
-                        />
-                        {errors.label && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.label.message}</p>}
-                    </div>
+            <AddressContactDetails
+                register={register}
+                errors={errors}
+                phone={formData.phone}
+                setPhone={(val) => setValue('phone', val)}
+                pincodeLoading={pincodeLoading}
+                variants={itemVariants}
+            />
 
-                    <div className="space-y-3 group">
-                        <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
-                            <User className="w-3.5 h-3.5" />
-                            Full Name
-                        </Label>
-                        <Input
-                            {...register('full_name')}
-                            placeholder="Enter your full name"
-                            className={cn(
-                                "bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center",
-                                errors.full_name && "border-destructive/50"
-                            )}
-                        />
-                        {errors.full_name && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.full_name.message}</p>}
-                    </div>
-                </motion.div>
-
-                <motion.div variants={itemVariants} className="space-y-8">
-                    <div className="space-y-3 group">
-                        <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
-                            <Phone className="w-3.5 h-3.5" />
-                            Phone Number
-                        </Label>
-                        <div className={cn(
-                            "phone-input-wrapper border-white/5 border-b border-b-primary/20 transition-all focus-within:border-primary/40 hover:border-primary/30",
-                            errors.phone && "border-destructive/50"
-                        )}>
-                            <PhoneInput
-                                international
-                                defaultCountry="IN"
-                                flags={flags}
-                                flagUrl="https://flagcdn.com/{xx}.svg"
-                                value={formData.phone}
-                                onChange={(val) => setValue('phone', val || '')}
-                                className="flex h-14 w-full bg-transparent px-0 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/20 focus-visible:outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-                            />
-                        </div>
-                        {errors.phone && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.phone.message}</p>}
-                    </div>
-
-                    <div className="space-y-3 group">
-                        <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
-                            <MapPin className="w-3.5 h-3.5" />
-                            Pincode / ZIP
-                            {pincodeLoading && <Loader2 className="w-3 h-3 animate-spin text-primary" />}
-                        </Label>
-                        <Input
-                            {...register('pincode')}
-                            placeholder="e.g. 422001"
-                            maxLength={6}
-                            className={cn(
-                                "bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center",
-                                errors.pincode && "border-destructive/50"
-                            )}
-                        />
-                        {errors.pincode && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.pincode.message}</p>}
-                    </div>
-                </motion.div>
-            </div>
-
-            <motion.div variants={itemVariants} className="space-y-10 pt-4">
-                <div className="relative pb-4 flex items-center justify-between">
-                    <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-primary/30 via-primary/5 to-transparent" />
-                    <h4 className="font-serif italic text-lg text-primary/80 flex items-center gap-2">
-                        <Home className="w-4 h-4" />
-                        Location Details
-                    </h4>
-                </div>
-
-                <div className="space-y-6">
-                    <div className="space-y-3 group">
-                        <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
-                            <MapPin className="w-3.5 h-3.5" />
-                            Address Line 1 (House No., Building, Area)
-                        </Label>
-                        <Textarea
-                            {...register('address_line1')}
-                            placeholder="e.g. House No. 12, AURERXA Residency, Heritage Colony"
-                            className={cn(
-                                "bg-background/20 border-white/5 text-foreground min-h-[100px] rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-center py-8 text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 resize-none",
-                                errors.address_line1 && "border-destructive/50"
-                            )}
-                        />
-                        {errors.address_line1 && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.address_line1.message}</p>}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-3 group">
-                            <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
-                                <MapPin className="w-3.5 h-3.5" />
-                                Address Line 2
-                            </Label>
-                            <Input
-                                {...register('address_line2')}
-                                placeholder="e.g. Near Heritage Tower"
-                                className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
-                            />
-                        </div>
-
-                        <div className="space-y-3 group">
-                            <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 flex items-center gap-2 group-focus-within:text-primary transition-colors">
-                                <MapPin className="w-3.5 h-3.5" />
-                                Landmark
-                            </Label>
-                            <Input
-                                {...register('landmark')}
-                                placeholder="e.g. Opp. Gold Market"
-                                className="bg-background/20 border-white/5 text-foreground h-14 rounded-none focus:border-primary/40 focus:ring-0 transition-all font-light text-base ring-offset-transparent outline-none border-b-primary/20 hover:border-primary/30 text-center"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="space-y-3">
-                            <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60">Country</Label>
-                            <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        className={cn(
-                                            "w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground hover:bg-white/5 transition-all text-base px-12 border-b-primary/20",
-                                            errors.country && "border-destructive/50"
-                                        )}
-                                    >
-                                        <span className="truncate">{formData.country ? currentCountry?.name : "Select Country"}</span>
-                                        <ChevronsUpDown className="absolute right-4 h-4 w-4 shrink-0 opacity-40 text-primary" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 border-white/10 bg-[#080808] rounded-none z-[1001] backdrop-blur-xl" align="start">
-                                    <Command className="bg-transparent text-zinc-100">
-                                        <CommandInput placeholder="Search country..." className="border-white/5 h-12" />
-                                        <CommandList className="max-h-[350px] custom-scrollbar">
-                                            <CommandEmpty className="text-zinc-500 py-10 text-[10px] uppercase tracking-[0.3em] text-center italic">No destinations found</CommandEmpty>
-                                            <CommandGroup>
-                                                {countries.map((country) => (
-                                                    <CommandItem
-                                                        key={country.isoCode}
-                                                        value={country.name}
-                                                        onSelect={() => {
-                                                            setValue('country', country.isoCode)
-                                                            setValue('state', '')
-                                                            setValue('city', '')
-                                                            setCountryOpen(false)
-                                                        }}
-                                                        className="cursor-pointer hover:bg-white/5 py-4 transition-colors"
-                                                    >
-                                                        <Check className={cn("mr-3 h-4 w-4 text-primary", formData.country === country.isoCode ? "opacity-100" : "opacity-0")} />
-                                                        <span className="text-sm font-light tracking-wide">{country.name}</span>
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                            {errors.country && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.country.message}</p>}
-                        </div>
-
-                        <div className="space-y-3">
-                            <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60">State</Label>
-                            <Popover open={stateOpen} onOpenChange={setStateOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        disabled={!formData.country}
-                                        className={cn(
-                                            "w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-12 border-b-primary/20",
-                                            errors.state && "border-destructive/50"
-                                        )}
-                                    >
-                                        <span className="truncate">{formData.state ? currentState?.name : "Select State"}</span>
-                                        <ChevronsUpDown className="absolute right-4 h-4 w-4 shrink-0 opacity-40 text-primary" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 border-white/10 bg-[#080808] rounded-none z-[1001] backdrop-blur-xl" align="start">
-                                    <Command className="bg-transparent text-zinc-100">
-                                        <CommandInput placeholder="Search state..." className="border-white/5 h-12" />
-                                        <CommandList className="max-h-[350px] custom-scrollbar">
-                                            <CommandEmpty className="text-zinc-500 py-10 text-[10px] uppercase tracking-[0.3em] text-center italic">Region not found</CommandEmpty>
-                                            <CommandGroup>
-                                                {states.map((state) => (
-                                                    <CommandItem
-                                                        key={state.isoCode}
-                                                        value={state.name}
-                                                        onSelect={() => {
-                                                            setValue('state', state.isoCode)
-                                                            setValue('city', '')
-                                                            setStateOpen(false)
-                                                        }}
-                                                        className="cursor-pointer hover:bg-white/5 py-4 transition-colors"
-                                                    >
-                                                        <Check className={cn("mr-3 h-4 w-4 text-primary", formData.state === state.isoCode ? "opacity-100" : "opacity-0")} />
-                                                        <span className="text-sm font-light tracking-wide">{state.name}</span>
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                            {errors.state && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.state.message}</p>}
-                        </div>
-
-                        <div className="space-y-3">
-                            <Label className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60">City</Label>
-                            <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        disabled={!formData.state}
-                                        className={cn(
-                                            "w-full relative justify-center h-14 rounded-none border-white/5 bg-background/20 font-light text-foreground disabled:opacity-20 hover:bg-white/5 transition-all text-base px-12 border-b-primary/20",
-                                            errors.city && "border-destructive/50"
-                                        )}
-                                    >
-                                        <span className="truncate">{formData.city ? formData.city : "Select City"}</span>
-                                        <ChevronsUpDown className="absolute right-4 h-4 w-4 shrink-0 opacity-40 text-primary" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 border-white/10 bg-[#080808] rounded-none z-[1001] backdrop-blur-xl" align="start">
-                                    <Command className="bg-transparent text-zinc-100">
-                                        <CommandInput placeholder="Search city..." className="border-white/5 h-12" />
-                                        <CommandList className="max-h-[350px] custom-scrollbar">
-                                            <CommandEmpty className="text-zinc-500 py-10 text-[10px] uppercase tracking-[0.3em] text-center italic">Locality not found</CommandEmpty>
-                                            <CommandGroup>
-                                                {cities.map((city) => (
-                                                    <CommandItem
-                                                        key={city.name}
-                                                        value={city.name}
-                                                        onSelect={() => {
-                                                            setValue('city', city.name)
-                                                            setCityOpen(false)
-                                                        }}
-                                                        className="cursor-pointer hover:bg-white/5 py-4 transition-colors"
-                                                    >
-                                                        <Check className={cn("mr-3 h-4 w-4 text-primary", formData.city === city.name ? "opacity-100" : "opacity-0")} />
-                                                        <span className="text-sm font-light tracking-wide">{city.name}</span>
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
-                            {errors.city && <p className="text-[9px] text-destructive uppercase tracking-widest font-bold">{errors.city.message}</p>}
-                        </div>
-                    </div>
-                </div>
-            </motion.div>
+            <AddressLocationDetails
+                register={register}
+                errors={errors}
+                country={formData.country}
+                state={formData.state}
+                city={formData.city}
+                countries={countries}
+                states={states}
+                cities={cities}
+                currentCountry={currentCountry}
+                currentState={currentState}
+                setValue={setValue}
+                countryOpen={countryOpen}
+                setCountryOpen={setCountryOpen}
+                stateOpen={stateOpen}
+                setStateOpen={setStateOpen}
+                cityOpen={cityOpen}
+                setCityOpen={setCityOpen}
+                variants={itemVariants}
+            />
 
             <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-6 pt-12">
                 <Button

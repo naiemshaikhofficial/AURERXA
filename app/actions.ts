@@ -41,6 +41,38 @@ const SupportTicketSchema = z.object({
   userId: z.string().uuid().optional(),
 })
 
+const ContactSchema = z.object({
+  name: z.string().min(2).max(100),
+  email: z.string().email(),
+  subject: z.string().min(2).max(100).optional(),
+  message: z.string().min(10).max(2000),
+})
+
+const CustomOrderSchema = z.object({
+  name: z.string().min(2).max(100),
+  email: z.string().email(),
+  phone: z.string().min(10).max(15),
+  description: z.string().min(10).max(2000),
+  images: z.array(z.string().url()).max(5).optional(),
+  catalog_requested: z.boolean().optional(),
+})
+
+const BulkOrderSchema = z.object({
+  businessName: z.string().min(2).max(100),
+  contactName: z.string().min(2).max(100),
+  email: z.string().email(),
+  phone: z.string().min(10).max(15),
+  gstNumber: z.string().max(20).optional(),
+  message: z.string().max(2000).optional(),
+  items: z.array(z.object({
+    productId: z.string().uuid(),
+    productName: z.string(),
+    productImage: z.string(),
+    retailPrice: z.number().positive(),
+    quantity: z.number().min(10),
+  })).min(1),
+})
+
 // Helper to get client ID for rate limiting
 async function getClientIdentifier() {
   const head = await headers()
@@ -104,16 +136,28 @@ export async function getSiteSetting<T>(key: string, defaultValue: T): Promise<T
   return unstable_cache(
     async () => {
       try {
-        const { data, error } = await supabaseServer
+        const queryPromise = supabaseServer
           .from('site_settings')
           .select('value')
           .eq('key', key)
           .maybeSingle()
 
+        const result = await Promise.race([
+          queryPromise,
+          new Promise<any>((_, reject) =>
+            setTimeout(() => reject(new Error('Setting fetch timeout')), 3000)
+          )
+        ])
+
+        const { data, error } = result
         if (error || !data) return defaultValue
         return data.value as T
-      } catch (err) {
-        console.error(`Error fetching setting ${key}:`, err)
+      } catch (err: any) {
+        if (err.message !== 'Setting fetch timeout') {
+          console.error(`Error fetching setting ${key}:`, err)
+        } else {
+          console.warn(`Timeout fetching setting ${key}, using default.`)
+        }
         return defaultValue
       }
     },
@@ -250,16 +294,21 @@ export const getCurrentUserProfile = cache(async () => {
 
     if (!user) return null
 
-    const [profileRes, adminRes] = await Promise.all([
-      client.from('profiles').select('full_name, email, phone_number, is_banned').eq('id', user.id).maybeSingle(),
-      client.from('admin_users').select('role').eq('id', user.id).maybeSingle()
+    const [profileRes, adminRes] = await Promise.race([
+      Promise.all([
+        client.from('profiles').select('full_name, email, phone_number, is_banned').eq('id', user.id).maybeSingle(),
+        client.from('admin_users').select('role').eq('id', user.id).maybeSingle()
+      ]),
+      new Promise<[any, any]>((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      )
     ])
 
     const data = profileRes.data
     const adminData = adminRes.data
 
     if (profileRes.error && profileRes.error.code !== 'PGRST116') {
-      console.error('Error fetching profile:', profileRes.error)
+      console.warn('Profile fetch warning (non-blocking):', profileRes.error.message)
     }
 
     return {
@@ -270,8 +319,12 @@ export const getCurrentUserProfile = cache(async () => {
       isBanned: !!data?.is_banned,
       isAdmin: !!adminData
     }
-  } catch (err) {
-    // Silent fail for dynamic server usage errors during build
+  } catch (err: any) {
+    if (err.message === 'Profile fetch timeout') {
+      console.error('CRITICAL: Profile fetch timed out - possible DB strain.')
+    } else {
+      console.warn('Auth Profile Error (non-blocking):', err.message)
+    }
     return null
   }
 })
@@ -2771,10 +2824,16 @@ export async function subscribeNewsletter(email: string) {
 }
 
 export async function submitCustomOrder(formData: any) {
-  const sanitizedData = sanitizeObject(formData)
-  if (!sanitizedData.name || !sanitizedData.email || !sanitizedData.description) {
-    return { success: false, error: 'Please fill in all required fields' }
+  const clientId = await getClientIdentifier()
+  const isAllowed = await checkActionRateLimit(clientId, 'custom_order', 3, 60)
+  if (!isAllowed) return { success: false, error: 'Too many requests. Please try again later.' }
+
+  const validated = CustomOrderSchema.safeParse(formData)
+  if (!validated.success) {
+    return { success: false, error: 'Invalid data: ' + validated.error.errors[0].message }
   }
+
+  const sanitizedData = sanitizeObject(validated.data)
 
   try {
     const client = await getAuthClient()
@@ -2783,11 +2842,7 @@ export async function submitCustomOrder(formData: any) {
       .insert([{
         ...sanitizedData,
         status: 'pending',
-        created_at: new Date().toISOString(),
-        // Add additional metadata if these columns don't exist,
-        // but typically Supabase expects these to be columns.
-        images: formData.images || [],
-        catalog_requested: formData.catalog_requested || false
+        created_at: new Date().toISOString()
       }])
 
     if (error) {
@@ -2807,46 +2862,27 @@ export async function submitCustomOrder(formData: any) {
 // BULK / WHOLESALE ORDERS
 // ============================================
 
-export async function submitBulkOrder(formData: {
-  businessName: string
-  contactName: string
-  email: string
-  phone: string
-  gstNumber?: string
-  message?: string
-  items: {
-    productId: string
-    productName: string
-    productImage: string
-    retailPrice: number
-    quantity: number
-  }[]
-}) {
-  const sanitized = sanitizeObject(formData)
+export async function submitBulkOrder(formData: any): Promise<ActionResponse> {
+  const clientId = await getClientIdentifier()
+  const isAllowed = await checkActionRateLimit(clientId, 'submit_bulk_order', 2, 60) // 2 inquires per hour
+  if (!isAllowed) return { success: false, error: 'Too many inquiries. Please try again later.' }
+
+  const validated = BulkOrderSchema.safeParse(formData)
+  if (!validated.success) {
+    return { success: false, error: 'Invalid inquiry: ' + validated.error.errors[0].message }
+  }
+
+  const { businessName, contactName, email, phone, gstNumber, message, items } = validated.data
+  const sanitizedMessage = sanitize(message || '')
+
   try {
-    // Validate required fields
-    if (!sanitized.businessName?.trim()) return { success: false, error: 'Business name is required' }
-    if (!sanitized.contactName?.trim()) return { success: false, error: 'Contact name is required' }
-    if (!sanitized.email?.trim() || !sanitized.email.includes('@')) return { success: false, error: 'Valid email is required' }
-    if (!sanitized.phone?.trim() || sanitized.phone.replace(/\D/g, '').length < 10) return { success: false, error: 'Valid phone number is required' }
-    if (!sanitized.items || sanitized.items.length === 0) return { success: false, error: 'Please add at least one product to your bulk order' }
-
-    // Validate minimum quantity per item
-    for (const item of formData.items) {
-      if (!item.quantity || item.quantity < 10) {
-        return { success: false, error: `Minimum quantity is 10 per product. "${item.productName}" has only ${item.quantity}.` }
-      }
-    }
-
     // Try to get authenticated user (optional - guests can also submit)
     let userId: string | null = null
     try {
       const client = await getAuthClient()
       const { data: { user } } = await client.auth.getUser()
       userId = user?.id || null
-    } catch {
-      // Guest submission
-    }
+    } catch { /* Guest submission */ }
 
     // Insert bulk order
     const { data: bulkOrder, error: orderError } = await supabaseServer
@@ -2903,15 +2939,16 @@ export async function submitBulkOrder(formData: {
 }
 
 export async function submitContact(formData: any) {
-  const headerList = await headers()
-  const ip = headerList.get('x-forwarded-for')?.split(',')[0] || headerList.get('x-real-ip') || 'unknown'
-
-  const isAllowed = await checkActionRateLimit(ip, 'contact_form', 3, 60) // 3 attempts per hour
+  const clientId = await getClientIdentifier()
+  const isAllowed = await checkActionRateLimit(clientId, 'contact_form', 3, 60) // 3 attempts per hour
   if (!isAllowed) return { success: false, error: 'Too many messages sent. Please wait or call us directly.' }
-  const sanitized = sanitizeObject(formData)
-  if (!sanitized.name || !sanitized.email || !sanitized.message) {
-    return { success: false, error: 'Please fill in all required fields' }
+
+  const validated = ContactSchema.safeParse(formData)
+  if (!validated.success) {
+    return { success: false, error: 'Invalid data: ' + validated.error.errors[0].message }
   }
+
+  const sanitized = sanitizeObject(validated.data)
 
   try {
     const client = await getAuthClient()
@@ -3119,6 +3156,10 @@ export async function syncLiveGoldRates() {
 }
 
 export async function searchProducts(query: string) {
+  const clientId = await getClientIdentifier()
+  const isAllowed = await checkActionRateLimit(clientId, 'search', 100, 10) // 100 searches per 10 mins
+  if (!isAllowed) return []
+
   try {
     if (!query || query.length < 2) return []
 

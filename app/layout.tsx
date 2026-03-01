@@ -186,21 +186,33 @@ export default async function RootLayout({
   const headerList = await headers()
   const pathname = headerList.get('x-pathname') || ''
   const isMaintenance = pathname === '/maintenance'
+  const isAdminPath = pathname.startsWith('/admin')
 
-  const [profile, marketingConfig, contactConfig, maintenanceConfig] = await Promise.all([
-    getCurrentUserProfile(),
-    getSiteSetting('marketing_config', {
-      banner_enabled: false,
-      banner_text: "Special Edition Heritage Collection - Now Live",
-      banner_link: "/collections"
-    }),
-    getSiteSetting('contact_config', {
-      phone: "+91 9391032677",
-      email: "support@aurerxa.com",
-      whatsapp: "+91 9391032677",
-      address: "Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605"
-    }),
-    getSiteSetting('maintenance_config', { is_enabled: false })
+  // Parallel fetch: Profile and Maintenance are usually needed for the guard/layout logic
+  const profilePromise = getCurrentUserProfile()
+  const maintenancePromise = getSiteSetting('maintenance_config', { is_enabled: false })
+
+  const marketingDefault = {
+    banner_enabled: false,
+    banner_text: "Special Edition Heritage Collection - Now Live",
+    banner_link: "/collections"
+  }
+  const contactDefault = {
+    phone: "+91 9391032677",
+    email: "support@aurerxa.com",
+    whatsapp: "+91 9391032677",
+    address: "Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605"
+  }
+
+  // Conditionally fetch marketing/contact only for public pages to speed up Admin transition
+  const marketingPromise = !isAdminPath ? getSiteSetting('marketing_config', marketingDefault) : Promise.resolve(marketingDefault)
+  const contactPromise = !isAdminPath ? getSiteSetting('contact_config', contactDefault) : Promise.resolve(contactDefault)
+
+  const [profile, maintenanceConfig, marketingConfig, contactConfig] = await Promise.all([
+    profilePromise,
+    maintenancePromise,
+    marketingPromise,
+    contactPromise
   ])
 
   const isAdmin = profile?.isAdmin

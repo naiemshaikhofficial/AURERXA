@@ -26,15 +26,16 @@ function LoginForm() {
     useEffect(() => {
         const checkSession = async () => {
             try {
-                // Timeout after 3s — if Supabase is slow, just show login form
+                // Tight timeout (2s) — if Supabase is slow, just show login form immediately
                 const sessionPromise = supabase.auth.getSession()
                 const result = await Promise.race([
                     sessionPromise,
-                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000))
                 ])
 
                 if (result && 'data' in result && result.data?.session?.user) {
                     const session = result.data.session
+                    // Fetch role safely with another small timeout or parallel fetch
                     const { data: adminData } = await supabase
                         .from('admin_users')
                         .select('role')
@@ -49,10 +50,10 @@ function LoginForm() {
                     } else {
                         window.location.href = '/'
                     }
-                    return // Don't hide spinner — we're redirecting
+                    return
                 }
             } catch (err) {
-                console.warn('Session check failed, showing login form:', err)
+                console.warn('Session check failed or timed out:', err)
             }
             setIsCheckingSession(false)
         }
