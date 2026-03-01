@@ -48,7 +48,11 @@ function CountdownTimer({ createdAt, onExpire }: { createdAt: string, onExpire?:
         }
 
         calculateTime()
-        timerRef.current = setInterval(calculateTime, 1000)
+        timerRef.current = setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                calculateTime()
+            }
+        }, 1000)
 
         return () => {
             if (timerRef.current) clearInterval(timerRef.current)

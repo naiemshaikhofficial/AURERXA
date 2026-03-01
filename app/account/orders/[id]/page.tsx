@@ -114,7 +114,11 @@ export default function OrderDetailPage() {
             }
 
             calculateTime()
-            timerRef.current = setInterval(calculateTime, 1000)
+            timerRef.current = setInterval(() => {
+                if (document.visibilityState === 'visible') {
+                    calculateTime()
+                }
+            }, 1000)
         }
 
         return () => {

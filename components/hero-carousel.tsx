@@ -77,14 +77,27 @@ export function HeroCarousel({ slides }: { slides: Slide[] }) {
         setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length)
     }, [slides.length])
 
-    // Auto-advance
+    // Visibility Tracking
+    const [isVisible, setIsVisible] = useState(true)
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsVisible(entry.isIntersecting),
+            { threshold: 0.1 }
+        )
+        if (containerRef.current) observer.observe(containerRef.current)
+        return () => observer.disconnect()
+    }, [containerRef])
+
+    // Auto-advance (Visibility & Interaction Optimized)
     useEffect(() => {
         if (isHovered || slides.length <= 1) return
         const timer = setInterval(() => {
-            nextSlide()
+            if (document.visibilityState === 'visible' && isVisible) {
+                nextSlide()
+            }
         }, 5000)
         return () => clearInterval(timer)
-    }, [isHovered, nextSlide, slides.length])
+    }, [isHovered, isVisible, nextSlide, slides.length])
 
     if (!slides || slides.length === 0) {
         console.log('HeroCarousel: Render skipped (no slides)')

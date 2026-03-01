@@ -383,10 +383,18 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
     // Handle scroll for sticky bar
     useEffect(() => {
+        let ticking = false
         const handleScroll = () => {
-            setScrolled(window.scrollY > 600)
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const shouldBeScrolled = window.scrollY > 600
+                    setScrolled(prev => prev !== shouldBeScrolled ? shouldBeScrolled : prev)
+                    ticking = false
+                })
+                ticking = true
+            }
         }
-        window.addEventListener('scroll', handleScroll)
+        window.addEventListener('scroll', handleScroll, { passive: true })
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
     const [reviews, setReviews] = useState<any[]>([])

@@ -78,18 +78,25 @@ export function RingSizeCalculatorClient() {
     }
 
     useEffect(() => {
+        let ticking = false
         const move = (e: MouseEvent | TouchEvent) => {
-            const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
-            const dx = clientX - dragStartX.current
-            if (isDraggingCard.current) {
-                setCardWidthPx(v => Math.max(200, Math.min(600, dragStartValue.current + dx)))
-            }
-            if (isDraggingRing.current) {
-                const newD = Math.max(80, Math.min(350, dragStartValue.current + dx))
-                setRingDiameterPx(newD)
-                const ppm = isCalibrated ? pixelsPerMm : 3.78
-                const dMm = newD / ppm
-                setResult(findClosestSize(dMm))
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX
+                    const dx = clientX - dragStartX.current
+                    if (isDraggingCard.current) {
+                        setCardWidthPx(v => Math.max(200, Math.min(600, dragStartValue.current + dx)))
+                    }
+                    if (isDraggingRing.current) {
+                        const newD = Math.max(80, Math.min(350, dragStartValue.current + dx))
+                        setRingDiameterPx(newD)
+                        const ppm = isCalibrated ? pixelsPerMm : 3.78
+                        const dMm = newD / ppm
+                        setResult(findClosestSize(dMm))
+                    }
+                    ticking = false
+                })
+                ticking = true
             }
         }
         const up = () => {
@@ -150,8 +157,8 @@ export function RingSizeCalculatorClient() {
                                 key={m.id}
                                 onClick={() => { setActiveMethod(m.id); setResult(null) }}
                                 className={`flex-1 py-5 px-3 flex flex-col items-center gap-1 text-center transition-all border-b-2 ${activeMethod === m.id
-                                        ? 'border-amber-500 text-amber-400'
-                                        : 'border-transparent text-white/30 hover:text-white/60 hover:border-white/10'
+                                    ? 'border-amber-500 text-amber-400'
+                                    : 'border-transparent text-white/30 hover:text-white/60 hover:border-white/10'
                                     }`}
                             >
                                 <span className="text-xl">{m.icon}</span>

@@ -27,24 +27,34 @@ export function CategoryNav() {
     const [isInteracting, setIsInteracting] = useState(false)
 
     useEffect(() => {
+        let ticking = false
         const handleScroll = () => {
-            const currentScrollY = window.scrollY
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const currentScrollY = window.scrollY
 
-            if (isInteracting) {
-                setIsVisible(true)
-                return
+                    if (isInteracting) {
+                        setIsVisible(true)
+                        ticking = false
+                        return
+                    }
+
+                    // More stable thresholds to prevent jitter
+                    if (currentScrollY < 10) {
+                        setIsVisible(true)
+                    } else if (Math.abs(currentScrollY - lastScrollY) > 5) { // Add delta threshold
+                        if (currentScrollY > lastScrollY && currentScrollY > 150) {
+                            setIsVisible(false)
+                        } else if (currentScrollY < lastScrollY - 20) {
+                            setIsVisible(true)
+                        }
+                    }
+
+                    setLastScrollY(currentScrollY)
+                    ticking = false
+                })
+                ticking = true
             }
-
-            // More stable thresholds to prevent jitter
-            if (currentScrollY < 10) {
-                setIsVisible(true)
-            } else if (currentScrollY > lastScrollY && currentScrollY > 150) {
-                setIsVisible(false)
-            } else if (currentScrollY < lastScrollY - 20) {
-                setIsVisible(true)
-            }
-
-            setLastScrollY(currentScrollY)
         }
 
         window.addEventListener('scroll', handleScroll, { passive: true })
