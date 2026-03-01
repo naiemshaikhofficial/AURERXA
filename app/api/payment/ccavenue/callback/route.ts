@@ -123,6 +123,32 @@ export async function POST(req: NextRequest) {
                 console.error(`[CCAvenue Callback] Update Error for Order ${order.order_number}:`, updateError);
             }
 
+            // Clear the user's cart after successful payment
+            // We need to fetch the user_id from the order since this is an API route (no auth cookies)
+            const { data: fullOrder } = await supabase
+                .from('orders')
+                .select('user_id, coupon_code')
+                .eq('id', internalOrderId)
+                .single();
+
+            if (fullOrder?.user_id) {
+                const { error: cartError } = await supabase
+                    .from('cart')
+                    .delete()
+                    .eq('user_id', fullOrder.user_id);
+
+                if (cartError) {
+                    console.error(`[CCAvenue Callback] Cart clear error for user ${fullOrder.user_id}:`, cartError);
+                } else {
+                    console.log(`[CCAvenue Callback] Cart cleared for user ${fullOrder.user_id}`);
+                }
+
+                // Increment coupon usage if applicable
+                if (fullOrder.coupon_code) {
+                    await supabase.rpc('increment_coupon_usage', { coupon_code: fullOrder.coupon_code });
+                }
+            }
+
             // Trigger invoice
             triggerOrderInvoice(internalOrderId).catch((err: any) => console.error('Invoice trigger error:', err));
 

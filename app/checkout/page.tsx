@@ -470,13 +470,6 @@ export default function CheckoutPage() {
                             transition={{ duration: 0.8, ease: "easeOut" }}
                             className="lg:col-span-2 space-y-12"
                         >
-                            {/* SEO-Friendly Header */}
-                            <section className="mb-12">
-                                <h1 className="text-3xl md:text-5xl font-serif font-bold tracking-tight mb-4">Secure Checkout</h1>
-                                <p className="text-muted-foreground uppercase tracking-[0.3em] text-[10px] md:text-xs">Finalizing Your Curated Collection</p>
-                            </section>
-
-                            <CheckoutSteps currentStep={2} />
                             {/* Delivery Address */}
                             <div className="bg-card/30 border border-border p-8 backdrop-blur-sm relative">
                                 {/* Honeypot for bot protection */}

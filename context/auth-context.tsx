@@ -126,17 +126,43 @@ export function AuthProvider({
 
     const signOut = async () => {
         try {
+            // 1. Immediately clear client-side state
             setUser(null)
             setProfile(null)
             setIsAdmin(false)
 
-            await supabase.auth.signOut()
-            const { signOutAction } = await import('@/app/actions')
-            await signOutAction()
+            // 2. Clear all localStorage data from previous session
+            try {
+                localStorage.removeItem('aurerxa_cart')
+                // Clear any other app-specific cached data
+                const keysToRemove: string[] = []
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i)
+                    if (key && (key.startsWith('aurerxa') || key.startsWith('sb-'))) {
+                        keysToRemove.push(key)
+                    }
+                }
+                keysToRemove.forEach(k => localStorage.removeItem(k))
+            } catch (e) {
+                // localStorage may not be available in some contexts
+            }
 
+            // 3. Sign out from Supabase client (clears in-memory session)
+            await supabase.auth.signOut()
+
+            // 4. Sign out from server (clears server-side cookies)
+            try {
+                const { signOutAction } = await import('@/app/actions')
+                await signOutAction()
+            } catch (e) {
+                // Server action may fail if session already expired, that's OK
+            }
+
+            // 5. Hard reload to fully reset all React state (contexts, refs, etc.)
             window.location.href = '/'
         } catch (error) {
             console.error('Sign out error:', error)
+            // Even on error, force a hard reload to clear state
             window.location.href = '/'
         }
     }

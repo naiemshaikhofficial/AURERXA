@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, Suspense, useEffect } from 'react'
+import { useState, Suspense, useEffect, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -17,6 +17,7 @@ function LoginForm() {
     const [error, setError] = useState<string | null>(null)
     const [isCheckingSession, setIsCheckingSession] = useState(true)
     const [showPassword, setShowPassword] = useState(false)
+    const [isPending, startTransition] = useTransition()
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -86,8 +87,10 @@ function LoginForm() {
             }
 
             // Use router.replace for a smooth SPA transition, followed by refresh to update server state
-            router.replace(redirectPath)
-            router.refresh()
+            startTransition(() => {
+                router.replace(redirectPath)
+                router.refresh()
+            })
         } catch (err: any) {
             setError(err.message || 'Failed to sign in')
         } finally {

@@ -87,7 +87,21 @@ export async function middleware(request: NextRequest) {
         )
 
         // Refresh session if expired - this is what ensures persistence
-        await supabase.auth.getUser()
+        // Wrap in timeout to prevent site from hanging if Supabase is slow
+        try {
+            await Promise.race([
+                supabase.auth.getUser(),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Auth timeout')), 3000)
+                )
+            ])
+        } catch (authError: any) {
+            // If auth times out or fails, still serve the page (guest experience)
+            // The client-side auth will handle re-authentication
+            if (authError?.message !== 'Auth timeout') {
+                console.warn('Middleware auth check failed:', authError?.message)
+            }
+        }
 
         // 3. Security Headers (Skip for payment callback to avoid framing/POST issues)
         if (!pathname.startsWith('/api/payment/ccavenue/callback')) {

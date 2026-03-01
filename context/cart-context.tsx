@@ -56,7 +56,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
             const { data } = supabase.auth.onAuthStateChange((event, session) => {
                 console.log('CartProvider: Auth state changed', { event, userId: session?.user?.id })
-                setUser(session?.user || null)
+
+                if (event === 'SIGNED_OUT') {
+                    // Immediately clear all cart state on sign-out
+                    setUser(null)
+                    setItems([])
+                    hasRefreshedRef.current = null // Reset so next login triggers a fresh fetch
+                    try {
+                        localStorage.removeItem('aurerxa_cart')
+                    } catch (e) { /* ignore */ }
+                } else {
+                    setUser(session?.user || null)
+                    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+                        // Reset ref so the useEffect below triggers a fresh cart load
+                        hasRefreshedRef.current = null
+                    }
+                }
             })
             authListener = data
         }
