@@ -66,12 +66,11 @@ export function Hero() {
       </div>
 
       {/* 3. Main Content - Refined Typography with Parallax */}
-      <motion.div
-        style={{ y: yText, opacity: opacityFade, translateZ: 0 }}
+      <div
         className="relative z-10 w-full max-w-7xl px-6 flex flex-col items-center justify-center text-center will-change-transform"
       >
         <div className="space-y-10">
-          {/* Logo Brand Mark - Removed motion wrapper for instant LCP */}
+          {/* Logo Brand Mark - Instant LCP */}
           <div className="mb-6 relative inline-block">
             <Image
               src="/logo-new-v2.png"
@@ -84,7 +83,6 @@ export function Hero() {
           </div>
 
           <div className="space-y-4">
-            {/* Elegant Headline - CSS Animation for instant render without JS block */}
             <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] font-serif font-black tracking-tighter text-foreground leading-[0.85] md:leading-[0.8] animate-in slide-in-from-bottom-4 fade-in duration-1000 ease-out">
               PURE<br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-200/40 via-blue-200/60 to-slate-400/40 italic">PRESTIGE</span>
@@ -95,19 +93,12 @@ export function Hero() {
             Handcrafted luxury. Timeless heritage.
           </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5, ease: PREMIUM_EASE }}
-            className="pt-8 md:pt-16"
-          >
-            <Link href="/collections" className="group relative inline-block px-8 sm:px-12 py-4 sm:py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[10px] sm:text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl" aria-label="Discover the Collection">
-              <span className="relative z-10">Discover Collection</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform [transition-duration:1500ms] ease-in-out" />
-            </Link>
-          </motion.div>
+          <Link href="/collections" className="group relative inline-block px-8 sm:px-12 py-4 sm:py-5 border border-primary/20 bg-primary/5 text-primary font-premium-sans text-[10px] sm:text-[11px] uppercase tracking-[0.4em] hover:bg-primary hover:text-primary-foreground transition-all duration-700 overflow-hidden shadow-2xl mt-8 md:mt-16" aria-label="Discover the Collection">
+            <span className="relative z-10">Discover Collection</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform [transition-duration:1500ms] ease-in-out" />
+          </Link>
         </div>
-      </motion.div>
+      </div>
 
     </section>
   )

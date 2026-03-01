@@ -21,7 +21,8 @@ const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-cormorant',
-  display: 'swap'
+  display: 'swap',
+  preload: true,
 })
 
 export const metadata: Metadata = {
@@ -349,6 +350,12 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
+        {/* DIAGNOSTIC MARKER */}
+        {process.env.NODE_ENV === 'development' && (
+          <div style={{ position: 'fixed', top: 2, right: 2, zIndex: 10000, background: 'red', color: 'white', padding: '2px 4px', fontSize: '8px', pointerEvents: 'none' }}>
+            CSR_OK {pathname}
+          </div>
+        )}
         {/* CCAvenue Integration replaces Razorpay */}
         <ThemeProvider
           attribute="class"
