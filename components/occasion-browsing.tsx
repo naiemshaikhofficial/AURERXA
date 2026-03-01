@@ -78,6 +78,7 @@ function OccasionCard({ occ, index }: { occ: typeof occasions[0] & { position?: 
                             src={sanitizeImagePath(occ.image)}
                             alt={occ.name}
                             fill
+                            priority={index === 0}
                             className="object-cover transition-transform duration-1000 group-hover:scale-105"
                             style={{ objectPosition: occ.position || 'center' }}
                             sizes="(max-width: 768px) 48vw, 40vw"
