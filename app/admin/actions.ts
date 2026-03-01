@@ -60,16 +60,19 @@ export const checkAdminRole = cache(async () => {
             return null
         }
 
-        const { data, error: roleError } = await client
-            .from('admin_users')
-            .select('role')
-            .eq('id', user.id)
-            .single()
+        // Cache the role check for 30 seconds to reduce CPU/DB load for polling
+        return getCached(`role:${user.id}`, 30, async () => {
+            const { data, error: roleError } = await client
+                .from('admin_users')
+                .select('role')
+                .eq('id', user.id)
+                .single()
 
-        if (roleError || !data) {
-            return null
-        }
-        return { userId: user.id, email: user.email, role: data.role as 'main_admin' | 'support_admin' | 'staff' | 'product_manager' }
+            if (roleError || !data) {
+                return null
+            }
+            return { userId: user.id, email: user.email, role: data.role as 'main_admin' | 'support_admin' | 'staff' | 'product_manager' }
+        })
     } catch (err) {
         return null
     }
@@ -470,55 +473,50 @@ export async function getAdminOrders(
 
 // Enhanced polling endpoint to get latest order details for notifications
 export async function getOrdersPollingData() {
-    const client = await getAuthClient()
     const admin = await checkAdminRole()
+    if (!admin) return null
 
-    if (!admin) {
-        return null
-    }
+    // Cache the entire polling payload for 10 seconds.
+    // This handles multiple admins/tabs hitting the server simultaneously.
+    return getCached('admin:polling:orders', 10, async () => {
+        const client = await getAuthClient()
 
-    // Get the absolute latest order with items and product names
-    const { data, error } = await client
-        .from('orders')
-        .select(`
-            id, 
-            order_number, 
-            status, 
-            total, 
-            updated_at, 
-            created_at,
-            order_items (
-                quantity,
-                products (
-                    name
+        // 1. Get total count (fastest check)
+        const { count, error: countError } = await client
+            .from('orders')
+            .select('*', { count: 'exact', head: true })
+
+        if (countError) console.error('DEBUG: Count error:', countError.message)
+
+        // 2. Get the absolute latest order with items and product names
+        // We only fetch minimal fields needed for notifications
+        const { data, error } = await client
+            .from('orders')
+            .select(`
+                id, 
+                order_number, 
+                status, 
+                total, 
+                updated_at, 
+                created_at,
+                order_items (
+                    quantity,
+                    products (name)
                 )
-            )
-        `)
-        .order('updated_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
+            `)
+            .order('updated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
 
-    if (error) {
-        console.error('DEBUG: Polling error:', error.message)
-        // If error is "JSON object requested, multiple (or no) rows returned", it means table is likely empty
-        // Return 0 count but null latestOrder
-    }
+        if (error) console.error('DEBUG: Polling error:', error.message)
 
-    // Also get total count to detect new orders specifically
-    const { count, error: countError } = await client
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-
-    if (countError) console.error('DEBUG: Count error:', countError.message);
-
-    const res = {
-        latestOrder: data || null,
-        latestId: data?.id || null,
-        latestTimestamp: data?.updated_at || data?.created_at || null,
-        totalOrders: count || 0,
-    }
-
-    return res
+        return {
+            latestOrder: data || null,
+            latestId: data?.id || null,
+            latestTimestamp: data?.updated_at || data?.created_at || null,
+            totalOrders: count || 0,
+        }
+    })
 }
 
 export async function getSingleOrderForNotification(orderId: string) {

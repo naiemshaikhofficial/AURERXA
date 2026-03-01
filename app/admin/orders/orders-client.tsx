@@ -64,6 +64,11 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
         let intervalId: ReturnType<typeof setInterval>
 
         const checkForUpdates = async () => {
+            // Optimization: Skip polling if the tab is hidden to save CPU/Network
+            if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+                return
+            }
+
             try {
                 const data = await getOrdersPollingData()
                 if (!data) return
@@ -107,7 +112,7 @@ export function OrdersClient({ initialOrders, total, adminRole }: { initialOrder
         }
 
         checkForUpdates()
-        intervalId = setInterval(checkForUpdates, 5000)
+        intervalId = setInterval(checkForUpdates, 15000) // Reduced frequency: 15s instead of 5s
         return () => clearInterval(intervalId)
     }, [router])
 

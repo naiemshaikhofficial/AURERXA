@@ -82,6 +82,11 @@ export function AdminNotifications() {
         let intervalId: ReturnType<typeof setInterval>
 
         const pollForChanges = async () => {
+            // Optimization: Skip polling if the tab is hidden to save CPU/Network
+            if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+                return
+            }
+
             try {
                 const data = await getOrdersPollingData()
                 if (!data) return
@@ -146,7 +151,7 @@ export function AdminNotifications() {
         }
 
         pollForChanges()
-        intervalId = setInterval(pollForChanges, 15000)
+        intervalId = setInterval(pollForChanges, 60000) // 60s (Slower backup for Realtime)
         return () => clearInterval(intervalId)
     }, [router, addNotification])
 
