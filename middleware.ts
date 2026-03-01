@@ -1,7 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Bot / scraper User-Agents to block
 const BLOCKED_UA_PATTERNS = [
     /sqlmap/i, /nikto/i, /nmap/i, /masscan/i, /zgrab/i,
     /python-requests\/(?!.*aurerxa)/i,
@@ -15,74 +14,72 @@ const BLOCKED_UA_PATTERNS = [
 export async function middleware(request: NextRequest) {
     const { pathname, searchParams } = request.nextUrl
 
-    // 0. BOT BLOCKING
+    // 1. Bot Blocking
     const ua = request.headers.get('user-agent') || ''
     if (BLOCKED_UA_PATTERNS.some(p => p.test(ua))) {
         return new NextResponse('Forbidden', { status: 403 })
     }
 
-    // 1. SKIP STATIC ASSETS
+    // 2. Static Assets Bypass
     const isAsset = /\.(?:ico|png|jpg|jpeg|gif|svg|webp|js|css|woff2?|webmanifest|json|txt|map)$/.test(pathname)
     if (pathname.startsWith('/_next') || isAsset || pathname.startsWith('/api/supabase')) {
-        const response = NextResponse.next()
-        response.headers.set('x-pathname', pathname)
-        return response
+        const res = NextResponse.next()
+        res.headers.set('x-pathname', pathname)
+        return res
     }
 
-    // 2. CREATE RESPONSE
+    // 3. Initialize Response & Supabase
     let response = NextResponse.next({
         request: {
-            headers: new Headers(request.headers),
+            headers: request.headers,
         },
     })
-    response.headers.set('x-pathname', pathname)
+
+    const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+            cookies: {
+                getAll() {
+                    return request.cookies.getAll()
+                },
+                setAll(cookiesToSet) {
+                    cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+                    response = NextResponse.next({
+                        request,
+                    })
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        response.cookies.set(name, value, {
+                            ...options,
+                            sameSite: 'lax',
+                            secure: process.env.NODE_ENV === 'production'
+                        })
+                    )
+                },
+            },
+            cookieOptions: {
+                name: 'sb-xquczexikijzbzcuvmqh-auth-token',
+                path: '/',
+            }
+        }
+    )
 
     try {
-        const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            {
-                cookies: {
-                    getAll() {
-                        return request.cookies.getAll()
-                    },
-                    setAll(cookiesToSet) {
-                        cookiesToSet.forEach(({ name, value, options }) => {
-                            request.cookies.set(name, value)
-                            response.cookies.set(name, value, {
-                                ...options,
-                                sameSite: 'lax',
-                                secure: process.env.NODE_ENV === 'production'
-                            })
-                        })
-                    },
-                },
-                cookieOptions: {
-                    name: 'sb-xquczexikijzbzcuvmqh-auth-token',
-                    path: '/',
-                }
-            }
-        )
-
-        // 3. AUTH CHECK WITH TIMEOUT
+        // 4. Auth Check with tight timeout
         const { data: { user } } = await Promise.race([
             supabase.auth.getUser(),
-            new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Auth Timeout')), 3000))
+            new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
         ]).catch(() => ({ data: { user: null } }))
 
-        // 4. REDIRECTION LOGIC (LOOP PROTECTED)
+        // 5. Redirection Logic
         const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup')
         const isAdminPage = pathname.startsWith('/admin')
 
         if (user) {
             if (isAuthPage) {
-                // Prevent redirecting back to an auth page
-                let redirectUrl = searchParams.get('redirect') || '/'
-                if (redirectUrl.startsWith('/login') || redirectUrl.startsWith('/signup')) {
-                    redirectUrl = '/'
-                }
-                const url = new URL(redirectUrl, request.url)
-                return NextResponse.redirect(url)
+                let redirectTo = searchParams.get('redirect') || '/'
+                if (redirectTo.includes('/login') || redirectTo.includes('/signup')) redirectTo = '/'
+                return NextResponse.redirect(new URL(redirectTo, request.url))
             }
         } else {
             if (isAdminPage) {
@@ -92,7 +89,8 @@ export async function middleware(request: NextRequest) {
             }
         }
 
-        // 5. SECURITY HEADERS
+        // 6. Finalize Response
+        response.headers.set('x-pathname', pathname)
         if (!pathname.startsWith('/api/payment/ccavenue/callback')) {
             response.headers.set('X-Frame-Options', 'DENY')
             response.headers.set('X-Content-Type-Options', 'nosniff')
@@ -100,8 +98,8 @@ export async function middleware(request: NextRequest) {
         }
 
         return response
-    } catch (error) {
-        console.error('Middleware Critical Error:', error)
+    } catch (e) {
+        console.error('Middleware Error:', e)
         return response
     }
 }

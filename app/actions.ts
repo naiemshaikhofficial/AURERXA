@@ -290,7 +290,12 @@ export async function checkPendingOrder(productId: string) {
 export const getCurrentUserProfile = cache(async () => {
   try {
     const client = await getAuthClient()
-    const { data: { user } } = await client.auth.getUser()
+
+    // 1. Get user with timeout to prevent RootLayout hang
+    const { data: { user } } = await Promise.race([
+      client.auth.getUser(),
+      new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Auth Timeout')), 4000))
+    ]).catch(() => ({ data: { user: null } }))
 
     if (!user) return null
 
