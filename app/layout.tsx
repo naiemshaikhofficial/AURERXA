@@ -188,6 +188,8 @@ export default async function RootLayout({
   const isMaintenance = pathname === '/maintenance'
   const isAdminPath = pathname.startsWith('/admin')
 
+  console.log(`[RootLayout] Path: ${pathname}, isAdminPath: ${isAdminPath}, isMaintenance: ${isMaintenance}`)
+
   // Parallel fetch: Profile and Maintenance are usually needed for the guard/layout logic
   const profilePromise = getCurrentUserProfile()
   const maintenancePromise = getSiteSetting('maintenance_config', { is_enabled: false })
@@ -208,12 +210,20 @@ export default async function RootLayout({
   const marketingPromise = !isAdminPath ? getSiteSetting('marketing_config', marketingDefault) : Promise.resolve(marketingDefault)
   const contactPromise = !isAdminPath ? getSiteSetting('contact_config', contactDefault) : Promise.resolve(contactDefault)
 
-  const [profile, maintenanceConfig, marketingConfig, contactConfig] = await Promise.all([
+  console.log('[RootLayout] Starting resilient data fetch...')
+  const results = await Promise.allSettled([
     profilePromise,
     maintenancePromise,
     marketingPromise,
     contactPromise
   ])
+
+  const profile = results[0].status === 'fulfilled' ? results[0].value : null
+  const maintenanceConfig = results[1].status === 'fulfilled' ? results[1].value : { is_enabled: false }
+  const marketingConfig = results[2].status === 'fulfilled' ? results[2].value : marketingDefault
+  const contactConfig = results[3].status === 'fulfilled' ? results[3].value : contactDefault
+
+  console.log(`[RootLayout] Resilient fetch complete. Profile: ${!!profile}, Maintenance: ${maintenanceConfig?.is_enabled}`)
 
   const isAdmin = profile?.isAdmin
   const isBanned = profile?.isBanned

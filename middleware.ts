@@ -29,9 +29,12 @@ export async function middleware(request: NextRequest) {
     }
 
     // 3. Initialize Response & Supabase
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-pathname', pathname)
+
     let response = NextResponse.next({
         request: {
-            headers: request.headers,
+            headers: requestHeaders,
         },
     })
 
@@ -45,8 +48,15 @@ export async function middleware(request: NextRequest) {
                 },
                 setAll(cookiesToSet) {
                     cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+
+                    // Crucial: Keep headers in sync when recreating response
+                    const syncHeaders = new Headers(request.headers)
+                    syncHeaders.set('x-pathname', pathname)
+
                     response = NextResponse.next({
-                        request,
+                        request: {
+                            headers: syncHeaders,
+                        },
                     })
                     cookiesToSet.forEach(({ name, value, options }) =>
                         response.cookies.set(name, value, {
@@ -71,14 +81,17 @@ export async function middleware(request: NextRequest) {
             new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
         ]).catch(() => ({ data: { user: null } }))
 
-        // 5. Redirection Logic
+        // 5. Redirection Logic (with loop prevention)
         const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup')
         const isAdminPage = pathname.startsWith('/admin')
 
         if (user) {
             if (isAuthPage) {
                 let redirectTo = searchParams.get('redirect') || '/'
-                if (redirectTo.includes('/login') || redirectTo.includes('/signup')) redirectTo = '/'
+                // Avoid infinite redirect if redirectTo is the same auth page
+                if (redirectTo === pathname || redirectTo.includes('/login') || redirectTo.includes('/signup')) {
+                    redirectTo = '/'
+                }
                 return NextResponse.redirect(new URL(redirectTo, request.url))
             }
         } else {
