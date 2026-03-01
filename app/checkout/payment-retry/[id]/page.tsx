@@ -96,7 +96,7 @@ export default function PaymentRetryPage() {
                 rzp.open()
             } else if (paymentResult.gateway === 'ccavenue') {
                 const cv = paymentResult as any
-                setPaymentData(cv)
+                setPaymentData({ ...cv, amount: order?.total || 0 })
                 setIsPaymentModalOpen(true)
                 setRetrying(false) // Reset loading state once modal opens
             } else if (paymentResult.gateway === 'free') {

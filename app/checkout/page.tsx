@@ -363,7 +363,7 @@ export default function CheckoutPage() {
                 const cv = paymentResult as any;
                 console.log('[DEBUG] Opening Branded Payment Modal...');
 
-                setPaymentData(cv);
+                setPaymentData({ ...cv, amount: total });
                 setIsPaymentModalOpen(true);
             } else if (paymentResult.gateway === 'free') {
                 // Zero-amount order — already confirmed server-side

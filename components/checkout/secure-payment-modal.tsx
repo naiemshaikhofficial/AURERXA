@@ -3,7 +3,7 @@
 import React, { useEffect, useCallback, useState } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Lock, X, ShieldCheck, Fingerprint, CreditCard, ArrowLeft, Sparkles, Shield } from 'lucide-react'
+import { Lock, X, ShieldCheck, Fingerprint, CreditCard, ArrowLeft, Sparkles, Shield, ChevronUp, User } from 'lucide-react'
 
 interface SecurePaymentModalProps {
     isOpen: boolean
@@ -38,7 +38,8 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
 
     if (!isOpen || !paymentData) return null;
 
-    const formattedAmount = (Number(paymentData.amount) || 0).toLocaleString('en-IN')
+    const amount = Number(paymentData.amount) || 0
+    const formattedAmount = amount.toLocaleString('en-IN')
     const iframeSrc = `${paymentData.actionUrl}&merchant_id=${paymentData.merchantId}&encRequest=${paymentData.encRequest}&access_code=${paymentData.accessCode}`
 
     return (
@@ -67,12 +68,13 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
                         flex flex-col lg:flex-row
                     "
                 >
-                    {/* ==================== LEFT SIDEBAR (Desktop Only) ==================== */}
+                    {/* ========================================================= */}
+                    {/* ============= DESKTOP LEFT SIDEBAR ====================== */}
+                    {/* ========================================================= */}
                     <div className="
                         hidden lg:flex flex-col
                         w-[300px] shrink-0
                         bg-gradient-to-b from-[#1a1510] via-[#15110d] to-[#0f0d0a]
-                        dark:from-[#1a1510] dark:via-[#15110d] dark:to-[#0f0d0a]
                         text-white relative overflow-hidden
                     ">
                         {/* Decorative glows */}
@@ -80,19 +82,11 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
                         <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-primary/10 blur-[80px] rounded-full" />
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-primary/5 blur-[60px] rounded-full" />
 
-                        {/* Content */}
                         <div className="relative z-10 flex flex-col h-full p-7">
                             {/* Brand */}
                             <div className="flex items-center gap-3 mb-8">
                                 <div className="w-10 h-10 rounded-xl border border-primary/30 bg-primary/10 flex items-center justify-center">
-                                    <Image
-                                        src="/logo-new-v2.png"
-                                        alt="AURERXA"
-                                        width={28}
-                                        height={28}
-                                        className="w-7 h-auto brightness-200"
-                                        priority
-                                    />
+                                    <Image src="/logo-new-v2.png" alt="AURERXA" width={28} height={28} className="w-7 h-auto brightness-200" priority />
                                 </div>
                                 <div>
                                     <h3 className="text-base font-serif font-bold text-white tracking-wide">AURERXA</h3>
@@ -142,7 +136,7 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
                                 </div>
                             </div>
 
-                            {/* Bottom brand mark */}
+                            {/* Bottom brand */}
                             <div className="mt-6 pt-5 border-t border-white/[0.06]">
                                 <div className="flex items-center gap-2">
                                     <Sparkles className="w-3 h-3 text-primary/50" />
@@ -152,74 +146,63 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
                         </div>
                     </div>
 
-                    {/* ==================== MOBILE HEADER ==================== */}
-                    <div className="lg:hidden relative overflow-hidden shrink-0">
-                        <div className="absolute inset-0 bg-gradient-to-br from-[#1a1510] via-[#15110d] to-[#0f0d0a]" />
-                        <div className="absolute -top-20 -right-20 w-48 h-48 bg-primary/15 blur-[80px] rounded-full" />
+                    {/* ========================================================= */}
+                    {/* ============= MOBILE: BRANDED TOP BAR =================== */}
+                    {/* ========================================================= */}
+                    <div className="lg:hidden shrink-0 bg-gradient-to-r from-[#1a1510] via-[#16120e] to-[#1a1510] relative overflow-hidden">
+                        {/* Subtle glow */}
+                        <div className="absolute -top-10 right-10 w-32 h-32 bg-primary/15 blur-[60px] rounded-full" />
 
-                        <div className="relative z-10 px-5 pt-12 pb-5">
-                            {/* Top Row */}
-                            <div className="flex items-center justify-between mb-4">
-                                <button onClick={onClose} className="flex items-center gap-2 text-white/60 hover:text-white transition-colors group">
-                                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                                    <span className="text-[10px] uppercase tracking-[0.2em] font-medium">Back</span>
+                        <div className="relative z-10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-3" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}>
+                            {/* Left: Back + Brand */}
+                            <div className="flex items-center gap-3">
+                                <button onClick={onClose} className="text-white/60 hover:text-white transition-colors p-1 -ml-1">
+                                    <ArrowLeft className="w-5 h-5" />
                                 </button>
-                                <div className="w-10 h-10 rounded-xl border border-primary/30 bg-primary/10 flex items-center justify-center">
-                                    <Image src="/logo-new-v2.png" alt="AURERXA" width={28} height={28} className="w-7 h-auto brightness-200" priority />
-                                </div>
-                            </div>
-
-                            {/* Brand + Amount */}
-                            <div className="flex items-end justify-between gap-4">
-                                <div className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="text-[9px] uppercase tracking-[0.35em] text-primary font-bold">AURERXA</span>
-                                        <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-lg border border-primary/30 bg-primary/10 flex items-center justify-center">
+                                        <Image src="/logo-new-v2.png" alt="A" width={22} height={22} className="w-[22px] h-auto brightness-200" priority />
                                     </div>
-                                    <h3 className="text-xl font-serif font-bold text-white leading-tight">
-                                        Secure <span className="text-primary italic">Payment</span>
-                                    </h3>
-                                </div>
-                                <div className="flex flex-col items-end">
-                                    <span className="text-[8px] text-white/40 uppercase tracking-[0.25em] mb-0.5">Amount</span>
-                                    <div className="flex items-baseline gap-0.5">
-                                        <span className="text-sm text-primary font-bold">₹</span>
-                                        <span className="text-2xl font-bold text-white tracking-tight tabular-nums">{formattedAmount}</span>
+                                    <div>
+                                        <h3 className="text-sm font-serif font-bold text-white leading-none mb-0.5">AURERXA</h3>
+                                        <div className="flex items-center gap-1">
+                                            <ShieldCheck className="w-2.5 h-2.5 text-emerald-400" />
+                                            <span className="text-[8px] uppercase tracking-[0.15em] text-emerald-400/80 font-medium">Trusted Business</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Security Pills */}
-                            <div className="flex items-center gap-2 mt-3">
-                                <div className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
-                                    <Lock className="w-2 h-2 text-emerald-400" />
-                                    <span className="text-[7px] uppercase tracking-wider text-emerald-400 font-semibold">SSL</span>
-                                </div>
-                                <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 border border-primary/20 rounded-full">
-                                    <ShieldCheck className="w-2 h-2 text-primary" />
-                                    <span className="text-[7px] uppercase tracking-wider text-primary font-semibold">PCI-DSS</span>
-                                </div>
+                            {/* Right: User icon */}
+                            <div className="w-9 h-9 rounded-full bg-white/10 border border-white/10 flex items-center justify-center">
+                                <User className="w-4 h-4 text-white/60" />
                             </div>
                         </div>
-                        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
                     </div>
 
-                    {/* ==================== RIGHT PANEL: PAYMENT IFRAME ==================== */}
-                    <div className="flex-1 flex flex-col min-w-0 min-h-0">
+                    {/* ========================================================= */}
+                    {/* ============= DESKTOP: RIGHT PANEL TOP BAR ============== */}
+                    {/* ========================================================= */}
+                    <div className="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
                         {/* Desktop Top Bar */}
                         <div className="hidden lg:flex items-center justify-between px-6 py-3.5 border-b border-border/50 bg-muted/30">
                             <h4 className="text-sm font-semibold text-foreground tracking-wide">Payment Options</h4>
                             <button
                                 onClick={onClose}
-                                className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors group"
+                                className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
                                 title="Close (ESC)"
                             >
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        {/* iFrame Container */}
-                        <div className="relative flex-1 min-h-0 overflow-hidden bg-white dark:bg-[#fafaf9]">
+                        {/* Mobile: "All Payment Options" label */}
+                        <div className="lg:hidden px-4 py-3 bg-background border-b border-border/30">
+                            <h4 className="text-sm font-semibold text-foreground">All Payment Options</h4>
+                        </div>
+
+                        {/* ===================== IFRAME CONTAINER ===================== */}
+                        <div className="relative flex-1 min-h-0 overflow-auto bg-white dark:bg-[#fafaf9]">
                             {/* Loading State */}
                             <AnimatePresence>
                                 {!iframeLoaded && (
@@ -230,15 +213,15 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
                                         className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-6 bg-white dark:bg-[#fafaf9]"
                                     >
                                         <div className="relative">
-                                            <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-full border-2 border-[#bf9b65]/10" />
-                                            <div className="absolute inset-0 w-16 h-16 lg:w-20 lg:h-20 rounded-full border-2 border-transparent border-t-[#bf9b65] animate-spin" />
+                                            <div className="w-14 h-14 lg:w-20 lg:h-20 rounded-full border-2 border-[#bf9b65]/10" />
+                                            <div className="absolute inset-0 w-14 h-14 lg:w-20 lg:h-20 rounded-full border-2 border-transparent border-t-[#bf9b65] animate-spin" />
                                             <div className="absolute inset-0 flex items-center justify-center">
-                                                <CreditCard className="w-6 h-6 lg:w-7 lg:h-7 text-[#bf9b65]/40" />
+                                                <CreditCard className="w-5 h-5 lg:w-7 lg:h-7 text-[#bf9b65]/40" />
                                             </div>
                                         </div>
                                         <div className="text-center px-8">
-                                            <p className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-[0.12em] mb-1.5">Connecting to Gateway</p>
-                                            <p className="text-[10px] text-[#999] uppercase tracking-[0.2em]">Establishing Secure Vault...</p>
+                                            <p className="text-xs lg:text-sm font-semibold text-[#1a1a1a] uppercase tracking-[0.12em] mb-1">Connecting to Gateway</p>
+                                            <p className="text-[9px] lg:text-[10px] text-[#999] uppercase tracking-[0.2em]">Establishing Secure Vault...</p>
                                         </div>
                                         <div className="flex items-center gap-1.5">
                                             {[0, 1, 2].map((i) => (
@@ -258,39 +241,85 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
                                 name="payment_iframe"
                                 id="payment_iframe"
                                 src={iframeSrc}
-                                className="relative z-10 w-full h-full border-none"
+                                className="relative z-10 w-full h-full border-none block"
+                                scrolling="auto"
                                 style={{ minHeight: '460px' }}
                                 title="AURERXA Secure Payment Gateway"
                                 onLoad={() => setIframeLoaded(true)}
                             />
                         </div>
 
-                        {/* Footer */}
-                        <div className="shrink-0 border-t border-border/50 bg-background lg:bg-muted/20">
-                            <div className="px-5 py-3 lg:px-6 lg:py-3.5 flex items-center justify-between">
-                                <div className="flex items-center gap-3 lg:gap-4">
+                        {/* ===================== DESKTOP FOOTER ===================== */}
+                        <div className="hidden lg:block shrink-0 border-t border-border/50 bg-muted/20">
+                            <div className="px-6 py-3.5 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-1.5 opacity-50">
                                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                                        <span className="text-[8px] lg:text-[9px] font-bold text-muted-foreground uppercase tracking-wider">PCI-DSS</span>
+                                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">PCI-DSS</span>
                                     </div>
                                     <div className="h-3.5 w-px bg-border" />
                                     <div className="flex items-center gap-1.5 opacity-50">
                                         <Lock className="w-3 h-3 text-muted-foreground" />
-                                        <span className="text-[8px] lg:text-[9px] font-bold text-muted-foreground uppercase tracking-wider">256-bit</span>
+                                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">256-bit</span>
                                     </div>
-                                    <div className="h-3.5 w-px bg-border hidden lg:block" />
-                                    <span className="hidden lg:inline text-[8px] uppercase tracking-wider text-muted-foreground/50 font-medium">Secured by AURERXA</span>
+                                    <div className="h-3.5 w-px bg-border" />
+                                    <span className="text-[8px] uppercase tracking-wider text-muted-foreground/50 font-medium">Secured by AURERXA</span>
                                 </div>
                                 <button
                                     onClick={onClose}
-                                    className="text-[9px] lg:text-[10px] uppercase font-bold tracking-[0.15em] text-muted-foreground hover:text-destructive transition-colors group flex items-center gap-2 py-1.5 px-3 rounded-md hover:bg-destructive/5"
+                                    className="text-[10px] uppercase font-bold tracking-[0.15em] text-muted-foreground hover:text-destructive transition-colors group flex items-center gap-2 py-1.5 px-3 rounded-md hover:bg-destructive/5"
                                 >
                                     <span>Cancel</span>
-                                    <kbd className="hidden lg:inline-flex h-4 min-w-[28px] items-center justify-center rounded border border-border bg-muted/50 px-1 text-[7px] font-mono text-muted-foreground group-hover:border-destructive/20">ESC</kbd>
+                                    <kbd className="inline-flex h-4 min-w-[28px] items-center justify-center rounded border border-border bg-muted/50 px-1 text-[7px] font-mono text-muted-foreground group-hover:border-destructive/20">ESC</kbd>
                                 </button>
                             </div>
-                            <div className="h-[env(safe-area-inset-bottom,0px)] bg-background lg:hidden" />
                         </div>
+                    </div>
+
+                    {/* ========================================================= */}
+                    {/* ============= MOBILE: STICKY BOTTOM BAR ================= */}
+                    {/* ========================================================= */}
+                    <div className="lg:hidden shrink-0 border-t border-border bg-[#0f0d0a] text-white">
+                        <div className="flex items-center justify-between px-5 py-3">
+                            {/* Amount */}
+                            <div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-sm text-primary font-bold">₹</span>
+                                    <span className="text-xl font-bold tracking-tight tabular-nums">{formattedAmount}</span>
+                                </div>
+                                <button className="flex items-center gap-1 text-[9px] uppercase tracking-[0.15em] text-primary/80 font-medium mt-0.5 hover:text-primary transition-colors">
+                                    View Details
+                                    <ChevronUp className="w-3 h-3" />
+                                </button>
+                            </div>
+
+                            {/* Cancel button */}
+                            <button
+                                onClick={onClose}
+                                className="bg-white/10 hover:bg-white/15 border border-white/10 text-white text-[10px] uppercase tracking-[0.2em] font-bold px-6 py-3 rounded-lg transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+
+                        {/* Trust badges row */}
+                        <div className="flex items-center justify-center gap-4 px-5 pb-3 pt-0">
+                            <div className="flex items-center gap-1 opacity-40">
+                                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                                <span className="text-[7px] uppercase tracking-wider text-white/60 font-bold">PCI-DSS</span>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-40">
+                                <Lock className="w-2.5 h-2.5 text-white/60" />
+                                <span className="text-[7px] uppercase tracking-wider text-white/60 font-bold">SSL-256</span>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-40">
+                                <Sparkles className="w-2.5 h-2.5 text-primary/60" />
+                                <span className="text-[7px] uppercase tracking-wider text-white/40 font-bold">AURERXA</span>
+                            </div>
+                        </div>
+
+                        {/* Safe area */}
+                        <div className="h-[env(safe-area-inset-bottom,0px)] bg-[#0f0d0a]" />
                     </div>
                 </motion.div>
             </motion.div>

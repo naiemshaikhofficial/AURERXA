@@ -141,7 +141,8 @@ export default function OrdersPage() {
                 rzp.open()
             } else if (paymentResult.gateway === 'ccavenue') {
                 const cv = paymentResult as any
-                setPaymentData(cv)
+                const matchedOrder = orders.find(o => o.id === orderId)
+                setPaymentData({ ...cv, amount: matchedOrder?.total || 0 })
                 setIsPaymentModalOpen(true)
                 setRetryingOrderId(null) // Reset loading state once modal opens
             } else {
