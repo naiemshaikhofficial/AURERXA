@@ -86,12 +86,28 @@ export async function middleware(request: NextRequest) {
             }
         )
 
-        // Refresh session if expired - required for Supabase SSR cookie management
-        // IMPORTANT: Do NOT wrap in timeout — the setAll callback in getUser() is what
-        // sets the cookies on the response. If we skip this, client-side auth breaks.
-        await supabase.auth.getUser()
+        // 3. REDIRECTION LOGIC
+        const { data: { user } } = await supabase.auth.getUser()
 
-        // 3. Security Headers (Skip for payment callback to avoid framing/POST issues)
+        // Redirect if authenticated away from login/signup
+        if (user && (pathname.startsWith('/login') || pathname.startsWith('/signup'))) {
+            // Check if admin to decide redirect path
+            const { data: adminData } = await supabase
+                .from('admin_users')
+                .select('role')
+                .eq('id', user.id)
+                .maybeSingle()
+
+            const redirectPath = request.nextUrl.searchParams.get('redirect') || (adminData ? '/admin' : '/')
+            return NextResponse.redirect(new URL(redirectPath, request.url))
+        }
+
+        // Redirect away from admin if NOT authenticated
+        if (!user && pathname.startsWith('/admin')) {
+            return NextResponse.redirect(new URL('/login?redirect=' + pathname, request.url))
+        }
+
+        // 4. Security Headers (Skip for payment callback to avoid framing/POST issues)
         if (!pathname.startsWith('/api/payment/ccavenue/callback')) {
             response.headers.set('X-Frame-Options', 'DENY')
             response.headers.set('X-Content-Type-Options', 'nosniff')

@@ -25,26 +25,36 @@ function LoginForm() {
 
     useEffect(() => {
         const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (session?.user) {
-                // If already logged in, redirect based on role or params
-                const { data: adminData } = await supabase
-                    .from('admin_users')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .maybeSingle()
+            try {
+                // Timeout after 3s — if Supabase is slow, just show login form
+                const sessionPromise = supabase.auth.getSession()
+                const result = await Promise.race([
+                    sessionPromise,
+                    new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+                ])
 
-                const redirectPath = searchParams.get('redirect') || searchParams.get('next')
-                if (redirectPath) {
-                    router.replace(redirectPath)
-                } else if (adminData) {
-                    router.replace('/admin')
-                } else {
-                    router.replace('/')
+                if (result && 'data' in result && result.data?.session?.user) {
+                    const session = result.data.session
+                    const { data: adminData } = await supabase
+                        .from('admin_users')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .maybeSingle()
+
+                    const redirectPath = searchParams.get('redirect') || searchParams.get('next')
+                    if (redirectPath) {
+                        window.location.href = redirectPath
+                    } else if (adminData) {
+                        window.location.href = '/admin'
+                    } else {
+                        window.location.href = '/'
+                    }
+                    return // Don't hide spinner — we're redirecting
                 }
-            } else {
-                setIsCheckingSession(false)
+            } catch (err) {
+                console.warn('Session check failed, showing login form:', err)
             }
+            setIsCheckingSession(false)
         }
         checkSession()
     }, [router, searchParams])
