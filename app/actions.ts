@@ -58,6 +58,19 @@ function _cacheSet<T>(key: string, value: T): void {
 }
 
 /**
+ * Generic TTL Cache for server actions (In-Memory)
+ */
+async function getCached<T>(key: string, ttlSeconds: number, fetcher: () => Promise<T>): Promise<T> {
+  const now = Date.now()
+  const cached = _lookupCache.get(key)
+  if (cached && cached.expiresAt > now) return Promise.resolve(cached.value as T)
+  return fetcher().then(data => {
+    _lookupCache.set(key, { value: data, expiresAt: now + ttlSeconds * 1000 })
+    return data
+  })
+}
+
+/**
  * Fetches a dynamic setting from the site_settings table with Next.js caching.
  */
 export async function getSiteSetting<T>(key: string, defaultValue: T): Promise<T> {
@@ -1912,15 +1925,20 @@ export async function getAddresses() {
   const { data: { user } } = await client.auth.getUser()
   if (!user) return []
 
-  const { data, error } = await client
-    .from('addresses')
-    .select('id, label, full_name, phone, street_address, city, state, pincode, is_default')
-    .eq('user_id', user.id)
-    .order('is_default', { ascending: false })
-    .order('created_at', { ascending: false })
+  return getCached(`user:addresses:${user.id}`, 120, async () => {
+    const { data, error } = await client
+      .from('addresses') // Changed from 'user_addresses' to 'addresses' based on original code
+      .select('id, label, full_name, phone, street_address, city, state, pincode, is_default') // Changed from '*' to specific columns
+      .eq('user_id', user.id)
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false })
 
-  if (error) return []
-  return data
+    if (error) {
+      console.error('Error fetching addresses:', error)
+      return []
+    }
+    return data || []
+  })
 }
 
 export async function addAddress(addressData: {
@@ -2078,25 +2096,43 @@ export async function setDefaultAddress(addressId: string) {
 export async function getOrders() {
   const client = await getAuthClient()
   const { data: { user } } = await client.auth.getUser()
+
   if (!user) return []
 
-  // Lazy Cleanup: Delete pending orders older than 30 minutes
-  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
-  await client
-    .from('orders')
-    .delete()
-    .eq('user_id', user.id)
-    .eq('status', 'pending')
-    .lt('created_at', thirtyMinutesAgo)
+  // Cache orders for 30s to reduce load during page refreshes/navigation
+  return getCached(`user:orders:${user.id}`, 30, async () => {
+    // Lazy Cleanup: Delete pending orders older than 30 minutes
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+    await client
+      .from('orders')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('status', 'pending')
+      .lt('created_at', thirtyMinutesAgo)
 
-  const { data, error } = await client
-    .from('orders')
-    .select('id, order_number, status, total, created_at, payment_method, order_items(product_name, product_image, quantity, products(slug))')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+    const { data, error } = await client
+      .from('orders')
+      .select(`
+        *,
+        order_items (
+          *,
+          products (
+            name,
+            slug
+          )
+        ),
+        shipping_address
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
 
-  if (error) return []
-  return data
+    if (error) {
+      console.error('Error fetching orders:', error)
+      return []
+    }
+
+    return data || []
+  })
 }
 
 export async function getOrderById(orderId: string) {
@@ -2609,8 +2645,8 @@ export async function getOrderPaymentSession(orderId: string) {
       return { success: false, error: 'Payment window of 30 minutes has expired. Please place a new order.' }
     }
 
-    // Since our system usually creates a session during createOrder, 
-    // we'll return the the data needed for the client to initiate the payment again 
+    // Since our system usually creates a session during createOrder,
+    // we'll return the the data needed for the client to initiate the payment again
     // OR return a direct payment URL if applicable.
 
     return {
@@ -2638,14 +2674,19 @@ export async function getProfile() {
   const { data: { user } } = await client.auth.getUser()
   if (!user) return null
 
-  const { data, error } = await client
-    .from('profiles')
-    .select('id, full_name, phone_number, avatar_url')
-    .eq('id', user.id)
-    .single()
+  return getCached(`user:profile:${user.id}`, 60, async () => { // Cache for 60 seconds
+    const { data, error } = await client
+      .from('profiles')
+      .select('id, full_name, phone_number, avatar_url')
+      .eq('id', user.id)
+      .single()
 
-  if (error) return null
-  return { ...data, email: user.email }
+    if (error) {
+      console.error('Error fetching profile:', error)
+      return null
+    }
+    return { ...data, email: user.email }
+  })
 }
 
 export async function updateProfile(profileData: {
@@ -2713,7 +2754,7 @@ export async function submitCustomOrder(formData: any) {
         ...sanitizedData,
         status: 'pending',
         created_at: new Date().toISOString(),
-        // Add additional metadata if these columns don't exist, 
+        // Add additional metadata if these columns don't exist,
         // but typically Supabase expects these to be columns.
         images: formData.images || [],
         catalog_requested: formData.catalog_requested || false

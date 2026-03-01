@@ -97,6 +97,11 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
     }
 
     const pollNotifications = async () => {
+      // Optimization: Skip polling if the tab is hidden
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return
+      }
+
       try {
         const data = await getOrdersPollingData()
         if (!data) return
@@ -114,7 +119,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
     }
 
     pollNotifications()
-    const interval = setInterval(pollNotifications, 60000)
+    const interval = setInterval(pollNotifications, 180000) // 3 minutes for global badge
     return () => clearInterval(interval)
   }, [isAdmin, mounted, user])
 

@@ -36,6 +36,11 @@ export default function AdminConciergePage() {
     // Presence tracking — mark admin as active every 60s
     useEffect(() => {
         const updatePresence = async () => {
+            // Optimization: Skip presence updates if the tab is hidden
+            if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+                return
+            }
+
             try {
                 const { data: { user } } = await supabase.auth.getUser()
                 if (!user) return
