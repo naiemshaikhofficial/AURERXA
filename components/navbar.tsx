@@ -65,10 +65,13 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
     "Pendants",
   ]
 
+  // Rotating Search Terms Animation (Visibility Optimized)
   useEffect(() => {
     if (!mounted) return
     const interval = setInterval(() => {
-      setSearchTermIndex((prev) => (prev + 1) % searchTerms.length)
+      if (document.visibilityState === 'visible') {
+        setSearchTermIndex((prev) => (prev + 1) % searchTerms.length)
+      }
     }, 3000)
     return () => clearInterval(interval)
   }, [mounted, searchTerms.length])

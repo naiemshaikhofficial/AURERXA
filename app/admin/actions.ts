@@ -87,45 +87,55 @@ export const checkAdminRole = cache(async () => {
 // ============================================
 
 export async function getDashboardStats(dateFrom?: string, dateTo?: string) {
-    const client = await getAuthClient()
     const admin = await checkAdminRole()
     if (!admin) return null
+    const client = await getAuthClient()
 
-    const from = dateFrom || new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
-    const to = dateTo || new Date().toISOString()
+    // Cache key includes dates for correctness
+    const cacheKey = `dashboard:stats:${dateFrom || 'default'}:${dateTo || 'default'}`
 
-    return getCached(`stats:${from}:${to}`, 60, async () => {
-        const { data, error } = await client.rpc('get_dashboard_stats', {
-            date_from: from,
-            date_to: to
-        })
+    return getCached(cacheKey, 60, async () => {
+        // Optimized: Only fetch what we need for the overview
+        const from = dateFrom || new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
+        const to = dateTo || new Date().toISOString()
 
-        if (error || !data) {
-            console.error('RPC get_dashboard_stats failed, falling back to legacy fetch:', error)
-            return await getDashboardStatsLegacy(client, from, to)
-        }
+        try {
+            const { data, error } = await client.rpc('get_dashboard_stats', {
+                date_from: from,
+                date_to: to
+            })
 
-        return {
-            confirmedRevenue: Number(data.confirmedRevenue) || 0,
-            filteredRevenue: Number(data.filteredRevenue) || 0,
-            pendingRevenue: Number(data.pendingRevenue) || 0,
-            cancelledRevenue: Number(data.cancelledRevenue) || 0,
-            revenueGrowth: data.prevRevenue > 0 ? ((data.filteredRevenue - data.prevRevenue) / data.prevRevenue) * 100 : 0,
-            ordersGrowth: 0,
-            prevRevenue: Number(data.prevRevenue) || 0,
-            totalOrders: Number(data.totalOrders) || 0,
-            filteredOrders: Number(data.filteredOrders) || 0,
-            pendingOrders: Number(data.pendingOrders) || 0,
-            packedOrders: Number(data.packedOrders) || 0,
-            shippedOrders: Number(data.shippedOrders) || 0,
-            deliveredOrders: Number(data.deliveredOrders) || 0,
-            cancelledOrders: Number(data.cancelledOrders) || 0,
-            totalProducts: Number(data.totalProducts) || 0,
-            totalUsers: Number(data.totalUsers) || 0,
-            lowStockProducts: data.lowStockProducts || [],
+            if (error || !data) {
+                console.error('RPC get_dashboard_stats failed, falling back to legacy fetch:', error)
+                return await getDashboardStatsLegacy(client, from, to)
+            }
+
+            return {
+                confirmedRevenue: Number(data.confirmedRevenue) || 0,
+                filteredRevenue: Number(data.filteredRevenue) || 0,
+                pendingRevenue: Number(data.pendingRevenue) || 0,
+                cancelledRevenue: Number(data.cancelledRevenue) || 0,
+                revenueGrowth: data.prevRevenue > 0 ? ((data.filteredRevenue - data.prevRevenue) / data.prevRevenue) * 100 : 0,
+                ordersGrowth: 0,
+                prevRevenue: Number(data.prevRevenue) || 0,
+                totalOrders: Number(data.totalOrders) || 0,
+                filteredOrders: Number(data.filteredOrders) || 0,
+                pendingOrders: Number(data.pendingOrders) || 0,
+                packedOrders: Number(data.packedOrders) || 0,
+                shippedOrders: Number(data.shippedOrders) || 0,
+                deliveredOrders: Number(data.deliveredOrders) || 0,
+                cancelledOrders: Number(data.cancelledOrders) || 0,
+                totalProducts: Number(data.totalProducts) || 0,
+                totalUsers: Number(data.totalUsers) || 0,
+                lowStockProducts: data.lowStockProducts || [],
+            }
+        } catch (err) {
+            console.error('getDashboardStats Error:', err)
+            return null
         }
     })
 }
+
 
 // Fallback legacy function (Optimized to NOT fetch all fields)
 async function getDashboardStatsLegacy(client: any, from: string, to: string) {

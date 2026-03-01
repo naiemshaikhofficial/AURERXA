@@ -204,9 +204,22 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
         mouseY.set(200)
     }
 
-    // Auto-Cycle Logic (Faster on hover)
+    // Intersection Observer for performance
+    const [isVisible, setIsVisible] = useState(false)
+
     useEffect(() => {
-        if (allImages.length <= 1) return
+        if (!containerRef.current) return
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsVisible(entry.isIntersecting),
+            { threshold: 0.1 }
+        )
+        observer.observe(containerRef.current)
+        return () => observer.disconnect()
+    }, [])
+
+    // Auto-Cycle Logic (Faster on hover, only if visible)
+    useEffect(() => {
+        if (allImages.length <= 1 || !isVisible) return
 
         const intervalTime = isHovered ? 1200 : 4000
         const interval = setInterval(() => {
@@ -214,7 +227,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
         }, intervalTime + (index * 20))
 
         return () => clearInterval(interval)
-    }, [allImages.length, index, isHovered])
+    }, [allImages.length, index, isHovered, isVisible])
 
     return (
         <motion.div

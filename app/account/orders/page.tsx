@@ -9,7 +9,12 @@ import { Loader2, Package, ChevronRight, Search, Filter, X, Clock, CreditCard, R
 import supabaseLoader from '@/lib/supabase-loader'
 import { sanitizeImagePath } from '@/lib/utils'
 import { toast } from 'sonner'
-import SecurePaymentModal from '@/components/checkout/secure-payment-modal'
+import dynamic from 'next/dynamic'
+
+const SecurePaymentModal = dynamic(() => import('@/components/checkout/secure-payment-modal'), {
+    ssr: false,
+    loading: () => null
+})
 
 // Small sub-component for the live countdown timer
 function CountdownTimer({ createdAt, onExpire }: { createdAt: string, onExpire?: () => void }) {

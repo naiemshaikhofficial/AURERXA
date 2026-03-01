@@ -8,11 +8,6 @@ import dynamic from 'next/dynamic'
 import './globals.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
-
-// Defer non-critical interactive overlays (code-split via dynamic import)
-const MobileInstallPrompt = dynamic(() => import('@/components/mobile-install-prompt').then(mod => mod.MobileInstallPrompt))
-const NotificationManager = dynamic(() => import('@/components/notification-manager').then(mod => mod.NotificationManager))
-const CartSheet = dynamic(() => import('@/components/cart-sheet').then(mod => mod.CartSheet))
 import Script from 'next/script'
 import { GoogleAnalytics } from '@next/third-parties/google'
 
@@ -163,18 +158,25 @@ import { CategoryNav } from '@/components/category-nav'
 import { BottomNav } from '@/components/bottom-nav'
 import { AdminRouteGuard, AdminOnlyWrapper } from '@/components/admin-route-guard'
 import { ConsentProvider } from '@/context/consent-context'
-import { CookieConsent } from '@/components/cookie-consent'
 import { TrackingScripts } from '@/components/scripts/tracking'
-import { BehaviorTracker } from '@/components/behavior-tracker'
 import { getCurrentUserProfile, getSiteSetting } from '@/app/actions'
 import { redirect } from 'next/navigation'
-import { SearchModal } from '@/components/search-modal'
-import { DynamicTitle } from '@/components/dynamic-title'
 import { Footer } from '@/components/footer'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { ConciergeHub } from '@/components/concierge-hub'
-import { cn } from '@/lib/utils' // Added import
+import { cn } from '@/lib/utils'
 import { headers } from 'next/headers'
+
+// Dynamically load heavy client components (Named Exports)
+// Note: ssr: false is removed here because this is a Server Component.
+// These components already handle hydration gracefully via useEffect or isOpen checks.
+const SearchModal = dynamic(() => import('@/components/search-modal').then(mod => mod.SearchModal))
+const CartSheet = dynamic(() => import('@/components/cart-sheet').then(mod => mod.CartSheet))
+const MobileInstallPrompt = dynamic(() => import('@/components/mobile-install-prompt').then(mod => mod.MobileInstallPrompt))
+const NotificationManager = dynamic(() => import('@/components/notification-manager').then(mod => mod.NotificationManager))
+const CookieConsent = dynamic(() => import('@/components/cookie-consent').then(mod => mod.CookieConsent))
+const DynamicTitle = dynamic(() => import('@/components/dynamic-title').then(mod => mod.DynamicTitle))
+const BehaviorTracker = dynamic(() => import('@/components/behavior-tracker').then(mod => mod.BehaviorTracker))
 
 export default async function RootLayout({
   children,
