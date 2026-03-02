@@ -3,6 +3,8 @@ export interface ActionResponse<T = any> {
     data?: T
     error?: string
     message?: string
+    orderId?: string
+    count?: number
 }
 
 export interface ProductData {

@@ -196,8 +196,7 @@ export function ProductsClient({ initialProducts, total, initialCategories = [],
             setMessage({ type: 'success', text: 'Deleted' })
             if (editingProduct?.id === product.id) setEditingProduct(null)
             router.refresh()
-        } else {
-            setMessage({ type: 'error', text: res.error })
+            setMessage({ type: 'error', text: res.error || 'Failed to delete product' })
         }
         setDeleting(null)
         setTimeout(() => setMessage(null), 3000)

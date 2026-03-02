@@ -86,7 +86,9 @@ export async function GET(request: Request) {
             customerEmail: testEmail,
             shippingAddress: { line1: 'Test Address', city: 'Mumbai', state: 'Maharashtra', postal_code: '400001', phone: '+91 9999999999' },
             items: [{ name: 'Test Product', quantity: 1, size: 'M', price: 999 }],
-            subtotal: 999, shipping: 0, discount: 0, tax: 29, total: 999
+            subtotal: 999, shipping: 0, discount: 0, tax: 29, total: 999,
+            paymentMethod: 'Prepaid',
+            transactionNumber: 'TEST-TXN-123'
         })
         results.steps.push({ step: '4. PDF Generation', status: 'OK', sizeBytes: pdfBuffer.length })
     } catch (err: any) {
@@ -97,7 +99,13 @@ export async function GET(request: Request) {
     // Step 5: Generate HTML body
     let emailHtml: string
     try {
-        emailHtml = getInvoiceEmailHtml({ customerName: 'Test Customer', orderNumber: testOrderNumber, total: 999 })
+        emailHtml = getInvoiceEmailHtml({
+            customerName: 'Test Customer',
+            orderNumber: testOrderNumber,
+            total: 999,
+            transactionId: 'TEST-TXN-123',
+            paymentMethod: 'Prepaid'
+        })
         results.steps.push({ step: '5. Email HTML Template', status: 'OK', htmlLength: emailHtml.length })
     } catch (err: any) {
         results.steps.push({ step: '5. Email HTML Template', status: 'FAIL', error: err.message })

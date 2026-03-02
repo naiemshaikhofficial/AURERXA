@@ -65,7 +65,8 @@ export default function OrderDetailPage() {
 
                     if ((paymentStatus === 'success' || isSuccessParam) && data.status === 'pending') {
                         setVerifying(true)
-                        const verifyResult = await verifyPayment(params.id as string)
+                        const orderId = params.id as string
+                        const verifyResult = await verifyPayment(orderId)
                         if (verifyResult.success) {
                             // Refresh order data
                             const updatedData = await getOrderById(params.id as string)

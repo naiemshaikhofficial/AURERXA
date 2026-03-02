@@ -343,19 +343,19 @@ export default function CheckoutPage() {
 
             if (paymentMethod === 'cod') {
                 await refreshCart(true); // Clear Navbar icon
-                router.push(`/account/orders/${result.orderId}?success=true`);
+                router.push(`/account/orders/${result.orderId!}?success=true`);
                 return;
             }
 
             // Online Payment Flow
-            const paymentResult = await initiatePayment(result.orderId);
+            const paymentResult = await initiatePayment(result.orderId!);
             console.log('[DEBUG] initiatePayment result:', paymentResult.success ? 'Success' : 'Failure');
 
             if (!paymentResult.success) {
                 console.error('[DEBUG] Payment initiation failed:', paymentResult.error);
                 setError(paymentResult.error || 'Failed to initiate payment');
                 setPlacing(false);
-                router.push(`/checkout/payment-retry/${result.orderId}`); // Redirect on initiation failure
+                router.push(`/checkout/payment-retry/${result.orderId!}`); // Redirect on initiation failure
                 return;
             }
 

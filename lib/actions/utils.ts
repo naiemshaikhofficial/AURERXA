@@ -7,15 +7,26 @@ import {
     createSupabasePublicClient,
     createSupabaseAdminClient
 } from '@/lib/supabase-server'
+
+export {
+    createSupabaseServerClient,
+    createSupabasePublicClient,
+    createSupabaseAdminClient
+}
+
 import { GlobalConfig, ActionResponse } from './types'
 
 // Server-side Supabase client for static/public data (safe for unstable_cache)
 export const supabaseServer = createSupabasePublicClient()
 
 // Helper to get authenticated supabaseServer client
-export const getAuthClient = cache(async () => {
+const _getAuthClient = cache(async () => {
     return createSupabaseServerClient()
 })
+
+export async function getAuthClient() {
+    return _getAuthClient()
+}
 
 // Helper to get client ID for rate limiting
 export async function getClientIdentifier() {
@@ -167,7 +178,7 @@ export async function getGlobalConfig(): Promise<GlobalConfig> {
     try {
         if (process.env.EDGE_CONFIG) {
             const edgeConfig = await get('global_config')
-            if (edgeConfig) return edgeConfig as GlobalConfig
+            if (edgeConfig) return edgeConfig as unknown as GlobalConfig
         }
     } catch (e) { /* Fallback */ }
 
@@ -194,6 +205,23 @@ export async function getGlobalConfig(): Promise<GlobalConfig> {
         ['global-config'],
         { revalidate: 600, tags: ['settings', 'config'] }
     )()
+}
+
+export async function updateGlobalConfig(key: string, value: number): Promise<ActionResponse> {
+    const isAdmin = await checkIsAdmin()
+    if (!isAdmin) return { success: false, error: 'Unauthorized' }
+
+    try {
+        const { error } = await supabaseServer
+            .from('global_config')
+            .upsert({ key, value }, { onConflict: 'key' })
+
+        if (error) throw error
+        revalidateTag('config', 'page')
+        return { success: true }
+    } catch (err: any) {
+        return { success: false, error: err.message }
+    }
 }
 
 // =====================================================
@@ -248,9 +276,7 @@ export async function getGoldRates() {
 
 export async function forceSyncGoldRates() {
     const result = await syncLiveGoldRates();
-    if (result.success) {
-        revalidateTag('gold-rates');
-    }
+    revalidateTag('gold-rates', '')
     return result;
 }
 
@@ -331,10 +357,23 @@ export async function syncLiveGoldRates() {
             }
         }
 
-        revalidateTag('gold-rates');
+        revalidateTag('gold-rates', '')
         return { success: true, rates: results }
     } catch (err: any) {
         console.error('Multi-Metal Sync Error:', err)
+        return { success: false, error: err.message }
+    }
+}
+
+export async function subscribeNewsletter(email: string): Promise<ActionResponse> {
+    if (!email || !email.includes('@')) return { success: false, error: 'Invalid email' }
+    try {
+        const { error } = await supabaseServer
+            .from('newsletter_subscriptions')
+            .upsert({ email, subscribed_at: new Date().toISOString() }, { onConflict: 'email' })
+        if (error) throw error
+        return { success: true }
+    } catch (err: any) {
         return { success: false, error: err.message }
     }
 }

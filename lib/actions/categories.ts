@@ -5,7 +5,7 @@ import { supabaseServer, getAuthClient, checkIsAdmin } from './utils'
 import { ActionResponse } from './types'
 import { sanitizeObject } from '@/lib/sanitizer'
 
-export const getCategories = unstable_cache(
+const _getCategories = unstable_cache(
     async () => {
         const { data, error } = await supabaseServer
             .from('categories')
@@ -21,6 +21,10 @@ export const getCategories = unstable_cache(
     ['categories'],
     { revalidate: 86400, tags: ['categories'] }
 )
+
+export async function getCategories() {
+    return _getCategories()
+}
 
 export async function getSubCategories(categoryId?: string) {
     return unstable_cache(
@@ -98,4 +102,13 @@ export async function deleteSubCategory(id: string) {
 
     revalidateTag('sub-categories', '')
     return { success: true }
+}
+export async function getAllCategorySlugs() {
+    const { data, error } = await supabaseServer
+        .from('categories')
+        .select('slug')
+        .order('name')
+
+    if (error) return []
+    return data || []
 }

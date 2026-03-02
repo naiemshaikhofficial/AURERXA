@@ -12,3 +12,8 @@ export function logDiagnostic(category: string, message: string, data?: any) {
         console.log(`[DIAGNOSTIC] ${logEntry}`)
     }
 }
+
+export async function logError(error: any, metadata?: any) {
+    console.error('[SITE ERROR]', error, metadata)
+    // Optional: Log to database via server action if needed
+}

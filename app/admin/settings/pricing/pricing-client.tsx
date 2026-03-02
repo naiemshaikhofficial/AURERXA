@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { updateGlobalConfig } from '@/app/actions'
-import type { GlobalConfig } from '@/app/actions'
+import type { GlobalConfig } from '@/lib/actions/types'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Loader2, Save, Settings, TrendingUp, Package, Percent, Hammer } from 'lucide-react'

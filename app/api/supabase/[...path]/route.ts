@@ -105,8 +105,9 @@ async function handleProxy(request: NextRequest, path: string[]) {
         // Ensure CORS headers are present for the client
         responseHeaders.set("Access-Control-Allow-Origin", "*");
 
-        // Read body as array buffer
-        const data = await response.arrayBuffer();
+        // Read body as array buffer (only if status is not 304/204)
+        const hasNoBody = [204, 304].includes(response.status);
+        const data = hasNoBody ? null : await response.arrayBuffer();
 
         return new NextResponse(data, {
             status: response.status,

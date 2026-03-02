@@ -10,17 +10,34 @@ export async function getProfile() {
     if (!user) return null
 
     return getCached(`user:profile:${user.id}`, 60, async () => {
-        const { data, error } = await client
+        // 1. Fetch profile basics
+        const { data: profile, error: profileErr } = await client
             .from('profiles')
-            .select('id, full_name, phone_number, avatar_url')
+            .select('id, full_name, phone_number, avatar_url, is_banned')
             .eq('id', user.id)
             .single()
 
-        if (error) {
-            console.error('Error fetching profile:', error)
+        if (profileErr) {
+            console.error('Error fetching profile:', profileErr)
             return null
         }
-        return { ...data, email: user.email }
+
+        // 2. Fetch role from admin_users (if exists)
+        const { data: adminData } = await client
+            .from('admin_users')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        const role = adminData?.role || 'user'
+
+        return {
+            ...profile,
+            role,
+            email: user.email,
+            isAdmin: role === 'admin',
+            isBanned: profile.is_banned === true
+        }
     })
 }
 
@@ -73,4 +90,87 @@ export async function signOutAction() {
         console.error('Crash in signOutAction:', err)
         return { success: false, error: err.message || 'Internal server error' }
     }
+}
+export async function getAddresses() {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return []
+
+    const { data, error } = await client
+        .from('user_addresses')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false })
+
+    if (error) {
+        console.error('Error fetching addresses:', error)
+        return []
+    }
+    return data
+}
+
+export async function addAddress(address: any) {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    if (address.is_default) {
+        await client.from('user_addresses').update({ is_default: false }).eq('user_id', user.id)
+    }
+
+    const { data, error } = await client
+        .from('user_addresses')
+        .insert({ ...address, user_id: user.id })
+        .select()
+        .single()
+
+    if (error) return { success: false, error: error.message }
+    return { success: true, data }
+}
+
+export async function updateAddress(id: string, address: any) {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    if (address.is_default) {
+        await client.from('user_addresses').update({ is_default: false }).eq('user_id', user.id)
+    }
+
+    const { error } = await client
+        .from('user_addresses')
+        .update(address)
+        .eq('id', id)
+        .eq('user_id', user.id)
+
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+}
+
+export async function deleteAddress(id: string) {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    const { error } = await client
+        .from('user_addresses')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+}
+
+export async function setDefaultAddress(id: string) {
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    await client.from('user_addresses').update({ is_default: false }).eq('user_id', user.id)
+    const { error } = await client.from('user_addresses').update({ is_default: true }).eq('id', id).eq('user_id', user.id)
+
+    if (error) return { success: false, error: error.message }
+    return { success: true }
 }

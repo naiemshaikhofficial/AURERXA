@@ -24,3 +24,11 @@ export async function cleanupPendingOrders() {
     // Original maintenance logic...
     return { success: true }
 }
+
+export async function triggerAIContentIngestion() {
+    const isAdmin = await checkIsAdmin()
+    if (!isAdmin) return { success: false, error: "Requires Admin Role" }
+
+    const { runFullIngestion } = await import('@/lib/ai-knowledge')
+    return await runFullIngestion()
+}

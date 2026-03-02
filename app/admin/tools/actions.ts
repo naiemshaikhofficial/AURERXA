@@ -45,7 +45,7 @@ export async function clearCache(type: 'path' | 'tag' | 'all', value?: string) {
             return { success: true, message: `Path ${value} revalidated` }
         }
         if (type === 'tag' && value) {
-            revalidateTag(value)
+            ; (revalidateTag as any)(value)
             return { success: true, message: `Tag ${value} revalidated` }
         }
         return { success: false, error: 'Invalid parameters' }

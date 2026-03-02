@@ -119,9 +119,10 @@ export function ConciergeHub() {
 
         setTicketLoading(false)
         if (result.success) {
+            const ticketId = (result as { success: boolean; ticketId?: string }).ticketId;
             setMessages(prev => [...prev, {
                 role: 'System',
-                content: `Ticket created successfully! Reference: #${(result as any).ticketId?.slice(0, 8).toUpperCase() || 'PENDING'}. Our team will respond within 24 hours.`
+                content: `Ticket created successfully! Reference: #${ticketId?.slice(0, 8).toUpperCase() || 'PENDING'}. Our team will respond within 24 hours.`
             }])
             setTicketData({ subject: '', description: '', category: 'General' })
             setView('chat')

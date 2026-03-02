@@ -133,10 +133,10 @@ export function CustomOrderForm() {
         setIsCatalogRequested(false)
       } else {
         setStatus('error')
-        setMessage(result.error!)
+        setMessage(result.error || 'Submission failed')
         // Log to our new system
         const { logError } = await import('@/lib/logger')
-        await logError(new Error(result.error), { metadata: { form: 'CustomOrderForm' } })
+        await logError(new Error(result.error || 'Unknown error'), { metadata: { form: 'CustomOrderForm' } })
       }
     } catch (err: any) {
       console.error('Submit Error:', err)

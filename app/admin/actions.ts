@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers'
 import { cache } from 'react'
 import { createServerClient } from '@supabase/ssr'
-import { createDelhiveryShipment } from '../actions'
+import { createDelhiveryShipment } from '@/lib/actions/orders'
 import { refundOrder } from '@/lib/ccavenue'
 
 // UUID validation to prevent injection
@@ -51,7 +51,7 @@ const getAuthClient = cache(async () => {
 // AUTH & ROLE CHECKS
 // ============================================
 
-export const checkAdminRole = cache(async () => {
+const _checkAdminRole = cache(async () => {
     try {
         const client = await getAuthClient()
 
@@ -91,6 +91,10 @@ export const checkAdminRole = cache(async () => {
         return null
     }
 })
+
+export async function checkAdminRole() {
+    return _checkAdminRole()
+}
 
 // ============================================
 // DASHBOARD STATS

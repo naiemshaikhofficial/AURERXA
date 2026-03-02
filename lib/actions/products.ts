@@ -177,7 +177,7 @@ async function getDynamicPricingMap(opts: PricingOptions): Promise<Record<string
     return pricingMap
 }
 
-export const getBestsellers = unstable_cache(
+const _getBestsellers = unstable_cache(
     async () => {
         const { data, error } = await supabaseServer
             .from('products')
@@ -195,6 +195,10 @@ export const getBestsellers = unstable_cache(
     ['bestsellers'],
     { revalidate: 600, tags: ['products', 'bestsellers'] }
 )
+
+export async function getBestsellers() {
+    return _getBestsellers()
+}
 
 export async function getNewReleases(limit: number = 8) {
     return unstable_cache(
@@ -454,16 +458,6 @@ export async function getRelatedProducts(categoryId: string, currentProductId: s
     )()
 }
 
-export async function getAllProductSlugs() {
-    const { data } = await supabaseServer.from('products').select('slug')
-    return data?.map(p => p.slug) || []
-}
-
-export async function getAllCategorySlugs() {
-    const { data } = await supabaseServer.from('categories').select('slug')
-    return data?.map(c => c.slug) || []
-}
-
 export async function getHeroSlides() {
     return unstable_cache(
         async () => {
@@ -481,7 +475,7 @@ export async function getHeroSlides() {
     )()
 }
 
-export const getUsedTags = unstable_cache(
+const _getUsedTags = unstable_cache(
     async () => {
         try {
             const { data, error } = await supabaseServer
@@ -510,7 +504,11 @@ export const getUsedTags = unstable_cache(
     { revalidate: 3600, tags: ['products'] }
 )
 
-export const getGenderStats = unstable_cache(
+export async function getUsedTags() {
+    return _getUsedTags()
+}
+
+const _getGenderStats = unstable_cache(
     async () => {
         try {
             const g = ['men', 'women', 'unisex', 'kids']
@@ -533,3 +531,40 @@ export const getGenderStats = unstable_cache(
     ['gender-stats'],
     { revalidate: 3600, tags: ['products'] }
 )
+
+export async function getGenderStats() {
+    return _getGenderStats()
+}
+
+export async function getRecommendedProducts(productId: string, limit: number = 4) {
+    return unstable_cache(
+        async () => {
+            // 1. Get current product info
+            const { data: current } = await supabaseServer.from('products').select('category_id, tags').eq('id', productId).single()
+            if (!current) return []
+
+            // 2. Fetch similar products by category or tags
+            const { data: matches, error } = await supabaseServer
+                .from('products')
+                .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
+                .neq('id', productId)
+                .eq('material_type', 'silver')
+                .or(`category_id.eq.${current.category_id},tags.cs.{${current.tags?.join(',') || ''}}`)
+                .limit(limit)
+
+            if (error) return []
+            return matches || []
+        },
+        [`recommendations-${productId}`],
+        { revalidate: 86400, tags: ['products', 'recommendations'] }
+    )()
+}
+export async function getAllProductSlugs() {
+    const { data, error } = await supabaseServer
+        .from('products')
+        .select('slug, updated_at')
+        .order('created_at', { ascending: false })
+
+    if (error) return []
+    return data || []
+}

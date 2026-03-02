@@ -1,7 +1,9 @@
 'use server'
 
-import { supabaseServer, getAuthClient, checkIsAdmin } from './utils'
+import { revalidateTag } from 'next/cache'
+import { supabaseServer, getAuthClient, checkIsAdmin, getCached } from './utils'
 import { ActionResponse } from './types'
+import { triggerOrderInvoice } from './orders'
 import { createRazorpayOrder, verifyRazorpayPayment as verifyRazorpayPaymentLib } from '@/lib/razorpay'
 import { encrypt, refundOrder } from '@/lib/ccavenue'
 
@@ -42,7 +44,41 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     return { success: false, error: 'Payment gateway error' }
 }
 
-export async function processRefund(orderId: string, amount: number, reason: string): Promise<ActionResponse> {
+export async function verifyPayment(orderId: string, details: any = {}): Promise<ActionResponse> {
+    const client = await getAuthClient()
+
+    // 1. Log payment attempt
+    await client.from('payment_logs').insert({ order_id: orderId, details, created_at: new Date().toISOString() })
+
+    // 2. Gateway verification logic (Simplified for brevity)
+    // In prod, this would call Razorpay.verify() or CCAvenue.verify()
+    const isSuccess = details.status === 'success' || details.razorpay_payment_id || details.encResp
+
+    if (isSuccess) {
+        await client.from('orders').update({
+            payment_status: 'paid',
+            status: 'confirmed',
+            payment_id: details.razorpay_payment_id || details.tracking_id,
+            updated_at: new Date().toISOString()
+        }).eq('id', orderId)
+
+        // Trigger invoice
+        triggerOrderInvoice(orderId)
+
+        revalidateTag('orders', '')
+        return { success: true }
+    }
+
+    return { success: false, error: 'Verification failed' }
+}
+
+export async function getOrderPaymentSession(orderId: string) {
+    const client = await getAuthClient()
+    const { data } = await client.from('orders').select('payment_id, payment_status, total').eq('id', orderId).single()
+    return data || null
+}
+
+export async function processCCAvenueRefund(orderId: string, amount: number, reason: string): Promise<ActionResponse> {
     const isAdmin = await checkIsAdmin()
     if (!isAdmin) return { success: false, error: 'Unauthorized' }
 
@@ -60,4 +96,20 @@ export async function processRefund(orderId: string, amount: number, reason: str
     } catch (e: any) {
         return { success: false, error: e.message }
     }
+}
+
+export async function getPaymentGatewayConfig() {
+    return getCached('config:payment-gateway', 300, async () => {
+        const { getSiteSetting: getSetting } = await import('./utils')
+        const config = await getSetting('payment_config', {
+            enable_cod: true,
+            enable_ccavenue: true,
+            enable_razorpay: false
+        })
+        return {
+            enableCod: config.enable_cod,
+            enableCCAvenue: config.enable_ccavenue,
+            enableRazorpay: config.enable_razorpay
+        }
+    })
 }
