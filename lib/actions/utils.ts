@@ -360,7 +360,11 @@ export async function syncLiveGoldRates() {
             }
         }
 
-        revalidateTag('gold-rates', '')
+        // revalidateTag is a dynamic action and can't be called inside certain contexts (like unstable_cache sync)
+        // Since this is a background sync and results are written to DB, 
+        // they will naturally be picked up on the next cache revalidation.
+        // revalidateTag('gold-rates', '')
+
         return { success: true, rates: results }
     } catch (err: any) {
         console.error('Multi-Metal Sync Error:', err)
