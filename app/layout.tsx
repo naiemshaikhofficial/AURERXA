@@ -331,6 +331,10 @@ export default async function RootLayout({
       <head>
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL!} crossOrigin="" />
         <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL!} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
         <script
           type="application/ld+json"
@@ -418,13 +422,12 @@ export default async function RootLayout({
                       {/* <ConciergeHub /> - Hidden for now, kept for future use */}
 
                       <Toaster />
-                      <SpeedInsights />
-                      <Analytics />
-
-                      <GoogleAnalytics gaId="GT-WPLW7ZX3" />
-                      <CookieConsent />
-                      <TrackingScripts />
                       <Suspense fallback={null}>
+                        <SpeedInsights />
+                        <Analytics />
+                        <GoogleAnalytics gaId="GT-WPLW7ZX3" />
+                        <CookieConsent />
+                        <TrackingScripts />
                         <BehaviorTracker />
                       </Suspense>
                     </ErrorBoundary>
