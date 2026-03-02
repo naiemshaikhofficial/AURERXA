@@ -375,9 +375,10 @@ export async function syncLiveGoldRates() {
 export async function subscribeNewsletter(email: string): Promise<ActionResponse> {
     if (!email || !email.includes('@')) return { success: false, error: 'Invalid email' }
     try {
-        const { error } = await supabaseServer
-            .from('newsletter_subscriptions')
-            .upsert({ email, subscribed_at: new Date().toISOString() }, { onConflict: 'email' })
+        const adminClient = createSupabaseAdminClient()
+        const { error } = await adminClient
+            .from('newsletter_subscribers')
+            .upsert({ email }, { onConflict: 'email' })
         if (error) throw error
         return { success: true }
     } catch (err: any) {
