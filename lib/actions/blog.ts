@@ -8,7 +8,6 @@ const _getBlogPosts = unstable_cache(
         let query = supabaseServer
             .from('blog_posts')
             .select('*')
-            .eq('status', 'published')
             .order('published_at', { ascending: false })
 
         if (category && category !== 'All') {
@@ -36,7 +35,6 @@ const _getBlogPostBySlug = unstable_cache(
             .from('blog_posts')
             .select('*')
             .eq('slug', slug)
-            .eq('status', 'published')
             .single()
 
         if (error) return null
@@ -54,7 +52,6 @@ export async function getAllBlogSlugs() {
     const { data, error } = await supabaseServer
         .from('blog_posts')
         .select('slug, updated_at')
-        .eq('status', 'published')
 
     if (error) return []
     return data || []
