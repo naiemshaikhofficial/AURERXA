@@ -25,6 +25,7 @@ import { getProductReviews, getReviewStats } from '@/app/actions'
 import { ProductActions } from './product/product-actions'
 import { ProductHighlights } from './product/product-highlights'
 import { ProductReviewsSection } from './product/product-reviews-section'
+import { ProductSpecs } from './product/product-specs'
 
 
 interface ProductClientProps {
@@ -774,6 +775,12 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                             CachedVideo={CachedVideo}
                             MATERIAL_CONFIG={MATERIAL_CONFIG}
                             formatPurity={formatPurity}
+                        />
+
+                        {/* Automatic Specifications Table */}
+                        <ProductSpecs
+                            product={product}
+                            dynamicData={dynamicData}
                         />
 
                         <DeliveryChecker
