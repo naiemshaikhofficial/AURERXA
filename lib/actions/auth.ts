@@ -97,7 +97,7 @@ export async function getAddresses() {
     if (!user) return []
 
     const { data, error } = await client
-        .from('user_addresses')
+        .from('addresses')
         .select('*')
         .eq('user_id', user.id)
         .order('is_default', { ascending: false })
@@ -116,11 +116,11 @@ export async function addAddress(address: any) {
     if (!user) return { success: false, error: 'Unauthorized' }
 
     if (address.is_default) {
-        await client.from('user_addresses').update({ is_default: false }).eq('user_id', user.id)
+        await client.from('addresses').update({ is_default: false }).eq('user_id', user.id)
     }
 
     const { data, error } = await client
-        .from('user_addresses')
+        .from('addresses')
         .insert({ ...address, user_id: user.id })
         .select()
         .single()
@@ -135,11 +135,11 @@ export async function updateAddress(id: string, address: any) {
     if (!user) return { success: false, error: 'Unauthorized' }
 
     if (address.is_default) {
-        await client.from('user_addresses').update({ is_default: false }).eq('user_id', user.id)
+        await client.from('addresses').update({ is_default: false }).eq('user_id', user.id)
     }
 
     const { error } = await client
-        .from('user_addresses')
+        .from('addresses')
         .update(address)
         .eq('id', id)
         .eq('user_id', user.id)
@@ -154,7 +154,7 @@ export async function deleteAddress(id: string) {
     if (!user) return { success: false, error: 'Unauthorized' }
 
     const { error } = await client
-        .from('user_addresses')
+        .from('addresses')
         .delete()
         .eq('id', id)
         .eq('user_id', user.id)
@@ -168,8 +168,8 @@ export async function setDefaultAddress(id: string) {
     const { data: { user } } = await client.auth.getUser()
     if (!user) return { success: false, error: 'Unauthorized' }
 
-    await client.from('user_addresses').update({ is_default: false }).eq('user_id', user.id)
-    const { error } = await client.from('user_addresses').update({ is_default: true }).eq('id', id).eq('user_id', user.id)
+    await client.from('addresses').update({ is_default: false }).eq('user_id', user.id)
+    const { error } = await client.from('addresses').update({ is_default: true }).eq('id', id).eq('user_id', user.id)
 
     if (error) return { success: false, error: error.message }
     return { success: true }

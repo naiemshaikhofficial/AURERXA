@@ -23,7 +23,7 @@ export async function createOrder(addressId: string, paymentMethod: string, opti
         let shippingAddress = options.address;
         if (!shippingAddress && addressId) {
             const { data: addr } = await client
-                .from('user_addresses')
+                .from('addresses')
                 .select('*')
                 .eq('id', addressId)
                 .single()
