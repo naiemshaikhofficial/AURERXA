@@ -199,21 +199,28 @@ export async function getAdminOrders() {
     return data
 }
 
+const _getCachedOrderById = unstable_cache(
+    async (id: string, userId: string) => {
+        const adminClient = createSupabaseAdminClient()
+        const { data, error } = await adminClient
+            .from('orders')
+            .select('*, order_items(*)')
+            .eq('id', id)
+            .eq('user_id', userId)
+            .single()
+        if (error) return null
+        return data
+    },
+    ['order-detail'],
+    { revalidate: 300, tags: ['orders'] }
+)
+
 export async function getOrderById(id: string) {
-    return unstable_cache(
-        async () => {
-            const client = await getAuthClient()
-            const { data, error } = await client
-                .from('orders')
-                .select('*, order_items(*)')
-                .eq('id', id)
-                .single()
-            if (error) return null
-            return data
-        },
-        [`order-${id}`],
-        { revalidate: 300, tags: ['orders'] }
-    )()
+    const client = await getAuthClient()
+    const { data: { user } } = await client.auth.getUser()
+    if (!user) return null
+
+    return _getCachedOrderById(id, user.id)
 }
 
 // ============================================
