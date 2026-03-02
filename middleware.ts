@@ -11,7 +11,12 @@ const BLOCKED_UA_PATTERNS = [
     /petalbot/i,
 ]
 
-const PUBLIC_PATHS = ['/', '/login', '/signup', '/blogs', '/products', '/categories', '/search'];
+const PUBLIC_PATHS = [
+    '/', '/login', '/signup', '/blogs', '/products', '/categories', '/search',
+    '/our-story', '/about', '/contact', '/faq', '/privacy', '/terms',
+    '/returns', '/stores', '/size-guide', '/shipping', '/help',
+    '/collections', '/custom-jewelry', '/the-price-of-perfection'
+];
 
 export default async function proxy(request: NextRequest) {
     const { pathname, searchParams } = request.nextUrl

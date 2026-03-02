@@ -1,8 +1,13 @@
-'use client'
-
 import React from 'react'
 import { PolicyLayout } from '@/components/policy-layout'
 import { Shield, Eye, Lock, RefreshCw } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: 'Privacy Policy | Data Protection & Security | AURERXA',
+    description: 'Learn how AURERXA protects your personal information, specialized verification data, and ensures high-value jewelry transaction security.',
+    keywords: ['Privacy Policy', 'Data Security', 'Jewelry Transaction Security', 'KYC Guidelines India', 'PMLA Compliance', 'Secure Luxury Shopping']
+}
 
 export default function PrivacyPage() {
     return (

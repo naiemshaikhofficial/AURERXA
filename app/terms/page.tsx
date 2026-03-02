@@ -1,8 +1,13 @@
-'use client'
-
 import React from 'react'
 import { PolicyLayout } from '@/components/policy-layout'
 import { ShieldCheck, Scale, Gavel, Landmark } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: 'Terms & Conditions | Legal Heritage & Standards | AURERXA',
+    description: 'The definitive legal agreement for AURERXA fine jewelry. Covering authenticity guarantees, PMLA compliance, anti-fraud weight verification, and artisanal craftsmanship standards.',
+    keywords: ['Terms of Service', 'BIS Hallmarking Rules', 'PMLA Guidelines Jewelry', 'Authenticity Guarantee', 'Artisanal Production Disclaimer', 'Jewelry Legal Terms']
+}
 
 export default function TermsPage() {
     return (

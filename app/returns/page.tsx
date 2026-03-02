@@ -1,9 +1,14 @@
-'use client'
-
 import React from 'react'
 import { PolicyLayout } from '@/components/policy-layout'
 import { Truck, Clock, MapPin, Phone, ShieldAlert, Scale, Video, Ban, Gem, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+    title: 'Returns & Shipping Policy | Insured Delivery & Anti-Fraud | AURERXA',
+    description: 'Guidelines on luxury jewelry delivery, automated reverse pickups, mandatory unboxing protocols, and anti-fraud measures for your peace of mind.',
+    keywords: ['Jewelry Returns', 'Insured Shipping India', 'Free Shipping Jewelry', 'Reverse Pickup Logistics', 'Unboxing Protocol', 'Anti-Fraud Jewelry Policy']
+}
 
 export default function ReturnsShippingPage() {
     return (
@@ -18,112 +23,8 @@ export default function ReturnsShippingPage() {
                         ⚠️ DO NOT ACCEPT PARCELS IF THE SEAL IS BROKEN.
                     </p>
                     <p className="text-xs text-destructive/80">
-                        Broken seal = tampered product. Refuse delivery immediately and contact us.
+                        Broken seal = tampered product. Refuse delivery immediately and contact us. Refer to our <Link href="/shipping" className="underline">Shipping Policy</Link> for details.
                     </p>
-                </section>
-
-                {/* Step-by-Step Easy Return Guide */}
-                <section className="space-y-6">
-                    <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
-                        <Gem className="w-6 h-6 text-primary" />
-                        How to Return — Step by Step
-                    </h2>
-                    <p className="text-sm text-muted-foreground">Follow these simple steps for a hassle-free return experience.</p>
-
-                    <div className="grid gap-4">
-                        {[
-                            { step: 1, title: 'Record Unboxing Video', desc: 'Film a continuous, uncut video showing the sealed parcel, unboxing, and the issue clearly. This is mandatory for all return claims.' },
-                            { step: 2, title: 'Go to Your Order', desc: 'Navigate to Account → Orders → Select the delivered order you want to return.' },
-                            { step: 3, title: 'Click "Request Return"', desc: 'Select the issue type (Defective, Wrong Product, or Damaged in Transit), provide details, and submit within 24 hours of delivery.' },
-                            { step: 4, title: 'Wait for Review', desc: 'Our quality team will review your request within 24 hours. You\'ll see the status update on your order page in real-time.' },
-                            { step: 5, title: 'Reverse Pickup', desc: 'If approved, a Delhivery pickup will be auto-scheduled. Keep the product ready in its original packaging.' },
-                            { step: 6, title: 'Refund Processed', desc: 'After inspection, refund is credited to your original payment method within 5-7 business days.' }
-                        ].map((item) => (
-                            <div key={item.step} className="flex items-start gap-4 p-5 bg-card border border-border hover:border-primary/30 transition-all group">
-                                <div className="w-10 h-10 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center font-serif font-bold text-lg group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                                    {item.step}
-                                </div>
-                                <div>
-                                    <p className="font-medium text-foreground mb-1">{item.title}</p>
-                                    <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="bg-primary/5 border border-primary/20 p-6 text-center">
-                        <p className="text-sm text-muted-foreground mb-3">Ready to start a return?</p>
-                        <Link href="/account/orders" className="inline-block px-8 py-3 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-primary/90 transition-all">
-                            Go to My Orders →
-                        </Link>
-                    </div>
-                </section>
-
-                <hr className="border-border" />
-
-                <section className="space-y-8">
-                    <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
-                        <Truck className="w-6 h-6 text-primary" />
-                        Shipping & Delivery
-                    </h2>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-card border border-border p-6 h-full">
-                            <h3 className="font-medium text-foreground mb-3 flex items-center gap-2">
-                                <MapPin className="w-4 h-4 text-primary" />
-                                Secure Logistics
-                            </h3>
-                            <p className="text-sm text-muted-foreground leading-relaxed">
-                                Every AURERXA masterpiece is packaged in luxury tamper-evident boxes. All shipments are <strong className="text-foreground">fully insured</strong> and require a mandatory signature upon delivery. We ship globally with premium partners like Delhivery, Bluedart, and Sequel.
-                            </p>
-                        </div>
-                        <div className="bg-card border border-border p-6 h-full">
-                            <h3 className="font-medium text-foreground mb-3 flex items-center gap-2">
-                                <Clock className="w-4 h-4 text-primary" />
-                                Delivery Timelines
-                            </h3>
-                            <ul className="text-xs text-muted-foreground space-y-2">
-                                <li className="flex justify-between border-b border-border pb-1">
-                                    <span>Metro Cities</span>
-                                    <span className="text-foreground">3-5 business days</span>
-                                </li>
-                                <li className="flex justify-between border-b border-border pb-1">
-                                    <span>Tier-2 Cities</span>
-                                    <span className="text-foreground">5-7 business days</span>
-                                </li>
-                                <li className="flex justify-between">
-                                    <span>Other Locations</span>
-                                    <span className="text-foreground">7-10 business days</span>
-                                </li>
-                            </ul>
-                            <p className="mt-4 text-[10px] text-primary italic leading-tight">
-                                <strong className="text-foreground uppercase tracking-tighter">Artisanal Production Disclaimer:</strong><br />
-                                Most AURERXA masterpieces are <strong className="text-foreground">hand-forged and meticulously crafted by master artisans</strong>. By Placing an order, you acknowledge and agree that delivery timelines are <strong className="text-foreground underline">good-faith estimates only</strong>. Due to the high precision required for hand-setting stones and hallmarking, "Time is not of the essence." We prioritize absolute quality and certification over delivery speed.
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="bg-primary/5 border border-primary/20 p-6 space-y-4">
-                        <h3 className="font-medium text-foreground flex items-center gap-2">
-                            <Truck className="w-4 h-4 text-primary" />
-                            Non-Acceptance & RTO Policy
-                        </h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            If a delivery is rejected or refused by the recipient (Return to Origin - RTO) without a valid, verifiable reason (such as a broken seal documented at the door), <strong className="text-foreground">AURERXA reserves the absolute right to deduct all incurred logistics expenses</strong> from the final refund.
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                            These deductions include, but are not limited to:
-                        </p>
-                        <ul className="list-disc pl-5 text-[10px] text-muted-foreground space-y-1">
-                            <li>Premium high-value transit insurance charges</li>
-                            <li>Tamper-evident luxury packaging and handling costs</li>
-                            <li>Two-way dynamic shipping fees (Forward + Return)</li>
-                            <li>Applicable non-refundable payment gateway transaction fees</li>
-                        </ul>
-                        <p className="text-[10px] text-primary italic">
-                            * The remaining balance will be processed only after the product returns to our facility and clears a multi-stage purity and weight inspection.
-                        </p>
-                    </div>
                 </section>
 
                 <hr className="border-border" />

@@ -7,23 +7,22 @@ export default function robots(): MetadataRoute.Robots {
         rules: [
             {
                 userAgent: 'Googlebot-Image',
-                allow: '/',
+                allow: ['/api/supabase/proxy/', '/products/'],
                 disallow: ['/admin/', '/api/'],
             },
             {
-                userAgent: 'Googlebot',
-                allow: '/',
-                disallow: ['/admin/', '/api/', '/account/', '/checkout/', '/cart/', '/login/', '/signup/', '/forgot-password/', '/verify-email/', '/banned/'],
-            },
-            {
-                userAgent: 'Bingbot',
-                allow: '/',
-                disallow: ['/admin/', '/api/', '/account/', '/checkout/', '/cart/', '/login/', '/signup/'],
-            },
-            {
                 userAgent: '*',
-                allow: '/',
-                disallow: ['/admin/', '/api/', '/account/', '/checkout/', '/cart/', '/login/', '/signup/', '/forgot-password/', '/verify-email/', '/banned/'],
+                allow: [
+                    '/', '/products/', '/collections/', '/blogs/', '/our-story',
+                    '/about', '/contact', '/faq', '/privacy', '/terms',
+                    '/returns', '/stores', '/size-guide', '/shipping', '/help',
+                    '/custom-jewelry', '/the-price-of-perfection'
+                ],
+                disallow: [
+                    '/admin/', '/api/', '/account/', '/checkout/', '/cart/',
+                    '/login/', '/signup/', '/forgot-password/', '/verify-email/',
+                    '/banned/', '/maintenance/'
+                ],
             },
         ],
         sitemap: `${baseUrl}/sitemap.xml`,
