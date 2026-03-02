@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronRight, FileText, Shield, Truck, HelpCircle } from 'lucide-react'
+import { ChevronRight, FileText, Shield, Truck, HelpCircle, RefreshCcw, Package, Info } from 'lucide-react'
 
 interface PolicyLayoutProps {
     children: React.ReactNode
@@ -15,16 +15,19 @@ export function PolicyLayout({ children, title, description }: PolicyLayoutProps
     const pathname = usePathname()
 
     const navItems = [
+        { name: 'About Us', href: '/about', icon: Info },
         { name: 'Terms & Conditions', href: '/terms', icon: FileText },
         { name: 'Privacy Policy', href: '/privacy', icon: Shield },
+        { name: 'Shipping & Delivery', href: '/shipping', icon: Package },
         { name: 'Returns & Shipping', href: '/returns', icon: Truck },
+        { name: 'Refund & Cancellation', href: '/refund-policy', icon: RefreshCcw },
         { name: 'Help Center', href: '/help', icon: HelpCircle },
     ]
 
     return (
         <div className="min-h-screen bg-background text-foreground">
 
-            <main className="pb-24">
+            <main className="pt-32 pb-24">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="mb-12">

@@ -343,8 +343,9 @@ export function AboutClient() {
                 </section>
             </main>
 
-            <section className="pb-24 text-center opacity-30">
-                <span className="text-[9px] uppercase tracking-[0.6em] text-foreground">Aurerxa Promise</span>
+            <section className="pb-24 text-center opacity-30 space-y-2">
+                <span className="text-[9px] uppercase tracking-[0.6em] text-foreground block">Aurerxa Promise</span>
+                <span className="text-[8px] uppercase tracking-[0.4em] text-foreground/60 block">Legal Entity: Naiemoddin Nijamoddin Shaikh</span>
             </section>
         </div>
     )

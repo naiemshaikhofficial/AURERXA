@@ -14,7 +14,7 @@ export default function ReturnsShippingPage() {
     return (
         <PolicyLayout
             title="Returns & Shipping Policy"
-            description="Our guidelines on delivery, returns, and anti-fraud measures for high-value jewelry."
+            description="Our guidelines on delivery, returns, and anti-fraud measures for high-value jewelry by AURERXA (Legal Entity: Naiemoddin Nijamoddin Shaikh)."
         >
             <div className="space-y-12">
                 {/* Content Advisory */}

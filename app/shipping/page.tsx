@@ -13,7 +13,7 @@ export default function ShippingPage() {
     return (
         <PolicyLayout
             title="Shipping & Delivery"
-            description="Our standards for insured delivery and secure logistics of luxury jewelry."
+            description="Our standards for insured delivery and secure logistics of luxury jewelry by AURERXA (Legal Entity: Naiemoddin Nijamoddin Shaikh)."
         >
             <div className="space-y-12">
                 <section className="bg-primary/5 border border-primary/20 p-6 text-center space-y-2">
@@ -45,15 +45,15 @@ export default function ShippingPage() {
                             <ul className="text-xs text-muted-foreground space-y-2">
                                 <li className="flex justify-between border-b border-border pb-1">
                                     <span>Metro Cities</span>
-                                    <span className="text-foreground">3-5 business days</span>
+                                    <span className="text-foreground">3 to 5 business days</span>
                                 </li>
                                 <li className="flex justify-between border-b border-border pb-1">
-                                    <span>Tier-2 Cities</span>
-                                    <span className="text-foreground">5-7 business days</span>
+                                    <span>Rest of India</span>
+                                    <span className="text-foreground">5 to 7 business days</span>
                                 </li>
                                 <li className="flex justify-between">
-                                    <span>Other Locations</span>
-                                    <span className="text-foreground">7-10 business days</span>
+                                    <span>Making/Custom Time</span>
+                                    <span className="text-primary italic">Additional 2-5 days</span>
                                 </li>
                             </ul>
                         </div>
@@ -76,9 +76,12 @@ export default function ShippingPage() {
                 </section>
 
                 <section className="bg-card border border-border p-8 space-y-4">
-                    <h2 className="text-xl font-serif font-bold">The Art of Precision</h2>
+                    <h2 className="text-xl font-serif font-bold text-primary">The Art of Handcrafted Precision</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed italic">
-                        AURERXA masterpieces are meticulously hand-forged by master artisans. In the pursuit of absolute perfection and multi-stage purity certification, we prioritize artisanal excellence over standard logistics speed. Estimated timelines are provided as a commitment to quality, ensuring your piece arrives exactly as intended.
+                        By purchasing an AURERXA creation, you acknowledge the unique nature of acquiring <strong className="text-foreground">handcrafted fine jewelry</strong>. Every piece is meticulously hand-forged by master artisans, which means dispatch timelines are directly limited to making time for absolute perfection.
+                    </p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                        While we strive for prompt delivery, our multi-stage purity certification (HUID) and quality audits are paramount. Estimated shipping timelines (3-7 days) apply after the artisanal crafting process is complete. We prioritize heritage integrity over mass-market speed.
                     </p>
                 </section>
             </div>

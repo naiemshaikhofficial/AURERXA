@@ -19,7 +19,7 @@ export default function RefundPolicyPage() {
                 {/* Introduction */}
                 <section className="prose prose-invert max-w-none text-muted-foreground">
                     <p>
-                        At <strong className="text-foreground">AURERXA</strong>, we understand that luxury is not just about the masterpiece you receive, but also the peace of mind throughout your journey. Our Refund & Cancellation policy is designed to be as refined and transparent as our jewelry.
+                        At <strong className="text-foreground">AURERXA</strong> (Legal Entity Name: <strong className="text-foreground">Naiemoddin Nijamoddin Shaikh</strong>), we understand that luxury is not just about the masterpiece you receive, but also the peace of mind throughout your journey. Our Refund & Cancellation policy is designed to be as refined and transparent as our jewelry.
                     </p>
                 </section>
 

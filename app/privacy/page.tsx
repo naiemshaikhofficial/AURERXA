@@ -19,7 +19,7 @@ export default function PrivacyPage() {
                 <section>
                     <p className="text-muted-foreground text-sm italic">Last updated: February 17, 2026</p>
                     <p className="mt-6 text-sm text-muted-foreground leading-relaxed">
-                        Your privacy is of paramount importance to AURERXA. This policy outlines how we collect, use, and safeguard your data, including specialized verification data required for high-value jewelry transactions.
+                        Your privacy is of paramount importance to <strong className="text-foreground">AURERXA</strong> (Legal Entity Name: <strong className="text-foreground">Naiemoddin Nijamoddin Shaikh</strong>). This policy outlines how we collect, use, and safeguard your data, including specialized verification data required for high-value jewelry transactions.
                     </p>
                 </section>
 
