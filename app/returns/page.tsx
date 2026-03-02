@@ -17,13 +17,13 @@ export default function ReturnsShippingPage() {
             description="Our guidelines on delivery, returns, and anti-fraud measures for high-value jewelry."
         >
             <div className="space-y-12">
-                {/* Critical Warning */}
-                <section className="bg-destructive/10 border border-destructive/20 p-6 text-center space-y-2">
-                    <p className="text-destructive font-bold uppercase tracking-widest text-sm">
-                        ⚠️ DO NOT ACCEPT PARCELS IF THE SEAL IS BROKEN.
+                {/* Content Advisory */}
+                <section className="bg-primary/5 border border-primary/20 p-6 text-center space-y-2">
+                    <p className="text-primary font-bold uppercase tracking-widest text-sm">
+                        Verification of Seal Integrity
                     </p>
-                    <p className="text-xs text-destructive/80">
-                        Broken seal = tampered product. Refuse delivery immediately and contact us. Refer to our <Link href="/shipping" className="underline">Shipping Policy</Link> for details.
+                    <p className="text-xs text-muted-foreground leading-relaxed italic">
+                        To ensure the pristine condition of your AURERXA masterpiece, we advise inspecting the tamper-evident seal upon arrival. Should you notice any compromise in the packaging, we recommend declining the handover and notifying our concierge. Refer to our <Link href="/shipping" className="underline">Shipping Policy</Link> for detailed delivery standards.
                     </p>
                 </section>
 
@@ -66,51 +66,48 @@ export default function ReturnsShippingPage() {
 
                 <hr className="border-border" />
 
-                {/* Returns & Refund Policy */}
+                {/* Content Sections */}
                 <section className="space-y-8">
                     <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
                         <AlertTriangle className="w-6 h-6 text-primary" />
-                        Returns & Refund Policy
+                        Authenticity & Returns
                     </h2>
 
                     <div className="prose prose-invert max-w-none text-muted-foreground">
                         <p>
-                            At AURERXA, every piece of jewelry undergoes <strong className="text-foreground">rigorous quality inspection</strong> before dispatch. Given the high intrinsic value of these products, we maintain a <strong className="text-destructive">Strict No-Refund Policy</strong>. Returns are only considered in the following 3 verifiable cases:
+                            At AURERXA, every masterpiece is a symbol of our heritage, subjected to <strong className="text-foreground">rigorous multi-stage quality inspections</strong>. Given the high intrinsic value and handcrafted nature of our jewelry, returns are thoughtfully considered strictly for verified cases to ensure the integrity of our collections.
                         </p>
                     </div>
 
                     <div className="grid gap-4">
                         {[
-                            { title: 'Defective Product', desc: 'Manufacturing defect identified upon delivery.' },
-                            { title: 'Wrong Product', desc: 'Item received does not match your order details.' },
-                            { title: 'Damaged in Transit', desc: 'Damaged during shipping despite secure packaging.' }
+                            { title: 'Manufacturing Defect', desc: 'Identified and reported upon delivery.' },
+                            { title: 'Order Discrepancy', desc: 'Item received does not match your specific order details.' },
+                            { title: 'In-Transit Damage', desc: 'Verifiable damage sustained during secure transport.' }
                         ].map((item, i) => (
                             <div key={i} className="flex items-start gap-4 p-4 bg-muted/30 border border-border/50">
                                 <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-serif font-bold text-sm">{i + 1}</div>
                                 <div>
                                     <p className="font-medium text-foreground">{item.title}</p>
-                                    <p className="text-xs text-muted-foreground">{item.desc} (Must report within 24 hours)</p>
+                                    <p className="text-xs text-muted-foreground">{item.desc} (Verified within 24 hours of arrival)</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="bg-destructive/5 border border-destructive/20 p-6 space-y-4">
-                        <h3 className="font-medium text-destructive flex items-center gap-2">
+                    <div className="bg-primary/5 border border-primary/20 p-6 space-y-4">
+                        <h3 className="font-medium text-primary flex items-center gap-2">
                             <Scale className="w-4 h-4" />
-                            Anti-Fraud Weight & Purity Check
+                            Purity & Weight Verification
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                            Every return is subjected to <strong className="text-foreground">mandatory physical inspection</strong> including:
+                            To maintain the AURERXA standard of excellence, every return undergoes a mandatory custodial inspection:
                         </p>
                         <ul className="list-disc pl-5 text-xs text-muted-foreground space-y-2">
-                            <li><strong className="text-foreground">Purity Verification:</strong> We verify our embossed AURERXA logo, hallmark stamps, and <strong className="text-foreground">HUID (Hallmark Unique ID)</strong>.</li>
-                            <li><strong className="text-foreground">Hallmark Applicability:</strong> Please note that BIS Hallmarking is applicable only to 14K, 18K, 20K, 22K, 23K, and 24K Gold and certain Silver articles as per government norms. <strong className="text-foreground">Gold-plated, Bentex, Artificial jewelry, and fashion accessories do not carry a BIS Hallmark</strong> as they are not made entirely of precious metals.</li>
-                            <li><strong className="text-foreground">Verification Cross-Check:</strong> Any HUID mismatch or tampering with brand markings found against our records leads to immediate rejection of the return.</li>
-                            <li><strong className="text-foreground">Weight Accuracy (0.01g):</strong> If the returned weight is marginally less than the documented dispatch weight, it is treated as <strong className="text-destructive">criminal fraud</strong>.</li>
-                            <li><strong className="text-foreground">Third-Party Inspection:</strong> In cases of dispute, AURERXA reserves the right to send the product to an independent government-approved gemological laboratory for verification. The decision of the laboratory will be final and binding.</li>
-                            <li><strong className="text-destructive">Legal Recovery:</strong> In the event of documented fraud, the customer agrees to indemnify AURERXA for all costs incurred, including but not limited to forensic testing fees, legal representative fees, and administrative costs.</li>
-                            <li><strong className="text-foreground">Legal Action:</strong> Fraudulent activity will be prosecuted under <strong className="text-destructive">IPC Section 420</strong> (Cheating) and <strong className="text-destructive">IPC Section 406</strong> (Breach of Trust).</li>
+                            <li><strong className="text-foreground">Purity Audit:</strong> Verification of embossed AURERXA insignia, hallmark stamps, and <strong className="text-foreground">HUID (Hallmark Unique ID)</strong> records.</li>
+                            <li><strong className="text-foreground">Verification Cross-Check:</strong> Any discrepancy in HUID or brand marking versus our dispatch records will result in the return being ineligible.</li>
+                            <li><strong className="text-foreground">Weight Accuracy (Tolerance):</strong> We record weights at 0.01g precision. Any material discrepancy beyond standard artisanal tolerance will trigger an internal investigation.</li>
+                            <li><strong className="text-foreground">Independent Inspection:</strong> In rare cases of discrepancy, AURERXA reserves the right to consult a government-approved gemological laboratory. The laboratory's technical assessment will be considered final.</li>
                         </ul>
                     </div>
                 </section>

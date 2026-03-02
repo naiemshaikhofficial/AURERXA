@@ -60,15 +60,15 @@ export default function TermsPage() {
                 <section className="space-y-4 font-sans">
                     <h2 className="text-xl font-serif font-medium text-foreground flex items-center gap-3">
                         <Scale className="w-5 h-5 text-primary" />
-                        3. Anti-Fraud & Weight Verification
+                        3. Quality Verification & Integrity
                     </h2>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        To protect against the high risk of fraud in jewelry e-commerce, AURERXA implements a multi-stage verification process:
+                        To preserve the high risk-adjusted standards of luxury jewelry e-commerce, AURERXA maintains a rigorous custodial verification process:
                     </p>
                     <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
-                        <li><strong className="text-foreground">CCTV Documentation:</strong> All packing and unpacking processes are recorded under 24/7 CCTV surveillance to document the condition and presence of the product.</li>
-                        <li><strong className="text-foreground">Weight Recording:</strong> Products are weighed at 0.01g precision. This digital weight is recorded on all shipping documents and is non-negotiable for return verification.</li>
-                        <li><strong className="text-destructive">Legal Prosecution:</strong> Any attempt to return tampered, substituted, or weight-reduced items will be treated as <strong className="text-destructive">Criminal Breach of Trust (IPC Section 406)</strong> and <strong className="text-destructive">Cheating (IPC Section 420)</strong>. AURERXA will pursue maximum legal penalties and civil damages for any such attempts.</li>
+                        <li><strong className="text-foreground">CCTV Documentation:</strong> For your security, all packaging and inspection processes are conducted under 24/7 high-definition surveillance to certify the pristine condition of your masterpiece.</li>
+                        <li><strong className="text-foreground">Precision Weighting:</strong> Our creations are weighed at 0.01g precision. This documented digital weight serves as the definitive reference for authenticity and return eligibility.</li>
+                        <li><strong className="text-foreground">Preservation of Value:</strong> Any attempt to return altered, substituted, or tampered items will be viewed as a breach of your professional agreement with AURERXA. We reserve the right to seek civil damages and cooperate with professional regulatory bodies to protect our artisanal heritage.</li>
                     </ul>
                 </section>
 
@@ -86,14 +86,13 @@ export default function TermsPage() {
                 </section>
 
                 <section className="space-y-4">
-                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">5. Artisanal Production & Non-Negotiable Timelines</h2>
+                    <h2 className="text-xl font-serif font-medium text-foreground border-b border-border pb-2">5. Artisanal Production & Delivery Timelines</h2>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        By purchasing from AURERXA, you explicitly acknowledge that you are acquiring <strong className="text-foreground">handcrafted fine jewelry</strong>, which is not subject to mass-production speeds.
+                        By placing an order with AURERXA, you acknowledge the unique nature of acquiring <strong className="text-foreground">handcrafted fine jewelry</strong>, where precision takes precedence over mass-production speeds.
                     </p>
                     <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
-                        <li><strong className="text-foreground">Lead Times:</strong> Production timelines can vary based on the complexity of the design, purity certification (HUID), and raw material quality checks. </li>
-                        <li><strong className="text-foreground">No Guarantee on Speed:</strong> While we aim for prompt delivery, AURERXA shall not be liable for any damages, losses, or cancellations resulting from artisanal production delays.</li>
-                        <li><strong className="text-foreground">Time not of the Essence:</strong> You agree that "Time is not of the essence" for the delivery of our handcrafted products. Quality and purity verification take precedence over delivery urgency.</li>
+                        <li><strong className="text-foreground">Artisanal Lead Times:</strong> Production timelines reflect the complexity of design, multi-stage purity certification (HUID), and meticulous stone-setting.</li>
+                        <li><strong className="text-foreground">Commitment to Quality:</strong> While we strive for prompt delivery, you agree that quality and authenticity audits are paramount. Estimated timelines are provided in good faith, and we prioritize absolute perfection over delivery urgency.</li>
                     </ul>
                 </section>
 
@@ -125,7 +124,7 @@ export default function TermsPage() {
                         <li><strong className="text-foreground">Third-Party Liability:</strong> AURERXA is not liable for any payment failures, data breaches, or technical errors occurring on the third-party payment gateway&apos;s interface.</li>
                         <li><strong className="text-foreground">Transaction Charges:</strong> In the event of an approved cancellation or refund (customer-side), any <strong className="text-foreground">non-refundable payment gateway fees</strong> (typically 2-3%) charged by our service providers will be deducted from the final refund amount.</li>
                         <li><strong className="text-foreground">Price Volatility:</strong> Since the price of gold and silver fluctuates daily, the price at the moment of order placement is final. We will not honor refund requests based on subsequent price drops.</li>
-                        <li><strong className="text-foreground italic">Non-Acceptance (RTO) Charges:</strong> If a customer refuses to accept a high-value shipment without a verifiable reason (e.g., tampered seal), they agree to indemnify AURERXA for all non-recoverable costs. These costs, including but not limited to <strong className="text-foreground">custom luxury packaging, high-value insurance premiums, and two-way dynamic logistics fees</strong>, will be deducted from the eligible refund amount.</li>
+                        <li><strong className="text-foreground italic">Valued Shipments (RTO):</strong> If a shipment is returned to origin without a verifiable technical reason, AURERXA reserves the right to recover actual logistics losses. These dedicated costs, including <strong className="text-foreground font-medium">bespoke packaging, high-value transit insurance, and professional courier handling</strong>, will be deducted from the eligible refund amount to preserve the accessibility of our services for all patrons.</li>
                     </ul>
                 </section>
 

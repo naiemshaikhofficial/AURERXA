@@ -63,22 +63,22 @@ export default function ShippingPage() {
                 <section className="space-y-6">
                     <h2 className="text-2xl font-serif font-bold flex items-center gap-3">
                         <ShieldAlert className="w-6 h-6 text-primary" />
-                        Safe Delivery Protocol
+                        Secure Handover Protocol
                     </h2>
-                    <div className="bg-destructive/10 border border-destructive/20 p-6 space-y-4 text-center">
-                        <p className="text-destructive font-bold uppercase tracking-widest text-sm">
-                            ⚠️ DO NOT ACCEPT PARCELS IF THE SEAL IS BROKEN.
+                    <div className="bg-primary/5 border border-primary/20 p-6 space-y-4 text-center">
+                        <p className="text-primary font-bold uppercase tracking-widest text-sm italic">
+                            Verification of Seal Integrity
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                            If you notice any tampering, broken seal, or damage to the external packaging, refuse the delivery immediately and contact us. Once signed for, the responsibility of the package contents transfers to the recipient.
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                            For your protection, we recommend inspecting the tamper-evident seal upon handover. Should you notice any material discrepancy or compromise in the external packaging, we advise declining the delivery and notifying our concierge immediately. Your signature serves as confirmation of the parcel&apos;s external integrity.
                         </p>
                     </div>
                 </section>
 
                 <section className="bg-card border border-border p-8 space-y-4">
-                    <h2 className="text-xl font-serif font-bold">Artisanal Production Disclaimer</h2>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                        Most AURERXA masterpieces are <strong className="text-foreground">hand-forged and meticulously crafted by master artisans</strong>. Please acknowledge that delivery timelines are good-faith estimates. Due to the high precision required for hand-setting stones and hallmarking, quality takes precedence over speed.
+                    <h2 className="text-xl font-serif font-bold">The Art of Precision</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed italic">
+                        AURERXA masterpieces are meticulously hand-forged by master artisans. In the pursuit of absolute perfection and multi-stage purity certification, we prioritize artisanal excellence over standard logistics speed. Estimated timelines are provided as a commitment to quality, ensuring your piece arrives exactly as intended.
                     </p>
                 </section>
             </div>

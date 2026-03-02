@@ -63,21 +63,21 @@ export default function PrivacyPage() {
                     <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
                         <li>Processing and delivering your order securely.</li>
                         <li>Verifying authenticity and preventing fraudulent return attempts.</li>
-                        <li>Complying with legal requirements (PMLA/KYC) for high-value asset sales in India.</li>
-                        <li>Reporting suspicious transactions to the <strong className="text-foreground">Financial Intelligence Unit (FIU-IND)</strong>.</li>
+                        <li>Complying with regulatory excellence standards (PMLA/KYC) for high-value asset acquisitions.</li>
+                        <li>Fulfilling legal reporting obligations as mandated by national financial authorities.</li>
                     </ul>
                 </section>
 
                 <section className="space-y-4 border-t border-border pt-6">
-                    <h2 className="text-xl font-serif font-medium text-foreground">4. Disclosure to Third Parties & Law Enforcement</h2>
+                    <h2 className="text-xl font-serif font-medium text-foreground">4. Custodial Collaboration & Regulatory Compliance</h2>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        We do not sell your personal information. Data is only shared with:
+                        We respect your privacy and do not trade your personal information. Data is only shared with trusted entities to ensure the security of your purchase:
                     </p>
                     <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-2">
-                        <li><strong className="text-foreground">Secure Logistics Partners</strong> (for insured delivery).</li>
-                        <li><strong className="text-foreground">Law Enforcement Agencies (LEA):</strong> In cases of suspected fraud, weight tampering, or payment cheating, we will share all captured evidence (CCTV, logs, metadata) with relevant authorities for investigation and filing of an FIR.</li>
-                        <li><strong className="text-foreground">Regulatory Bodies:</strong> For PMLA compliance audits.</li>
-                        <li><strong className="text-foreground">Certified Laboratories:</strong> For authenticity cross-verification.</li>
+                        <li><strong className="text-foreground">Premier Logistics Partners:</strong> For white-glove, insured delivery services.</li>
+                        <li><strong className="text-foreground">Protective Authorities:</strong> In exceptional cases of material discrepancy or security concerns, we may share relevant custodial records (CCTV, logs) with authorized bodies to resolve the matter and preserve the integrity of our brand.</li>
+                        <li><strong className="text-foreground">Regulatory Excellence:</strong> For professional audits and PMLA compliance.</li>
+                        <li><strong className="text-foreground">Certified Laboratories:</strong> For technical authenticity cross-verification.</li>
                     </ul>
                 </section>
             </div>
