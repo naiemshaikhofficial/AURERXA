@@ -13,7 +13,7 @@ export default function ShippingPage() {
     return (
         <PolicyLayout
             title="Shipping & Delivery"
-            description="Our standards for insured delivery and secure logistics of luxury jewelry by AURERXA (Legal Entity: Naiemoddin Nijamoddin Shaikh)."
+            description="Legal Entity: Naiemoddin Nijamoddin Shaikh"
         >
             <div className="space-y-12">
                 <section className="bg-primary/5 border border-primary/20 p-6 text-center space-y-2">
