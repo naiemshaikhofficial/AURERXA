@@ -38,7 +38,7 @@ export default async function proxy(request: NextRequest) {
 
     // 2. Static Assets Bypass
     const isAsset = /\.(?:ico|png|jpg|jpeg|gif|svg|webp|js|css|woff2?|webmanifest|json|txt|map)$/.test(pathname)
-    if (pathname.startsWith('/_next') || isAsset || pathname.startsWith('/api/supabase')) {
+    if (pathname.startsWith('/_next') || isAsset || pathname.startsWith('/api/supabase') || pathname.startsWith('/api/proxy')) {
         const res = NextResponse.next()
         res.headers.set('x-pathname', pathname)
         return res
@@ -145,9 +145,9 @@ export default async function proxy(request: NextRequest) {
                 default-src 'self';
                 script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google-analytics.com https://*.googletagmanager.com https://*.vercel-scripts.com https://va.vercel-scripts.com;
                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-                img-src 'self' blob: data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com;
+                img-src 'self' blob: data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com https://imageshack.com https://*.imageshack.com https://imagizer.imageshack.com;
                 font-src 'self' data: https://fonts.gstatic.com;
-                connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://vitals.vercel-insights.com;
+                connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://vitals.vercel-insights.com https://imageshack.com https://*.imageshack.com;
                 frame-src 'self' https://*.ccavenue.com;
                 upgrade-insecure-requests;
             `.replace(/\s{2,}/g, ' ').trim();

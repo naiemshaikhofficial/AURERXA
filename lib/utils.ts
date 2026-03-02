@@ -17,6 +17,11 @@ export function sanitizeImagePath(url: string | null | undefined): string {
     }
   }
 
+  // If it's ImageShack, proxy it as well (ISP blocking common in India)
+  if (trimmed.includes('imageshack.com')) {
+    return `/api/proxy?url=${encodeURIComponent(trimmed)}`;
+  }
+
   if (trimmed.startsWith('http') || trimmed.startsWith('blob:')) return trimmed
 
   // Replace all backslashes with forward slashes, then collapse multiple slashes
