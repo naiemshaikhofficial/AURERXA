@@ -217,14 +217,13 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
         return () => observer.disconnect()
     }, [])
 
-    // Auto-Cycle Logic (Faster on hover, only if visible)
+    // Auto-Cycle Logic (Only if visible & hovered)
     useEffect(() => {
-        if (allImages.length <= 1 || !isVisible) return
+        if (allImages.length <= 1 || !isVisible || !isHovered) return
 
-        const intervalTime = isHovered ? 1200 : 4000
         const interval = setInterval(() => {
             setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
-        }, intervalTime + (index * 20))
+        }, 1200 + (index * 20))
 
         return () => clearInterval(interval)
     }, [allImages.length, index, isHovered, isVisible])
@@ -332,32 +331,23 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                     >
                         <motion.div
                             className="relative w-full h-full"
-                            drag="x"
-                            dragConstraints={{ left: 0, right: 0 }}
-                            onDragEnd={(_, info) => {
-                                if (allImages.length <= 1) return
-                                const swipeThreshold = 50
-                                if (info.offset.x < -swipeThreshold) {
-                                    setCurrentImageIndex((prev) => (prev + 1) % allImages.length)
-                                } else if (info.offset.x > swipeThreshold) {
-                                    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length)
-                                }
-                            }}
                         >
-                            <Image
-                                src={sanitizeImagePath(allImages[currentImageIndex])}
-                                alt={`${product.purity || ''} ${product.material_type ? MATERIAL_CONFIG[product.material_type].label : ''} ${product.name} - ${product.categories?.name || 'Jewellery'} by AURERXA`}
-                                fill
-                                priority={priority || index < 2}
-                                loader={supabaseLoader}
-                                className={cn(
-                                    "object-cover transition-transform duration-700 will-change-transform",
-                                    isHovered ? "scale-110" : "scale-100"
-                                )}
-                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                fetchPriority={priority || index < 2 ? "high" : "auto"}
-                                unoptimized={allImages[currentImageIndex]?.startsWith('blob:') || allImages[currentImageIndex]?.includes('imageshack.com')}
-                            />
+                            {(currentImageIndex === 0 || isHovered) && (
+                                <Image
+                                    src={sanitizeImagePath(allImages[currentImageIndex])}
+                                    alt={`${product.purity || ''} ${product.material_type ? MATERIAL_CONFIG[product.material_type].label : ''} ${product.name} - ${product.categories?.name || 'Jewellery'} by AURERXA`}
+                                    fill
+                                    priority={priority || index < 4}
+                                    loader={supabaseLoader}
+                                    className={cn(
+                                        "object-cover transition-transform duration-700 will-change-transform",
+                                        isHovered ? "scale-110" : "scale-100"
+                                    )}
+                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                    fetchPriority={priority || index < 4 ? "high" : "auto"}
+                                    unoptimized={allImages[currentImageIndex]?.startsWith('blob:') || allImages[currentImageIndex]?.includes('imageshack.com')}
+                                />
+                            )}
                         </motion.div>
                     </motion.div>
                 </AnimatePresence>
