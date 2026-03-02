@@ -184,6 +184,7 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
             <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
             <Link href="/returns" className="hover:text-foreground transition-colors">Returns</Link>
+            <Link href="/refund-policy" className="hover:text-foreground transition-colors text-primary font-bold">Refund Policy</Link>
             <Link href="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
           </div>
         </div>

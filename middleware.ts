@@ -13,8 +13,13 @@ const BLOCKED_UA_PATTERNS = [
 
 const PUBLIC_PATHS = [
     '/', '/login', '/signup', '/blogs', '/products', '/categories', '/search',
-    '/our-story', '/about', '/contact', '/faq', '/privacy', '/terms',
-    '/returns', '/stores', '/size-guide', '/shipping', '/help',
+    '/our-story', '/about', '/contact', '/faq',
+    '/privacy',
+    '/terms',
+    '/returns',
+    '/refund-policy',
+    '/stores',
+    '/size-guide', '/shipping', '/help',
     '/collections', '/custom-jewelry', '/the-price-of-perfection'
 ];
 
