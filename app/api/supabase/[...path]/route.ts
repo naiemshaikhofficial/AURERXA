@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = 'edge';
+
 // This is a proxy route to bypass Indian ISP blocking of supabase.co domains
 // It forwards requests from /api/supabase/* to https://<PROJECT_REF>.supabase.co/*
 // ONLY for use by the Next.js client-side application. 

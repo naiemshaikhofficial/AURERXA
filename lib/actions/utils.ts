@@ -255,12 +255,12 @@ export async function getGoldRates() {
 
                 const lastUpdated = lastUpdatedValue > 0 ? new Date(lastUpdatedValue).toISOString() : null
 
-                // Lazy Background Sync: If rates are older than 8 hours
-                const eightHoursAgo = Date.now() - (8 * 3600000)
-                const isStale = !data || data.length === 0 || lastUpdatedValue < eightHoursAgo
+                // PROACTIVE Background Sync: If rates are older than 4 hours (optimized from 8)
+                const STALE_THRESHOLD = 4 * 3600000
+                const isStale = !data || data.length === 0 || (Date.now() - lastUpdatedValue) > STALE_THRESHOLD
 
                 if (isStale) {
-                    syncLiveGoldRates().catch(err => console.error('Background sync failed:', err))
+                    syncLiveGoldRates().catch(err => console.error('[OPTIMIZATION] Background gold sync failed:', err))
                 }
 
                 return { rates: ratesObj, lastUpdated }
@@ -270,7 +270,10 @@ export async function getGoldRates() {
             }
         },
         ['gold-rates'],
-        { revalidate: 600, tags: ['rates'] }
+        {
+            revalidate: 3600, // Cache for 1 hour at the Next.js level
+            tags: ['rates']
+        }
     )()
 }
 

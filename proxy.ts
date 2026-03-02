@@ -11,7 +11,9 @@ const BLOCKED_UA_PATTERNS = [
     /petalbot/i,
 ]
 
-export async function middleware(request: NextRequest) {
+const PUBLIC_PATHS = ['/', '/login', '/signup', '/blogs', '/products', '/categories', '/search'];
+
+export default async function proxy(request: NextRequest) {
     const { pathname, searchParams } = request.nextUrl
 
     // 1. Bot Blocking
@@ -74,12 +76,22 @@ export async function middleware(request: NextRequest) {
         }
     )
 
+    // OPTIMIZATION: Skip deep auth check for public GET requests that aren't admin paths
+    const isPublicPath = PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
+    const isDashboard = pathname.startsWith('/admin') || pathname.startsWith('/account');
+
+    // Default to null user if it's a public path and not a dashboard/admin route
+    let user = null;
+
     try {
-        // 4. Auth Check with tight timeout
-        const { data: { user } } = await Promise.race([
-            supabase.auth.getUser(),
-            new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
-        ]).catch(() => ({ data: { user: null } }))
+        if (!isPublicPath || isDashboard) {
+            // 4. Auth Check with tight timeout
+            const { data: { user: authUser } } = await Promise.race([
+                supabase.auth.getUser(),
+                new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
+            ]).catch(() => ({ data: { user: null } }))
+            user = authUser;
+        }
 
         // 5. Redirection Logic (with loop prevention)
         const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup')
