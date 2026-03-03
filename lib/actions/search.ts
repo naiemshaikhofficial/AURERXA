@@ -17,7 +17,7 @@ export async function getFilteredProducts(options: any) {
                     const ck = `cat:${categorySlug}`
                     let catId = _cacheGet<string>(ck)
                     if (!catId) {
-                        const { data: cat } = await supabaseServer.from('categories').select('id').eq('slug', categorySlug).maybeSingle()
+                        const { data: cat } = await supabaseServer.from('categories').select('id').ilike('slug', categorySlug).maybeSingle()
                         if (cat) { _cacheSet(ck, cat.id); catId = cat.id }
                     }
                     if (catId) query = query.eq('category_id', catId)
@@ -89,8 +89,8 @@ export async function getFilteredProducts(options: any) {
                     } else {
                         query = query.eq('material_type', materialType)
                     }
-                } else if (!tagOrOccasion && !options.search && !categorySlug) {
-                    // Default to silver theme if no other major filter is present
+                } else if (!tagOrOccasion && !options.search && !categorySlug && !subCategorySlug) {
+                    // ONLY default to silver theme if NO other major filter is present at all
                     query = query.or(`material_type.eq.silver,material_type.is.null`)
                 }
 
