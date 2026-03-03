@@ -362,7 +362,7 @@ export async function checkDeliveryAvailability(pincode: string, productId?: str
         return {
             success: true,
             available: true,
-            location: 'India',
+            location: 'your location',
             estimatedDelivery,
             message
         }

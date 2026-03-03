@@ -926,15 +926,19 @@ export default function CheckoutPage() {
                                     {/* Estimated Delivery */}
                                     {selectedAddress && (
                                         <div className="space-y-4">
-                                            {cart.map((item) => (
-                                                <div key={item.id}>
-                                                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">{item.products?.name}</p>
-                                                    <DeliveryEstimate
-                                                        pincode={addresses.find((a: any) => a.id === selectedAddress)?.pincode}
-                                                        productId={item.products?.id}
-                                                    />
-                                                </div>
-                                            ))}
+                                            {cart.map((item) => {
+                                                const addr = addresses.find((a: any) => a.id === selectedAddress);
+                                                return (
+                                                    <div key={item.id}>
+                                                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">{item.products?.name}</p>
+                                                        <DeliveryEstimate
+                                                            pincode={addr?.pincode}
+                                                            productId={item.products?.id}
+                                                            location={addr ? `${addr.city}, ${addr.state}` : undefined}
+                                                        />
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>

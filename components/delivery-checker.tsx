@@ -256,7 +256,7 @@ export function DeliveryChecker({ product, cartItems, subtotal, compact = false,
 }
 
 // Compact version for checkout page - Premium Design
-export function DeliveryEstimate({ pincode, productId }: { pincode?: string, productId?: string }) {
+export function DeliveryEstimate({ pincode, productId, location }: { pincode?: string, productId?: string, location?: string }) {
     const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null)
 
     useEffect(() => {
@@ -267,6 +267,8 @@ export function DeliveryEstimate({ pincode, productId }: { pincode?: string, pro
 
     if (!deliveryInfo || !deliveryInfo.success || !deliveryInfo.available) return null
 
+    const displayLocation = location || deliveryInfo.location || `${deliveryInfo.city}${deliveryInfo.state ? `, ${deliveryInfo.state}` : ''}`
+
     return (
         <div className="flex flex-col gap-2 py-4 border-t border-white/10">
             <div className="flex items-center gap-4">
@@ -275,7 +277,7 @@ export function DeliveryEstimate({ pincode, productId }: { pincode?: string, pro
                 </div>
                 <div className="flex-1">
                     <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] mb-0.5">
-                        Estimated Delivery to <span className="text-white font-bold">{deliveryInfo.location || `${deliveryInfo.city}${deliveryInfo.state ? `, ${deliveryInfo.state}` : ''}`.toUpperCase()}</span>
+                        Estimated Delivery to <span className="text-white font-bold">{displayLocation.toUpperCase()}</span>
                     </p>
                     <p className="text-xs text-white uppercase tracking-wider font-bold">
                         {deliveryInfo.estimatedDelivery?.from} - {deliveryInfo.estimatedDelivery?.to}
