@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Filter, X, Check, ChevronDown, SlidersHorizontal, Diamond, Gem } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, sanitizeImagePath } from '@/lib/utils'
 
 export type FilterState = {
     category: string
@@ -175,7 +175,7 @@ export function CinematicFilter({
                             className="group flex items-center gap-2 px-6 py-3 bg-muted border border-border rounded-full hover:bg-foreground hover:text-background hover:border-foreground transition-all active:scale-95"
                         >
                             <img
-                                src="https://img.icons8.com/?size=100&id=82746&format=png&color=FFFFFF"
+                                src={sanitizeImagePath("https://img.icons8.com/?size=100&id=82746&format=png&color=FFFFFF")}
                                 alt="Filter"
                                 className="w-4 h-4 transition-all duration-300 group-hover:invert group-hover:rotate-180 opacity-60 group-hover:opacity-100 dark:invert-0 invert"
                             />
@@ -220,7 +220,7 @@ export function CinematicFilter({
                                             className="group flex items-center gap-2 text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-[0.2em] border-b border-border pb-px"
                                         >
                                             <img
-                                                src="https://img.icons8.com/?size=100&id=13054&format=png&color=BF9B65"
+                                                src={sanitizeImagePath("https://img.icons8.com/?size=100&id=13054&format=png&color=BF9B65")}
                                                 alt="Reset"
                                                 className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500"
                                             />
@@ -329,7 +329,7 @@ export function CinematicFilter({
                                                             <img
                                                                 src={type.iconId.startsWith('/')
                                                                     ? type.iconId
-                                                                    : `https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${(type.value === 'Kids' ? filters.gender === 'Kids' : filters.type === type.value) ? '000000' : 'D4AF37'}`
+                                                                    : sanitizeImagePath(`https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${(type.value === 'Kids' ? filters.gender === 'Kids' : filters.type === type.value) ? '000000' : 'D4AF37'}`)
                                                                 }
                                                                 alt={type.label}
                                                                 style={type.iconId.startsWith('/') && (type.value === 'Kids' ? filters.gender !== 'Kids' : filters.type !== type.value) ? {

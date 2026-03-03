@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Sparkles, Send, Loader2, CheckCircle2, User, Phone, Mail, Star, ChevronDown, ChevronUp, MessageCircle, Clock, ExternalLink } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import { cn, sanitizeImagePath } from '@/lib/utils'
 import { getBotResponse, getCurrentUserProfile, checkAgentAvailability, startChatSession, createSupportTicket } from '@/app/actions'
 import { Button } from '@/components/ui/button'
 
@@ -457,7 +457,7 @@ export function ConciergeHub() {
                 <AnimatePresence mode="wait">
                     {view === 'bubble' || view === 'toast' ? (
                         <motion.div key="open" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="relative z-10 w-10 h-10 md:w-12 md:h-12">
-                            <img src="https://img.icons8.com/?size=100&id=87048&format=png&color=000000" alt="AURERXA" className="w-full h-full object-contain brightness-0 invert opacity-40 group-hover:opacity-100 transition-opacity" />
+                            <img src={sanitizeImagePath("https://img.icons8.com/?size=100&id=87048&format=png&color=000000")} alt="AURERXA" className="w-full h-full object-contain brightness-0 invert opacity-40 group-hover:opacity-100 transition-opacity" />
                         </motion.div>
                     ) : (
                         <motion.div key="close" initial={{ opacity: 0, rotate: 90 }} animate={{ opacity: 1, rotate: 0 }} exit={{ opacity: 0, rotate: -90 }}><X className="w-7 h-7 md:w-9 md:h-9 relative z-10 text-primary" /></motion.div>

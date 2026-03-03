@@ -17,8 +17,8 @@ export function sanitizeImagePath(url: string | null | undefined): string {
     }
   }
 
-  // If it's ImageShack, proxy it as well (ISP blocking common in India)
-  if (trimmed.includes('imageshack.com')) {
+  // If it's ImageShack or Icons8, proxy it as well (ISP blocking common in India)
+  if (trimmed.includes('imageshack.com') || trimmed.includes('img.icons8.com')) {
     return `/api/proxy?url=${encodeURIComponent(trimmed)}`;
   }
 

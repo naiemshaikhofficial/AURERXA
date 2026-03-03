@@ -8,6 +8,7 @@ import {
     Eye, Trash2, Edit3, X, ArrowRight, BarChart3, Target, Repeat, Layers, CheckCircle
 } from 'lucide-react'
 import Image from 'next/image'
+import { sanitizeImagePath } from '@/lib/utils'
 
 type DatePreset = 'today' | 'yesterday' | 'week' | 'month' | 'year' | 'custom'
 type PanelType = 'confirmed' | 'pending' | 'cancelled' | 'orders' | 'products' | 'users' | 'shipped' | 'delivered' | null
@@ -267,7 +268,7 @@ export function DashboardClient({
                         <ClickableStatCard
                             active={activePanel === 'confirmed'}
                             onClick={() => openPanel('confirmed')}
-                            imgSrc="https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000"
+                            imgSrc={sanitizeImagePath("https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000")}
                             label="Confirmed Revenue" value={formatCurrency(stats?.confirmedRevenue || 0)}
                             sub={`${formatCurrency(stats?.filteredRevenue || 0)} this period`}
                             color="text-[#D4AF37]" bg="bg-[#D4AF37]/10" activeBorder="border-[#D4AF37]/50"
@@ -276,7 +277,7 @@ export function DashboardClient({
                         <ClickableStatCard
                             active={activePanel === 'pending'}
                             onClick={() => openPanel('pending')}
-                            imgSrc="https://img.icons8.com/?size=100&id=102455&format=png&color=000000"
+                            imgSrc={sanitizeImagePath("https://img.icons8.com/?size=100&id=102455&format=png&color=000000")}
                             label="Pending Revenue" value={formatCurrency(stats?.pendingRevenue || 0)}
                             sub={`${stats?.pendingOrders || 0} orders awaiting`}
                             color="text-amber-400" bg="bg-amber-400/10" activeBorder="border-amber-400/50"
@@ -284,7 +285,7 @@ export function DashboardClient({
                         <ClickableStatCard
                             active={activePanel === 'cancelled'}
                             onClick={() => openPanel('cancelled')}
-                            imgSrc="https://img.icons8.com/?size=100&id=ec5nnM2s1CdY&format=png&color=000000"
+                            imgSrc={sanitizeImagePath("https://img.icons8.com/?size=100&id=ec5nnM2s1CdY&format=png&color=000000")}
                             label="Lost Revenue" value={formatCurrency(stats?.cancelledRevenue || 0)}
                             sub={`${stats?.cancelledOrders || 0} cancelled`}
                             color="text-red-400" bg="bg-red-400/10" activeBorder="border-red-400/50"
@@ -294,7 +295,7 @@ export function DashboardClient({
                 <ClickableStatCard
                     active={activePanel === 'orders'}
                     onClick={() => openPanel('orders')}
-                    imgSrc="https://img.icons8.com/?size=100&id=nmdLxlZq4cQi&format=png&color=000000"
+                    imgSrc={sanitizeImagePath("https://img.icons8.com/?size=100&id=nmdLxlZq4cQi&format=png&color=000000")}
                     label="Total Orders" value={stats?.totalOrders || 0}
                     sub={`${stats?.filteredOrders || 0} this period`}
                     color="text-emerald-400" bg="bg-emerald-400/10" activeBorder="border-emerald-400/50"
@@ -371,7 +372,7 @@ export function DashboardClient({
                 <ClickableStatCard
                     active={activePanel === 'products'}
                     onClick={() => { window.location.href = '/admin/products' }}
-                    imgSrc="https://img.icons8.com/?size=100&id=12091&format=png&color=000000"
+                    imgSrc={sanitizeImagePath("https://img.icons8.com/?size=100&id=12091&format=png&color=000000")}
                     label="Products" value={stats?.totalProducts || 0}
                     sub={`${stats?.lowStockProducts?.length || 0} low stock`}
                     color="text-blue-400" bg="bg-blue-400/10" activeBorder="border-blue-400/50"
@@ -380,7 +381,7 @@ export function DashboardClient({
                 <ClickableStatCard
                     active={activePanel === 'users'}
                     onClick={() => { window.location.href = '/admin/users' }}
-                    imgSrc="https://img.icons8.com/?size=100&id=IbG1lmsRkQI2&format=png&color=000000"
+                    imgSrc={sanitizeImagePath("https://img.icons8.com/?size=100&id=IbG1lmsRkQI2&format=png&color=000000")}
                     label="Users" value={stats?.totalUsers || 0} sub="Registered"
                     color="text-purple-400" bg="bg-purple-400/10" activeBorder="border-purple-400/50"
                     linkHint="→ Users Page"
@@ -388,7 +389,7 @@ export function DashboardClient({
                 <ClickableStatCard
                     active={activePanel === 'shipped'}
                     onClick={() => openPanel('shipped')}
-                    imgSrc="https://img.icons8.com/?size=100&id=HG4lwDHJcYg3&format=png&color=000000"
+                    imgSrc={sanitizeImagePath("https://img.icons8.com/?size=100&id=HG4lwDHJcYg3&format=png&color=000000")}
                     label="Shipped" value={stats?.shippedOrders || 0} sub="In transit"
                     color="text-blue-400" bg="bg-blue-400/10" activeBorder="border-blue-400/50"
                     mini
@@ -396,7 +397,7 @@ export function DashboardClient({
                 <ClickableStatCard
                     active={activePanel === 'delivered'}
                     onClick={() => openPanel('delivered')}
-                    imgSrc="https://img.icons8.com/?size=100&id=urubQ4JdZpyy&format=png&color=000000"
+                    imgSrc={sanitizeImagePath("https://img.icons8.com/?size=100&id=urubQ4JdZpyy&format=png&color=000000")}
                     label="Delivered" value={stats?.deliveredOrders || 0} sub="Completed"
                     color="text-emerald-400" bg="bg-emerald-400/10" activeBorder="border-emerald-400/50"
                     mini
@@ -432,7 +433,7 @@ export function DashboardClient({
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
                                 <div className="w-4 h-4 relative">
-                                    <Image src="https://img.icons8.com/?size=100&id=7WvHWmLeJRQB&format=png&color=000000" alt="Revenue Trend" fill className="object-contain" style={{ filter: 'invert(1)' }} unoptimized />
+                                    <Image src={sanitizeImagePath("https://img.icons8.com/?size=100&id=7WvHWmLeJRQB&format=png&color=000000")} alt="Revenue Trend" fill className="object-contain" style={{ filter: 'invert(1)' }} unoptimized />
                                 </div>
                                 Revenue Trend (Confirmed Only)
                             </h3>
@@ -472,7 +473,7 @@ export function DashboardClient({
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-medium text-white/70 flex items-center gap-2">
                             <div className="w-4 h-4 relative">
-                                <Image src="https://img.icons8.com/?size=100&id=SBrvJmrbcplL&format=png&color=000000" alt="Order Volume" fill className="object-contain" style={{ filter: 'invert(1)' }} unoptimized />
+                                <Image src={sanitizeImagePath("https://img.icons8.com/?size=100&id=SBrvJmrbcplL&format=png&color=000000")} alt="Order Volume" fill className="object-contain" style={{ filter: 'invert(1)' }} unoptimized />
                             </div>
                             Order Volume
                         </h3>

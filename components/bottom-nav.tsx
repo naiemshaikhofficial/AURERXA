@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useCart } from '@/context/cart-context'
-import { cn, isCapacitor } from '@/lib/utils'
+import { cn, isCapacitor, sanitizeImagePath } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { useSearch } from '@/context/search-context'
 
@@ -75,7 +75,7 @@ export function BottomNav() {
                         >
                             <div className="relative">
                                 <img
-                                    src={`https://img.icons8.com/?size=100&id=${iconId}&format=png&color=${isActive ? 'F59E0B' : '999999'}`}
+                                    src={sanitizeImagePath(`https://img.icons8.com/?size=100&id=${link.iconId}&format=png&color=${isActive ? 'F59E0B' : '999999'}`)}
                                     alt=""
                                     className={cn("w-5 h-5 transition-transform duration-300", isActive && "scale-110")}
                                 />

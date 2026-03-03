@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
         // Security: Restrict to known necessary domains to prevent open proxying
         const targetUrl = new URL(decodedUrl);
-        const allowedDomains = ['imageshack.com', 'imagizer.imageshack.com'];
+        const allowedDomains = ['imageshack.com', 'imagizer.imageshack.com', 'img.icons8.com'];
         const isAllowed = allowedDomains.some(domain => targetUrl.hostname.endsWith(domain));
 
         if (!isAllowed) {

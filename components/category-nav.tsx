@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { cn, sanitizeImagePath } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 
@@ -96,7 +96,7 @@ export function CategoryNav() {
                                     >
                                         <div className="relative h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded-full transition-all duration-500 group-hover:scale-110">
                                             <Image
-                                                src={`https://img.icons8.com/?size=100&id=${cat.iconId}&format=png&color=${isActive ? 'BF9B65' : '999999'}`}
+                                                src={sanitizeImagePath(`https://img.icons8.com/?size=100&id=${cat.iconId}&format=png&color=${isActive ? 'BF9B65' : '999999'}`)}
                                                 alt={cat.label}
                                                 width={32}
                                                 height={32}

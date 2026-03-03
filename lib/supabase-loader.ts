@@ -1,29 +1,22 @@
 export default function supabaseLoader({ src, width, quality }: { src: string, width: number, quality?: number }) {
-    // 1. Handle already proxied Supabase URLs (Internal Endpoint)
-    if (src.startsWith('/api/supabase/storage/v1/object/')) {
-        const transformedUrl = src.replace('/storage/v1/object/', '/storage/v1/render/image/')
-        return `${transformedUrl}?width=${width}&quality=${quality || 75}&resize=contain&format=avif`
-    }
+    // We route images through Next.js built-in Image Optimization API (/_next/image)
+    // This is the most robust way to handle both local and external images (like Supabase, Pexels, etc.)
+    // Benefits:
+    // 1. Works on Supabase Free Plan (Supabase's own resizer requires Pro).
+    // 2. Bypasses Indian ISP blocking of Supabase domains (Next.js server fetches the image).
+    // 3. Ensures 20MB+ original files are compressed to ~50KB at the exact width needed.
 
-    // 2. Handle Direct Supabase URLs (External)
-    if (src.includes('supabase.co')) {
-        const storageMatch = src.match(/\/storage\/v1\/.*/);
-        if (storageMatch) {
-            const supabasePath = storageMatch[0];
-            let proxiedUrl = `/api/supabase${supabasePath}`;
+    // If the URL is already an absolute path to /_next/image (unlikely but safe to check), return as is
+    if (src.includes('/_next/image?url=')) return src
 
-            if (supabasePath.includes('/storage/v1/object/')) {
-                proxiedUrl = proxiedUrl.replace('/storage/v1/object/', '/storage/v1/render/image/');
-                return `${proxiedUrl}?width=${width}&quality=${quality || 75}&resize=contain&format=avif`;
-            }
-            return `${proxiedUrl}${proxiedUrl.includes('?') ? '&' : '?'}width=${width}&quality=${quality || 75}`;
-        }
-    }
-
-    // 3. Handle Other Images (Local Assets & External URLs like Pexels/Unsplash)
-    // We route these through Next.js built-in Image Optimization API
-    // This ensures that local 20MB files are compressed and resized to exactly the width needed.
     const baseUrl = '/_next/image'
+
+    // We pass the source URL to Next.js's optimizer. 
+    // This works for:
+    // - Local paths like /api/supabase/... (proxied images)
+    // - Absolute URLs like https://xyz.supabase.co/... (checked against remotePatterns in next.config.mjs)
+    // - Public assets like /logo.png
+
     const params = new URLSearchParams({
         url: src,
         w: width.toString(),

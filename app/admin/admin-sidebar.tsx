@@ -10,25 +10,26 @@ import {
     ExternalLink, Megaphone, ShoppingBag, ArrowLeftRight, TrendingUp, MessageSquare
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { sanitizeImagePath } from '@/lib/utils'
 
 const NAV_ITEMS = [
-    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, imgSrc: 'https://img.icons8.com/?size=100&id=ZQ9axxszRfad&format=png&color=000000', roles: ['main_admin', 'support_admin', 'staff'] },
-    { label: 'Orders', href: '/admin/orders', icon: ShoppingCart, imgSrc: 'https://img.icons8.com/?size=100&id=nmdLxlZq4cQi&format=png&color=000000', roles: ['main_admin', 'support_admin', 'staff'] },
-    { label: 'Bulk Orders', href: '/admin/bulk-orders', icon: Package, imgSrc: 'https://img.icons8.com/?size=100&id=13007&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard, imgSrc: sanitizeImagePath('https://img.icons8.com/?size=100&id=ZQ9axxszRfad&format=png&color=000000'), roles: ['main_admin', 'support_admin', 'staff'] },
+    { label: 'Orders', href: '/admin/orders', icon: ShoppingCart, imgSrc: sanitizeImagePath('https://img.icons8.com/?size=100&id=nmdLxlZq4cQi&format=png&color=000000'), roles: ['main_admin', 'support_admin', 'staff'] },
+    { label: 'Bulk Orders', href: '/admin/bulk-orders', icon: Package, imgSrc: sanitizeImagePath('https://img.icons8.com/?size=100&id=13007&format=png&color=000000'), roles: ['main_admin', 'support_admin'] },
     { label: 'Return Requests', href: '/admin/returns', icon: ArrowLeftRight, roles: ['main_admin', 'support_admin'] },
-    { label: 'Categories', href: '/admin/categories', icon: Sparkles, imgSrc: 'https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
-    { label: 'Products', href: '/admin/products', icon: Package, imgSrc: 'https://img.icons8.com/?size=100&id=12091&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Categories', href: '/admin/categories', icon: Sparkles, imgSrc: sanitizeImagePath('https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000'), roles: ['main_admin', 'support_admin'] },
+    { label: 'Products', href: '/admin/products', icon: Package, imgSrc: sanitizeImagePath('https://img.icons8.com/?size=100&id=12091&format=png&color=000000'), roles: ['main_admin', 'support_admin'] },
     { label: 'Pricing Config', href: '/admin/settings/pricing', icon: TrendingUp, roles: ['main_admin'] },
-    { label: 'Users', href: '/admin/users', icon: Users, imgSrc: 'https://img.icons8.com/?size=100&id=IbG1lmsRkQI2&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Users', href: '/admin/users', icon: Users, imgSrc: sanitizeImagePath('https://img.icons8.com/?size=100&id=IbG1lmsRkQI2&format=png&color=000000'), roles: ['main_admin', 'support_admin'] },
     { label: 'Support', href: '/admin/support', icon: HeadphonesIcon, roles: ['main_admin', 'support_admin'] },
     { label: 'Live Chat', href: '/admin/concierge', icon: MessageSquare, roles: ['main_admin', 'support_admin'] },
     { label: 'Settings', href: '/admin/settings', icon: Settings, roles: ['main_admin'] },
     { label: 'Activity', href: '/admin/activity', icon: Activity, roles: ['main_admin'] },
     { label: 'System', href: '/admin/system', icon: ShieldAlert, roles: ['main_admin'] },
-    { label: 'Services', href: '/admin/services', icon: Sparkles, imgSrc: 'https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Services', href: '/admin/services', icon: Sparkles, imgSrc: sanitizeImagePath('https://img.icons8.com/?size=100&id=B5w0V2fjjZ38&format=png&color=000000'), roles: ['main_admin', 'support_admin'] },
     { label: 'Marketing Hub', href: '/admin/marketing', icon: Megaphone, roles: ['main_admin'] },
     { label: 'Abandoned Carts', href: '/admin/marketing/abandoned-carts', icon: ShoppingBag, roles: ['main_admin'] },
-    { label: 'Tools', href: '/admin/tools', icon: Wrench, imgSrc: 'https://img.icons8.com/?size=100&id=114321&format=png&color=000000', roles: ['main_admin', 'support_admin'] },
+    { label: 'Tools', href: '/admin/tools', icon: Wrench, imgSrc: sanitizeImagePath('https://img.icons8.com/?size=100&id=114321&format=png&color=000000'), roles: ['main_admin', 'support_admin'] },
 ]
 
 import { AdminNotifications } from '@/components/admin/admin-notifications'
