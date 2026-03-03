@@ -17,7 +17,7 @@ const FILTERS = [
     { label: 'ALL', slug: 'all' },
     { label: 'CHAINS', slug: 'chains' },
     { label: 'RINGS', slug: 'rings' },
-    { label: 'BRACELETS', slug: 'bracelets' },
+    { label: 'BRACELETS', slug: 'bracelates' },
 ]
 
 export function TopStylesClient({ dataMap }: TopStylesClientProps) {

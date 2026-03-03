@@ -62,7 +62,7 @@ export function DeliveryChecker({ product, cartItems, subtotal, compact = false,
         setError(null)
         setDeliveryInfo(null)
 
-        const result = await checkDeliveryAvailability(code)
+        const result = await checkDeliveryAvailability(code, product?.id)
 
         if (result.success) {
             // Calculate shipping rate for this specific product or cart
@@ -256,14 +256,14 @@ export function DeliveryChecker({ product, cartItems, subtotal, compact = false,
 }
 
 // Compact version for checkout page - Premium Design
-export function DeliveryEstimate({ pincode }: { pincode?: string }) {
+export function DeliveryEstimate({ pincode, productId }: { pincode?: string, productId?: string }) {
     const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null)
 
     useEffect(() => {
         if (pincode && pincode.length === 6) {
-            checkDeliveryAvailability(pincode).then(setDeliveryInfo)
+            checkDeliveryAvailability(pincode, productId).then(setDeliveryInfo)
         }
-    }, [pincode])
+    }, [pincode, productId])
 
     if (!deliveryInfo || !deliveryInfo.success || !deliveryInfo.available) return null
 

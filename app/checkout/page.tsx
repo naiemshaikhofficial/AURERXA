@@ -925,7 +925,17 @@ export default function CheckoutPage() {
 
                                     {/* Estimated Delivery */}
                                     {selectedAddress && (
-                                        <DeliveryEstimate pincode={addresses.find((a: any) => a.id === selectedAddress)?.pincode} />
+                                        <div className="space-y-4">
+                                            {cart.map((item) => (
+                                                <div key={item.id}>
+                                                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-2">{item.products?.name}</p>
+                                                    <DeliveryEstimate
+                                                        pincode={addresses.find((a: any) => a.id === selectedAddress)?.pincode}
+                                                        productId={item.products?.id}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
                                     )}
                                 </div>
 

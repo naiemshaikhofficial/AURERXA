@@ -299,11 +299,43 @@ export async function getReturnRequests() {
 // DELHIVERY LOGISTICS
 // ============================================
 
-export async function checkDeliveryAvailability(pincode: string) {
+export async function checkDeliveryAvailability(pincode: string, productId?: string) {
     try {
         if (!pincode || pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
             return { success: false, error: 'Invalid pincode' }
         }
+
+        // Logic for estimated delivery dates
+        const calculateDelivery = (daysMin: number, daysMax: number) => {
+            const fromDate = new Date()
+            fromDate.setDate(fromDate.getDate() + daysMin)
+            const toDate = new Date()
+            toDate.setDate(toDate.getDate() + daysMax)
+
+            const format = (d: Date) => d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+            return {
+                from: format(fromDate),
+                to: format(toDate),
+                fromDate: fromDate.toISOString(),
+                toDate: toDate.toISOString()
+            }
+        }
+
+        let isHandcrafted = false
+        if (productId) {
+            const { data: product } = await supabaseServer
+                .from('products')
+                .select('is_handcrafted')
+                .eq('id', productId)
+                .maybeSingle()
+            isHandcrafted = !!product?.is_handcrafted
+        }
+
+        const deliveryRange = isHandcrafted ? { min: 7, max: 12 } : { min: 3, max: 7 }
+        const estimatedDelivery = calculateDelivery(deliveryRange.min, deliveryRange.max)
+        const message = isHandcrafted
+            ? "Handcrafted pieces take time to perfect. We'll craft and deliver yours as swiftly as possible."
+            : undefined
 
         const delhiveryToken = process.env.DELHIVERY_API_TOKEN
         const delhiveryUrl = process.env.DELHIVERY_API_URL || 'https://staging-express.delhivery.com'
@@ -320,13 +352,22 @@ export async function checkDeliveryAvailability(pincode: string) {
                         success: true,
                         available: info.pre_paid === 'Y' || info.cod === 'Y',
                         location: `${info.district}, ${info.state_code}`,
-                        codAvailable: info.cod === 'Y'
+                        codAvailable: info.cod === 'Y',
+                        estimatedDelivery,
+                        message
                     }
                 }
             }
         }
-        return { success: true, available: true, location: 'India' }
+        return {
+            success: true,
+            available: true,
+            location: 'India',
+            estimatedDelivery,
+            message
+        }
     } catch (err) {
+        console.error('Delivery check error:', err)
         return { success: false, error: 'Unable to check delivery' }
     }
 }

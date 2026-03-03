@@ -106,7 +106,9 @@ export async function calculateShippingRate(pin: string, items: any[], cod: bool
 }
 export async function createDelhiveryShipment(id: string) { return orders.createDelhiveryShipment(id) }
 export async function createDelhiveryReturnShipment(id: string) { return orders.createDelhiveryReturnShipment(id) }
-export async function checkDeliveryAvailability(pin: string) { return orders.checkDeliveryAvailability(pin) }
+export async function checkDeliveryAvailability(pin: string, productId?: string) {
+  return orders.checkDeliveryAvailability(pin, productId)
+}
 export async function getPincodeDetails(pin: string) { return orders.getPincodeDetails(pin) }
 export async function submitBulkOrder(data: any) { return orders.submitBulkOrder(data) }
 export async function validateCoupon(code: string, subt: number, ship: number) { return orders.validateCoupon(code, subt, ship) }

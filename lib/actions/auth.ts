@@ -110,6 +110,12 @@ export async function getAddresses() {
     return data
 }
 
+const sanitizeAddress = (address: any) => {
+    // Remove fields that don't exist in Supabase and 'id' to prevent conflicts
+    const { address_line1, address_line2, landmark, country, id, ...rest } = address
+    return rest
+}
+
 export async function addAddress(address: any) {
     const client = await getAuthClient()
     const { data: { user } } = await client.auth.getUser()
@@ -119,9 +125,10 @@ export async function addAddress(address: any) {
         await client.from('addresses').update({ is_default: false }).eq('user_id', user.id)
     }
 
+    const sanitized = sanitizeAddress(address)
     const { data, error } = await client
         .from('addresses')
-        .insert({ ...address, user_id: user.id })
+        .insert({ ...sanitized, user_id: user.id })
         .select()
         .single()
 
@@ -130,6 +137,11 @@ export async function addAddress(address: any) {
 }
 
 export async function updateAddress(id: string, address: any) {
+    // Prevent temp IDs from causing UUID syntax errors in Supabase
+    if (!id || id.startsWith('temp_')) {
+        return { success: false, error: 'Cannot update unsaved address. Please wait a moment.' }
+    }
+
     const client = await getAuthClient()
     const { data: { user } } = await client.auth.getUser()
     if (!user) return { success: false, error: 'Unauthorized' }
@@ -138,9 +150,10 @@ export async function updateAddress(id: string, address: any) {
         await client.from('addresses').update({ is_default: false }).eq('user_id', user.id)
     }
 
+    const sanitized = sanitizeAddress(address)
     const { error } = await client
         .from('addresses')
-        .update(address)
+        .update(sanitized)
         .eq('id', id)
         .eq('user_id', user.id)
 

@@ -4,10 +4,10 @@ import { TopStylesClient } from './top-styles-client'
 export async function TopStyles() {
     // Parallel fetch for all curated filters to enable instant switching
     const [all, chains, rings, bracelets] = await Promise.all([
-        getFilteredProducts({ sortBy: 'popularity' }),
-        getFilteredProducts({ tag: 'chain', sortBy: 'popularity' }),
-        getFilteredProducts({ category: 'rings', sortBy: 'popularity' }),
-        getFilteredProducts({ tag: 'bracelet', sortBy: 'popularity' })
+        getFilteredProducts({ sortBy: 'popular' }),
+        getFilteredProducts({ sub_category: 'chains', tag: 'chains', sortBy: 'popular' }),
+        getFilteredProducts({ sub_category: 'rings', tag: 'rings', sortBy: 'popular' }),
+        getFilteredProducts({ sub_category: 'bracelates', tag: 'bracelets', sortBy: 'popular' })
     ])
 
     const dataMap = {
