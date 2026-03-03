@@ -82,6 +82,7 @@ export function CategoryBrowsing({ categories }: CategoryBrowsingProps) {
                                         src={cat.image_url || '/placeholder.webp'}
                                         alt={cat.name}
                                         fill
+                                        priority={idx < 4} // First row of categories load instantly
                                         className="object-cover transition-transform duration-1000 scale-105 group-hover:scale-110 will-change-transform"
                                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                                     />
