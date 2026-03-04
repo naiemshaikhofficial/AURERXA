@@ -24,7 +24,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         const materialLabel = product.material_type || 'Jewelry'
         const purityLabel = product.purity ? `${product.purity} ` : ''
 
+        // Premium title: [Purity] [Metal] [Category] | [Product Name] | AURERXA
         const title = `${purityLabel}${materialLabel} ${categoryName || 'Jewelry'} | ${product.name} | AURERXA`
+
         const rawDescription = product.description || `Explore our exquisite ${purityLabel}${materialLabel} ${categoryName || 'jewelry'}. Handcrafted ${product.name} from AURERXA's heritage collection. Certified quality & Free Shipping.`
         const description = rawDescription.length > 160 ? rawDescription.substring(0, 157) + '...' : rawDescription
 
@@ -35,20 +37,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         const dynamicKeywords = [
             product.name,
             `Buy ${product.name} Online`,
-            `${product.name} Price`,
             `${product.name} India`,
             categoryName ? `${categoryName} Online` : '',
             categoryName ? `Buy ${categoryName}` : '',
-            categoryName ? `${categoryName} for ${product.gender || 'Women'}` : '',
-            categoryName ? `Gold ${categoryName}` : '',
-            categoryName ? `${materialLabel} ${categoryName}` : '',
             `AURERXA ${categoryName || 'Jewelry'}`,
             materialLabel,
             product.purity ? `${product.purity} Gold` : '',
             product.gender ? `${product.gender} Jewelry` : '',
-            product.gender ? `${categoryName || 'Jewelry'} for ${product.gender}` : '',
             'Buy Jewelry India', 'Luxury Jewelry Brand India',
-            'Certified Quality Jewelry', 'Free Insured Shipping',
+            'Certified Quality', 'Free Insured Shipping',
             ...(Array.isArray(product.tags) ? product.tags : []),
         ].filter(Boolean)
 
@@ -98,9 +95,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         }
     } catch (e: any) {
         console.error('❌ Error in generateMetadata:', e)
-        return {
-            title: 'Product Details | AURERXA'
-        }
+        return { title: 'ProductDetails | AURERXA' }
     }
 }
 
@@ -189,7 +184,56 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     '@type': 'Organization',
                     name: 'AURERXA',
                 },
+                shippingDetails: {
+                    '@type': 'OfferShippingDetails',
+                    'shippingRate': {
+                        '@type': 'MonetaryAmount',
+                        'value': 0,
+                        'currency': 'INR',
+                    },
+                    'shippingDestination': {
+                        '@type': 'DefinedRegion',
+                        'addressCountry': 'IN',
+                    },
+                    'deliveryTime': {
+                        '@type': 'ShippingDeliveryTime',
+                        'handlingTime': {
+                            '@type': 'QuantitativeValue',
+                            'minValue': 0,
+                            'maxValue': 1,
+                            'unitCode': 'DAY',
+                        },
+                        'transitTime': {
+                            '@type': 'QuantitativeValue',
+                            'minValue': 1,
+                            'maxValue': 5,
+                            'unitCode': 'DAY',
+                        },
+                    },
+                },
+                hasMerchantReturnPolicy: {
+                    '@type': 'MerchantReturnPolicy',
+                    'applicableCountry': 'IN',
+                    'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+                    'merchantReturnDays': 15,
+                    'returnMethod': 'https://schema.org/ReturnByMail',
+                    'returnFees': 'https://schema.org/FreeReturn',
+                },
             },
+            material: product.material_type || 'Jewelry',
+            category: categoryName,
+            ...(product.weight_grams ? {
+                weight: {
+                    '@type': 'QuantitativeValue',
+                    value: product.weight_grams,
+                    unitText: 'g',
+                }
+            } : {}),
+            color: product.material_type?.includes('Gold') ? 'Gold' : product.material_type?.includes('Silver') ? 'Silver' : undefined,
+            audience: product.gender ? {
+                '@type': 'PeopleAudience',
+                suggestedGender: product.gender,
+            } : undefined,
         }
 
         const breadcrumbLd = {

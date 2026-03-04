@@ -4,8 +4,8 @@ import ContactClient from './contact-client'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Contact Us | AURERXA Support',
-  description: 'Get in touch with the AURERXA concierge for bespoke jewelry inquiries, order support, and boutique appointments.',
+  title: 'Contact AURERXA – Premium Jewelry Boutique in Nashik & Online Support',
+  description: 'Connect with AURERXA for bespoke jewelry designs, order updates, and boutique appointments in Nashik. Reach us via Phone, WhatsApp, or Email for luxury service.',
 }
 
 export default async function ContactPage() {

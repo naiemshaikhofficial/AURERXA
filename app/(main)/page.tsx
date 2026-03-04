@@ -108,18 +108,53 @@ async function HeroCarouselSection() {
 }
 
 export const metadata: Metadata = {
-  title: 'AURERXA | Buy Premium Silver Jewelry Online - Bridal & Fashion Jewelry',
-  description: 'Shop AURERXA for luxury handcrafted silver jewelry. Browse silver necklaces, earrings, bridal sets, mangalsutra, rings & fashion accessories. Free shipping, easy returns, 100% certified. India\'s most trusted luxury jewelry brand.',
+  title: 'AURERXA | Premium Gold & Silver Jewelry India | Bridal & Luxury Designs',
+  description: 'Discover AURERXA for BIS Hallmarked gold and certified silver jewelry. Luxury bridal sets, mangalsutra, rings, and handcrafted necklaces with free insured shipping. India\'s trusted premium jewelry boutique.',
   keywords: [
-    'Buy Silver Jewelry Online India', 'Silver Jewelry Online Shopping',
-    'Bridal Jewelry Sets Online', 'Fashion Jewelry India', 'Luxury Jewelry Brand',
-    'AURERXA Official Store', 'Premium Handcrafted Jewelry',
-    'Gold Necklace for Women', 'Diamond Stud Earrings', 'Bespoke Design Jewelry',
-    'Indian Heritage Jewelry', 'Certified 22K Gold Online', 'Free Insured Shipping'
+    'Gold jewelry online India', 'Silver jewelry for women', '22k gold ring price',
+    'Minimal jewelry brand India', 'Daily wear gold jewelry', 'Bespoke design jewelry',
+    'Certified gold mangalsutra online', 'Jewelry shop in Nashik', 'Hallmarked gold jewelry India',
+    'Buy luxury jewelry online', 'AURERXA Official Store'
   ],
   alternates: {
     canonical: '/',
   },
+}
+
+const localBusinessSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'JewelryStore',
+  'name': 'AURERXA',
+  'image': 'https://www.aurerxa.com/icon-512.png',
+  '@id': 'https://www.aurerxa.com',
+  'url': 'https://www.aurerxa.com',
+  'telephone': '+91-9391032677',
+  'priceRange': '₹₹₹',
+  'address': {
+    '@type': 'PostalAddress',
+    'streetAddress': 'Captain Lakshmi Chowk, Rangargalli',
+    'addressLocality': 'Sangamner',
+    'addressRegion': 'Nashik, Maharashtra',
+    'postalCode': '422605',
+    'addressCountry': 'IN'
+  },
+  'geo': {
+    '@type': 'GeoCoordinates',
+    'latitude': 19.575916,
+    'longitude': 74.204618
+  },
+  'openingHoursSpecification': {
+    '@type': 'OpeningHoursSpecification',
+    'dayOfWeek': [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+    ],
+    'opens': '11:00',
+    'closes': '20:00'
+  },
+  'sameAs': [
+    'https://www.instagram.com/aurerxa',
+    'https://www.facebook.com/aurerxa'
+  ]
 }
 
 async function MaterialShowcaseSection() {
@@ -144,6 +179,10 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
       <section id="boutique-hero">
         <Hero />
       </section>
