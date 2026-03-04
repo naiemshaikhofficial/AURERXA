@@ -184,61 +184,15 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const headerList = await headers()
-  const pathname = headerList.get('x-pathname') || ''
-  const isMaintenance = pathname === '/maintenance'
-  const isAdminPath = pathname.startsWith('/admin')
+  // Fetch profile globally - this is safe for static generation if it doesn't depend on headers/cookies 
+  // that vary per request in a way that breaks caching (currentUserProfile usually uses cookies, 
+  // so this might STILL make it dynamic, but by removing Pathname dependence we at least decouple it from UI toggles).
+  // Actually, to make it TRULY static, we should move profile fetch to a client component or use Suspense.
+  const profile = await getCurrentUserProfile()
 
-  console.log(`[RootLayout] Path: ${pathname}, isAdminPath: ${isAdminPath}, isMaintenance: ${isMaintenance}`)
-
-  // Parallel fetch: Profile and Maintenance are usually needed for the guard/layout logic
-  const profilePromise = getCurrentUserProfile()
-  const maintenancePromise = getSiteSetting('maintenance_config', { is_enabled: false })
-
-  const marketingDefault = {
-    banner_enabled: false,
-    banner_text: "Special Edition Heritage Collection - Now Live",
-    banner_link: "/collections"
-  }
-  const contactDefault = {
-    phone: "+91 9391032677",
-    email: "support@aurerxa.com",
-    whatsapp: "+91 9391032677",
-    address: "Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605"
-  }
-
-  // Conditionally fetch marketing/contact only for public pages to speed up Admin transition
-  const marketingPromise = !isAdminPath ? getSiteSetting('marketing_config', marketingDefault) : Promise.resolve(marketingDefault)
-  const contactPromise = !isAdminPath ? getSiteSetting('contact_config', contactDefault) : Promise.resolve(contactDefault)
-
-  console.log('[RootLayout] Starting resilient data fetch...')
-  const results = await Promise.allSettled([
-    profilePromise,
-    maintenancePromise,
-    marketingPromise,
-    contactPromise
-  ])
-
-  const profile = results[0].status === 'fulfilled' ? results[0].value : null
-  const maintenanceConfig = results[1].status === 'fulfilled' ? results[1].value : { is_enabled: false }
-  const marketingConfig = results[2].status === 'fulfilled' ? results[2].value : marketingDefault
-  const contactConfig = results[3].status === 'fulfilled' ? results[3].value : contactDefault
-
-  console.log(`[RootLayout] Resilient fetch complete. Profile: ${!!profile}, Maintenance: ${maintenanceConfig?.is_enabled}`)
-
-  const isAdmin = profile?.isAdmin
-  const isBanned = profile?.isBanned
-
-  // Redirect banned users
-  if (isBanned && !pathname.startsWith('/banned')) {
-    redirect('/banned')
-  }
-
-  // Handle Maintenance Mode
-  if (maintenanceConfig.is_enabled && !isAdmin && !isMaintenance && !pathname.startsWith('/admin') && !pathname.startsWith('/login')) {
-    redirect('/maintenance')
-  }
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+
+  // SEO Schemas (Static)
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'JewelryStore',
@@ -271,67 +225,11 @@ export default async function RootLayout({
     }
   }
 
-  const localBusinessSchema = {
-    "@context": "https://schema.org",
-    "@type": "JewelryStore",
-    "name": "AURERXA Luxury Boutique",
-    "image": `${baseUrl}/hero-banner.jpg`,
-    "@id": `${baseUrl}/#boutique`,
-    "url": baseUrl,
-    "telephone": "+91-9391032677",
-    "priceRange": "₹₹₹",
-    "address": {
-      "@type": "PostalAddress",
-      "streetAddress": "Captain Lakshmi Chowk, Rangargalli",
-      "addressLocality": "Sangamner",
-      "postalCode": "422605",
-      "addressCountry": "IN"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 19.5761,
-      "longitude": 74.2081
-    },
-    "openingHoursSpecification": {
-      "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
-      ],
-      "opens": "10:30",
-      "closes": "20:30"
-    }
-  }
-
-  const searchboxLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "url": baseUrl,
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": `${baseUrl}/collections?search={search_term_string}`
-      },
-      "query-input": "required name=search_term_string"
-    }
-  }
-
-  const navigationLd = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "itemListElement": [
-      { "@type": "SiteNavigationElement", "position": 1, "name": "Latest Collections", "url": `${baseUrl}/collections` },
-      { "@type": "SiteNavigationElement", "position": 2, "name": "Bespoke Jewelry", "url": `${baseUrl}/concierge` },
-      { "@type": "SiteNavigationElement", "position": 3, "name": "Luxury Watches", "url": `${baseUrl}/collections?category=watches` }
-    ]
-  }
-
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable} ${cormorant.variable}`}>
       <head>
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL!} crossOrigin="" />
         <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL!} />
-        {/* LCP Hyper-Optimization: Preload Hero Background */}
         <link
           rel="preload"
           href="/pexels-the-glorious-studio-3584518-29245554.webp"
@@ -348,27 +246,8 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
         />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(searchboxLd) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(navigationLd) }}
-        />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">
-        {/* DIAGNOSTIC MARKER */}
-        {process.env.NODE_ENV === 'development' && (
-          <div style={{ position: 'fixed', top: 2, right: 2, zIndex: 10000, background: 'red', color: 'white', padding: '2px 4px', fontSize: '8px', pointerEvents: 'none' }}>
-            CSR_OK {pathname}
-          </div>
-        )}
-        {/* CCAvenue Integration replaces Razorpay */}
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -381,45 +260,7 @@ export default async function RootLayout({
                 <CartProvider>
                   <SmoothScroll>
                     <ErrorBoundary componentName="Application Root">
-                      {(() => {
-                        const isAdminPath = pathname.startsWith('/admin')
-
-                        if (isAdminPath) {
-                          return (
-                            <AdminOnlyWrapper>
-                              <div className="min-h-screen bg-background">
-                                {children}
-                              </div>
-                            </AdminOnlyWrapper>
-                          )
-                        }
-
-                        return (
-                          <AdminRouteGuard>
-                            {!isMaintenance && marketingConfig.banner_enabled && (
-                              <div className="fixed top-0 left-0 right-0 h-8 bg-[#D4AF37] text-black flex items-center justify-center text-[10px] md:text-xs font-bold tracking-widest uppercase z-[45]">
-                                <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
-                                  {marketingConfig.banner_text}
-                                </a>
-                              </div>
-                            )}
-                            {!isMaintenance && (
-                              <div className={cn("fixed left-0 right-0 z-[40]", marketingConfig.banner_enabled ? "top-8" : "top-0")}>
-                                <Navbar marketingConfig={marketingConfig} />
-                                <CategoryNav />
-                              </div>
-                            )}
-                            <div className={cn(!isMaintenance && marketingConfig.banner_enabled ? "pt-[144px] md:pt-[160px]" : !isMaintenance ? "pt-[112px] md:pt-[128px]" : "pt-0")}>
-                              <ErrorBoundary componentName="Main Content">
-                                <main>
-                                  {children}
-                                </main>
-                              </ErrorBoundary>
-                              {!isMaintenance && <Footer contactConfig={contactConfig} />}
-                            </div>
-                          </AdminRouteGuard>
-                        )
-                      })()}
+                      {children}
 
                       <CartSheet />
                       <MobileInstallPrompt />
@@ -427,7 +268,6 @@ export default async function RootLayout({
                       <SearchModal />
                       <DynamicTitle />
                       <BottomNav />
-                      {/* <ConciergeHub /> - Hidden for now, kept for future use */}
 
                       <Toaster />
                       <Suspense fallback={null}>

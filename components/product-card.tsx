@@ -262,11 +262,13 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                 {/* Status Badges */}
                 <div className="absolute top-2.5 left-2.5 z-40 flex flex-col gap-1.5">
                     {product.material_type && (
-                        <MaterialBadge
-                            type={product.material_type}
-                            purity={product.purity}
-                            materialName={product.categories?.name}
-                        />
+                        <div className="hidden md:block">
+                            <MaterialBadge
+                                type={product.material_type}
+                                purity={product.purity}
+                                materialName={product.categories?.name}
+                            />
+                        </div>
                     )}
                     <QualityBadge tags={product.tags} />
                     {product.stock !== undefined && product.stock > 0 && product.stock < 5 && (

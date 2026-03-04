@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { getAbandonedCarts, sendAbandonmentReminder } from '@/app/admin/actions'
+import { getAbandonedCarts, sendAbandonmentReminder } from '@/app/(admin)/admin/actions'
 import { ShoppingCart, Users, Clock, Send, MessageCircle, Bell, ExternalLink, Loader2, IndianRupee } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'sonner'

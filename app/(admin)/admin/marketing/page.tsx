@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { getMarketingSegments, broadcastMarketingMessage } from '@/app/admin/actions'
+import { getMarketingSegments, broadcastMarketingMessage } from '@/app/(admin)/admin/actions'
 import { Megaphone, Users, Zap, Bell, Target, Layers, Layout, Send, Loader2, Sparkles, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -90,8 +90,8 @@ export default function MarketingHubPage() {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => setSelectedSegment(segment)}
                                 className={`p-6 rounded-2xl border transition-all cursor-pointer ${selectedSegment?.id === segment.id
-                                        ? 'bg-[#D4AF37]/10 border-[#D4AF37] shadow-lg shadow-[#D4AF37]/5'
-                                        : 'bg-[#111111] border-white/5 hover:border-white/20'
+                                    ? 'bg-[#D4AF37]/10 border-[#D4AF37] shadow-lg shadow-[#D4AF37]/5'
+                                    : 'bg-[#111111] border-white/5 hover:border-white/20'
                                     }`}
                             >
                                 <div className="flex justify-between items-start mb-4">

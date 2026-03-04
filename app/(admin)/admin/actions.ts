@@ -1629,7 +1629,7 @@ export async function sendAbandonmentReminder(userId: string, type: 'push' | 'wh
     const item = cartItems[0]
 
     if (type === 'push') {
-        const { notifyAbandonedCart } = await import('../push-actions')
+        const { notifyAbandonedCart } = await import('../../push-actions')
         return await notifyAbandonedCart(userId, item.products.name, item.products.slug, item.products.image_url)
     }
 
@@ -1661,7 +1661,7 @@ export async function broadcastMarketingMessage(segmentId: string, title: string
     const admin = await checkAdminRole()
     if (!admin) return { success: false, error: 'Unauthorized' }
 
-    const { sendNotification } = await import('../push-actions')
+    const { sendNotification } = await import('../../push-actions')
     // In a real scenario, filter subscriptions by segment
     return await sendNotification(title, body, url)
 }
@@ -1784,7 +1784,7 @@ export async function updateReturnStatus(requestId: string, status: string, admi
     // Delhivery Reverse Pickup Trigger
     if (status === 'approved') {
         try {
-            const { createDelhiveryReturnShipment } = await import('../actions')
+            const { createDelhiveryReturnShipment } = await import('../../actions')
             const shipmentRes = await createDelhiveryReturnShipment(requestId)
             if (shipmentRes.success && shipmentRes.trackingNumber) {
                 updates.tracking_number = shipmentRes.trackingNumber

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { getOrdersPollingData, getSingleOrderForNotification, getSingleReturnRequestForNotification } from '@/app/admin/actions'
+import { getOrdersPollingData, getSingleOrderForNotification, getSingleReturnRequestForNotification } from '@/app/(admin)/admin/actions'
 import { cn } from '@/lib/utils'
 
 type Notification = {

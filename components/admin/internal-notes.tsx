@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { addInternalNote, getInternalNotes } from '@/app/admin/actions'
+import { addInternalNote, getInternalNotes } from '@/app/(admin)/admin/actions'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'

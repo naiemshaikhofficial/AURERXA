@@ -12,7 +12,7 @@ import { useSearch } from '@/context/search-context'
 import { useAuth } from '@/context/auth-context'
 import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
-import { getOrdersPollingData } from '@/app/admin/actions'
+import { getOrdersPollingData } from '@/app/(admin)/admin/actions'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -109,7 +109,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
         const data = await getOrdersPollingData()
         if (!data) return
 
-        const { getDashboardStats } = await import('@/app/admin/actions')
+        const { getDashboardStats } = await import('@/app/(admin)/admin/actions')
         const stats = await getDashboardStats()
         if (stats) {
           setNotificationCount(stats.pendingOrders)

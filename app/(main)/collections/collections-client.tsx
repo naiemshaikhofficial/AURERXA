@@ -183,13 +183,8 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
 
                             {/* Product Listing logic starts here */}
 
-                            {/* Product Grid */}
-                            {loading ? (
-                                <div className="min-h-[50vh] flex flex-col items-center justify-center gap-6">
-                                    <Loader2 className="w-8 h-8 text-muted-foreground/20 animate-spin" />
-                                    <span className="text-[10px] font-premium-sans text-muted-foreground/30 tracking-[0.3em] animate-pulse">ACQUIRING DATA...</span>
-                                </div>
-                            ) : products.length === 0 ? (
+                            {/* Product List */}
+                            {products.length === 0 && !loading ? (
                                 <div className="min-h-[50vh] flex flex-col items-center justify-center text-center space-y-6 opacity-50">
                                     <span className="text-6xl text-muted-foreground/5 font-serif">Empty</span>
                                     <p className="text-xs text-muted-foreground/30 font-premium-sans tracking-widest uppercase">No artifacts found in this specific curation.</p>
@@ -226,12 +221,11 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
                                 </div>
                             ) : (
                                 <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    className={`grid gap-4 md:gap-px bg-card/5 border border-border p-px ${viewMode === 'grid'
-                                        ? 'grid-cols-2 lg:grid-cols-3'
-                                        : 'grid-cols-1'
-                                        }`}
+                                    className={cn(
+                                        "grid gap-4 md:gap-px bg-card/5 border border-border p-px transition-opacity duration-300",
+                                        loading ? "opacity-30 pointer-events-none" : "opacity-100",
+                                        viewMode === 'grid' ? 'grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+                                    )}
                                 >
                                     {products.map((product, i) => (
                                         <ProductCard

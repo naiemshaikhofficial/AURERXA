@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { getAdminReturnRequests, updateReturnStatus, checkAdminRole } from '@/app/admin/actions'
+import { getAdminReturnRequests, updateReturnStatus, checkAdminRole } from '@/app/(admin)/admin/actions'
 import {
     RefreshCw, CheckCircle, XCircle, Clock, Truck,
     MessageSquare, User, Hash, IndianRupee,

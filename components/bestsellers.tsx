@@ -81,7 +81,7 @@ export function Bestsellers({ products: initialProducts }: { products?: Product[
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 1, ease: PREMIUM_EASE }}
+            transition={{ duration: 0.4, ease: PREMIUM_EASE }}
             className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-10"
           >
             {bestsellers.map((product, index) => (

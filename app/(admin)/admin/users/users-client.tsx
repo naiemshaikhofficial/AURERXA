@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { getUserDetails, toggleUserBan, deleteUser, toggleAdminRole, updateAdminRole, removeAdmin } from '@/app/admin/actions'
+import { getUserDetails, toggleUserBan, deleteUser, toggleAdminRole, updateAdminRole, removeAdmin } from '@/app/(admin)/admin/actions'
 import { Search, MapPin, Phone, ShoppingBag, CreditCard, Ban, Trash2, Crown, ShieldCheck, UserCog, User as UserIcon, Mail, X } from 'lucide-react'
 import { InternalNotes } from '@/components/admin/internal-notes'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'

@@ -28,44 +28,39 @@ export async function GET(request: NextRequest) {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             },
             cache: 'force-cache',
-            next: { revalidate: 3600 * 24 } // Cache for 24h
+            next: { revalidate: 86400 } // Cache for 24h
         });
 
-        // If it's an HTML page (common with ImageShack viewer links), try to find the direct image URL
         let contentType = response.headers.get("content-type") || "";
+        let data: ArrayBuffer;
+
+        // If it's an HTML page (ImageShack viewer), parse for direct link
         if (contentType.includes("text/html")) {
             const html = await response.text();
-
-            // Robust regex to find direct image link from various meta tags or raw links
             const directImageUrl =
                 html.match(/<meta\s+(?:property|name)=["']og:image["']\s+content=["']([^"']+)["']/i)?.[1] ||
-                html.match(/<meta\s+content=["']([^"']+)["']\s+(?:property|name)=["']og:image["']/i)?.[1] ||
                 html.match(/https?:\/\/[^"']+\.imageshack\.com\/img\d+\/[^"']+\.(?:jpg|jpeg|png|webp)/i)?.[0];
 
             if (directImageUrl) {
-                // Fetch the actual image now
-                response = await fetch(directImageUrl, {
+                const imgRes = await fetch(directImageUrl, {
                     headers: { 'User-Agent': 'Mozilla/5.0' },
                     cache: 'force-cache',
-                    next: { revalidate: 3600 * 24 }
+                    next: { revalidate: 86400 }
                 });
-                contentType = response.headers.get("content-type") || "image/jpeg";
+                contentType = imgRes.headers.get("content-type") || "image/jpeg";
+                data = await imgRes.arrayBuffer();
+            } else {
+                return NextResponse.json({ error: "Could not find direct image" }, { status: 404 });
             }
+        } else {
+            data = await response.arrayBuffer();
         }
-
-        if (!response.ok) {
-            return NextResponse.json({ error: "Failed to fetch remote asset" }, { status: response.status });
-        }
-
-        const data = await response.arrayBuffer();
-        // Fallback for content-type if extraction failed but we have data
-        const finalContentType = contentType.includes("text/html") ? "image/jpeg" : contentType;
 
         return new NextResponse(data, {
             status: 200,
             headers: {
-                "Content-Type": finalContentType,
-                "Cache-Control": "public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400",
+                "Content-Type": contentType,
+                "Cache-Control": "public, max-age=86400, s-maxage=31536000, stale-while-revalidate=86400",
                 "Access-Control-Allow-Origin": "*",
             },
         });

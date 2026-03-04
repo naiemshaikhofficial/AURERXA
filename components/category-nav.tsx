@@ -70,7 +70,7 @@ export function CategoryNav() {
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: -20, opacity: 0 }}
-                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                     onMouseEnter={() => setIsInteracting(true)}
                     onMouseLeave={() => setIsInteracting(false)}
                     onTouchStart={() => setIsInteracting(true)}

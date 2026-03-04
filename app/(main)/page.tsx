@@ -2,8 +2,7 @@ export const revalidate = 3600; // Cache homepage for 1 hour to prevent excessiv
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { Hero } from '@/components/hero'
-import { getNewReleases, getGoldRates } from './actions'
-import { SectionSkeleton } from '@/components/skeletons'
+import { getNewReleases, getGoldRates } from '@/app/actions'
 import type { CategoryBrowsingProps } from '@/components/category-browsing'
 import type { ShopByGenderProps } from '@/components/shop-by-gender'
 import { Metadata } from 'next'
@@ -21,7 +20,7 @@ import { TopStyles } from '@/components/top-styles'
 import { HeroCarousel } from '@/components/hero-carousel'
 
 async function NewReleasesSection() {
-  const { getNewReleases } = await import('./actions')
+  const { getNewReleases } = await import('../actions')
   const newReleases = await getNewReleases()
   return <NewReleases products={newReleases} />
 }
@@ -37,25 +36,25 @@ async function CategoryBrowsingSection() {
 }
 
 async function ShopByGenderSection() {
-  const { getGenderStats } = await import('./actions')
+  const { getGenderStats } = await import('../actions')
   const stats = await getGenderStats()
   return <ShopByGender genderStats={stats} />
 }
 
 async function BestsellersSection() {
-  const { getBestsellers } = await import('./actions')
+  const { getBestsellers } = await import('../actions')
   const bestsellers = await getBestsellers()
   return <Bestsellers products={bestsellers as any} />
 }
 
 async function FeaturedCollectionsSection() {
-  const { getCategories } = await import('./actions')
+  const { getCategories } = await import('../actions')
   const categories = await getCategories()
   return <FeaturedCollections categories={categories} />
 }
 
 async function HeroCarouselSection() {
-  const { getHeroSlides } = await import('./actions')
+  const { getHeroSlides } = await import('../actions')
   let slides = await getHeroSlides()
 
   if (!slides || slides.length === 0) {
@@ -124,7 +123,7 @@ export const metadata: Metadata = {
 }
 
 async function MaterialShowcaseSection() {
-  const { getFilteredProducts } = await import('./actions')
+  const { getFilteredProducts } = await import('../actions')
   const [realGold, goldPlated, bentex] = await Promise.all([
     getFilteredProducts({ material_type: 'real_gold' }),
     getFilteredProducts({ material_type: 'gold_plated' }),

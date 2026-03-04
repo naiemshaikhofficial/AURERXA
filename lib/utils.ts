@@ -9,17 +9,9 @@ export function sanitizeImagePath(url: string | null | undefined): string {
   if (!url) return '/logo.png'
   const trimmed = url.trim()
 
-  // If it's a Supabase URL, proxy it to bypass ISP blocking
+  // Supabase URLs: Return direct URL to reduce server load
   if (trimmed.includes('supabase.co')) {
-    const storageMatch = trimmed.match(/\/storage\/v1\/.*/);
-    if (storageMatch) {
-      return `/api/supabase${storageMatch[0]}`;
-    }
-  }
-
-  // If it's ImageShack or Icons8, proxy it as well (ISP blocking common in India)
-  if (trimmed.includes('imageshack.com') || trimmed.includes('img.icons8.com')) {
-    return `/api/proxy?url=${encodeURIComponent(trimmed)}`;
+    return trimmed
   }
 
   if (trimmed.startsWith('http') || trimmed.startsWith('blob:')) return trimmed
