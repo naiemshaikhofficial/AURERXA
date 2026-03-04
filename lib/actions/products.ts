@@ -78,6 +78,8 @@ async function getDynamicPricingMap(opts: PricingOptions): Promise<Record<string
     const ringWidth = dUnit === 'cm' ? ringWidthRaw * 10 : ringWidthRaw
 
     const calculateFormulaPriceRaw = (weight: number): number => {
+        if (isNaN(weight) || weight <= 0) return (productBasePrice && productBasePrice > 10) ? productBasePrice : (config.ring_base_price_size16 || 1999)
+
         const metalCost = weight * metalRate * purityFactor
         const makingCost = metalCost * (makingPct / 100)
         const baseCost = metalCost + makingCost + packagingCost
@@ -85,7 +87,8 @@ async function getDynamicPricingMap(opts: PricingOptions): Promise<Record<string
         const withMargin = withFee * (1 + marginPct / 100)
         const withShipping = withMargin + shippingCost
         const withTax = withShipping * (1 + taxPct / 100)
-        return withTax
+
+        return isNaN(withTax) || !isFinite(withTax) ? (productBasePrice || 1999) : withTax
     }
 
     const rawBasePrice = calculateFormulaPriceRaw(baseWeight)
@@ -345,7 +348,17 @@ export async function getProductBySlug(slug: string) {
                 }
             }
 
-            return product
+            // FINAL SAFETY: Ensure product is serializable for Next.js Server Components
+            // This prevents "NaN is not a valid JSON value" or similar 500 errors in production
+            const serializedProduct = JSON.parse(JSON.stringify(product, (key, value) => {
+                if (typeof value === 'number') {
+                    if (isNaN(value)) return 0
+                    if (!isFinite(value)) return 0
+                }
+                return value
+            }))
+
+            return serializedProduct
         },
         [`product-${slug}`],
         { revalidate: 3600, tags: [`product:${slug}`, 'products'] }

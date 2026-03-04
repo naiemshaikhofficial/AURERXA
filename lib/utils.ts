@@ -14,6 +14,15 @@ export function sanitizeImagePath(url: string | null | undefined): string {
     return trimmed
   }
 
+  // Robust Pattern: imageshack.com/i/ patterns are landing pages, not direct images.
+  // Although we can't always guess the direct link without an API call, we can at least 
+  // ensure they don't crash and we might attempt a common direct link conversion.
+  if (trimmed.includes('imageshack.com/i/')) {
+    // If it's a known landing page, we keep it but the Next.js loader might still fail.
+    // However, we avoid any further "normalization" that might make it worse.
+    return trimmed
+  }
+
   if (trimmed.startsWith('http') || trimmed.startsWith('blob:')) return trimmed
 
   // Replace all backslashes with forward slashes, then collapse multiple slashes

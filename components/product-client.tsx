@@ -357,8 +357,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
         if (data) {
             return {
-                price: data.price,
-                weight: data.weight,
+                price: Number(data.price) || (Number(product.price) || 0),
+                weight: Number(data.weight) || (Number(product.weight_grams) || 0),
                 dimensions: data.dimensions,
                 width: data.width,
                 diameter: data.diameter,
@@ -370,8 +370,8 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
         }
 
         return {
-            price: product.price,
-            weight: product.weight_grams,
+            price: Number(product.price) || 0,
+            weight: Number(product.weight_grams) || 0,
             dimensions: formatDimensions(product.dimensions_length, product.dimensions_width, product.dimensions_height, product.dimensions_unit || 'cm'),
             width: undefined,
             diameter: undefined,

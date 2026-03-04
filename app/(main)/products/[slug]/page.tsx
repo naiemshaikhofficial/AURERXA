@@ -80,17 +80,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
                         height: 630,
                         alt: product.name,
                     },
-                    ...productImages.slice(0, 3).map((img: string) => ({
+                    ...productImages.slice(0, 3).filter(Boolean).map((img: string) => ({
                         url: img.startsWith('http') ? img : `${baseUrl}${img}`,
                         width: 800,
                         height: 800,
                         alt: `${product.name} - AURERXA`,
                     })),
-                ],
+                ].filter(img => img.url && !img.url.includes('undefined')),
             },
             twitter: {
                 card: 'summary_large_image',
-                title: `${product.name} - ₹${product.price?.toLocaleString('en-IN')}`,
+                title: `${product.name} - ₹${(product.price || 0).toLocaleString('en-IN')}`,
                 description: `Experience the finest craftsmanship with our ${product.name}. Certified quality, Luxe design & Free Insured Shipping.`,
                 images: [ogImageUrl],
             },
