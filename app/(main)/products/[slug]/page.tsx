@@ -222,6 +222,23 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             },
             material: product.material_type || 'Jewelry',
             category: categoryName,
+            additionalProperty: [
+                {
+                    '@type': 'PropertyValue',
+                    name: 'Metal Purity',
+                    value: product.purity || 'N/A'
+                },
+                {
+                    '@type': 'PropertyValue',
+                    name: 'Material Type',
+                    value: product.material_type || 'N/A'
+                },
+                {
+                    '@type': 'PropertyValue',
+                    name: 'Hallmark',
+                    value: 'BIS Hallmarked'
+                }
+            ],
             ...(product.weight_grams ? {
                 weight: {
                     '@type': 'QuantitativeValue',

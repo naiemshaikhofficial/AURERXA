@@ -35,10 +35,74 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     }
 
     const relatedPosts = STATIC_BLOG_POSTS.filter(p => p.category === post.category && p.id !== post.id).slice(0, 3)
+    const baseUrl = 'https://www.aurerxa.com'
+
+    const articleLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: post.title,
+        description: post.excerpt,
+        image: [post.cover_image],
+        datePublished: post.published_at,
+        author: {
+            '@type': 'Person',
+            name: post.author,
+            url: `${baseUrl}/about-us`
+        },
+        publisher: {
+            '@type': 'Organization',
+            name: 'AURERXA',
+            logo: {
+                '@type': 'ImageObject',
+                url: `${baseUrl}/logo.png`
+            }
+        }
+    }
+
+    // Conditional HowTo Schema for the cleaning guide
+    const isCleaningGuide = post.slug.includes('clean')
+    const howToLd = isCleaningGuide ? {
+        '@context': 'https://schema.org',
+        '@type': 'HowTo',
+        name: post.title,
+        description: post.excerpt,
+        step: [
+            {
+                '@type': 'HowToStep',
+                name: 'Line a bowl',
+                text: 'Line a ceramic bowl with aluminum foil.'
+            },
+            {
+                '@type': 'HowToStep',
+                name: 'Add liquid',
+                text: 'Add hot water and 1 tbsp of baking soda.'
+            },
+            {
+                '@type': 'HowToStep',
+                name: 'Dip Jewelry',
+                text: 'Dip silver jewelry for 5-10 minutes.'
+            },
+            {
+                '@type': 'HowToStep',
+                name: 'Rinse',
+                text: 'Rinse and dry gently with a micro-fiber cloth.'
+            }
+        ]
+    } : null
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary-foreground">
             <BlogReadingProgress />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }}
+            />
+            {howToLd && (
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(howToLd) }}
+                />
+            )}
 
             <main className="pt-32 pb-32">
                 <article className="max-w-4xl mx-auto px-6">

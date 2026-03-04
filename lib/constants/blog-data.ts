@@ -17,7 +17,7 @@ export const STATIC_BLOG_POSTS: BlogPost[] = [
         slug: 'what-is-bis-hallmark-in-gold-jewellery',
         title: 'What is BIS Hallmark in Gold Jewellery?',
         excerpt: 'Learn why BIS hallmark certification is the most important check when buying gold in India.',
-        content: `When buying gold jewellery in India, BIS hallmark certification is one of the most important things to check. BIS stands for the Bureau of Indian Standards, the national authority that certifies gold purity.
+        content: `**BIS Hallmark is a certification given by the Bureau of Indian Standards (BIS) that guarantees the purity and fineness of gold jewellery.** This mandatory hallmark protects buyers in India by ensuring the gold meets the specified fineness (e.g., 22K is 91.6% pure gold).
 
 ## What Does BIS Hallmark Mean?
 
@@ -37,7 +37,7 @@ This ensures the gold you buy is genuine and meets government standards.
 ✔ Builds trust
 
 At Aurerxa, we provide BIS hallmarked gold jewellery so you shop with confidence.`,
-        cover_image: '/photo_6066572646712807064_y.jpg',
+        cover_image: '/blog/bis-hallmark.png',
         category: 'Guide',
         author: 'Naiem Shaikh',
         published_at: '2026-03-04T10:00:00Z',
@@ -48,7 +48,7 @@ At Aurerxa, we provide BIS hallmarked gold jewellery so you shop with confidence
         slug: 'how-to-clean-silver-jewellery-at-home',
         title: 'How to Clean Silver Jewellery at Home',
         excerpt: 'Restore the shine of your silver jewelry with these simple home cleaning methods.',
-        content: `Silver jewellery can lose shine over time due to oxidation. But you can safely clean it at home.
+        content: `**To clean silver jewellery at home, line a bowl with aluminum foil, add hot water and one tablespoon of baking soda, then soak the piece for 10 minutes.** This simple electrochemical process removes tarnish and restores shine without harsh polishing.
 
 ## Method 1: Baking Soda & Foil
 
@@ -66,7 +66,7 @@ Use mild soap + warm water. Avoid harsh chemicals.
 Always store silver jewellery in airtight boxes to prevent tarnishing.
 
 Aurerxa’s 925 silver jewellery is crafted for durability and long-lasting shine.`,
-        cover_image: '/closeup-shot-female-wearing-beautiful-silver-necklace-with-pendant.jpg',
+        cover_image: '/blog/silver-cleaning.png',
         category: 'Care Tips',
         author: 'Naiem Shaikh',
         published_at: '2026-03-04T11:00:00Z',
@@ -77,7 +77,7 @@ Aurerxa’s 925 silver jewellery is crafted for durability and long-lasting shin
         slug: 'how-to-check-gold-purity-before-buying',
         title: 'How to Check Gold Purity Before Buying',
         excerpt: 'Essential tips to verify gold purity before making an online or offline purchase.',
-        content: `Buying gold jewellery online in India? Here’s how to verify purity:
+        content: `**To verify gold purity before buying, first check for the 3-digit purity mark (e.g., 916 for 22K) and the official BIS triangular stamp.** You can also perform a simple magnet test, as genuine gold is not magnetic and will not react to a strong magnet.
 
 ## 1️⃣ Check for Hallmark
 
@@ -92,7 +92,7 @@ Pure gold is not magnetic.
 Always purchase from reputed jewellery brands with clear return policy.
 
 At Aurerxa, we ensure certified gold purity with transparent pricing.`,
-        cover_image: '/photo_6066572646712807069_y.jpg',
+        cover_image: '/blog/gold-purity.png',
         category: 'Guide',
         author: 'Naiem Shaikh',
         published_at: '2026-03-04T12:00:00Z',
@@ -103,7 +103,7 @@ At Aurerxa, we ensure certified gold purity with transparent pricing.`,
         slug: 'lightweight-gold-jewellery-perfect-for-daily-wear',
         title: 'Lightweight Gold Jewellery – Perfect for Daily Wear',
         excerpt: 'Discover why modern women prefer lightweight gold pieces for everyday elegance.',
-        content: `Modern women prefer lightweight gold jewellery for everyday elegance.
+        content: `**Lightweight gold jewellery refers to pieces crafted using high-purity gold but with minimalist, efficient designs that weigh less, typically under 10 grams.** These pieces offer the prestige of gold combined with the comfort and affordability required for everyday wear.
 
 ## Why Lightweight Jewellery?
 
@@ -118,7 +118,7 @@ Look for:
 - Simple gold pendants
 
 Aurerxa offers daily wear gold jewellery designed for comfort and style.`,
-        cover_image: '/long-earring-with-violet-precious-stones-hang-from-woman-s-ear.jpg',
+        cover_image: '/blog/lightweight-gold.png',
         category: 'Trends',
         author: 'Naiem Shaikh',
         published_at: '2026-03-04T13:00:00Z',
@@ -129,7 +129,7 @@ Aurerxa offers daily wear gold jewellery designed for comfort and style.`,
         slug: 'how-to-store-gold-jewellery-safely-at-home',
         title: 'How to Store Gold Jewellery Safely at Home',
         excerpt: 'Protect your investment by learning the right way to store your gold and silver pieces.',
-        content: `Proper storage increases jewellery lifespan.
+        content: `**Gold jewellery should be stored in individual soft-lined compartments or cloth pouches to prevent scratches from other hardness levels.** Keeping gold in a dry, dark place away from moisture and perfumes prevents long-term dullness and alloy oxidation.
 
 ## Storage Tips:
 
@@ -141,7 +141,7 @@ Aurerxa offers daily wear gold jewellery designed for comfort and style.`,
 Never mix gold and silver jewellery in the same box.
 
 Aurerxa jewellery is crafted for durability, but proper care keeps it shining longer.`,
-        cover_image: '/heritage-rings.jpg',
+        cover_image: '/blog/jewelry-storage.png',
         category: 'Care Tips',
         author: 'Naiem Shaikh',
         published_at: '2026-03-04T14:00:00Z',

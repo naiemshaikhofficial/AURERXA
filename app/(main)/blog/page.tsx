@@ -13,9 +13,30 @@ export const metadata = {
 export default async function BlogPage() {
     const posts = STATIC_BLOG_POSTS;
     const categories = ['All', 'Guide', 'Care Tips', 'Trends', 'News']
+    const baseUrl = 'https://www.aurerxa.com'
+
+    const collectionLd = {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: 'The Aurerxa Journal',
+        description: 'Expert guides on jewelry care, heritage craftsmanship, and modern gold and silver trends.',
+        url: `${baseUrl}/blog`,
+        mainEntity: {
+            '@type': 'ItemList',
+            itemListElement: posts.map((post, idx) => ({
+                '@type': 'ListItem',
+                position: idx + 1,
+                url: `${baseUrl}/blog/${post.slug}`
+            }))
+        }
+    }
 
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary-foreground overflow-x-hidden">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }}
+            />
 
             {/* Immersive Blog Hero */}
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden border-b border-border/50">

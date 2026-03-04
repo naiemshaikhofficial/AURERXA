@@ -44,6 +44,39 @@ export default async function MainLayout({
     const isAdmin = profile?.isAdmin
     const isBanned = profile?.isBanned
 
+    const baseUrl = 'https://www.aurerxa.com'
+    const organizationLd = {
+        '@context': 'https://schema.org',
+        '@type': 'JewelryStore',
+        '@id': `${baseUrl}/#organization`,
+        name: 'AURERXA',
+        url: baseUrl,
+        logo: `${baseUrl}/icon-512.png`,
+        image: [`${baseUrl}/photo_6066572646712807057_y.jpg`],
+        description: 'Premium BIS Hallmarked Gold & 925 Silver Jewellery Boutique. Handcrafted elegance forged on 50 years of heritage.',
+        address: {
+            '@type': 'PostalAddress',
+            streetAddress: contactConfig.address,
+            addressLocality: 'Sangamner',
+            addressRegion: 'Maharashtra',
+            postalCode: '422605',
+            addressCountry: 'IN',
+        },
+        contactPoint: {
+            '@type': 'ContactPoint',
+            telephone: contactConfig.phone,
+            contactType: 'customer service',
+            areaServed: 'IN',
+            availableLanguage: ['en', 'hi'],
+        },
+        sameAs: [
+            'https://www.instagram.com/aurerxa',
+            'https://www.facebook.com/aurerxa',
+            'https://twitter.com/aurerxa',
+        ],
+        priceRange: '₹-₹₹₹',
+    }
+
     // Maintenance & Banned Checks (Safe for Route Groups)
     if (isBanned) {
         redirect('/banned')
@@ -55,6 +88,10 @@ export default async function MainLayout({
 
     return (
         <AdminRouteGuard>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
+            />
             {marketingConfig.banner_enabled && (
                 <div className="fixed top-0 left-0 right-0 h-8 bg-[#D4AF37] text-black flex items-center justify-center text-[10px] md:text-xs font-bold tracking-widest uppercase z-[45]">
                     <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
