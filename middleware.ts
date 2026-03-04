@@ -142,12 +142,12 @@ export default async function proxy(request: NextRequest) {
             // Scalable Content Security Policy (Optimized for Luxury)
             const cspHeaderValue = `
                 default-src 'self';
-                script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google-analytics.com https://*.googletagmanager.com https://*.vercel-scripts.com https://va.vercel-scripts.com https://*.ccavenue.com https://ccavenue.com https://*.razorpay.com https://checkout.razorpay.com https://sdk.cashfree.com https://vercel.live;
+                script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google-analytics.com https://*.googletagmanager.com https://*.vercel-scripts.com https://va.vercel-scripts.com https://*.ccavenue.com https://ccavenue.com https://*.razorpay.com https://checkout.razorpay.com https://sdk.cashfree.com https://vercel.live https://www.youtube.com https://s.ytimg.com;
                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-                img-src 'self' blob: data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com https://imageshack.com https://*.imageshack.com https://imagizer.imageshack.com https://*.ccavenue.com https://ccavenue.com https://*.razorpay.com https://vercel.com;
+                img-src 'self' blob: data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com https://imageshack.com https://*.imageshack.com https://imagizer.imageshack.com https://*.ccavenue.com https://ccavenue.com https://*.razorpay.com https://vercel.com https://img.youtube.com https://*.ytimg.com https://i.ytimg.com;
                 font-src 'self' data: https://fonts.gstatic.com https://vercel.live;
-                connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://vitals.vercel-insights.com https://imageshack.com https://*.imageshack.com https://*.ccavenue.com https://ccavenue.com https://*.razorpay.com https://razorpay.com https://vercel.live wss://*.pusher.com;
-                frame-src 'self' https://*.ccavenue.com https://secure.ccavenue.com https://test.ccavenue.com https://ccavenue.com https://*.razorpay.com https://razorpay.com https://sdk.cashfree.com https://vercel.live;
+                connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://vitals.vercel-insights.com https://imageshack.com https://*.imageshack.com https://*.ccavenue.com https://ccavenue.com https://*.razorpay.com https://razorpay.com https://vercel.live wss://*.pusher.com https://www.youtube.com https://*.youtube.com;
+                frame-src 'self' https://*.ccavenue.com https://secure.ccavenue.com https://test.ccavenue.com https://ccavenue.com https://*.razorpay.com https://razorpay.com https://sdk.cashfree.com https://vercel.live https://www.youtube.com https://youtube.com https://youtu.be https://www.youtube-nocookie.com;
                 frame-ancestors 'self';
                 form-action 'self' https://*.ccavenue.com https://secure.ccavenue.com https://ccavenue.com;
                 upgrade-insecure-requests;
