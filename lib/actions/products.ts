@@ -276,12 +276,12 @@ export async function getProductBySlug(slug: string) {
 
             const sanitizeName = (name: string) => name.replace(/ by AURERXA/gi, '').replace(/AURERXA /gi, '').trim()
             const product: any = {
-                ...data,
+                ...(data as object),
                 name: sanitizeName(data.name),
                 categories: data.categories ? (
                     Array.isArray(data.categories)
-                        ? data.categories.map((c: any) => ({ ...c, name: sanitizeName(c.name) }))
-                        : { ...data.categories, name: sanitizeName((data.categories as any).name) }
+                        ? data.categories.map((c: any) => ({ ...(c as any), name: sanitizeName(c.name) }))
+                        : { ...(data.categories as any), name: sanitizeName((data.categories as any).name) }
                 ) : null
             }
 

@@ -20,8 +20,7 @@ const PUBLIC_PATHS = [
     '/refund-policy',
     '/stores',
     '/size-guide', '/shipping', '/help',
-    '/collections', '/custom-jewelry', '/the-price-of-perfection',
-    '/api/debug'
+    '/collections', '/custom-jewelry', '/the-price-of-perfection'
 ];
 
 export default async function proxy(request: NextRequest) {
