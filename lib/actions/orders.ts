@@ -220,7 +220,23 @@ export async function getOrderById(id: string) {
     const { data: { user } } = await client.auth.getUser()
     if (!user) return null
 
-    return _getCachedOrderById(id, user.id)
+    // Detect whether `id` is a UUID or an order_number (e.g. AUR-528879)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+
+    if (isUUID) {
+        return _getCachedOrderById(id, user.id)
+    }
+
+    // Fallback: Lookup by order_number (for payment-retry pages coming from CCAvenue callback)
+    const adminClient = createSupabaseAdminClient()
+    const { data, error } = await adminClient
+        .from('orders')
+        .select('id, order_number, subtotal, shipping, total, status, delivery_time_slot, shipping_address, payment_method, payment_status, payment_error_reason, coupon_discount, created_at, order_items(*)')
+        .eq('order_number', id)
+        .eq('user_id', user.id)
+        .single()
+    if (error) return null
+    return data
 }
 
 // ============================================

@@ -15,7 +15,10 @@ export type PaymentResult =
 
 export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     const client = await getAuthClient()
-    const { data: order } = await client.from('orders').select('*').eq('id', orderId).single()
+    // Detect whether orderId is a UUID or an order_number (e.g. AUR-528879)
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId)
+    const lookupField = isUUID ? 'id' : 'order_number'
+    const { data: order } = await client.from('orders').select('*').eq(lookupField, orderId).single()
     if (!order) return { success: false, error: 'Order not found' }
 
     if (order.total <= 0) {
