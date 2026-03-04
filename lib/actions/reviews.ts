@@ -28,19 +28,17 @@ export async function submitReview(formData: FormData): Promise<ActionResponse> 
         const { data: { user } } = await client.auth.getUser()
         if (!user) return { success: false, error: 'Auth required' }
 
-        const data = {
+        const firstName = formData.get('firstName') as string || ''
+        const lastName = formData.get('lastName') as string || ''
+
+        const { error } = await client.from('product_reviews').insert({
+            user_id: user.id,
             product_id: formData.get('productId'),
             rating: Number(formData.get('rating')),
             comment: formData.get('comment'),
             images: JSON.parse(formData.get('images') as string || '[]'),
-            first_name: formData.get('firstName'),
-            last_name: formData.get('lastName'),
-            email: formData.get('email')
-        }
-
-        const { error } = await client.from('product_reviews').insert({
-            user_id: user.id,
-            ...data,
+            guest_name: `${firstName} ${lastName}`.trim(),
+            guest_email: formData.get('email'),
             status: 'approved',
             created_at: new Date().toISOString()
         })

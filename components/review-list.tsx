@@ -14,6 +14,7 @@ interface Review {
     images: string[]
     is_verified: boolean
     created_at: string
+    guest_name?: string
     profiles?: {
         full_name: string
     }
@@ -43,7 +44,7 @@ export function ReviewList({ reviews }: ReviewListProps) {
                     <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-white/90 tracking-tight">
-                                {review.profiles?.full_name || 'Guest'}
+                                {review.profiles?.full_name || review.guest_name || 'Guest'}
                             </span>
                             {review.is_verified && (
                                 <CheckCircle className="w-3.5 h-3.5 text-blue-400 fill-blue-400/20" />
@@ -72,8 +73,8 @@ export function ReviewList({ reviews }: ReviewListProps) {
                             >
                                 <Star
                                     className={`w-3.5 h-3.5 ${s <= review.rating
-                                            ? 'fill-white text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.3)]'
-                                            : 'text-white/10'
+                                        ? 'fill-white text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.3)]'
+                                        : 'text-white/10'
                                         }`}
                                 />
                             </motion.div>

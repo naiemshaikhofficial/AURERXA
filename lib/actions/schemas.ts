@@ -5,7 +5,7 @@ export const ReviewSchema = z.object({
     rating: z.number().min(1).max(5),
     comment: z.string().max(1000).optional(),
     images: z.array(z.string().url()).max(5).optional(),
-    firstName: z.string().min(2).max(50).optional(),
+    firstName: z.string().min(1).max(50).optional(),
     lastName: z.string().max(50).optional(),
     email: z.string().email().optional(),
 })
