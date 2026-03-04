@@ -241,38 +241,28 @@ export function ReviewForm({ productId, onSuccess, isOpen, onClose }: ReviewForm
                                                     className="absolute inset-0 flex items-center justify-center pointer-events-none"
                                                     animate={{
                                                         rotate: (hoverRating || rating) >= s ? (i + 1) * 360 : i * 45,
-                                                        scale: (hoverRating || rating) >= s ? 1 - (i * 0.1) : 0.8,
-                                                        opacity: (hoverRating || rating) >= s ? 1 : 0.1 + (i * 0.1),
+                                                        scale: (hoverRating || rating) >= s ? 1 - (i * 0.12) : 0.8,
+                                                        opacity: (hoverRating || rating) >= s ? 1 : 0.05 + (i * 0.1),
                                                     }}
                                                     transition={{
                                                         type: "spring",
-                                                        stiffness: 400 - (i * 50),
-                                                        damping: 20 + (i * 5),
-                                                        mass: 1 + (i * 0.2)
+                                                        stiffness: 500 - (i * 100),
+                                                        damping: 15 + (i * 10),
+                                                        mass: 1.2 + (i * 0.5)
                                                     }}
                                                 >
                                                     <Star
                                                         className={`w-12 h-12 ${(hoverRating || rating) >= s
                                                                 ? 'text-white fill-white'
-                                                                : 'text-white/20 stroke-[0.5]'
+                                                                : 'text-white/10 stroke-[0.3]'
                                                             }`}
                                                         style={{
                                                             filter: (hoverRating || rating) >= s ? 'brightness(1.5)' : 'none',
-                                                            transform: `scale(${1 - (i * 0.15)})`
+                                                            transform: `scale(${1 - (i * 0.2)})`
                                                         }}
                                                     />
                                                 </motion.div>
                                             ))}
-
-                                            {/* Mechanical Shutter Lines */}
-                                            {(hoverRating || rating) >= s && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, scale: 0.5 }}
-                                                    animate={{ opacity: 1, scale: 1.2 }}
-                                                    transition={{ duration: 0.2 }}
-                                                    className="absolute inset-0 border-[0.5px] border-white/30 rounded-full scale-110 pointer-events-none"
-                                                />
-                                            )}
                                         </motion.button>
                                     ))}
 
