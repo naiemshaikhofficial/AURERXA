@@ -589,11 +589,11 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
             <div className="absolute bottom-[10%] right-[-5%] w-[30%] h-[30%] bg-amber-500/5 rounded-full blur-[100px] pointer-events-none" />
 
 
-            <div className="pt-20 lg:pt-24 min-h-screen flex flex-col lg:flex-row relative z-10">
+            <div className="pt-20 lg:pt-24 min-h-screen flex flex-col lg:flex-row relative z-10 items-start">
                 {/* LEFT: Image Gallery */}
-                <div className="w-full lg:w-[55%] lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)] p-0 lg:p-6 flex flex-col min-h-0">
+                <div className="w-full lg:w-[55%] lg:sticky lg:top-[128px] lg:h-[calc(100vh-128px)] p-0 lg:p-6 flex flex-col min-h-0">
                     {/* Main Image - Adjustable aspect for landscape look on mobile */}
-                    <div className="relative w-full aspect-[3/2] lg:aspect-auto lg:flex-1 bg-neutral-900/20 border border-white/5 overflow-hidden group min-h-0">
+                    <div className="relative w-full aspect-[4/5] lg:aspect-auto lg:flex-1 bg-neutral-900/20 border border-white/5 overflow-hidden group min-h-0">
                         <motion.div
                             key={selectedImage}
                             initial={{ opacity: 0 }}

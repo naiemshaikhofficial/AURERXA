@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 export async function getProductReviews(productId: string) {
     const { data, error } = await supabaseServer
-        .from('reviews')
+        .from('product_reviews')
         .select('*')
         .eq('product_id', productId)
         .order('created_at', { ascending: false })
@@ -38,7 +38,7 @@ export async function submitReview(formData: FormData): Promise<ActionResponse> 
             email: formData.get('email')
         }
 
-        const { error } = await client.from('reviews').insert({
+        const { error } = await client.from('product_reviews').insert({
             user_id: user.id,
             ...data,
             status: 'approved',

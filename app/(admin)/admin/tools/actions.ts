@@ -85,7 +85,7 @@ export async function getDatabaseStats() {
         client.from('orders').select('id', { count: 'exact', head: true }),
         client.from('profiles').select('id', { count: 'exact', head: true }),
         client.from('products').select('id', { count: 'exact', head: true }),
-        client.from('reviews').select('id', { count: 'exact', head: true }).then(res => res.error ? { count: 0 } : res),
+        client.from('product_reviews').select('id', { count: 'exact', head: true }).then(res => res.error ? { count: 0 } : res),
         client.from('contact_messages').select('id', { count: 'exact', head: true }).then(res => res.error ? { count: 0 } : res),
     ])
 
