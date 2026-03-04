@@ -19,6 +19,7 @@ interface SecurePaymentModalProps {
 
 const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModalProps) => {
     const [iframeLoaded, setIframeLoaded] = useState(false)
+    const [iframeHeight, setIframeHeight] = useState(500)
 
     const handleKeyDown = useCallback((e: KeyboardEvent) => {
         if (e.key === 'Escape') onClose()
@@ -29,12 +30,24 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
             document.addEventListener('keydown', handleKeyDown)
             document.body.style.overflow = 'hidden'
             setIframeLoaded(false)
+            setIframeHeight(500)
         }
         return () => {
             document.removeEventListener('keydown', handleKeyDown)
             document.body.style.overflow = ''
         }
     }, [isOpen, handleKeyDown])
+
+    // CCAvenue iframe sends postMessage with newHeight for dynamic resizing
+    useEffect(() => {
+        const handleMessage = (e: MessageEvent) => {
+            if (e.data && typeof e.data === 'object' && e.data.newHeight) {
+                setIframeHeight(Number(e.data.newHeight))
+            }
+        }
+        window.addEventListener('message', handleMessage)
+        return () => window.removeEventListener('message', handleMessage)
+    }, [])
 
     if (!isOpen || !paymentData) return null;
 
@@ -231,9 +244,9 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
                             <iframe
                                 name="payment_iframe"
                                 id="payment_iframe"
-                                className="relative z-10 w-full h-full border-none block"
-                                scrolling="auto"
-                                style={{ minHeight: '500px' }}
+                                className="relative z-10 w-full border-none block"
+                                scrolling="No"
+                                style={{ minHeight: '500px', height: `${iframeHeight}px` }}
                                 title="AURERXA Secure Payment Gateway"
                             />
                         </div>

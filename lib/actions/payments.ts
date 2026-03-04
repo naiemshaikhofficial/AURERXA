@@ -18,7 +18,7 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     // Detect whether orderId is a UUID or an order_number (e.g. AUR-528879)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId)
     const lookupField = isUUID ? 'id' : 'order_number'
-    const { data: order } = await client.from('orders').select('*').eq(lookupField, orderId).single()
+    const { data: order } = await client.from('orders').select('*, profiles(full_name, email, phone_number)').eq(lookupField, orderId).single()
     if (!order) return { success: false, error: 'Order not found' }
 
     if (order.total <= 0) {
@@ -32,12 +32,54 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     const accessCode = process.env.CCAVENUE_ACCESS_CODE
 
     if (merchantId && workingKey && accessCode) {
-        // Use environment variable for base URL or fallback to window.location (client will handle)
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://aurerxa.com'
         const redirectUrl = `${baseUrl}/api/payment/ccavenue/callback`
         const cancelUrl = `${baseUrl}/api/payment/ccavenue/callback`
 
-        const params = `merchant_id=${merchantId}&order_id=${order.order_number}&currency=INR&amount=${order.total}&redirect_url=${encodeURIComponent(redirectUrl)}&cancel_url=${encodeURIComponent(cancelUrl)}&language=EN&integration_type=iframe_normal&merchant_param1=${order.id}`
+        // Extract shipping address details
+        const addr = order.shipping_address || {}
+        const profile = (order as any).profiles || {}
+
+        const billingName = encodeURIComponent(addr.full_name || profile.full_name || '')
+        const billingAddress = encodeURIComponent(addr.street_address || addr.address_line1 || '')
+        const billingCity = encodeURIComponent(addr.city || '')
+        const billingState = encodeURIComponent(addr.state || '')
+        const billingZip = encodeURIComponent(addr.pincode || '')
+        const billingCountry = encodeURIComponent('India')
+        const billingTel = encodeURIComponent(addr.phone || profile.phone_number || '')
+        const billingEmail = encodeURIComponent(profile.email || '')
+
+        // Build parameter string following the CCAvenue NodeJS Integration Kit format
+        const params = [
+            `merchant_id=${merchantId}`,
+            `order_id=${order.order_number}`,
+            `currency=INR`,
+            `amount=${order.total}`,
+            `redirect_url=${encodeURIComponent(redirectUrl)}`,
+            `cancel_url=${encodeURIComponent(cancelUrl)}`,
+            `language=EN`,
+            `integration_type=iframe_normal`,
+            `merchant_param1=${order.id}`,
+            // Billing details (optional, pre-fills payment page)
+            `billing_name=${billingName}`,
+            `billing_address=${billingAddress}`,
+            `billing_city=${billingCity}`,
+            `billing_state=${billingState}`,
+            `billing_zip=${billingZip}`,
+            `billing_country=${billingCountry}`,
+            `billing_tel=${billingTel}`,
+            `billing_email=${billingEmail}`,
+            // Shipping details (same as billing for physical delivery)
+            `delivery_name=${billingName}`,
+            `delivery_address=${billingAddress}`,
+            `delivery_city=${billingCity}`,
+            `delivery_state=${billingState}`,
+            `delivery_zip=${billingZip}`,
+            `delivery_country=${billingCountry}`,
+            `delivery_tel=${billingTel}`,
+            // Customer identifier for returning customer recognition
+            `customer_identifier=${encodeURIComponent(order.user_id || '')}`,
+        ].join('&')
 
         const encRequest = encrypt(params, workingKey)
         return {
