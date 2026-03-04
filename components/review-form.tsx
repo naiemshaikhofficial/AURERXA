@@ -294,20 +294,6 @@ export function ReviewForm({ productId, onSuccess, isOpen, onClose }: ReviewForm
                                             ))}
                                         </motion.button>
                                     ))}
-
-                                    {/* Moving Mechanical Chassis - Unique Indicator */}
-                                    {rating > 0 && (
-                                        <motion.div
-                                            layoutId="chassis"
-                                            className="absolute -bottom-4 h-[2px] bg-white w-16 rounded-full"
-                                            initial={false}
-                                            animate={{
-                                                x: (rating - 1) * 72, // w-16(64px) + gap-2(8px) = 72px
-                                                opacity: 1
-                                            }}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        />
-                                    )}
                                 </div>
                                 <div className="flex justify-between w-full max-w-[320px] items-center mt-4">
                                     <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Dislike it</span>
