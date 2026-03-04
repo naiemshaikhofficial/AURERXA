@@ -181,7 +181,7 @@ const _getBestsellers = unstable_cache(
     async () => {
         const { data, error } = await supabaseServer
             .from('products')
-            .select('id, name, price, image_url, images, slug, weight_grams, bestseller, material_type, categories(id, name, slug)')
+            .select('id, name, price, image_url, slug, material_type, purity, categories(name)')
             .eq('bestseller', true)
             .limit(4)
 
@@ -204,7 +204,7 @@ export async function getNewReleases(limit: number = 8) {
         async () => {
             const { data, error } = await supabaseServer
                 .from('products')
-                .select('id, name, price, image_url, images, slug, weight_grams, material_type, categories(id, name, slug)')
+                .select('id, name, price, image_url, slug, material_type, purity, categories(name)')
                 .order('created_at', { ascending: false })
                 .limit(limit)
 
@@ -224,7 +224,7 @@ export async function getProducts(categorySlug?: string, sortBy?: string) {
         async () => {
             let query = supabaseServer
                 .from('products')
-                .select('id, name, price, image_url, images, slug, weight_grams, tags, categories(id, name, slug)')
+                .select('id, name, price, image_url, slug, material_type, purity, categories(id, name, slug)')
                 .eq('material_type', 'silver')
 
             if (categorySlug) {
@@ -349,7 +349,7 @@ export async function getAdminProducts() {
 
     const { data, error } = await supabaseServer
         .from('products')
-        .select('id, name, price, stock, slug, created_at, categories(name)')
+        .select('id, name, price, slug, created_at')
         .order('created_at', { ascending: false })
 
     if (error) {

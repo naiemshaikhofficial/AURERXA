@@ -211,7 +211,10 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
         if (!containerRef.current) return
         const observer = new IntersectionObserver(
             ([entry]) => setIsVisible(entry.isIntersecting),
-            { threshold: 0.1 }
+            {
+                threshold: [0, 0.1],
+                rootMargin: '100px' // Detect slightly before entering viewport
+            }
         )
         observer.observe(containerRef.current)
         return () => observer.disconnect()
@@ -352,8 +355,8 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                     </motion.div>
                 </AnimatePresence>
 
-                {/* Preload Hidden Images on Hover - Ensures initial transitions in the cycle are smooth without excessive egress */}
-                {isHovered && allImages.length > 1 && (
+                {/* Preload Hidden Images on Hover - Optimized with Viewport awareness */}
+                {isHovered && isVisible && allImages.length > 1 && (
                     <div className="hidden absolute inset-0 pointer-events-none" aria-hidden="true">
                         {allImages.slice(0, 3).map((img, i) => (
                             i !== currentImageIndex && (
