@@ -192,7 +192,7 @@ const _getBestsellers = unstable_cache(
         return data || []
     },
     ['bestsellers'],
-    { revalidate: 600, tags: ['products', 'bestsellers'] }
+    { revalidate: 60, tags: ['products', 'bestsellers'] }
 )
 
 export async function getBestsellers() {
@@ -469,7 +469,7 @@ export async function getHeroSlides() {
             return data || []
         },
         ['hero-slides'],
-        { revalidate: 3600, tags: ['hero-slides'] }
+        { revalidate: 60, tags: ['hero-slides'] }
     )()
 }
 
