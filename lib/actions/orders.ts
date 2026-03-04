@@ -177,7 +177,7 @@ export async function getOrders() {
 
     const { data, error } = await client
         .from('orders')
-        .select('*, order_items(*)')
+        .select('id, order_number, total, status, payment_status, created_at, order_items(id, product_name, quantity, price)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
@@ -192,7 +192,7 @@ export async function getAdminOrders() {
     const client = await getAuthClient()
     const { data, error } = await client
         .from('orders')
-        .select('*, profiles(full_name, email)')
+        .select('id, order_number, total, status, payment_status, created_at, profiles(full_name, email)')
         .order('created_at', { ascending: false })
 
     if (error) return []
@@ -204,7 +204,7 @@ const _getCachedOrderById = unstable_cache(
         const adminClient = createSupabaseAdminClient()
         const { data, error } = await adminClient
             .from('orders')
-            .select('*, order_items(*)')
+            .select('id, order_number, subtotal, shipping, total, status, delivery_time_slot, shipping_address, payment_method, payment_status, created_at, order_items(*)')
             .eq('id', id)
             .eq('user_id', userId)
             .single()

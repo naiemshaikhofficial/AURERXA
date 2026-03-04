@@ -351,7 +351,7 @@ export async function getAdminProducts() {
 
     const { data, error } = await supabaseServer
         .from('products')
-        .select('*, categories(name)')
+        .select('id, name, price, stock, slug, created_at, categories(name)')
         .order('created_at', { ascending: false })
 
     if (error) {
@@ -429,7 +429,7 @@ export async function getProductById(id: string) {
         async () => {
             const { data, error } = await supabaseServer
                 .from('products')
-                .select('*, categories(*)')
+                .select('id, name, description, price, image_url, images, stock, sizes, slug, purity, material_type, weight_grams, categories(id, name, slug)')
                 .eq('id', id)
                 .single()
             if (error) return null
@@ -463,7 +463,7 @@ export async function getHeroSlides() {
         async () => {
             const { data, error } = await supabaseServer
                 .from('hero_slides')
-                .select('*')
+                .select('id, title, subtitle, image_url, link_url, sort_order')
                 .eq('is_active', true)
                 .order('sort_order', { ascending: true })
 

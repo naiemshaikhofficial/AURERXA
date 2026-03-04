@@ -133,7 +133,7 @@ export default async function proxy(request: NextRequest) {
 
         // HSTS & Security Headers
         if (!pathname.startsWith('/api/payment/ccavenue/callback')) {
-            response.headers.set('X-Frame-Options', 'DENY')
+            response.headers.set('X-Frame-Options', 'SAMEORIGIN')
             response.headers.set('X-Content-Type-Options', 'nosniff')
             response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
             response.headers.set('X-DNS-Prefetch-Control', 'on')
@@ -143,13 +143,13 @@ export default async function proxy(request: NextRequest) {
             // Scalable Content Security Policy (Optimized for Luxury)
             const cspHeaderValue = `
                 default-src 'self';
-                script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google-analytics.com https://*.googletagmanager.com https://*.vercel-scripts.com https://va.vercel-scripts.com;
+                script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google-analytics.com https://*.googletagmanager.com https://*.vercel-scripts.com https://va.vercel-scripts.com https://*.ccavenue.com;
                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-                img-src 'self' blob: data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com https://imageshack.com https://*.imageshack.com https://imagizer.imageshack.com;
+                img-src 'self' blob: data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com https://imageshack.com https://*.imageshack.com https://imagizer.imageshack.com https://*.ccavenue.com;
                 font-src 'self' data: https://fonts.gstatic.com;
-                connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://vitals.vercel-insights.com https://imageshack.com https://*.imageshack.com;
-                frame-src 'self' https://*.ccavenue.com https://secure.ccavenue.com;
-                form-action 'self' https://secure.ccavenue.com;
+                connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://vitals.vercel-insights.com https://imageshack.com https://*.imageshack.com https://*.ccavenue.com;
+                frame-src 'self' https://*.ccavenue.com https://secure.ccavenue.com https://test.ccavenue.com;
+                form-action 'self' https://*.ccavenue.com https://secure.ccavenue.com;
                 upgrade-insecure-requests;
             `.replace(/\s{2,}/g, ' ').trim();
 
