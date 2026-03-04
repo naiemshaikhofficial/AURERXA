@@ -203,49 +203,14 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
 
                         {/* ===================== IFRAME CONTAINER ===================== */}
                         <div className="relative flex-1 min-h-0 overflow-auto bg-white dark:bg-[#fafaf9]">
-                            {/* Loading State */}
-                            <AnimatePresence>
-                                {!iframeLoaded && (
-                                    <motion.div
-                                        initial={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{ duration: 0.4 }}
-                                        className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-6 bg-white dark:bg-[#fafaf9]"
-                                    >
-                                        <div className="relative">
-                                            <div className="w-14 h-14 lg:w-20 lg:h-20 rounded-full border-2 border-[#bf9b65]/10" />
-                                            <div className="absolute inset-0 w-14 h-14 lg:w-20 lg:h-20 rounded-full border-2 border-transparent border-t-[#bf9b65] animate-spin" />
-                                            <div className="absolute inset-0 flex items-center justify-center">
-                                                <CreditCard className="w-5 h-5 lg:w-7 lg:h-7 text-[#bf9b65]/40" />
-                                            </div>
-                                        </div>
-                                        <div className="text-center px-8">
-                                            <p className="text-xs lg:text-sm font-semibold text-[#1a1a1a] uppercase tracking-[0.12em] mb-1">Connecting to Gateway</p>
-                                            <p className="text-[9px] lg:text-[10px] text-[#999] uppercase tracking-[0.2em]">Establishing Secure Vault...</p>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            {[0, 1, 2].map((i) => (
-                                                <motion.div
-                                                    key={i}
-                                                    className="w-1.5 h-1.5 rounded-full bg-[#bf9b65]/60"
-                                                    animate={{ opacity: [0.3, 1, 0.3], scale: [0.8, 1.1, 0.8] }}
-                                                    transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
                             <iframe
                                 name="payment_iframe"
                                 id="payment_iframe"
                                 src={iframeSrc}
                                 className="relative z-10 w-full h-full border-none block"
                                 scrolling="auto"
-                                style={{ minHeight: '460px' }}
+                                style={{ minHeight: '500px' }}
                                 title="AURERXA Secure Payment Gateway"
-                                onLoad={() => setIframeLoaded(true)}
                             />
                         </div>
 

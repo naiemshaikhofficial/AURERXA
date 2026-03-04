@@ -8,17 +8,17 @@ import type { CategoryBrowsingProps } from '@/components/category-browsing'
 import type { ShopByGenderProps } from '@/components/shop-by-gender'
 import { Metadata } from 'next'
 
-// Lazy load ALL below-hero components to reduce initial JS bundle and TBT
-const NewReleases = dynamic(() => import('@/components/new-releases').then(mod => mod.NewReleases))
-const CategoryBrowsing = dynamic<CategoryBrowsingProps>(() => import('@/components/category-browsing').then(mod => mod.CategoryBrowsing))
-const ShopByGender = dynamic<ShopByGenderProps>(() => import('@/components/shop-by-gender').then(mod => mod.ShopByGender))
-const OccasionBrowsing = dynamic(() => import('@/components/occasion-browsing').then(mod => mod.OccasionBrowsing))
-const FeaturedCollections = dynamic(() => import('@/components/featured-collections').then(mod => mod.FeaturedCollections))
-const Bestsellers = dynamic(() => import('@/components/bestsellers').then(mod => mod.Bestsellers))
-const Newsletter = dynamic(() => import('@/components/newsletter').then(mod => mod.Newsletter))
-const RecentlyViewed = dynamic(() => import('@/components/recently-viewed').then(mod => mod.RecentlyViewed))
-const MaterialShowcase = dynamic<any>(() => import('@/components/material-showcase').then(mod => mod.MaterialShowcase))
-const TopStyles = dynamic(() => import('@/components/top-styles').then(mod => mod.TopStyles))
+import { NewReleases } from '@/components/new-releases'
+import { CategoryBrowsing } from '@/components/category-browsing'
+import { ShopByGender } from '@/components/shop-by-gender'
+import { OccasionBrowsing } from '@/components/occasion-browsing'
+import { FeaturedCollections } from '@/components/featured-collections'
+import { Bestsellers } from '@/components/bestsellers'
+import { Newsletter } from '@/components/newsletter'
+import { RecentlyViewed } from '@/components/recently-viewed'
+import { TopStyles } from '@/components/top-styles'
+
+import { HeroCarousel } from '@/components/hero-carousel'
 
 async function NewReleasesSection() {
   const { getNewReleases } = await import('./actions')
@@ -27,28 +27,11 @@ async function NewReleasesSection() {
 }
 
 async function CategoryBrowsingSection() {
-  // Hardcoded curated categories as requested to restore original experience (Necklaces, Earrings, etc.)
   const categories = [
-    {
-      name: 'Necklaces',
-      slug: 'necklaces',
-      image_url: '/closeup-shot-female-wearing-beautiful-silver-necklace-with-pendant.jpg'
-    },
-    {
-      name: 'Earrings',
-      slug: 'earrings',
-      image_url: '/long-earring-with-violet-precious-stones-hang-from-woman-s-ear.jpg'
-    },
-    {
-      name: 'Rings',
-      slug: 'rings',
-      image_url: '/closeup-diamond-ring.jpg'
-    },
-    {
-      name: 'Mangalsutra',
-      slug: 'mangalsutra',
-      image_url: '/mangalsutra-golden-necklace-worn-by-married-hindu-women-arranged-with-traditional-saree-with-huldi-kumkum-mogra-flowers-gajra-selective-focus_466689-60648 (2).avif'
-    }
+    { name: 'Necklaces', slug: 'necklaces', image_url: '/closeup-shot-female-wearing-beautiful-silver-necklace-with-pendant.jpg' },
+    { name: 'Earrings', slug: 'earrings', image_url: '/long-earring-with-violet-precious-stones-hang-from-woman-s-ear.jpg' },
+    { name: 'Rings', slug: 'rings', image_url: '/closeup-diamond-ring.jpg' },
+    { name: 'Mangalsutra', slug: 'mangalsutra', image_url: '/mangalsutra-golden-necklace-worn-by-married-hindu-women-arranged-with-traditional-saree-with-huldi-kumkum-mogra-flowers-gajra-selective-focus_466689-60648 (2).avif' }
   ]
   return <CategoryBrowsing categories={categories} />
 }
@@ -65,39 +48,14 @@ async function BestsellersSection() {
   return <Bestsellers products={bestsellers as any} />
 }
 
-async function MaterialShowcaseSection() {
-  const { getFilteredProducts } = await import('./actions')
-
-  // Parallel fetch for grouped collections
-  const [realGold, goldPlated, bentex] = await Promise.all([
-    getFilteredProducts({ material_type: 'real_gold' }),
-    getFilteredProducts({ material_type: 'gold_plated' }),
-    getFilteredProducts({ material_type: 'bentex' })
-  ])
-
-  return (
-    <MaterialShowcase
-      realGoldProducts={realGold as any}
-      goldPlatedProducts={goldPlated as any}
-      bentexProducts={bentex as any}
-    />
-  )
-}
-
 async function FeaturedCollectionsSection() {
   const { getCategories } = await import('./actions')
   const categories = await getCategories()
   return <FeaturedCollections categories={categories} />
 }
 
-async function TopStylesSection() {
-  const { TopStyles } = await import('@/components/top-styles')
-  return <TopStyles />
-}
-
 async function HeroCarouselSection() {
   const { getHeroSlides } = await import('./actions')
-  const { HeroCarousel } = await import('@/components/hero-carousel')
   let slides = await getHeroSlides()
 
   if (!slides || slides.length === 0) {
@@ -109,7 +67,7 @@ async function HeroCarouselSection() {
         subtitle: 'Where Tradition Meets Eternity',
         cta_text: 'Discover More',
         cta_link: '/collections/bride',
-        text_color: '#FBBF24', // Gold
+        text_color: '#FBBF24',
         button_bg: '#FFFFFF',
         button_text_color: '#000000',
         overlay_opacity: 0.4
@@ -121,7 +79,7 @@ async function HeroCarouselSection() {
         subtitle: 'Nocturnal Brilliance',
         cta_text: 'Shop The Look',
         cta_link: '/collections/midnight',
-        text_color: '#E5E7EB', // Silver
+        text_color: '#E5E7EB',
         button_bg: '#111827',
         button_text_color: '#FFFFFF',
         overlay_opacity: 0.6
@@ -133,18 +91,22 @@ async function HeroCarouselSection() {
         subtitle: 'Subtle. Sophisticated.',
         cta_text: 'View Collection',
         cta_link: '/collections/rose-gold',
-        text_color: '#FDA4AF', // Rose Pink
+        text_color: '#FDA4AF',
         button_bg: '#FDA4AF',
         button_text_color: '#FFFFFF',
         overlay_opacity: 0.3
       }
-    ]
+    ] as any[]
   }
 
-  return <HeroCarousel slides={slides} />
+  // Map DB fields to UI Component props (link_url -> cta_link)
+  const mappedSlides = (slides as any[]).map(s => ({
+    ...s,
+    cta_link: s.link_url || s.cta_link
+  }))
+
+  return <HeroCarousel slides={mappedSlides as any} />
 }
-
-
 
 export const metadata: Metadata = {
   title: 'AURERXA | Buy Premium Silver Jewelry Online - Bridal & Fashion Jewelry',
@@ -161,112 +123,44 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
-  // Trigger gold rate sync on every visit in the background
-  getGoldRates().catch(err => console.error('Gold sync trigger error:', err));
+async function MaterialShowcaseSection() {
+  const { getFilteredProducts } = await import('./actions')
+  const [realGold, goldPlated, bentex] = await Promise.all([
+    getFilteredProducts({ material_type: 'real_gold' }),
+    getFilteredProducts({ material_type: 'gold_plated' }),
+    getFilteredProducts({ material_type: 'bentex' })
+  ])
+  const { MaterialShowcase } = await import('@/components/material-showcase')
+  return (
+    <MaterialShowcase
+      realGoldProducts={realGold as any}
+      goldPlatedProducts={goldPlated as any}
+      bentexProducts={bentex as any}
+    />
+  )
+}
 
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: 'What type of jewelry does AURERXA sell?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'AURERXA offers premium handcrafted luxury jewelry including gold necklaces, diamond earrings, mangalsutra, bridal sets, rings, bangles, and fashion accessories. We specialize in both traditional Indian jewelry and modern contemporary designs.'
-        }
-      },
-      {
-        '@type': 'Question',
-        name: 'Is AURERXA jewelry real gold?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Yes, AURERXA offers authentic luxury silver jewelry. Every piece comes with a certificate of authenticity.'
-        }
-      },
-      {
-        '@type': 'Question',
-        name: 'Does AURERXA offer free shipping?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Yes, AURERXA provides free insured shipping across India on all orders. We ship via trusted partners like Delhivery with real-time tracking.'
-        }
-      },
-      {
-        '@type': 'Question',
-        name: 'Can I customize jewelry at AURERXA?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Absolutely! AURERXA specializes in bespoke jewelry design. You can submit a custom order request through our website, and our master artisans will craft a unique piece tailored to your specifications.'
-        }
-      },
-      {
-        '@type': 'Question',
-        name: 'Where is AURERXA located?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'AURERXA\'s flagship boutique is located at Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605. We also ship worldwide through our online store at aurerxa.com.'
-        }
-      },
-      {
-        '@type': 'Question',
-        name: 'What is the return policy for AURERXA jewelry?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'AURERXA offers a hassle-free return policy. If you are not satisfied with your purchase, you can initiate a return within the specified period through your account dashboard.'
-        }
-      }
-    ]
-  }
+export default function HomePage() {
+  getGoldRates().catch(err => console.error('Gold sync trigger error:', err));
 
   return (
     <div className="min-h-screen bg-background">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      <section id="boutique-hero" aria-label="AURERXA Luxury Boutique Hero">
+      <section id="boutique-hero">
         <Hero />
       </section>
 
-      {/* Dynamic Hero Carousel (Bridal Series & More) */}
       <section id="bridal-collections" className="bg-background">
-        <Suspense fallback={<div className="h-[80vh] w-full bg-background"><SectionSkeleton type="collection" columns={1} /></div>}>
-          <HeroCarouselSection />
-        </Suspense>
+        <HeroCarouselSection />
       </section>
 
-
-      <Suspense fallback={<div className="py-24 px-6 max-w-7xl mx-auto"><SectionSkeleton type="collection" columns={4} /></div>}>
-        <CategoryBrowsingSection />
-      </Suspense>
-      <Suspense fallback={<div className="py-24 px-6 max-w-7xl mx-auto"><SectionSkeleton type="collection" columns={2} /></div>}>
-        <ShopByGenderSection />
-      </Suspense>
+      <CategoryBrowsingSection />
+      <ShopByGenderSection />
       <OccasionBrowsing />
-
-      <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
-        <NewReleasesSection />
-      </Suspense>
-
-      <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="collection" columns={4} /></div>}>
-        <FeaturedCollectionsSection />
-      </Suspense>
-
-      <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
-        <TopStylesSection />
-      </Suspense>
-
-      <Suspense fallback={<div className="py-12 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
-        <BestsellersSection />
-      </Suspense>
-
-      {/* 
-      <Suspense fallback={<div className="py-24 px-6 max-w-7xl mx-auto"><SectionSkeleton type="product" columns={4} /></div>}>
-        <MaterialShowcaseSection />
-      </Suspense>
-*/}
+      <NewReleasesSection />
+      <FeaturedCollectionsSection />
+      <TopStyles />
+      <BestsellersSection />
+      <MaterialShowcaseSection />
 
       <RecentlyViewed />
       <Newsletter />

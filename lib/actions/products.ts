@@ -181,9 +181,8 @@ const _getBestsellers = unstable_cache(
     async () => {
         const { data, error } = await supabaseServer
             .from('products')
-            .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
+            .select('id, name, price, image_url, images, slug, weight_grams, bestseller, material_type, categories(id, name, slug)')
             .eq('bestseller', true)
-            .eq('material_type', 'silver')
             .limit(4)
 
         if (error) {
@@ -205,8 +204,7 @@ export async function getNewReleases(limit: number = 8) {
         async () => {
             const { data, error } = await supabaseServer
                 .from('products')
-                .select('id, name, price, image_url, images, slug, weight_grams, categories(id, name, slug)')
-                .eq('material_type', 'silver')
+                .select('id, name, price, image_url, images, slug, weight_grams, material_type, categories(id, name, slug)')
                 .order('created_at', { ascending: false })
                 .limit(limit)
 
@@ -217,7 +215,7 @@ export async function getNewReleases(limit: number = 8) {
             return data || []
         },
         ['new-releases', limit.toString()],
-        { revalidate: 86400, tags: ['products', 'new-releases'] }
+        { revalidate: 60, tags: ['products', 'new-releases'] }
     )()
 }
 
@@ -463,7 +461,7 @@ export async function getHeroSlides() {
         async () => {
             const { data, error } = await supabaseServer
                 .from('hero_slides')
-                .select('id, title, subtitle, image_url, link_url, sort_order')
+                .select('*')
                 .eq('is_active', true)
                 .order('sort_order', { ascending: true })
 
