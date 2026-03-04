@@ -17,9 +17,29 @@ export async function getProductReviews(productId: string) {
 }
 
 export async function getReviewStats(productId: string) {
-    const { data, error } = await supabaseServer.rpc('get_review_stats', { p_id: productId })
-    if (error) return { average: 0, total: 0 } // Changed count to total as per component usage
-    return data
+    const { data, error } = await supabaseServer
+        .from('product_reviews')
+        .select('rating')
+        .eq('product_id', productId)
+        .eq('status', 'approved')
+
+    if (error || !data || data.length === 0) {
+        return { average: 0, total: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } }
+    }
+
+    const total = data.length
+    const sum = data.reduce((acc, curr) => acc + curr.rating, 0)
+    const average = sum / total
+
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+    data.forEach(r => {
+        const rating = r.rating as keyof typeof distribution
+        if (distribution[rating] !== undefined) {
+            distribution[rating]++
+        }
+    })
+
+    return { average, total, distribution }
 }
 
 export async function submitReview(formData: FormData): Promise<ActionResponse> {

@@ -54,14 +54,14 @@ export function ProductReviewsSection({ productId }: ProductReviewsSectionProps)
                                 {[1, 2, 3, 4, 5].map((s) => (
                                     <Star
                                         key={s}
-                                        className={`w-5 h-5 transition-all duration-300 ${s <= Math.round(reviewStats.average) ? 'fill-white text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' : 'text-white/10'}`}
+                                        className={`w-5 h-5 transition-all duration-300 ${s <= Math.round(reviewStats?.average || 0) ? 'fill-white text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]' : 'text-white/10'}`}
                                     />
                                 ))}
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-xl font-serif text-white">{reviewStats.average.toFixed(1)}</span>
+                                <span className="text-xl font-serif text-white">{(reviewStats?.average || 0).toFixed(1)}</span>
                                 <span className="text-sm font-medium text-white/40 tracking-widest uppercase">
-                                    {reviewStats.total.toLocaleString()} Reviews
+                                    {(reviewStats?.total || 0).toLocaleString()} Reviews
                                 </span>
                                 <motion.div
                                     animate={{ rotate: isBreakdownOpen ? 180 : 0 }}
@@ -83,7 +83,8 @@ export function ProductReviewsSection({ productId }: ProductReviewsSectionProps)
                                 >
                                     <div className="pt-4 space-y-3 w-full max-w-sm">
                                         {[5, 4, 3, 2, 1].map((rating) => {
-                                            const counts = reviews.filter(r => r.rating === rating).length;
+                                            const distribution = reviewStats?.distribution || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+                                            const counts = distribution[rating as keyof typeof distribution] || 0;
                                             const percentage = reviewStats.total > 0 ? (counts / reviewStats.total) * 100 : 0;
                                             return (
                                                 <div key={rating} className="flex items-center gap-4 group">
