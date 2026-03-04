@@ -229,11 +229,41 @@ export function ReviewForm({ productId, onSuccess, isOpen, onClose }: ReviewForm
                                             }}
                                             whileHover={{ scale: 1.1, zIndex: 10 }}
                                             whileTap={{ scale: 0.95 }}
-                                            onClick={() => setRating(s)}
+                                            onClick={() => {
+                                                setRating(s);
+                                                // Trigger particle burst would go here if handled by state
+                                                // But we can also use a simple mapping
+                                            }}
                                             onMouseEnter={() => setHoverRating(s)}
                                             onMouseLeave={() => setHoverRating(0)}
                                             className="relative w-16 h-16 flex items-center justify-center outline-none group"
                                         >
+                                            {/* Particle Burst - Extreme Level Shards */}
+                                            <AnimatePresence mode="popLayout">
+                                                {rating === s && (
+                                                    <div className="absolute inset-0 pointer-events-none">
+                                                        {[...Array(20)].map((_, i) => (
+                                                            <motion.div
+                                                                key={`${s}-${i}`}
+                                                                initial={{ scale: 0, x: 0, y: 0, opacity: 1, rotate: 0 }}
+                                                                animate={{
+                                                                    scale: [0, 1.2, 0],
+                                                                    x: (Math.random() - 0.5) * 220,
+                                                                    y: (Math.random() - 0.5) * 220,
+                                                                    rotate: Math.random() * 1080,
+                                                                }}
+                                                                transition={{
+                                                                    duration: 1.5,
+                                                                    ease: [0.23, 1, 0.32, 1],
+                                                                }}
+                                                                className="absolute w-0.5 h-3 bg-white left-1/2 top-1/2 origin-center z-[100]"
+                                                                style={{ transformOrigin: 'center' }}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </AnimatePresence>
+
                                             {/* Extreme Mechanical Layers */}
                                             {[...Array(3)].map((_, i) => (
                                                 <motion.div
@@ -242,7 +272,7 @@ export function ReviewForm({ productId, onSuccess, isOpen, onClose }: ReviewForm
                                                     animate={{
                                                         rotate: (hoverRating || rating) >= s ? (i + 1) * 360 : i * 45,
                                                         scale: (hoverRating || rating) >= s ? 1 - (i * 0.12) : 0.8,
-                                                        opacity: (hoverRating || rating) >= s ? 1 : 0.05 + (i * 0.1),
+                                                        opacity: (hoverRating || rating) >= s ? 1 : 0.2 + (i * 0.1),
                                                     }}
                                                     transition={{
                                                         type: "spring",
@@ -253,11 +283,10 @@ export function ReviewForm({ productId, onSuccess, isOpen, onClose }: ReviewForm
                                                 >
                                                     <Star
                                                         className={`w-12 h-12 ${(hoverRating || rating) >= s
-                                                                ? 'text-white fill-white'
-                                                                : 'text-white/10 stroke-[0.3]'
+                                                            ? 'text-white fill-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]'
+                                                            : 'text-white/30 stroke-white/40 stroke-[1]'
                                                             }`}
                                                         style={{
-                                                            filter: (hoverRating || rating) >= s ? 'brightness(1.5)' : 'none',
                                                             transform: `scale(${1 - (i * 0.2)})`
                                                         }}
                                                     />

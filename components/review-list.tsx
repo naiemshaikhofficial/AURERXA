@@ -77,8 +77,8 @@ export function ReviewList({ reviews }: ReviewListProps) {
                                     <Star
                                         key={i}
                                         className={`absolute w-full h-full transition-all duration-500 ${s <= review.rating
-                                                ? 'fill-white text-white'
-                                                : 'text-white/5 stroke-[0.5]'
+                                            ? 'fill-white text-white'
+                                            : 'text-white/5 stroke-[0.5]'
                                             }`}
                                         style={{
                                             transform: `scale(${1 - (i * 0.2)}) rotate(${i * 45}deg)`,
@@ -86,6 +86,30 @@ export function ReviewList({ reviews }: ReviewListProps) {
                                         }}
                                     />
                                 ))}
+
+                                {/* Subtle Kinetic Shards on Mount */}
+                                {s <= review.rating && (
+                                    <div className="absolute inset-0 pointer-events-none">
+                                        {[...Array(4)].map((_, i) => (
+                                            <motion.div
+                                                key={i}
+                                                initial={{ scale: 0, x: 0, y: 0, opacity: 1 }}
+                                                animate={{
+                                                    scale: [0, 1, 0],
+                                                    x: (Math.random() - 0.5) * 40,
+                                                    y: (Math.random() - 0.5) * 40,
+                                                    rotate: Math.random() * 360,
+                                                }}
+                                                transition={{
+                                                    duration: 0.8,
+                                                    delay: 0.2 + (s * 0.1),
+                                                    ease: "easeOut"
+                                                }}
+                                                className="absolute w-0.5 h-2 bg-white/20 left-1/2 top-1/2 origin-center"
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </motion.div>
                         ))}
                     </div>
