@@ -214,64 +214,81 @@ export function ReviewForm({ productId, onSuccess, isOpen, onClose }: ReviewForm
                                 <h3 className="text-sm font-bold text-white/40 uppercase tracking-[0.3em] mb-12">
                                     How would you rate this item?
                                 </h3>
-                                <div className="flex gap-4 mb-8 relative preserve-3d" style={{ perspective: "1000px" }}>
+                                <div className="flex gap-2 mb-10 relative">
                                     {[1, 2, 3, 4, 5].map((s) => (
                                         <motion.button
                                             key={s}
                                             type="button"
-                                            initial={{ scale: 0, opacity: 0, y: 20 }}
-                                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                                            initial={{ scale: 0, opacity: 0, rotate: -45 }}
+                                            animate={{ scale: 1, opacity: 1, rotate: 0 }}
                                             transition={{
                                                 type: "spring",
-                                                stiffness: 500,
-                                                damping: 20,
-                                                delay: s * 0.08
+                                                stiffness: 600,
+                                                damping: 25,
+                                                delay: s * 0.05
                                             }}
-                                            whileHover={{
-                                                scale: 1.2,
-                                                zIndex: 50,
-                                                rotateX: 10,
-                                                rotateY: -10,
-                                                transition: { type: "spring", stiffness: 600, damping: 15 }
-                                            }}
-                                            whileTap={{ scale: 0.9, rotate: -10 }}
+                                            whileHover={{ scale: 1.1, zIndex: 10 }}
+                                            whileTap={{ scale: 0.95 }}
                                             onClick={() => setRating(s)}
                                             onMouseEnter={() => setHoverRating(s)}
                                             onMouseLeave={() => setHoverRating(0)}
-                                            className="p-1 relative outline-none preserve-3d"
+                                            className="relative w-16 h-16 flex items-center justify-center outline-none group"
                                         >
-                                            <motion.div
-                                                animate={{
-                                                    rotateY: (hoverRating || rating) >= s ? 180 : 0,
-                                                    rotateX: (hoverRating || rating) >= s ? 180 : 0,
-                                                    scale: (hoverRating || rating) >= s ? 1.1 : 1,
-                                                }}
-                                                transition={{
-                                                    type: "spring",
-                                                    stiffness: 400,
-                                                    damping: 18
-                                                }}
-                                            >
-                                                <Star
-                                                    className={`w-12 h-12 transition-all duration-300 ${(hoverRating || rating) >= s
-                                                        ? 'fill-white text-white drop-shadow-[0_0_2px_rgba(255,255,255,0.8)]'
-                                                        : 'text-white/5 stroke-[0.5]'
-                                                        }`}
-                                                />
-                                            </motion.div>
-
-                                            {/* Kinetic Impact Ring - Sharp White */}
-                                            {rating === s && (
+                                            {/* Extreme Mechanical Layers */}
+                                            {[...Array(3)].map((_, i) => (
                                                 <motion.div
-                                                    layoutId="impact-ring"
-                                                    initial={{ scale: 0.5, opacity: 0 }}
-                                                    animate={{ scale: 1.5, opacity: 0.2 }}
-                                                    transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                                                    className="absolute inset-0 border border-white rounded-full -z-10"
+                                                    key={i}
+                                                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                                    animate={{
+                                                        rotate: (hoverRating || rating) >= s ? (i + 1) * 360 : i * 45,
+                                                        scale: (hoverRating || rating) >= s ? 1 - (i * 0.1) : 0.8,
+                                                        opacity: (hoverRating || rating) >= s ? 1 : 0.1 + (i * 0.1),
+                                                    }}
+                                                    transition={{
+                                                        type: "spring",
+                                                        stiffness: 400 - (i * 50),
+                                                        damping: 20 + (i * 5),
+                                                        mass: 1 + (i * 0.2)
+                                                    }}
+                                                >
+                                                    <Star
+                                                        className={`w-12 h-12 ${(hoverRating || rating) >= s
+                                                                ? 'text-white fill-white'
+                                                                : 'text-white/20 stroke-[0.5]'
+                                                            }`}
+                                                        style={{
+                                                            filter: (hoverRating || rating) >= s ? 'brightness(1.5)' : 'none',
+                                                            transform: `scale(${1 - (i * 0.15)})`
+                                                        }}
+                                                    />
+                                                </motion.div>
+                                            ))}
+
+                                            {/* Mechanical Shutter Lines */}
+                                            {(hoverRating || rating) >= s && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.5 }}
+                                                    animate={{ opacity: 1, scale: 1.2 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    className="absolute inset-0 border-[0.5px] border-white/30 rounded-full scale-110 pointer-events-none"
                                                 />
                                             )}
                                         </motion.button>
                                     ))}
+
+                                    {/* Moving Mechanical Chassis - Unique Indicator */}
+                                    {rating > 0 && (
+                                        <motion.div
+                                            layoutId="chassis"
+                                            className="absolute -bottom-4 h-[2px] bg-white w-16 rounded-full"
+                                            initial={false}
+                                            animate={{
+                                                x: (rating - 1) * 72, // w-16(64px) + gap-2(8px) = 72px
+                                                opacity: 1
+                                            }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                        />
+                                    )}
                                 </div>
                                 <div className="flex justify-between w-full max-w-[320px] items-center mt-4">
                                     <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Dislike it</span>

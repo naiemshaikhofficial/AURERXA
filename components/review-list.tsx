@@ -57,28 +57,35 @@ export function ReviewList({ reviews }: ReviewListProps) {
                         {format(new Date(review.created_at), 'dd/MM/yyyy')}
                     </p>
 
-                    {/* Stars - Kinetic Mechanical 3D */}
-                    <div className="flex gap-2 mb-4 preserve-3d" style={{ perspective: "800px" }}>
+                    {/* Stars - Extreme Mechanical Assembly 3D */}
+                    <div className="flex gap-2 mb-4 preserve-3d" style={{ perspective: "1000px" }}>
                         {[1, 2, 3, 4, 5].map((s) => (
                             <motion.div
                                 key={s}
-                                initial={{ scale: 0, opacity: 0, rotateX: 90, rotateY: 45 }}
-                                animate={{ scale: 1, opacity: 1, rotateX: 0, rotateY: 0 }}
+                                initial={{ scale: 0, opacity: 0, rotate: -90 }}
+                                animate={{ scale: 1, opacity: 1, rotate: 0 }}
                                 transition={{
-                                    delay: 0.1 + (s * 0.12),
+                                    delay: 0.1 + (s * 0.1),
                                     type: "spring",
-                                    stiffness: 500,
-                                    damping: 20
+                                    stiffness: 600,
+                                    damping: 25
                                 }}
-                                whileHover={{ scale: 1.3, rotateZ: 5 }}
-                                className="relative"
+                                className="relative w-5 h-5 flex items-center justify-center"
                             >
-                                <Star
-                                    className={`w-4.5 h-4.5 ${s <= review.rating
-                                        ? 'fill-white text-white drop-shadow-[0_0_1px_rgba(255,255,255,1)]'
-                                        : 'text-white/5'
-                                        }`}
-                                />
+                                {/* Layered Mechanical Assembly */}
+                                {[...Array(2)].map((_, i) => (
+                                    <Star
+                                        key={i}
+                                        className={`absolute w-full h-full transition-all duration-500 ${s <= review.rating
+                                                ? 'fill-white text-white'
+                                                : 'text-white/5 stroke-[0.5]'
+                                            }`}
+                                        style={{
+                                            transform: `scale(${1 - (i * 0.2)}) rotate(${i * 45}deg)`,
+                                            opacity: s <= review.rating ? 1 - (i * 0.3) : 0.1
+                                        }}
+                                    />
+                                ))}
                             </motion.div>
                         ))}
                     </div>
