@@ -29,7 +29,13 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     const accessCode = process.env.CCAVENUE_ACCESS_CODE
 
     if (merchantId && workingKey && accessCode) {
-        const params = `merchant_id=${merchantId}&order_id=${order.order_number}&currency=INR&amount=${order.total}&redirect_url=...&cancel_url=...`
+        // Use environment variable for base URL or fallback to window.location (client will handle)
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://aurerxa.com'
+        const redirectUrl = `${baseUrl}/api/payment/ccavenue/callback`
+        const cancelUrl = `${baseUrl}/api/payment/ccavenue/callback`
+
+        const params = `merchant_id=${merchantId}&order_id=${order.order_number}&currency=INR&amount=${order.total}&redirect_url=${encodeURIComponent(redirectUrl)}&cancel_url=${encodeURIComponent(cancelUrl)}&merchant_param1=${order.id}`
+
         const encRequest = encrypt(params, workingKey)
         return {
             success: true,

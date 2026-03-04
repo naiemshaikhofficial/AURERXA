@@ -351,6 +351,25 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                         </motion.div>
                     </motion.div>
                 </AnimatePresence>
+
+                {/* Preload Hidden Images on Hover - Ensures instant transitions in the cycle */}
+                {isHovered && allImages.length > 1 && (
+                    <div className="hidden absolute inset-0 pointer-events-none" aria-hidden="true">
+                        {allImages.map((img, i) => (
+                            i !== currentImageIndex && (
+                                <Image
+                                    key={`preload-${i}`}
+                                    src={sanitizeImagePath(img)}
+                                    alt="preload"
+                                    fill
+                                    loader={supabaseLoader}
+                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                    loading="lazy"
+                                />
+                            )
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Product Info - Minimalist Editorial Style */}

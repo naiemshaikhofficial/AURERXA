@@ -53,7 +53,7 @@ const nextConfig = {
               "connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net https://*.razorpay.com https://*.cashfree.com https://*.google.com https://*.googleapis.com https://www.goldapi.io https://va.vercel-scripts.com https://vitals.vercel-insights.com https://www.google-analytics.com https://connect.facebook.net https://vercel.live https://www.merchant-center-analytics.goog https://secure.ccavenue.com",
               "media-src 'self' blob: data: https://*.supabase.co",
               "worker-src 'self' blob:",
-              "frame-src 'self' https://*.razorpay.com https://sdk.cashfree.com https://www.youtube.com https://youtube.com https://www.google.com https://maps.google.com https://vercel.com https://secure.ccavenue.com",
+              "frame-src 'self' https://*.razorpay.com https://sdk.cashfree.com https://www.youtube.com https://youtube.com https://www.google.com https://maps.google.com https://vercel.com https://secure.ccavenue.com https://*.ccavenue.com",
               "frame-ancestors 'self'",
               "base-uri 'self'",
               "form-action 'self' https://secure.ccavenue.com"

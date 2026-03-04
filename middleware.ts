@@ -148,7 +148,8 @@ export default async function proxy(request: NextRequest) {
                 img-src 'self' blob: data: https://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com https://imageshack.com https://*.imageshack.com https://imagizer.imageshack.com;
                 font-src 'self' data: https://fonts.gstatic.com;
                 connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://vitals.vercel-insights.com https://imageshack.com https://*.imageshack.com;
-                frame-src 'self' https://*.ccavenue.com;
+                frame-src 'self' https://*.ccavenue.com https://secure.ccavenue.com;
+                form-action 'self' https://secure.ccavenue.com;
                 upgrade-insecure-requests;
             `.replace(/\s{2,}/g, ' ').trim();
 
