@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { updateOrderStatus, exportOrdersCsv, deleteOrder, getShipmentLabel, getOrdersPollingData, bulkUpdateOrderStatus } from '../actions'
-import { getOrderTracking } from '../../actions'
+import { getOrderTracking } from '@/app/actions'
 import {
     Search, Filter, ChevronDown, Package, MapPin, CreditCard,
     Truck, Clock, CheckCircle, XCircle, X, Download, User as UserIcon, Trash2, ShieldAlert, Copy, Check, Phone, FileText, Printer

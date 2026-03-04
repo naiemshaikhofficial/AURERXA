@@ -1661,7 +1661,7 @@ export async function broadcastMarketingMessage(segmentId: string, title: string
     const admin = await checkAdminRole()
     if (!admin) return { success: false, error: 'Unauthorized' }
 
-    const { sendNotification } = await import('../../push-actions')
+    const { sendNotification } = await import('@/app/push-actions')
     // In a real scenario, filter subscriptions by segment
     return await sendNotification(title, body, url)
 }
