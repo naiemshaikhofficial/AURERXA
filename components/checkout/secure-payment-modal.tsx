@@ -40,7 +40,21 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
 
     const amount = Number(paymentData.amount) || 0
     const formattedAmount = amount.toLocaleString('en-IN')
-    const iframeSrc = `${paymentData.actionUrl}&merchant_id=${paymentData.merchantId}&encRequest=${paymentData.encRequest}&access_code=${paymentData.accessCode}`
+
+    // Auto-submit POST form into iframe on mount
+    const formRef = React.useRef<HTMLFormElement>(null)
+    const [formSubmitted, setFormSubmitted] = useState(false)
+
+    useEffect(() => {
+        if (isOpen && paymentData && formRef.current && !formSubmitted) {
+            formRef.current.submit()
+            setFormSubmitted(true)
+        }
+        // Reset when closed so it can re-submit if opened again
+        if (!isOpen) {
+            setFormSubmitted(false)
+        }
+    }, [isOpen, paymentData, formSubmitted])
 
     return (
         <AnimatePresence>
@@ -203,10 +217,20 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
 
                         {/* ===================== IFRAME CONTAINER ===================== */}
                         <div className="relative flex-1 min-h-0 overflow-auto bg-white dark:bg-[#fafaf9]">
+                            {/* Hidden POST form that auto-submits into the iframe */}
+                            <form
+                                ref={formRef}
+                                method="POST"
+                                action={paymentData.actionUrl}
+                                target="payment_iframe"
+                                style={{ display: 'none' }}
+                            >
+                                <input type="hidden" name="encRequest" value={paymentData.encRequest} />
+                                <input type="hidden" name="access_code" value={paymentData.accessCode} />
+                            </form>
                             <iframe
                                 name="payment_iframe"
                                 id="payment_iframe"
-                                src={iframeSrc}
                                 className="relative z-10 w-full h-full border-none block"
                                 scrolling="auto"
                                 style={{ minHeight: '500px' }}
