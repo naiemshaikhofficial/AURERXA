@@ -211,34 +211,82 @@ export function ReviewForm({ productId, onSuccess, isOpen, onClose }: ReviewForm
                                 transition={{ duration: 0.2 }}
                                 className="flex-1 flex flex-col items-center justify-center px-8 py-12"
                             >
-                                <h3 className="text-lg font-semibold text-white mb-10">
+                                <h3 className="text-sm font-bold text-white/40 uppercase tracking-[0.3em] mb-12">
                                     How would you rate this item?
                                 </h3>
-                                <div className="flex gap-2 mb-4">
+                                <div className="flex gap-4 mb-8 relative preserve-3d" style={{ perspective: "1000px" }}>
                                     {[1, 2, 3, 4, 5].map((s) => (
-                                        <button
+                                        <motion.button
                                             key={s}
                                             type="button"
+                                            initial={{ scale: 0, opacity: 0, y: 20 }}
+                                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                                            transition={{
+                                                type: "spring",
+                                                stiffness: 500,
+                                                damping: 20,
+                                                delay: s * 0.08
+                                            }}
+                                            whileHover={{
+                                                scale: 1.2,
+                                                zIndex: 50,
+                                                rotateX: 10,
+                                                rotateY: -10,
+                                                transition: { type: "spring", stiffness: 600, damping: 15 }
+                                            }}
+                                            whileTap={{ scale: 0.9, rotate: -10 }}
                                             onClick={() => setRating(s)}
                                             onMouseEnter={() => setHoverRating(s)}
                                             onMouseLeave={() => setHoverRating(0)}
-                                            className="p-1 transition-transform duration-200 hover:scale-110"
+                                            className="p-1 relative outline-none preserve-3d"
                                         >
-                                            <Star
-                                                className={`w-10 h-10 transition-all duration-200 ${(hoverRating || rating) >= s
-                                                    ? 'fill-amber-400 text-amber-400'
-                                                    : 'text-white/20 stroke-[1.5]'
-                                                    }`}
-                                            />
-                                        </button>
+                                            <motion.div
+                                                animate={{
+                                                    rotateY: (hoverRating || rating) >= s ? 180 : 0,
+                                                    rotateX: (hoverRating || rating) >= s ? 180 : 0,
+                                                    scale: (hoverRating || rating) >= s ? 1.1 : 1,
+                                                }}
+                                                transition={{
+                                                    type: "spring",
+                                                    stiffness: 400,
+                                                    damping: 18
+                                                }}
+                                            >
+                                                <Star
+                                                    className={`w-12 h-12 transition-all duration-300 ${(hoverRating || rating) >= s
+                                                        ? 'fill-white text-white drop-shadow-[0_0_2px_rgba(255,255,255,0.8)]'
+                                                        : 'text-white/5 stroke-[0.5]'
+                                                        }`}
+                                                />
+                                            </motion.div>
+
+                                            {/* Kinetic Impact Ring - Sharp White */}
+                                            {rating === s && (
+                                                <motion.div
+                                                    layoutId="impact-ring"
+                                                    initial={{ scale: 0.5, opacity: 0 }}
+                                                    animate={{ scale: 1.5, opacity: 0.2 }}
+                                                    transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                                                    className="absolute inset-0 border border-white rounded-full -z-10"
+                                                />
+                                            )}
+                                        </motion.button>
                                     ))}
                                 </div>
-                                <div className="flex justify-between w-full max-w-[280px] text-xs text-white/40">
-                                    <span>Dislike it</span>
-                                    <span className="text-amber-400/80 font-medium min-h-[16px]">
-                                        {ratingLabels[hoverRating || rating] || ''}
-                                    </span>
-                                    <span>Love it!</span>
+                                <div className="flex justify-between w-full max-w-[320px] items-center mt-4">
+                                    <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Dislike it</span>
+                                    <AnimatePresence mode="wait">
+                                        <motion.span
+                                            key={hoverRating || rating}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            className="text-xs font-bold text-white uppercase tracking-[0.4em] drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]"
+                                        >
+                                            {ratingLabels[hoverRating || rating] || 'Select Rating'}
+                                        </motion.span>
+                                    </AnimatePresence>
+                                    <span className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">Love it!</span>
                                 </div>
                             </motion.div>
                         )}

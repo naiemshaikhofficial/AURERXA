@@ -57,24 +57,26 @@ export function ReviewList({ reviews }: ReviewListProps) {
                         {format(new Date(review.created_at), 'dd/MM/yyyy')}
                     </p>
 
-                    {/* Stars - White Animated */}
-                    <div className="flex gap-1 mb-3">
+                    {/* Stars - Kinetic Mechanical 3D */}
+                    <div className="flex gap-2 mb-4 preserve-3d" style={{ perspective: "800px" }}>
                         {[1, 2, 3, 4, 5].map((s) => (
                             <motion.div
                                 key={s}
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
+                                initial={{ scale: 0, opacity: 0, rotateX: 90, rotateY: 45 }}
+                                animate={{ scale: 1, opacity: 1, rotateX: 0, rotateY: 0 }}
                                 transition={{
-                                    delay: 0.1 + (s * 0.05),
+                                    delay: 0.1 + (s * 0.12),
                                     type: "spring",
-                                    stiffness: 260,
+                                    stiffness: 500,
                                     damping: 20
                                 }}
+                                whileHover={{ scale: 1.3, rotateZ: 5 }}
+                                className="relative"
                             >
                                 <Star
-                                    className={`w-3.5 h-3.5 ${s <= review.rating
-                                        ? 'fill-white text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.3)]'
-                                        : 'text-white/10'
+                                    className={`w-4.5 h-4.5 ${s <= review.rating
+                                        ? 'fill-white text-white drop-shadow-[0_0_1px_rgba(255,255,255,1)]'
+                                        : 'text-white/5'
                                         }`}
                                 />
                             </motion.div>
