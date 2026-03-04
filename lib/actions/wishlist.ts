@@ -34,7 +34,7 @@ export async function addToWishlist(productId: string): Promise<ActionResponse> 
             .upsert({ user_id: user.id, product_id: productId }, { onConflict: 'user_id, product_id' })
 
         if (error) throw error
-        revalidateTag('wishlist')
+        revalidateTag('wishlist', 'max')
         return { success: true }
     } catch (err: any) {
         return { success: false, error: err.message }
@@ -54,7 +54,7 @@ export async function removeFromWishlist(productId: string): Promise<ActionRespo
             .eq('product_id', productId)
 
         if (error) throw error
-        revalidateTag('wishlist')
+        revalidateTag('wishlist', 'max')
         return { success: true }
     } catch (err: any) {
         return { success: false, error: err.message }

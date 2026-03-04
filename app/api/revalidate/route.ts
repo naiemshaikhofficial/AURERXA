@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (tag) {
-        revalidateTag(tag, '')
+        revalidateTag(tag, 'max')
         return NextResponse.json({ revalidated: true, now: Date.now() })
     }
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     // table = products or categories
     const table = body.table || 'products'
 
-    revalidateTag(table, '')
+    revalidateTag(table, 'max')
 
     return NextResponse.json({ revalidated: true, table, now: Date.now() })
 }

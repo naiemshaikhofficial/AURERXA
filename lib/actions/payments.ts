@@ -126,7 +126,7 @@ export async function verifyPayment(orderId: string, details: any = {}): Promise
         // Trigger invoice
         triggerOrderInvoice(orderId)
 
-        revalidateTag('orders')
+        revalidateTag('orders', 'max')
         return { success: true }
     }
 

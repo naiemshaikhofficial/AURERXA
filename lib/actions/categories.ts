@@ -68,7 +68,7 @@ export async function addSubCategory(subCategoryData: { name: string, category_i
 
     if (error) return { success: false, error: error.message }
 
-    revalidateTag('sub-categories')
+    revalidateTag('sub-categories', 'max')
     return { success: true, data }
 }
 
@@ -84,7 +84,7 @@ export async function updateSubCategory(id: string, updates: any) {
 
     if (error) return { success: false, error: error.message }
 
-    revalidateTag('sub-categories')
+    revalidateTag('sub-categories', 'max')
     return { success: true }
 }
 
@@ -100,7 +100,7 @@ export async function deleteSubCategory(id: string) {
 
     if (error) return { success: false, error: error.message }
 
-    revalidateTag('sub-categories')
+    revalidateTag('sub-categories', 'max')
     return { success: true }
 }
 export async function getAllCategorySlugs() {

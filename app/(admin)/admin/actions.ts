@@ -1905,8 +1905,8 @@ export async function updateSiteSetting(key: string, value: any): Promise<{ succ
 
     // Bust the public setting cache (if getSiteSetting uses revalidateTag)
     const { revalidateTag } = await import('next/cache')
-    revalidateTag(`setting:${key}`, '')
-    revalidateTag('settings', '')
+    revalidateTag(`setting:${key}`, 'max')
+    revalidateTag('settings', 'max')
 
     return { success: true }
 }

@@ -57,7 +57,7 @@ export async function addToCart(productId: string, size?: string, quantity: numb
             if (error) throw error
         }
 
-        revalidateTag('cart')
+        revalidateTag('cart', 'max')
         return { success: true }
     } catch (err: any) {
         return { success: false, error: err.message }
@@ -73,7 +73,7 @@ export async function updateCartItem(id: string, quantity: number): Promise<Acti
             .eq('id', id)
 
         if (error) throw error
-        revalidateTag('cart')
+        revalidateTag('cart', 'max')
         return { success: true }
     } catch (err: any) {
         return { success: false, error: err.message }
@@ -89,7 +89,7 @@ export async function removeFromCart(id: string): Promise<ActionResponse> {
             .eq('id', id)
 
         if (error) throw error
-        revalidateTag('cart')
+        revalidateTag('cart', 'max')
         return { success: true }
     } catch (err: any) {
         return { success: false, error: err.message }

@@ -217,7 +217,7 @@ export async function updateGlobalConfig(key: string, value: number): Promise<Ac
             .upsert({ key, value }, { onConflict: 'key' })
 
         if (error) throw error
-        revalidateTag('config')
+        revalidateTag('config', 'max')
         return { success: true }
     } catch (err: any) {
         return { success: false, error: err.message }
@@ -279,7 +279,7 @@ export async function getGoldRates() {
 
 export async function forceSyncGoldRates() {
     const result = await syncLiveGoldRates();
-    revalidateTag('gold-rates')
+    revalidateTag('gold-rates', 'max')
     return result;
 }
 

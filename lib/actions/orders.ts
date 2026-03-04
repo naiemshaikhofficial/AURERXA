@@ -19,7 +19,25 @@ export async function createOrder(addressId: string, paymentMethod: string, opti
         const { data: { user } } = await client.auth.getUser()
         if (!user) return { success: false, error: 'Authorization required' }
 
-        // 1. Resolve shipping address
+        // 0. Duplicate order protection (Idempotency)
+        const { data: cartItems, error: cartError } = await client
+            .from('cart')
+            .select('*, products(*)')
+            .eq('user_id', user.id)
+
+        if (cartError || !cartItems || cartItems.length === 0) {
+            return { success: false, error: 'Your cart is empty' }
+        }
+
+        const cartHash = JSON.stringify(cartItems.map(i => ({ p: i.product_id, q: i.quantity, s: i.size })));
+        const { data: profile } = await client.from('profiles').select('last_order_hash, last_order_at').eq('id', user.id).single();
+
+        if (profile?.last_order_hash === cartHash && profile?.last_order_at) {
+            const lastOrderTime = new Date(profile.last_order_at).getTime();
+            if (Date.now() - lastOrderTime < 60000) { // 1 minute window
+                return { success: false, error: 'A similar order was recently placed. Please check <a href="/account/orders" class="underline">My Orders</a>.' }
+            }
+        }
         let shippingAddress = options.address;
         if (!shippingAddress && addressId) {
             const { data: addr } = await client
@@ -32,13 +50,10 @@ export async function createOrder(addressId: string, paymentMethod: string, opti
 
         if (!shippingAddress) return { success: false, error: 'Shipping address required' }
 
-        // 2. Get Cart items
-        const { data: cartItems, error: cartError } = await client
-            .from('cart')
-            .select('*, products(*)')
-            .eq('user_id', user.id)
+        // 2. Get Cart items (already fetched above for duplicate protection)
+        // const { data: cartItems, error: cartError } = await client... (REMOVED)
 
-        if (cartError || !cartItems || cartItems.length === 0) {
+        if (!cartItems || cartItems.length === 0) {
             return { success: false, error: 'Your cart is empty' }
         }
 
@@ -60,7 +75,7 @@ export async function createOrder(addressId: string, paymentMethod: string, opti
 
         const shipping = options.shippingCost || 0;
         const discount = options.couponDiscount || 0;
-        const total = subtotal + shipping - discount + (options.giftWrap ? 50 : 0);
+        const total = subtotal + shipping - discount + (options.giftWrap ? 199 : 0);
         const orderNumber = `AUR-${Math.floor(100000 + Math.random() * 900000)}`;
 
         // 4. Insert Order
@@ -100,7 +115,13 @@ export async function createOrder(addressId: string, paymentMethod: string, opti
         // 6. Clear Cart
         await client.from('cart').delete().eq('user_id', user.id)
 
-        revalidateTag('orders')
+        // 7. Update profile with last order hash
+        await client.from('profiles').update({
+            last_order_hash: cartHash,
+            last_order_at: new Date().toISOString()
+        }).eq('id', user.id)
+
+        revalidateTag('orders', 'max')
         return { success: true, orderId: order.id, message: 'Order placed successfully' }
     } catch (err: any) {
         console.error('Create order error:', err)
@@ -127,7 +148,7 @@ export async function cancelOrder(orderId: string, reason?: string): Promise<Act
 
         if (error) throw error
 
-        revalidateTag('orders')
+        revalidateTag('orders', 'max')
         return { success: true, message: 'Your order has been cancelled successfully' }
     } catch (err: any) {
         return { success: false, error: err.message }
@@ -204,7 +225,7 @@ const _getCachedOrderById = unstable_cache(
         const adminClient = createSupabaseAdminClient()
         const { data, error } = await adminClient
             .from('orders')
-            .select('id, order_number, subtotal, shipping, total, status, delivery_time_slot, shipping_address, payment_method, payment_status, created_at, order_items(*)')
+            .select('id, order_number, subtotal, shipping, total, status, delivery_time_slot, shipping_address, payment_method, payment_status, payment_error_reason, coupon_discount, created_at, order_items(*, products(*))')
             .eq('id', id)
             .eq('user_id', userId)
             .single()
@@ -231,7 +252,7 @@ export async function getOrderById(id: string) {
     const adminClient = createSupabaseAdminClient()
     const { data, error } = await adminClient
         .from('orders')
-        .select('id, order_number, subtotal, shipping, total, status, delivery_time_slot, shipping_address, payment_method, payment_status, payment_error_reason, coupon_discount, created_at, order_items(*)')
+        .select('id, order_number, subtotal, shipping, total, status, delivery_time_slot, shipping_address, payment_method, payment_status, payment_error_reason, coupon_discount, created_at, order_items(*, products(*))')
         .eq('order_number', id)
         .eq('user_id', user.id)
         .single()
@@ -279,7 +300,7 @@ export async function requestReturn(orderId: string, formData: any) {
 
         await client.from('orders').update({ status: 'return_requested' }).eq('id', orderId)
 
-        revalidateTag('orders')
+        revalidateTag('orders', 'max')
         return { success: true, message: 'Return request submitted successfully' }
     } catch (err: any) {
         return { success: false, error: err.message }
