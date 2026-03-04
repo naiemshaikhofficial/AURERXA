@@ -34,7 +34,7 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
         const redirectUrl = `${baseUrl}/api/payment/ccavenue/callback`
         const cancelUrl = `${baseUrl}/api/payment/ccavenue/callback`
 
-        const params = `merchant_id=${merchantId}&order_id=${order.order_number}&currency=INR&amount=${order.total}&redirect_url=${encodeURIComponent(redirectUrl)}&cancel_url=${encodeURIComponent(cancelUrl)}&merchant_param1=${order.id}`
+        const params = `merchant_id=${merchantId}&order_id=${order.order_number}&currency=INR&amount=${order.total}&redirect_url=${encodeURIComponent(redirectUrl)}&cancel_url=${encodeURIComponent(cancelUrl)}&language=EN&integration_type=iframe_normal&merchant_param1=${order.id}`
 
         const encRequest = encrypt(params, workingKey)
         return {
