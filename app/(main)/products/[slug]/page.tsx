@@ -1,14 +1,12 @@
 import { Metadata } from 'next'
-import { getProductBySlug, getRelatedProducts, isInWishlist, getReviewStats, getAllProductSlugs } from '@/app/actions'
+import { getProductBySlug, getRelatedProducts, isInWishlist, getReviewStats } from '@/app/actions'
 import { ProductClient } from '@/components/product-client'
 import { notFound } from 'next/navigation'
 
-export async function generateStaticParams() {
-    const products = await getAllProductSlugs()
-    return products.map((p: any) => ({
-        slug: p.slug,
-    }))
-}
+// Force dynamic rendering — product pages depend on live gold rates and dynamic pricing.
+// The old working build (pre-refactor) never used generateStaticParams.
+// unstable_cache inside getProductBySlug already provides caching (1hr TTL).
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     try {
