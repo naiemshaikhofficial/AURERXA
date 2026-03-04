@@ -325,6 +325,10 @@ export default function CheckoutPage() {
         setPlacing(true);
         setError(null);
 
+        // Helper: strip HTML tags from server error messages before displaying
+        const safeError = (msg?: string) =>
+            (msg || 'An unexpected error occurred.').replace(/<[^>]+>/g, '').trim()
+
         try {
             const result = await createOrder(selectedAddress, paymentMethod, {
                 giftWrap,
@@ -336,7 +340,7 @@ export default function CheckoutPage() {
             });
 
             if (!result.success) {
-                setError(result.error || 'Failed to place order');
+                setError(safeError(result.error));
                 setPlacing(false);
                 return;
             }
@@ -353,7 +357,7 @@ export default function CheckoutPage() {
 
             if (!paymentResult.success) {
                 console.error('[DEBUG] Payment initiation failed:', paymentResult.error);
-                setError(paymentResult.error || 'Failed to initiate payment');
+                setError(safeError(paymentResult.error));
                 setPlacing(false);
                 router.push(`/checkout/payment-retry/${result.orderId!}`); // Redirect on initiation failure
                 return;
@@ -362,9 +366,9 @@ export default function CheckoutPage() {
             if (paymentResult.gateway === 'ccavenue') {
                 const cv = paymentResult as any;
                 console.log('[DEBUG] Opening Branded Payment Modal...');
-
                 setPaymentData({ ...cv, amount: total });
                 setIsPaymentModalOpen(true);
+                setPlacing(false); // ✅ Reset button — modal is now open
             } else if (paymentResult.gateway === 'free') {
                 // Zero-amount order — already confirmed server-side
                 await refreshCart(true); // Clear Navbar icon
@@ -376,6 +380,7 @@ export default function CheckoutPage() {
             setPlacing(false);
         }
     };
+
 
 
     if (loading || cartLoading) {
