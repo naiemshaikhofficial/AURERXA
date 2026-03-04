@@ -1,120 +1,81 @@
 import Link from 'next/link'
 import { SupabaseImage as Image } from '@/components/supabase-image'
-import { getBlogPosts } from '@/app/actions'
-import { BookOpen, Calendar, ArrowRight, Sparkles } from 'lucide-react'
+import { BookOpen, Sparkles } from 'lucide-react'
+import { BlogCard } from '@/components/blog-card'
+import { STATIC_BLOG_POSTS } from '@/lib/constants/blog-data'
 
 export const metadata = {
-    title: 'Jewelry Blog - Care Tips, Buying Guides & Trends | AURERXA Journal',
+    title: 'Jewelry Journal – Aurerxa | Jewelry Care, Trends & Heritage Guides',
     description: 'Read expert jewelry guides, care tips, styling ideas, and latest trends on the AURERXA Journal. Learn how to choose, maintain, and style your gold, diamond, and fashion jewelry.',
     keywords: ['Jewelry Blog', 'Jewelry Care Tips', 'Gold Jewelry Guide', 'Diamond Buying Guide', 'Jewelry Trends 2026', 'How to Style Jewelry'],
 }
 
-export const revalidate = 3600 // revalidate every hour
-
 export default async function BlogPage() {
-    const posts = await getBlogPosts()
-
+    const posts = STATIC_BLOG_POSTS;
     const categories = ['All', 'Guide', 'Care Tips', 'Trends', 'News']
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary-foreground overflow-x-hidden">
 
-            {/* Global Atmosphere - REMOVED */}
+            {/* Immersive Blog Hero */}
+            <section className="relative h-[60vh] flex items-center justify-center overflow-hidden border-b border-border/50">
+                <div className="absolute inset-0 z-0">
+                    <Image
+                        src="/photo_6066572646712807057_y.jpg"
+                        alt="High-end Jewelry Craftsmanship"
+                        fill
+                        className="object-cover opacity-15 grayscale brightness-50 scale-105"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
+                </div>
 
-            <main className="pt-32 pb-32">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Header */}
-                    <div className="text-center mb-24 relative">
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-px bg-gradient-to-r from-transparent via-amber-500/20 to-transparent" />
-                        <div className="flex items-center justify-center gap-2 text-amber-500 mb-6 animate-in fade-in duration-700">
-                            <Sparkles className="w-4 h-4" />
-                            <span className="text-[10px] uppercase tracking-[0.4em] font-medium">Insights</span>
-                        </div>
-                        <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 tracking-tight animate-in slide-in-from-bottom-4 duration-700">
-                            Jewelry <span className="text-amber-500 italic">Journal</span>
-                        </h1>
-                        <p className="text-muted-foreground max-w-xl mx-auto font-light text-sm md:text-base animate-in slide-in-from-bottom-6 duration-700">
-                            Explore the craftsmanship behind our heritage pieces and master the art of fine jewelry care.
-                        </p>
+                <div className="relative z-10 text-center max-w-4xl px-6">
+                    <div className="flex items-center justify-center gap-2 text-primary mb-8 animate-in fade-in zoom-in duration-1000">
+                        <Sparkles className="w-4 h-4" />
+                        <span className="text-[10px] uppercase tracking-[0.5em] font-bold">The Journal</span>
                     </div>
+                    <h1 className="text-5xl md:text-8xl font-serif font-black italic tracking-tighter leading-[0.9] text-foreground mb-8 animate-in slide-in-from-bottom-8 duration-1000">
+                        HERITAGE <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-500 to-amber-700">INSIGHTS.</span>
+                    </h1>
+                    <p className="max-w-xl mx-auto text-muted-foreground text-xs md:text-sm tracking-[0.3em] font-light italic animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-300">
+                        Explore the craftsmanship behind our legacy and master the art of fine jewelry.
+                    </p>
+                </div>
+            </section>
 
-                    {/* Filter Pills */}
-                    <div className="flex flex-wrap justify-center gap-3 mb-20 animate-in fade-in duration-1000">
+            <main className="py-24 md:py-32 bg-background relative z-10">
+                <div className="max-w-7xl mx-auto px-6">
+                    {/* Refined Category Filter */}
+                    <div className="flex flex-wrap justify-center gap-4 mb-24 animate-in fade-in duration-1000 delay-500">
                         {categories.map((cat) => (
                             <Link
                                 key={cat}
                                 href={cat === 'All' ? '/blog' : `/blog?category=${cat}`}
-                                className="px-6 py-2.5 rounded-full border border-border text-[10px] uppercase tracking-widest text-muted-foreground hover:border-primary hover:text-primary transition-all duration-300 bg-card/50 backdrop-blur-sm"
+                                className="px-8 py-3 rounded-sm border border-border/50 text-[10px] uppercase tracking-[0.3em] text-muted-foreground hover:border-primary hover:text-primary hover:bg-primary/[0.03] transition-all duration-500 backdrop-blur-sm group"
                             >
-                                {cat}
+                                <span className="relative inline-block">
+                                    {cat}
+                                    <span className="absolute -bottom-1 left-0 w-0 h-px bg-primary transition-all duration-500 group-hover:w-full" />
+                                </span>
                             </Link>
                         ))}
                     </div>
 
-                    {/* Posts Grid */}
+                    {/* Blog Posts Grid */}
                     {posts.length === 0 ? (
-                        <div className="text-center py-32 animate-in zoom-in-95 duration-500">
-                            <div className="mb-8 inline-flex p-8 rounded-full bg-muted border border-border">
-                                <BookOpen className="w-12 h-12 text-muted-foreground/30" />
+                        <div className="text-center py-40 animate-in zoom-in-95 duration-700">
+                            <div className="mb-10 inline-flex p-10 rounded-full bg-card/50 border border-border/50 ring-1 ring-primary/10">
+                                <BookOpen className="w-16 h-16 text-primary/20" />
                             </div>
-                            <h3 className="text-xl font-serif text-foreground mb-2 italic">The library is empty</h3>
-                            <p className="text-muted-foreground text-sm tracking-widest uppercase font-light">New articles are being crafted</p>
+                            <h3 className="text-3xl font-serif text-foreground mb-4 italic">The library is being curated</h3>
+                            <p className="text-muted-foreground text-xs tracking-[0.4em] uppercase font-light">New masterpieces are arriving soon</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
                             {posts.map((post, idx) => (
-                                <article
-                                    key={post.id}
-                                    className="group flex flex-col animate-in fade-in slide-in-from-bottom-8 duration-700"
-                                    style={{ animationDelay: `${idx * 150}ms` }}
-                                >
-                                    <Link href={`/blog/${post.slug}`} className="relative aspect-[16/10] overflow-hidden bg-muted border border-border group-hover:border-primary/30 transition-all duration-500 mb-6">
-                                        <Image
-                                            src={post.cover_image || '/placeholder-blog.jpg'}
-                                            alt={post.title}
-                                            fill
-                                            className="object-cover group-hover:scale-110 transition-transform duration-700"
-                                        />
-                                        <div className="absolute bottom-4 left-4">
-                                            <span className="px-3 py-1 bg-background/80 backdrop-blur-md border border-primary/20 text-primary text-[9px] font-bold uppercase tracking-widest">
-                                                {post.category}
-                                            </span>
-                                        </div>
-                                    </Link>
-
-                                    <div className="flex flex-col flex-1">
-                                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-[0.2em] mb-4">
-                                            <Calendar className="w-3.5 h-3.5 text-primary/50" />
-                                            <span>
-                                                {new Date(post.published_at).toLocaleDateString('en-IN', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                })}
-                                            </span>
-                                        </div>
-
-                                        <Link href={`/blog/${post.slug}`}>
-                                            <h2 className="font-serif text-2xl font-bold mb-4 text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug italic">
-                                                {post.title}
-                                            </h2>
-                                        </Link>
-
-                                        <p className="text-muted-foreground text-sm mb-6 line-clamp-2 font-light leading-relaxed">
-                                            {post.excerpt}
-                                        </p>
-
-                                        <Link
-                                            href={`/blog/${post.slug}`}
-                                            className="mt-auto inline-flex items-center gap-2 group/btn"
-                                        >
-                                            <span className="text-[10px] text-primary uppercase tracking-[0.2em] font-bold border-b border-primary/30 pb-1 group-hover/btn:border-primary transition-all">
-                                                Explore Article
-                                            </span>
-                                            <ArrowRight className="w-4 h-4 text-primary group-hover/btn:translate-x-1 transition-transform" />
-                                        </Link>
-                                    </div>
-                                </article>
+                                <BlogCard key={post.id} post={post} index={idx} />
                             ))}
                         </div>
                     )}

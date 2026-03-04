@@ -1,128 +1,169 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { SupabaseImage as Image } from '@/components/supabase-image'
-import { getBlogPost, getBlogPosts } from '@/app/actions'
-import { Calendar, User, ArrowLeft, Tag } from 'lucide-react'
+import { Calendar, User, ArrowLeft, Tag, Share2 } from 'lucide-react'
+import { BlogReadingProgress } from '@/components/blog-reading-progress'
+import { Metadata } from 'next'
+import { STATIC_BLOG_POSTS } from '@/lib/constants/blog-data'
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params
-    const post = await getBlogPost(slug)
-    if (!post) return { title: 'Post Not Found' }
+    const post = STATIC_BLOG_POSTS.find(p => p.slug === slug)
+    if (!post) return { title: 'Post Not Found | AURERXA' }
+
+    const baseUrl = 'https://www.aurerxa.com'
     return {
-        title: `${post.title} | AURERXA Blog`,
-        description: post.excerpt
+        title: `${post.title} | Journal | AURERXA`,
+        description: post.excerpt,
+        openGraph: {
+            title: post.title,
+            description: post.excerpt,
+            images: [post.cover_image || `${baseUrl}/icon-512.png`],
+            type: 'article',
+            publishedTime: post.published_at,
+            authors: [post.author],
+        }
     }
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params
-    const post = await getBlogPost(slug)
+    const post = STATIC_BLOG_POSTS.find(p => p.slug === slug)
 
     if (!post) {
         notFound()
     }
 
-    const relatedPosts = (await getBlogPosts(post.category)).filter(p => p.id !== post.id).slice(0, 3)
+    const relatedPosts = STATIC_BLOG_POSTS.filter(p => p.category === post.category && p.id !== post.id).slice(0, 3)
 
     return (
-        <div className="min-h-screen bg-background text-foreground">
+        <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 selection:text-primary-foreground">
+            <BlogReadingProgress />
 
-            <main className="pt-24 pb-24">
-                <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Back Link */}
-                    <Link href="/blog" className="inline-flex items-center text-muted-foreground hover:text-primary mb-8 transition-colors">
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Blog
-                    </Link>
+            <main className="pt-32 pb-32">
+                <article className="max-w-4xl mx-auto px-6">
+                    {/* Contextual Back Navigation */}
+                    <div className="mb-16 flex items-center justify-between">
+                        <Link href="/blog" className="group inline-flex items-center text-[10px] uppercase tracking-[0.4em] text-muted-foreground hover:text-primary transition-all duration-300">
+                            <ArrowLeft className="w-3.5 h-3.5 mr-3 group-hover:-translate-x-1 transition-transform" />
+                            Back to Journal
+                        </Link>
+                        <button className="text-muted-foreground hover:text-primary transition-colors">
+                            <Share2 className="w-4 h-4" />
+                        </button>
+                    </div>
 
-                    {/* Header */}
-                    <header className="mb-8">
-                        <span className="inline-block px-3 py-1 bg-primary text-primary-foreground text-xs font-bold uppercase mb-4">
-                            {post.category}
-                        </span>
-                        <h1 className="text-3xl md:text-4xl font-serif font-bold mb-4">{post.title}</h1>
+                    {/* Immersive Detail Header */}
+                    <header className="mb-16 space-y-8">
+                        <div className="inline-flex items-center gap-4">
+                            <span className="px-4 py-1.5 bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-[0.3em]">
+                                {post.category}
+                            </span>
+                            <div className="w-12 h-px bg-primary/20" />
+                        </div>
 
-                        <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-primary/50" />
+                        <h1 className="text-4xl md:text-7xl font-serif font-black italic tracking-tighter text-foreground leading-[1.1]">
+                            {post.title}
+                        </h1>
+
+                        <div className="flex flex-wrap items-center gap-x-10 gap-y-4 pt-6 text-[10px] uppercase tracking-[0.2em] text-muted-foreground border-t border-border/50">
+                            <span className="flex items-center gap-3">
+                                <Calendar className="w-4 h-4 text-primary/40" />
                                 {new Date(post.published_at).toLocaleDateString('en-IN', {
                                     day: 'numeric',
                                     month: 'long',
                                     year: 'numeric'
                                 })}
                             </span>
-                            <span className="flex items-center gap-2">
-                                <User className="w-4 h-4 text-primary/50" />
-                                {post.author}
+                            <span className="flex items-center gap-3">
+                                <User className="w-4 h-4 text-primary/40" />
+                                <span className="text-foreground font-medium">By {post.author}</span>
                             </span>
                         </div>
                     </header>
 
-                    {/* Cover Image */}
+                    {/* Cinematic Feature Image */}
                     {post.cover_image && (
-                        <div className="relative aspect-video mb-12 overflow-hidden">
+                        <div className="relative aspect-video mb-20 overflow-hidden border border-border/50 rounded-sm shadow-2xl ring-1 ring-primary/5">
                             <Image
                                 src={post.cover_image}
                                 alt={post.title}
                                 fill
-                                className="object-cover"
+                                className="object-cover scale-[1.02]"
                                 priority
                             />
+                            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                         </div>
                     )}
 
-                    {/* Content */}
-                    <div className="prose dark:prose-invert prose-neutral max-w-none mb-12">
-                        {post.content.split('\n\n').map((para: string, i: number) => {
-                            if (para.startsWith('## ')) {
-                                return <h2 key={i} className="text-xl font-serif font-medium text-primary mt-8 mb-4">{para.replace('## ', '')}</h2>
-                            }
-                            return <p key={i} className="text-muted-foreground leading-relaxed mb-4">{para}</p>
-                        })}
-                    </div>
+                    {/* Premium Readability Content */}
+                    <div className="relative max-w-3xl mx-auto">
+                        <div className="prose prose-sm md:prose-base dark:prose-invert prose-neutral max-w-none mb-24 
+                                       prose-headings:font-serif prose-headings:italic prose-headings:font-bold prose-headings:tracking-tighter
+                                       prose-h2:text-3xl prose-h2:text-primary/90 prose-h2:mt-16 prose-h2:mb-8
+                                       prose-p:text-muted-foreground prose-p:leading-[1.8] prose-p:mb-8 prose-p:font-light
+                                       prose-strong:text-foreground prose-strong:font-bold
+                                       prose-blockquote:border-l-primary prose-blockquote:bg-card/50 prose-blockquote:py-4 prose-blockquote:italic
+                                       first-letter:text-6xl first-letter:font-serif first-letter:font-black first-letter:mr-3 first-letter:float-left first-letter:text-primary first-letter:leading-none">
+                            {post.content.split('\n\n').map((para: string, i: number) => {
+                                if (para.startsWith('## ')) {
+                                    return <h2 key={i}>{para.replace('## ', '')}</h2>
+                                }
+                                return <p key={i}>{para}</p>
+                            })}
+                        </div>
 
-                    {/* Tags */}
-                    {post.tags && post.tags.length > 0 && (
-                        <div className="flex items-center gap-2 mb-12 pt-8 border-t border-border">
-                            <Tag className="w-4 h-4 text-muted-foreground/40" />
-                            <div className="flex flex-wrap gap-2">
-                                {post.tags.map((tag: string) => (
-                                    <span key={tag} className="px-3 py-1 bg-muted border border-border text-sm text-muted-foreground">
-                                        {tag}
-                                    </span>
-                                ))}
+                        {/* Semantic Footer Tags */}
+                        {post.tags && post.tags.length > 0 && (
+                            <div className="flex items-center gap-4 py-12 border-t border-border/50">
+                                <Tag className="w-4 h-4 text-primary/30" />
+                                <div className="flex flex-wrap gap-3">
+                                    {post.tags.map((tag: string) => (
+                                        <span key={tag} className="px-4 py-2 bg-card/50 border border-border text-[10px] uppercase tracking-widest text-muted-foreground rounded-sm hover:border-primary/40 transition-colors">
+                                            #{tag}
+                                        </span>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </article>
 
-                {/* Related Posts */}
+                {/* Related Masterpieces Section */}
                 {relatedPosts.length > 0 && (
-                    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-                        <h2 className="text-2xl font-serif font-bold mb-8 text-center">Related Articles</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {relatedPosts.map((p) => (
-                                <Link
-                                    key={p.id}
-                                    href={`/blog/${p.slug}`}
-                                    className="bg-card border border-border hover:border-primary/30 transition-all group"
-                                >
-                                    <div className="relative aspect-video overflow-hidden">
-                                        <Image
-                                            src={p.cover_image || '/placeholder-blog.jpg'}
-                                            alt={p.title}
-                                            fill
-                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                                            unoptimized
-                                        />
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="font-serif font-medium group-hover:text-primary transition-colors line-clamp-2">
-                                            {p.title}
-                                        </h3>
-                                    </div>
-                                </Link>
-                            ))}
+                    <section className="bg-card/20 py-32 border-t border-border/50 mt-24">
+                        <div className="max-w-7xl mx-auto px-6">
+                            <div className="text-center mb-16 space-y-4">
+                                <span className="text-primary text-[10px] uppercase tracking-[0.5em] font-bold">Suggestions</span>
+                                <h2 className="text-4xl md:text-5xl font-serif font-black italic tracking-tighter text-foreground">CONTINUE <span className="text-primary">READING.</span></h2>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                                {relatedPosts.map((p) => (
+                                    <Link
+                                        key={p.id}
+                                        href={`/blog/${p.slug}`}
+                                        className="group bg-background border border-border/50 hover:border-primary/30 transition-all duration-700 rounded-sm overflow-hidden"
+                                    >
+                                        <div className="relative aspect-video overflow-hidden border-b border-border/50">
+                                            <Image
+                                                src={p.cover_image || '/placeholder-blog.jpg'}
+                                                alt={p.title}
+                                                fill
+                                                className="object-cover group-hover:scale-110 transition-transform duration-1000"
+                                            />
+                                            <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500" />
+                                        </div>
+                                        <div className="p-8">
+                                            <span className="text-primary text-[9px] font-bold uppercase tracking-widest block mb-3 opacity-60">
+                                                {p.category}
+                                            </span>
+                                            <h3 className="font-serif text-xl font-bold italic tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                                                {p.title}
+                                            </h3>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
                     </section>
                 )}
