@@ -25,11 +25,14 @@ export default async function MainLayout({
         address: "Captain Lakshmi Chowk, Rangargalli, Sangamner, Maharashtra 422605"
     }
 
-    // Parallel fetch: Profile, Maintenance, Marketing, Contact
-    const profilePromise = import('@/app/actions').then(m => m.getCurrentUserProfile())
-    const maintenancePromise = getSiteSetting('maintenance_config', { is_enabled: false })
-    const marketingPromise = getSiteSetting('marketing_config', marketingDefault)
-    const contactPromise = getSiteSetting('contact_config', contactDefault)
+    // Parallel fetch: Profile, Maintenance, Marketing, Contact with safety catch
+    const profilePromise = import('@/app/actions').then(m => m.getCurrentUserProfile()).catch(err => {
+        console.error('Layout Profile Fetch Crash:', err)
+        return null
+    })
+    const maintenancePromise = getSiteSetting('maintenance_config', { is_enabled: false }).catch(() => ({ is_enabled: false }))
+    const marketingPromise = getSiteSetting('marketing_config', marketingDefault).catch(() => marketingDefault)
+    const contactPromise = getSiteSetting('contact_config', contactDefault).catch(() => contactDefault)
 
     const [profile, maintenanceConfig, marketingConfig, contactConfig] = await Promise.all([
         profilePromise,

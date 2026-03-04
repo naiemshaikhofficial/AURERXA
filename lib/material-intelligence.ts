@@ -37,7 +37,12 @@ export const PURITY_MAPPING: Record<string, { label: string; subLabel: string; t
 export function formatPurity(value: string | number | null | undefined, materialType?: string | null) {
     if (!value) return { label: 'Fine Craftsmanship', subLabel: 'Premium Materials', type: 'General' as const }
 
-    const strValue = String(value).toUpperCase().trim()
+    let strValue = String(value).toUpperCase().trim()
+
+    // Sanitize: Handle concatenated noise like "999-99-99" or "22k-916"
+    if (strValue.includes('-')) strValue = strValue.split('-')[0].trim()
+    if (strValue.includes(' ')) strValue = strValue.split(' ')[0].trim()
+
     const isGoldType = materialType?.toLowerCase().includes('gold') || materialType === 'real_gold' || materialType === 'gold_plated'
     const isSilverType = materialType?.toLowerCase().includes('silver') || materialType === 'silver'
 

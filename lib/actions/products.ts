@@ -89,7 +89,7 @@ async function getDynamicPricingMap(opts: PricingOptions): Promise<Record<string
     }
 
     const rawBasePrice = calculateFormulaPriceRaw(baseWeight)
-    const anchorPrice = productBasePrice || config.ring_base_price_size16 || 1999
+    const anchorPrice = (productBasePrice && productBasePrice > 10) ? productBasePrice : (config.ring_base_price_size16 || 1999)
     const designPremiumMultiplier = anchorPrice / rawBasePrice
 
     const pricingMap: Record<string, PricingEntry> = {}
@@ -274,7 +274,16 @@ export async function getProductBySlug(slug: string) {
                 .single()
             if (error || !data) return null
 
-            const product: any = data
+            const sanitizeName = (name: string) => name.replace(/ by AURERXA/gi, '').replace(/AURERXA /gi, '').trim()
+            const product: any = {
+                ...data,
+                name: sanitizeName(data.name),
+                categories: data.categories ? (
+                    Array.isArray(data.categories)
+                        ? data.categories.map((c: any) => ({ ...c, name: sanitizeName(c.name) }))
+                        : { ...data.categories, name: sanitizeName((data.categories as any).name) }
+                ) : null
+            }
 
             if (product.fixed_price_override) {
                 product.dynamicPricingMap = null
@@ -286,7 +295,7 @@ export async function getProductBySlug(slug: string) {
                     pricingType: product.pricing_type,
                     purity: product.purity || '99.99',
                     materialType: product.material_type || 'silver',
-                    baseWeight: (product.base_weight || product.weight_grams) ?? 3.5,
+                    baseWeight: (product.base_weight || product.weight_grams || 3.5),
                     productBasePrice: product.price,
                     weightPerUnit: product.weight_per_unit ?? null,
                     baseSize: product.base_size ?? 16,
@@ -315,7 +324,7 @@ export async function getProductBySlug(slug: string) {
                         pricingType: 'size_based',
                         purity: product.purity || '99.99',
                         materialType: product.material_type || 'silver',
-                        baseWeight: (product.base_weight || product.weight_grams) ?? 3.5,
+                        baseWeight: (product.base_weight || product.weight_grams || 3.5),
                         productBasePrice: product.price,
                         weightPerUnit: null,
                         baseSize: product.base_size ?? 16,
