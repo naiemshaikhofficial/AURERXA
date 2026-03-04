@@ -386,7 +386,7 @@ export async function addNewProduct(productData: ProductData): Promise<ActionRes
         await notifyNewProduct(data.name, data.slug, data.image_url || '/icon-192.png')
     } catch (e) { }
 
-    revalidateTag('products', '')
+    revalidateTag('products')
     return { success: true, data }
 }
 
@@ -402,7 +402,7 @@ export async function updateProductDetails(id: string, updates: Partial<ProductD
 
     if (error) return { success: false, error: error.message }
 
-    revalidateTag('products', '')
+    revalidateTag('products')
     return { success: true }
 }
 
@@ -418,7 +418,7 @@ export async function deleteProduct(id: string): Promise<ActionResponse> {
 
     if (error) return { success: false, error: error.message }
 
-    revalidateTag('products', '')
+    revalidateTag('products')
     return { success: true }
 }
 
@@ -566,3 +566,4 @@ export async function getAllProductSlugs() {
     if (error) return []
     return data || []
 }
+

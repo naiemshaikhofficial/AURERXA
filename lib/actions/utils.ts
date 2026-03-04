@@ -217,7 +217,7 @@ export async function updateGlobalConfig(key: string, value: number): Promise<Ac
             .upsert({ key, value }, { onConflict: 'key' })
 
         if (error) throw error
-        revalidateTag('config', 'page')
+        revalidateTag('config')
         return { success: true }
     } catch (err: any) {
         return { success: false, error: err.message }
@@ -279,7 +279,7 @@ export async function getGoldRates() {
 
 export async function forceSyncGoldRates() {
     const result = await syncLiveGoldRates();
-    revalidateTag('gold-rates', '')
+    revalidateTag('gold-rates')
     return result;
 }
 
@@ -363,7 +363,7 @@ export async function syncLiveGoldRates() {
         // revalidateTag is a dynamic action and can't be called inside certain contexts (like unstable_cache sync)
         // Since this is a background sync and results are written to DB, 
         // they will naturally be picked up on the next cache revalidation.
-        // revalidateTag('gold-rates', '')
+        // revalidateTag('gold-rates')
 
         return { success: true, rates: results }
     } catch (err: any) {
@@ -385,3 +385,4 @@ export async function subscribeNewsletter(email: string): Promise<ActionResponse
         return { success: false, error: err.message }
     }
 }
+

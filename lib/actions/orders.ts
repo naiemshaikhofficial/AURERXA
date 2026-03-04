@@ -100,7 +100,7 @@ export async function createOrder(addressId: string, paymentMethod: string, opti
         // 6. Clear Cart
         await client.from('cart').delete().eq('user_id', user.id)
 
-        revalidateTag('orders', '')
+        revalidateTag('orders')
         return { success: true, orderId: order.id, message: 'Order placed successfully' }
     } catch (err: any) {
         console.error('Create order error:', err)
@@ -127,7 +127,7 @@ export async function cancelOrder(orderId: string, reason?: string): Promise<Act
 
         if (error) throw error
 
-        revalidateTag('orders', '')
+        revalidateTag('orders')
         return { success: true, message: 'Your order has been cancelled successfully' }
     } catch (err: any) {
         return { success: false, error: err.message }
@@ -279,7 +279,7 @@ export async function requestReturn(orderId: string, formData: any) {
 
         await client.from('orders').update({ status: 'return_requested' }).eq('id', orderId)
 
-        revalidateTag('orders', '')
+        revalidateTag('orders')
         return { success: true, message: 'Return request submitted successfully' }
     } catch (err: any) {
         return { success: false, error: err.message }
@@ -628,3 +628,4 @@ export async function validateCoupon(code: string, subtotal: number, shipping: n
         return { valid: false, error: 'Failed to validate coupon' }
     }
 }
+
