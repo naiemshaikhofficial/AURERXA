@@ -1,0 +1,266 @@
+{
+  "product": {
+    "id": "6836c5d8-2297-4882-b155-81cebd5b8d30",
+    "name": "AURERXA Panorama Silver Ring",
+    "description": "The AURERXA Panorama Ring is sculpted in 99.9% pure fine silver, created for the woman who carries quiet confidence in every gesture. Lightweight yet powerful in presence, this piece reflects refined minimalism with timeless grace.\r\n\r\nHandcrafted by master artisans, every curve of the Panorama Ring is shaped with precision and patience — honoring India’s rich jewellery heritage while embracing contemporary design aesthetics.\r\n\r\nAt just 1.8 grams, it offers effortless daily wear comfort without compromising on luxury. Whether styled alone for a subtle statement or paired with other AURERXA pieces, it becomes a signature of authenticity and taste.\r\n\r\nWhy You’ll Love It\r\n\r\n• 999 Fine Silver – Maximum purity, brilliant shine\r\n• Handmade Artisan Craftsmanship\r\n• Elegant Minimal Silhouette\r\n• Certified Authenticity\r\n• Insured Shipping\r\n\r\n\r\nThis is not just a ring.\r\nIt is a reflection of purity, legacy, and strength.\r\n\r\nAURERXA — Where Heritage Meets Modern Authority.",
+    "price": 1499,
+    "image_url": "https://xquczexikijzbzcuvmqh.supabase.co/storage/v1/object/public/products/2jymwmcjwi-1771877215446.png",
+    "images": [
+      "https://xquczexikijzbzcuvmqh.supabase.co/storage/v1/object/public/products/715qcieioc-1771847436970.png",
+      "https://xquczexikijzbzcuvmqh.supabase.co/storage/v1/object/public/products/5zrml0zh9zp-1771847483359.png"
+    ],
+    "stock": 10,
+    "sizes": [
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "20",
+      "21",
+      "22"
+    ],
+    "featured": true,
+    "bestseller": true,
+    "slug": "panorama-ring",
+    "purity": "999",
+    "gender": "Women",
+    "weight_grams": 1.8,
+    "dimensions_width": "0.4",
+    "dimensions_height": "1.8",
+    "dimensions_length": "1.2",
+    "dimensions_unit": "mm",
+    "video_url": null,
+    "tags": [
+      "Soulmate"
+    ],
+    "created_at": "2026-02-23T10:12:05.995+00:00",
+    "material_type": "silver",
+    "making_type": "Plain",
+    "pricing_type": "size_based",
+    "base_size": 16,
+    "base_weight": 1.8,
+    "weight_per_unit": null,
+    "packaging_cost_override": null,
+    "platform_fee_pct_override": null,
+    "fixed_price_override": null,
+    "is_dynamic_pricing": true,
+    "margin_percent_override": null,
+    "min_price_threshold": null,
+    "tax_pct_override": null,
+    "categories": {
+      "name": "Silver",
+      "slug": "silver"
+    },
+    "dynamicPricingMap": {
+      "8": {
+        "price": 1399,
+        "weight": 1.56,
+        "dimensions": "Width: 0.4mm, Diameter: 15.30mm, Circumference: 48.00mm",
+        "width": "0.4 mm",
+        "diameter": "15.30 mm",
+        "circumference": "48.00 mm",
+        "metalCost": 471,
+        "makingCost": 85,
+        "baseCost": 606
+      },
+      "9": {
+        "price": 1399,
+        "weight": 1.56,
+        "dimensions": "Width: 0.4mm, Diameter: 15.50mm, Circumference: 48.70mm",
+        "width": "0.4 mm",
+        "diameter": "15.50 mm",
+        "circumference": "48.70 mm",
+        "metalCost": 471,
+        "makingCost": 85,
+        "baseCost": 606
+      },
+      "10": {
+        "price": 1399,
+        "weight": 1.64,
+        "dimensions": "Width: 0.4mm, Diameter: 15.90mm, Circumference: 50.00mm",
+        "width": "0.4 mm",
+        "diameter": "15.90 mm",
+        "circumference": "50.00 mm",
+        "metalCost": 495,
+        "makingCost": 89,
+        "baseCost": 634
+      },
+      "11": {
+        "price": 1399,
+        "weight": 1.64,
+        "dimensions": "Width: 0.4mm, Diameter: 16.30mm, Circumference: 51.20mm",
+        "width": "0.4 mm",
+        "diameter": "16.30 mm",
+        "circumference": "51.20 mm",
+        "metalCost": 495,
+        "makingCost": 89,
+        "baseCost": 634
+      },
+      "12": {
+        "price": 1499,
+        "weight": 1.7,
+        "dimensions": "Width: 0.4mm, Diameter: 16.50mm, Circumference: 51.90mm",
+        "width": "0.4 mm",
+        "diameter": "16.50 mm",
+        "circumference": "51.90 mm",
+        "metalCost": 513,
+        "makingCost": 92,
+        "baseCost": 656
+      },
+      "13": {
+        "price": 1499,
+        "weight": 1.7,
+        "dimensions": "Width: 0.4mm, Diameter: 16.90mm, Circumference: 53.10mm",
+        "width": "0.4 mm",
+        "diameter": "16.90 mm",
+        "circumference": "53.10 mm",
+        "metalCost": 513,
+        "makingCost": 92,
+        "baseCost": 656
+      },
+      "14": {
+        "price": 1499,
+        "weight": 1.76,
+        "dimensions": "Width: 0.4mm, Diameter: 17.30mm, Circumference: 54.40mm",
+        "width": "0.4 mm",
+        "diameter": "17.30 mm",
+        "circumference": "54.40 mm",
+        "metalCost": 532,
+        "makingCost": 96,
+        "baseCost": 677
+      },
+      "15": {
+        "price": 1499,
+        "weight": 1.76,
+        "dimensions": "Width: 0.4mm, Diameter: 17.50mm, Circumference: 55.10mm",
+        "width": "0.4 mm",
+        "diameter": "17.50 mm",
+        "circumference": "55.10 mm",
+        "metalCost": 532,
+        "makingCost": 96,
+        "baseCost": 677
+      },
+      "16": {
+        "price": 1499,
+        "weight": 1.82,
+        "dimensions": "Width: 0.4mm, Diameter: 17.90mm, Circumference: 56.30mm",
+        "width": "0.4 mm",
+        "diameter": "17.90 mm",
+        "circumference": "56.30 mm",
+        "metalCost": 550,
+        "makingCost": 99,
+        "baseCost": 699
+      },
+      "17": {
+        "price": 1599,
+        "weight": 1.82,
+        "dimensions": "Width: 0.4mm, Diameter: 18.10mm, Circumference: 57.00mm",
+        "width": "0.4 mm",
+        "diameter": "18.10 mm",
+        "circumference": "57.00 mm",
+        "metalCost": 550,
+        "makingCost": 99,
+        "baseCost": 699
+      },
+      "18": {
+        "price": 1599,
+        "weight": 1.88,
+        "dimensions": "Width: 0.4mm, Diameter: 18.50mm, Circumference: 58.30mm",
+        "width": "0.4 mm",
+        "diameter": "18.50 mm",
+        "circumference": "58.30 mm",
+        "metalCost": 568,
+        "makingCost": 102,
+        "baseCost": 720
+      },
+      "19": {
+        "price": 1599,
+        "weight": 1.88,
+        "dimensions": "Width: 0.4mm, Diameter: 18.80mm, Circumference: 58.90mm",
+        "width": "0.4 mm",
+        "diameter": "18.80 mm",
+        "circumference": "58.90 mm",
+        "metalCost": 568,
+        "makingCost": 102,
+        "baseCost": 720
+      },
+      "20": {
+        "price": 1699,
+        "weight": 1.94,
+        "dimensions": "Width: 0.4mm, Diameter: 19.20mm, Circumference: 60.20mm",
+        "width": "0.4 mm",
+        "diameter": "19.20 mm",
+        "circumference": "60.20 mm",
+        "metalCost": 586,
+        "makingCost": 105,
+        "baseCost": 741
+      },
+      "21": {
+        "price": 1699,
+        "weight": 1.94,
+        "dimensions": "Width: 0.4mm, Diameter: 19.40mm, Circumference: 60.80mm",
+        "width": "0.4 mm",
+        "diameter": "19.40 mm",
+        "circumference": "60.80 mm",
+        "metalCost": 586,
+        "makingCost": 105,
+        "baseCost": 741
+      },
+      "22": {
+        "price": 1699,
+        "weight": 2,
+        "dimensions": "Width: 0.4mm, Diameter: 19.80mm, Circumference: 62.10mm",
+        "width": "0.4 mm",
+        "diameter": "19.80 mm",
+        "circumference": "62.10 mm",
+        "metalCost": 604,
+        "makingCost": 109,
+        "baseCost": 763
+      }
+    }
+  },
+  "rates": {
+    "rates": {
+      "14K": 9275,
+      "10K": 6625,
+      "9K": 5963,
+      "Silver 999": 302,
+      "Silver 99.99": 302,
+      "Silver 925": 280,
+      "Platinum 950": 7359,
+      "Platinum 900": 6971,
+      "Platinum 850": 6584,
+      "24K": 16135,
+      "22K": 14790,
+      "21K": 14118,
+      "20K": 13446,
+      "18K": 12101
+    },
+    "lastUpdated": "2026-03-04T08:51:45.340Z"
+  },
+  "config": {
+    "packaging_cost": 50,
+    "platform_fee_pct": 5,
+    "margin_percent": 30,
+    "making_plain_pct": 18,
+    "making_designer_pct": 28,
+    "making_handcrafted_pct": 38,
+    "ring_base_price_size16": 1699,
+    "tax_percent": 3,
+    "shipping_cost": 0
+  },
+  "isWishlisted": false,
+  "reviewStats": {
+    "average": 0,
+    "total": 0
+  },
+  "userAgent": "aurerxa-debugger"
+}
