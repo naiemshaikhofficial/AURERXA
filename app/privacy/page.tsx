@@ -3,6 +3,8 @@ import { PolicyLayout } from '@/components/policy-layout'
 import { Shield, Database, Share2, Lock, Clock, RefreshCcw, UserCheck, Phone } from 'lucide-react'
 import { Metadata } from 'next'
 
+export const revalidate = 86400; // 24h
+
 export const metadata: Metadata = {
     title: 'Privacy Policy | Data Protection & Security | AURERXA',
     description: 'Read the complete Privacy Policy for AURERXA (Legal Entity: Naiemoddin Nijamoddin Shaikh). How we collect, use, and safeguard your personal information.',

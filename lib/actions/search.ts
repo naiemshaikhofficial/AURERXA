@@ -9,7 +9,11 @@ export async function getFilteredProducts(options: any) {
             try {
                 let query = supabaseServer
                     .from('products')
-                    .select('*, categories(id, name, slug)')
+                    .select(`
+                        id, name, price, image_url, slug, purity, material_type, 
+                        bestseller, created_at, category_id, sub_category_id,
+                        categories(id, name, slug)
+                    `)
 
                 // Apply Category filter
                 const categorySlug = options.category
@@ -128,7 +132,10 @@ export async function searchProducts(query: string) {
     try {
         const { data, error } = await supabaseServer
             .from('products')
-            .select('*, categories(name)')
+            .select(`
+                id, name, price, image_url, slug, material_type,
+                categories(name)
+            `)
             .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
             .eq('material_type', 'silver') // Keep it theme-specific
             .limit(10)

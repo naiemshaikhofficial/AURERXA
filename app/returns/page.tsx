@@ -3,6 +3,7 @@ import { PolicyLayout } from '@/components/policy-layout'
 import { Truck, Clock, MapPin, Phone, ShieldAlert, Scale, Video, Ban, Gem, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { Metadata } from 'next'
+export const revalidate = 86400; // 24h
 
 export const metadata: Metadata = {
     title: 'Returns & Shipping Policy | Insured Delivery & Anti-Fraud | AURERXA',
