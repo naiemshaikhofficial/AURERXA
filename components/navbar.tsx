@@ -269,7 +269,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                             { name: 'Shop Collections', href: '/collections' },
                             { name: 'Custom Jewelry', href: '/custom-jewelry' },
                             { name: 'The Price of Perfection', href: '/the-price-of-perfection' },
-                            { name: 'Our Story', href: '/about' },
+                            { name: 'Our Story', href: '/about-us' },
                             { name: 'Ring Size Calculator', href: '/ring-size-calculator' },
                             { name: 'Blog', href: '/blog' },
                             { name: 'Contact Us', href: '/contact-us' },

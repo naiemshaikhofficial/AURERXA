@@ -15,7 +15,7 @@ export function PolicyLayout({ children, title, description }: PolicyLayoutProps
     const pathname = usePathname()
 
     const navItems = [
-        { name: 'About Us', href: '/about', icon: Info },
+        { name: 'About Us', href: '/about-us', icon: Info },
         { name: 'Terms & Conditions', href: '/terms', icon: FileText },
         { name: 'Privacy Policy', href: '/privacy', icon: Shield },
         { name: 'Shipping & Delivery', href: '/shipping', icon: Package },

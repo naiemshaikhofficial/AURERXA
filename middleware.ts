@@ -13,7 +13,7 @@ const BLOCKED_UA_PATTERNS = [
 
 const PUBLIC_PATHS = [
     '/', '/login', '/signup', '/blogs', '/products', '/categories', '/search',
-    '/our-story', '/about', '/contact', '/faq',
+    '/our-story', '/about-us', '/contact', '/faq',
     '/privacy',
     '/terms',
     '/returns',

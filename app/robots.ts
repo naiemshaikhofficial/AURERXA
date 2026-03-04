@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
                 userAgent: '*',
                 allow: [
                     '/', '/products/', '/collections/', '/blogs/', '/our-story',
-                    '/about', '/contact', '/faq', '/privacy', '/terms',
+                    '/about-us', '/contact', '/faq', '/privacy', '/terms',
                     '/returns', '/stores', '/size-guide', '/shipping', '/help',
                     '/custom-jewelry', '/the-price-of-perfection'
                 ],

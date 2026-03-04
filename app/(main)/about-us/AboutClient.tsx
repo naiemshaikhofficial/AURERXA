@@ -276,8 +276,8 @@ export function AboutClient() {
                             <div className="relative aspect-[3/4] md:aspect-[4/5] overflow-hidden border border-border shadow-2xl group rounded-sm" style={{ transform: 'translateZ(0)' }}>
                                 <ParallaxScroll offset={20} className="h-full w-full">
                                     <Image
-                                        src="/ceo.jpg"
-                                        alt="Nijam Shaikh - Founder & CEO"
+                                        src="/naiem.jpeg"
+                                        alt="Naiem Shaikh - Founder & CEO of AURERXA"
                                         fill
                                         className="object-cover object-top filter contrast-[1.1] grayscale transition-all duration-1000 scale-105 group-hover:scale-100 group-hover:grayscale-0"
                                         sizes="(max-width: 1024px) 100vw, 50vw"
@@ -286,7 +286,7 @@ export function AboutClient() {
                                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-background/10 to-transparent pointer-events-none" />
                                 <div className="absolute bottom-10 left-10 md:bottom-12 md:left-12">
                                     <p className="text-primary text-xs tracking-[0.5em] font-bold uppercase mb-4">The Visionary</p>
-                                    <h3 className="text-4xl md:text-5xl font-serif text-white font-black italic tracking-tighter leading-none">Nijam Shaikh</h3>
+                                    <h3 className="text-4xl md:text-5xl font-serif text-white font-black italic tracking-tighter leading-none">Naiem Shaikh</h3>
                                 </div>
                             </div>
 
@@ -305,7 +305,7 @@ export function AboutClient() {
                                             "My journey began not in a corporate office, but on the humble streets. Starting at just nine years old, I learned that the true value of gold lies not in its weight, but in the hands that shape it."
                                         </p>
                                         <div className="space-y-6 opacity-60 text-lg">
-                                            <p>Today, Nijam Shaikh leads a family of thousands, bringing respect back to craftsmanship.</p>
+                                            <p>Today, Naiem Shaikh leads a family of thousands, bringing respect back to craftsmanship.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -345,7 +345,7 @@ export function AboutClient() {
 
             <section className="pb-24 text-center opacity-30 space-y-2">
                 <span className="text-[9px] uppercase tracking-[0.6em] text-foreground block">Aurerxa Promise</span>
-                <span className="text-[8px] uppercase tracking-[0.4em] text-foreground/60 block">Legal Entity: Naiemoddin Nijamoddin Shaikh</span>
+                <span className="text-[8px] uppercase tracking-[0.4em] text-foreground/60 block">Legal Entity: Naiemoddin Shaikh</span>
             </section>
         </div>
     )
