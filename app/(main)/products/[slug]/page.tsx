@@ -1,7 +1,14 @@
 import { Metadata } from 'next'
-import { getProductBySlug, getRelatedProducts, isInWishlist, getReviewStats } from '@/app/actions'
+import { getProductBySlug, getRelatedProducts, isInWishlist, getReviewStats, getAllProductSlugs } from '@/app/actions'
 import { ProductClient } from '@/components/product-client'
 import { notFound } from 'next/navigation'
+
+export async function generateStaticParams() {
+    const products = await getAllProductSlugs()
+    return products.map((p: any) => ({
+        slug: p.slug,
+    }))
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params

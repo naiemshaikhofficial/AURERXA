@@ -60,6 +60,10 @@ async function handleProxy(request: NextRequest, path: string[]) {
         targetUrl.searchParams.append(key, value);
     });
 
+    if (process.env.NODE_ENV === 'development' || true) { // Temporarily enable for production debugging
+        console.log(`[PROXY] Forwarding to: ${targetUrl.toString()}`);
+    }
+
     // Prepare headers to forward
     const headers = new Headers();
     request.headers.forEach((value, key) => {
@@ -72,6 +76,7 @@ async function handleProxy(request: NextRequest, path: string[]) {
     });
 
     try {
+        const startTime = Date.now();
         const rawBody = request.body ? await request.arrayBuffer() : undefined;
 
         // Abort after 10s to fail fast when Supabase is unreachable
@@ -89,6 +94,10 @@ async function handleProxy(request: NextRequest, path: string[]) {
         });
 
         clearTimeout(timeout);
+        const duration = Date.now() - startTime;
+        if (duration > 1000) {
+            console.warn(`[PERF] Slow Supabase Proxy: ${request.method} ${pathString} took ${duration}ms`);
+        }
 
         // Create a new response to send back to the client
         const responseHeaders = new Headers();

@@ -22,14 +22,20 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Domain not allowed" }, { status: 403 });
         }
 
-        // Fetch the target
+        // Fetch the target with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         let response = await fetch(decodedUrl, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             },
             cache: 'force-cache',
-            next: { revalidate: 86400 } // Cache for 24h
+            next: { revalidate: 86400 }, // Cache for 24h
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
 
         let contentType = response.headers.get("content-type") || "";
         let data: ArrayBuffer;

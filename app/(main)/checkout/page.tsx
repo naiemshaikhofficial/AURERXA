@@ -185,6 +185,7 @@ export default function CheckoutPage() {
     }, [])
 
     useEffect(() => {
+        // Parallelize cart refresh and data loading
         refreshCart()
         loadData()
         // eslint-disable-next-line react-hooks/exhaustive-deps

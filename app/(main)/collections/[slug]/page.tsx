@@ -7,11 +7,22 @@ interface PageProps {
     }>
 }
 
+export async function generateStaticParams() {
+    const categories = await getCategories()
+    return categories.map((cat: any) => ({
+        slug: cat.slug,
+    }))
+}
+
 export default async function DynamicCollectionsPage({ params }: PageProps) {
     const { slug } = await params
-    const categories = await getCategories()
-    const subCategories = await getSubCategories()
-    const tags = await getUsedTags()
+
+    // 1. Fetch all reference data in parallel for speed
+    const [categories, subCategories, tags] = await Promise.all([
+        getCategories(),
+        getSubCategories(),
+        getUsedTags()
+    ])
 
     // Check if the slug exists as a category, sub-category, gender, or tag (fully dynamic)
     const categoryMatch = categories?.find((c: any) => c.slug.toLowerCase() === slug.toLowerCase())
