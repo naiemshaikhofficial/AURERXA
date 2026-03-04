@@ -30,7 +30,17 @@ export async function createOrder(addressId: string, paymentMethod: string, opti
         }
 
         const cartHash = JSON.stringify(cartItems.map(i => ({ p: i.product_id, q: i.quantity, s: i.size })));
-        const { data: profile } = await client.from('profiles').select('last_order_hash, last_order_at').eq('id', user.id).single();
+
+        // Safety: Attempt to fetch duplicate protection data, but don't crash if columns are missing (unmigrated DB)
+        const { data: profile, error: profileError } = await client
+            .from('profiles')
+            .select('last_order_hash, last_order_at')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        if (profileError) {
+            console.error('[DEBUG] Profile idempotency lookup skipped (columns likely missing):', profileError.message);
+        }
 
         if (profile?.last_order_hash === cartHash && profile?.last_order_at) {
             const lastOrderTime = new Date(profile.last_order_at).getTime();

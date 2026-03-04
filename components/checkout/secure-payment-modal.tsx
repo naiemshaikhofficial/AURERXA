@@ -49,11 +49,6 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
         return () => window.removeEventListener('message', handleMessage)
     }, [])
 
-    if (!isOpen || !paymentData) return null;
-
-    const amount = Number(paymentData.amount) || 0
-    const formattedAmount = amount.toLocaleString('en-IN')
-
     // Auto-submit POST form into iframe on mount
     const formRef = React.useRef<HTMLFormElement>(null)
     const [formSubmitted, setFormSubmitted] = useState(false)
@@ -68,6 +63,11 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
             setFormSubmitted(false)
         }
     }, [isOpen, paymentData, formSubmitted])
+
+    if (!isOpen || !paymentData) return null;
+
+    const amount = Number(paymentData.amount) || 0
+    const formattedAmount = amount.toLocaleString('en-IN')
 
     return (
         <AnimatePresence>
