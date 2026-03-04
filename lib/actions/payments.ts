@@ -18,8 +18,18 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
     // Detect whether orderId is a UUID or an order_number (e.g. AUR-528879)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderId)
     const lookupField = isUUID ? 'id' : 'order_number'
-    const { data: order } = await client.from('orders').select('*, profiles(full_name, email, phone_number)').eq(lookupField, orderId).single()
-    if (!order) return { success: false, error: 'Order not found' }
+
+    // Fetch order without join – profiles join requires a direct FK that doesn't exist
+    const { data: order, error: orderErr } = await client.from('orders').select('*').eq(lookupField, orderId).single()
+    if (orderErr || !order) return { success: false, error: 'Order not found' }
+
+    // Separately fetch user profile for billing pre-fill (non-critical, fail gracefully)
+    let profile: { full_name?: string; email?: string; phone_number?: string } = {}
+    if (order.user_id) {
+        const { data: profileData } = await client.from('profiles').select('full_name, email, phone_number').eq('id', order.user_id).maybeSingle()
+        if (profileData) profile = profileData
+    }
+
 
     if (order.total <= 0) {
         await client.from('orders').update({ status: 'confirmed', payment_status: 'paid', payment_method: 'Free' }).eq('id', orderId)
@@ -38,7 +48,7 @@ export async function initiatePayment(orderId: string): Promise<PaymentResult> {
 
         // Extract shipping address details
         const addr = order.shipping_address || {}
-        const profile = (order as any).profiles || {}
+        // `profile` is already fetched above as a separate query
 
         const billingName = encodeURIComponent(addr.full_name || profile.full_name || '')
         const billingAddress = encodeURIComponent(addr.street_address || addr.address_line1 || '')
