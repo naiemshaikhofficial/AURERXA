@@ -35,15 +35,17 @@ export async function GET(request: NextRequest) {
         let contentType = response.headers.get("content-type") || "";
         if (contentType.includes("text/html")) {
             const html = await response.text();
-            // Look for og:image or similar meta tags
-            const ogImageMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
-                html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
 
-            if (ogImageMatch && ogImageMatch[1]) {
-                const directImageUrl = ogImageMatch[1];
+            // Robust regex to find direct image link from various meta tags or raw links
+            const directImageUrl =
+                html.match(/<meta\s+(?:property|name)=["']og:image["']\s+content=["']([^"']+)["']/i)?.[1] ||
+                html.match(/<meta\s+content=["']([^"']+)["']\s+(?:property|name)=["']og:image["']/i)?.[1] ||
+                html.match(/https?:\/\/[^"']+\.imageshack\.com\/img\d+\/[^"']+\.(?:jpg|jpeg|png|webp)/i)?.[0];
+
+            if (directImageUrl) {
                 // Fetch the actual image now
                 response = await fetch(directImageUrl, {
-                    headers: { 'User-Agent': 'Aurerxa-Proxy' },
+                    headers: { 'User-Agent': 'Mozilla/5.0' },
                     cache: 'force-cache',
                     next: { revalidate: 3600 * 24 }
                 });
