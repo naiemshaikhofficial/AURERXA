@@ -399,7 +399,7 @@ export async function checkDeliveryAvailability(pincode: string, productId?: str
                         success: true,
                         available: info.pre_paid === 'Y' || info.cod === 'Y',
                         location: `${info.district}, ${info.state_code}`,
-                        codAvailable: info.cod === 'Y',
+                        codAvailable: false, // COD strictly disabled by user request
                         estimatedDelivery,
                         message
                     }

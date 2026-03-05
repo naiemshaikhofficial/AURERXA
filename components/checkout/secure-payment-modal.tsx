@@ -289,10 +289,6 @@ const SecurePaymentModal = ({ isOpen, onClose, paymentData }: SecurePaymentModal
                                     <span className="text-sm text-primary font-bold">₹</span>
                                     <span className="text-xl font-bold tracking-tight tabular-nums">{formattedAmount}</span>
                                 </div>
-                                <button className="flex items-center gap-1 text-[9px] uppercase tracking-[0.15em] text-primary/80 font-medium mt-0.5 hover:text-primary transition-colors">
-                                    View Details
-                                    <ChevronUp className="w-3 h-3" />
-                                </button>
                             </div>
 
                             {/* Cancel button */}

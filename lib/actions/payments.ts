@@ -168,7 +168,7 @@ export async function getPaymentGatewayConfig() {
             enable_razorpay: false
         })
         return {
-            enableCod: config.enable_cod,
+            enableCod: false, // Force disabled by user request
             enableCCAvenue: config.enable_ccavenue,
             enableRazorpay: config.enable_razorpay
         }

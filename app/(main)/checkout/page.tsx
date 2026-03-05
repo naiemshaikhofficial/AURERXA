@@ -141,7 +141,6 @@ export default function CheckoutPage() {
     const [honeypot, setHoneypot] = useState('')
 
     // Check for scripts if they were already loaded by the layout
-    const [enableCod, setEnableCod] = useState(false)
     // iFrame Payment Modal State
     const [paymentData, setPaymentData] = useState<any>(null)
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
@@ -174,7 +173,8 @@ export default function CheckoutPage() {
             const savedDraft = localStorage.getItem(CHECKOUT_DRAFT_KEY)
             if (savedDraft) {
                 const draft = JSON.parse(savedDraft)
-                if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod)
+                // Payment method forced to online (COD removed)
+                setPaymentMethod('online')
                 if (draft.giftWrap !== undefined) setGiftWrap(draft.giftWrap)
                 if (draft.giftMessage) setGiftMessage(draft.giftMessage)
                 if (draft.deliveryTimeSlot) setDeliveryTimeSlot(draft.deliveryTimeSlot)
@@ -228,7 +228,6 @@ export default function CheckoutPage() {
                 }))
             }
 
-            setEnableCod(config.enableCod)
 
             if (addressData && addressData.length > 0) {
                 const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0]
@@ -275,7 +274,7 @@ export default function CheckoutPage() {
     useEffect(() => {
         const addr = addresses.find(a => a.id === selectedAddress)
         if (addr) {
-            updateShippingRate(addr.pincode, paymentMethod === 'cod')
+            updateShippingRate(addr.pincode, false)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [addresses, selectedAddress, paymentMethod])
@@ -408,12 +407,6 @@ export default function CheckoutPage() {
                 return;
             }
 
-            if (paymentMethod === 'cod') {
-                await refreshCart(true); // Clear Navbar icon
-                localStorage.removeItem(CHECKOUT_DRAFT_KEY); // Clear draft on successful order
-                router.push(`/account/orders/${result.orderId!}?success=true`);
-                return;
-            }
 
             // Online Payment Flow
             const paymentResult = await initiatePayment(result.orderId!);
@@ -824,27 +817,6 @@ export default function CheckoutPage() {
                                         </div>
                                     </label>
 
-                                    {enableCod && (
-                                        <label
-                                            onClick={() => setPaymentMethod('cod')}
-                                            className={`block p-4 border cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-primary bg-primary/5' : 'border-border hover:border-foreground/20'}`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="radio"
-                                                    name="payment"
-                                                    checked={paymentMethod === 'cod'}
-                                                    onChange={() => setPaymentMethod('cod')}
-                                                    className="accent-primary"
-                                                />
-                                                <Banknote className="w-5 h-5 text-primary" />
-                                                <div>
-                                                    <span className={`font-medium ${paymentMethod === 'cod' ? 'text-primary' : 'text-foreground'}`}>Cash on Delivery</span>
-                                                    <p className="text-xs text-muted-foreground">Pay when your order arrives</p>
-                                                </div>
-                                            </div>
-                                        </label>
-                                    )}
 
                                     <div className="bg-background/50 p-4 border border-destructive/10 rounded">
                                         <label className="flex items-start gap-3 cursor-pointer">
@@ -1056,7 +1028,7 @@ export default function CheckoutPage() {
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
                                         <>
-                                            {paymentMethod === 'cod' ? 'Place Order' : 'Secure Payment'}
+                                            Secure Payment
                                             <ChevronRight className="w-4 h-4 ml-2 opacity-50 group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}
