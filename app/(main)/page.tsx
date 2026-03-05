@@ -198,52 +198,7 @@ export default function HomePage() {
       <FeaturedCollectionsSection />
       <TopStyles />
       <BestsellersSection />
-      <MaterialShowcaseSection />
 
-      <section id="brand-heritage" className="py-24 bg-card/30 border-t border-border">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-5xl font-serif font-bold mb-8 italic">
-            Aurerxa – Premium Gold & Silver <span className="text-primary">Jewellery Online</span> in India
-          </h2>
-          <div className="prose prose-sm md:prose-base prose-invert mx-auto text-muted-foreground font-light leading-relaxed mb-12">
-            <p>
-              Welcome to <strong className="text-foreground">Aurerxa</strong>, where elegance meets purity. We offer
-              <strong className="text-foreground"> BIS hallmarked 22K gold jewellery</strong> and
-              <strong className="text-foreground"> certified 925 silver jewellery</strong> crafted for modern women who value timeless style.
-            </p>
-            <p>
-              Whether you are looking for <strong className="text-foreground">daily wear gold jewellery</strong>,
-              lightweight gold earrings, elegant gold rings, or minimal silver jewellery, Aurerxa brings
-              <strong className="text-foreground">premium craftsmanship with trusted quality</strong>.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6 mb-16">
-            {[
-              { label: 'BIS Hallmarked Gold', icon: '✔' },
-              { label: '925 Certified Silver', icon: '✔' },
-              { label: 'Secure Payments', icon: '✔' },
-              { label: 'Pan India Shipping', icon: '✔' },
-              { label: 'Easy Returns', icon: '✔' },
-            ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center gap-2 p-4 bg-background/50 border border-border/50 rounded-sm">
-                <span className="text-primary text-xl font-bold">{item.icon}</span>
-                <span className="text-[10px] uppercase tracking-widest font-medium text-muted-foreground">{item.label}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-6 text-sm md:text-base text-muted-foreground font-light">
-            <h3 className="text-xl font-serif font-semibold text-foreground italic">Why Choose Aurerxa?</h3>
-            <p>
-              Our collections are designed for everyday elegance, festive occasions, and meaningful gifting.
-              Every piece is carefully crafted to ensure shine, durability, and purity. Explore our latest
-              gold jewellery collection and discover timeless designs made for you.
-            </p>
-            <p className="font-serif italic text-primary text-lg pt-4">Shop confidently. Shine effortlessly. Choose Aurerxa.</p>
-          </div>
-        </div>
-      </section>
 
       <RecentlyViewed />
       <Newsletter />
