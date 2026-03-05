@@ -21,21 +21,7 @@ export type FilterState = {
     search?: string
 }
 
-export const PRODUCT_TYPES = [
-    { label: 'All Jewelry', value: 'all', iconId: 'aCPWW0PJ102K' },
-    { label: 'Rings', value: 'Ring', iconId: '5z5Rvj2F4jZB' },
-    { label: 'Necklaces', value: 'Necklace', iconId: '19731' },
-    { label: 'Earrings', value: 'Earring', iconId: 'ksXSIChGyK69' },
-    { label: 'Bracelets', value: 'Bracelet', iconId: 'McP6FpfdzPWM' },
-    { label: 'Bangles', value: 'Bangle', iconId: '8YdZOEMppFxv' },
-    { label: 'Pendants', value: 'Pendant', iconId: '110325' },
-    { label: 'Chains', value: 'Chain', iconId: 'FWr93WQ0Gm9Q' },
-    { label: 'Mangalsutras', value: 'Mangalsutra', iconId: '/947771-200.png' },
-    { label: 'Kids', value: 'Kids', iconId: 'J2uuDL01xwUL' },
-]
-
 export const GENDERS = [
-
     { label: 'All Genders', value: 'all' },
     { label: 'Women', value: 'Women' },
     { label: 'Men', value: 'Men' },
@@ -67,6 +53,8 @@ export const MATERIAL_TYPES = [
     { label: 'Diamond', value: 'diamond', dot: 'bg-cyan-400' },
 ]
 
+import { useSiteConfig } from '@/context/site-config-context'
+
 interface CinematicFilterProps {
     categories: any[]
     tags: string[]
@@ -76,17 +64,40 @@ interface CinematicFilterProps {
 }
 
 export function CinematicFilter({
-    categories,
+    categories: propCategories,
     tags,
     initialFilters,
     onFiltersChange,
     productCount
 }: CinematicFilterProps) {
     const router = useRouter()
+    const { categories: dynamicCategories } = useSiteConfig()
     const { viewMode, setViewMode } = useUserPreferences()
     const [isOpen, setIsOpen] = useState(false)
     const [filters, setFilters] = useState<FilterState>(initialFilters)
     const [activeTab, setActiveTab] = useState<'type' | 'gender' | 'price' | 'sort' | 'material' | 'tags'>('type')
+
+    // Dynamic Category Icons Mapping
+    const categoryIcons: Record<string, string> = {
+        'Ring': '5z5Rvj2F4jZB',
+        'Necklace': '19731',
+        'Earring': 'ksXSIChGyK69',
+        'Bracelet': 'McP6FpfdzPWM',
+        'Bangle': '8YdZOEMppFxv',
+        'Pendant': '110325',
+        'Chain': 'FWr93WQ0Gm9Q',
+        'Mangalsutra': '/947771-200.png',
+        'Kids': 'J2uuDL01xwUL'
+    }
+
+    const typeOptions = [
+        { label: 'All Jewelry', value: 'all', iconId: 'aCPWW0PJ102K' },
+        ...dynamicCategories.map((cat: any) => ({
+            label: cat.name,
+            value: cat.name,
+            iconId: categoryIcons[cat.name] || '82711'
+        }))
+    ]
 
     // Lock Body Scroll when Filter is Open
     useEffect(() => {
@@ -152,7 +163,7 @@ export function CinematicFilter({
                         className="w-full md:w-auto overflow-x-auto no-scrollbar overscroll-x-contain touch-pan-x flex items-center gap-1 p-1 order-2 md:order-1"
                         data-lenis-prevent
                     >
-                        {categories.map((cat) => (
+                        {propCategories.map((cat: any) => (
                             <button
                                 key={cat.slug}
                                 onClick={() => handleHorizontalChange(cat.slug)}
@@ -345,7 +356,7 @@ export function CinematicFilter({
 
                                             {activeTab === 'type' && (
                                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                    {PRODUCT_TYPES.map((type) => (
+                                                    {typeOptions.map((type: any) => (
                                                         <button
                                                             key={type.value}
                                                             onClick={() => {

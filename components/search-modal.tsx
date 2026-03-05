@@ -9,46 +9,26 @@ import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
 import { useSearch } from '@/context/search-context'
+import { useSiteConfig } from '@/context/site-config-context'
 import { useUserPreferences } from '@/context/user-preferences-context'
 
 import { ProductCard } from '@/components/product-card'
 
 export function SearchModal() {
     const { isSearchOpen: isOpen, closeSearch: onClose } = useSearch()
+    const { discoveryTags, categories: allCategories } = useSiteConfig()
     const router = useRouter()
     const [query, setQuery] = useState('')
     const [results, setResults] = useState<any[]>([])
     const [suggestions, setSuggestions] = useState<{ categories: any[], tags: string[], materials?: any[] }>({ categories: [], tags: [], materials: [] })
-    const [usedTags, setUsedTags] = useState<string[]>([])
     const { behavioralData } = useUserPreferences()
     const loading = useRef(false)
     const inputRef = useRef<HTMLInputElement>(null)
     const [isLoading, setIsLoading] = useState(false)
 
-    const TAGS_CACHE_KEY = 'aurerxa-search-tags-cache'
-
     useEffect(() => {
         if (isOpen) {
             if (inputRef.current) inputRef.current.focus()
-
-            // Fast-Track: Load from cache first
-            const cachedTags = localStorage.getItem(TAGS_CACHE_KEY)
-            if (cachedTags) {
-                const { tags, timestamp } = JSON.parse(cachedTags)
-                const isFresh = Date.now() - timestamp < 24 * 60 * 60 * 1000 // 24h
-                if (isFresh) {
-                    setUsedTags(tags)
-                }
-            }
-
-            // Sync with server
-            getUsedTags().then(tags => {
-                setUsedTags(tags)
-                localStorage.setItem(TAGS_CACHE_KEY, JSON.stringify({
-                    tags,
-                    timestamp: Date.now()
-                }))
-            })
         }
     }, [isOpen])
 
@@ -297,7 +277,7 @@ export function SearchModal() {
 
                                     <h4 className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-6">Popular Collections</h4>
                                     <div className="flex flex-col gap-4">
-                                        {(usedTags.length > 0 ? usedTags : ['Silver', 'Platinum', 'Contemporary']).map((cat) => (
+                                        {(discoveryTags.length > 0 ? discoveryTags : ['Silver', 'Platinum', 'Contemporary']).map((cat) => (
                                             <Link
                                                 key={cat}
                                                 href={`/collections/${cat.toLowerCase()}`}

@@ -42,6 +42,28 @@ export async function getReviewStats(productId: string) {
     return { average, total, distribution }
 }
 
+export async function getBulkReviewStats() {
+    const { data, error } = await supabaseServer
+        .from('product_reviews')
+        .select('product_id, rating')
+        .eq('status', 'approved')
+
+    if (error || !data) return {}
+
+    const stats: Record<string, { average: number, total: number }> = {}
+
+    data.forEach(r => {
+        if (!stats[r.product_id]) {
+            stats[r.product_id] = { average: 0, total: 0 }
+        }
+        const s = stats[r.product_id]
+        s.average = (s.average * s.total + r.rating) / (s.total + 1)
+        s.total++
+    })
+
+    return stats
+}
+
 export async function submitReview(formData: FormData): Promise<ActionResponse> {
     try {
         const client = await getAuthClient()

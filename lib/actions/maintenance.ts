@@ -41,13 +41,13 @@ export async function triggerAIContentIngestion() {
 export async function getSiteManifest() {
     try {
         // We aggregate the latest updated_at timestamps from key tables
-        // If a table doesn't have updated_at, we use a fallback or count as a weak hash
-        const [catRes, prodRes, blogRes, configRes] = await Promise.race([
+        const [catRes, prodRes, blogRes, configRes, heroRes] = await Promise.race([
             Promise.all([
                 supabaseServer.from('categories').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
                 supabaseServer.from('products').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
                 supabaseServer.from('blog_posts').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
-                supabaseServer.from('global_config').select('value').eq('key', 'site_version').maybeSingle()
+                supabaseServer.from('global_config').select('value').eq('key', 'site_version').maybeSingle(),
+                supabaseServer.from('hero_slides').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle()
             ]),
             new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Manifest timeout')), 3000))
         ])
@@ -56,7 +56,9 @@ export async function getSiteManifest() {
             categories: catRes?.data?.updated_at || 'initial',
             products: prodRes?.data?.updated_at || 'initial',
             blog: blogRes?.data?.updated_at || 'initial',
-            config: configRes?.data?.value || 'v1'
+            config: configRes?.data?.value || 'v1',
+            hero: heroRes?.data?.updated_at || 'initial',
+            reviews: prodRes?.data?.updated_at || 'initial' // Using products updated_at as proxy for review activity
         }
 
         return { success: true, manifest }
@@ -80,6 +82,21 @@ export async function getSyncData(buckets: string[]) {
         if (buckets.includes('collections')) {
             const { data } = await supabaseServer.from('sub_categories').select('*').order('name')
             results.collections = data
+        }
+
+        if (buckets.includes('hero_slides')) {
+            const { data } = await supabaseServer.from('hero_slides').select('*').eq('is_active', true).order('sort_order', { ascending: true })
+            results.hero_slides = data
+        }
+
+        if (buckets.includes('discovery_tags')) {
+            const { getUsedTags } = await import('./products')
+            results.discovery_tags = await getUsedTags()
+        }
+
+        if (buckets.includes('review_stats')) {
+            const { getBulkReviewStats } = await import('./reviews')
+            results.review_stats = await getBulkReviewStats()
         }
 
         return { success: true, data: results }

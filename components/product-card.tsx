@@ -11,10 +11,11 @@ import { cn, sanitizeImagePath } from '@/lib/utils'
 import supabaseLoader from '@/lib/supabase-loader'
 import { fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 import { formatWeight } from '@/lib/material-intelligence'
-import { Heart } from 'lucide-react'
+import { Heart, Star } from 'lucide-react'
 import { useUserPreferences } from '@/context/user-preferences-context'
 import { addToWishlist, removeFromWishlist } from '@/lib/actions/wishlist'
 import { useAuth } from '@/context/auth-context'
+import { useSiteConfig } from '@/context/site-config-context'
 import { toast } from 'sonner'
 
 export type MaterialType = 'real_gold' | 'gold_plated' | 'bentex' | 'silver' | 'diamond' | null
@@ -119,6 +120,7 @@ interface ProductCardProps {
 export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, className, onClose, priority = false }: ProductCardProps) => {
     const { addItem } = useCart()
     const { user } = useAuth()
+    const { reviewStats } = useSiteConfig()
     const { isInWishlist, toggleWishlist, setMetalPreference, trackEngagement } = useUserPreferences()
     const router = useRouter()
     const [isAdding, setIsAdding] = useState(false)
@@ -126,6 +128,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
     const [isWishlisting, setIsWishlisting] = useState(false)
 
     const isWishlisted = isInWishlist(product.id)
+    const stats = reviewStats[product.id] || null
 
     const handleWishlist = async (e: React.MouseEvent) => {
         e.preventDefault()
@@ -480,14 +483,27 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                         </h3>
                     </Link>
 
-                    <div className="flex items-baseline gap-2 pt-0.5">
-                        <span className="text-[11px] md:text-sm font-light text-foreground/80">
-                            ₹{product.price.toLocaleString()}
-                        </span>
-                        {product.weight_grams && (
-                            <span className="text-[7px] md:text-[9px] text-muted-foreground/50 uppercase tracking-wider">
-                                {formatWeight(product.weight_grams)}
+                    <div className="flex items-center justify-between pt-0.5">
+                        <div className="flex items-baseline gap-2">
+                            <span className="text-[11px] md:text-sm font-light text-foreground/80">
+                                ₹{product.price.toLocaleString()}
                             </span>
+                            {product.weight_grams && (
+                                <span className="text-[7px] md:text-[9px] text-muted-foreground/50 uppercase tracking-wider">
+                                    {formatWeight(product.weight_grams)}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Instant Social Proof Badge */}
+                        {stats && stats.total > 0 && (
+                            <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center gap-1">
+                                    <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
+                                    <span className="text-[10px] font-bold text-foreground/90">{stats.average.toFixed(1)}</span>
+                                </div>
+                                <span className="text-[8px] text-muted-foreground/60 font-medium">({stats.total})</span>
+                            </div>
                         )}
                     </div>
                 </div>

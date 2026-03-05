@@ -17,7 +17,7 @@ import { Newsletter } from '@/components/newsletter'
 import { RecentlyViewed } from '@/components/recently-viewed'
 import { TopStyles } from '@/components/top-styles'
 
-import { HeroCarousel } from '@/components/hero-carousel'
+import { HeroCarouselWrapper } from '@/components/hero-carousel-wrapper'
 
 async function NewReleasesSection() {
   const { getNewReleases } = await import('@/app/actions')
@@ -59,58 +59,8 @@ async function FeaturedCollectionsSection() {
   return <FeaturedCollections categories={categories} />
 }
 
-async function HeroCarouselSection() {
-  const { getHeroSlides } = await import('@/app/actions')
-  let slides = await getHeroSlides()
-
-  if (!slides || slides.length === 0) {
-    slides = [
-      {
-        id: 'mock-1',
-        image_url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?q=80&w=2000&auto=format&fit=crop',
-        title: 'The Bride Collection',
-        subtitle: 'Where Tradition Meets Eternity',
-        cta_text: 'Discover More',
-        cta_link: '/collections/bride',
-        text_color: '#FBBF24',
-        button_bg: '#FFFFFF',
-        button_text_color: '#000000',
-        overlay_opacity: 0.4
-      },
-      {
-        id: 'mock-2',
-        image_url: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=2000&auto=format&fit=crop',
-        title: 'Midnight Elegance',
-        subtitle: 'Nocturnal Brilliance',
-        cta_text: 'Shop The Look',
-        cta_link: '/collections/midnight',
-        text_color: '#E5E7EB',
-        button_bg: '#111827',
-        button_text_color: '#FFFFFF',
-        overlay_opacity: 0.6
-      },
-      {
-        id: 'mock-3',
-        image_url: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=2000&auto=format&fit=crop',
-        title: 'Rose Gold Love',
-        subtitle: 'Subtle. Sophisticated.',
-        cta_text: 'View Collection',
-        cta_link: '/collections/rose-gold',
-        text_color: '#FDA4AF',
-        button_bg: '#FDA4AF',
-        button_text_color: '#FFFFFF',
-        overlay_opacity: 0.3
-      }
-    ] as any[]
-  }
-
-  // Map DB fields to UI Component props (link_url -> cta_link)
-  const mappedSlides = (slides as any[]).map(s => ({
-    ...s,
-    cta_link: s.link_url || s.cta_link
-  }))
-
-  return <HeroCarousel slides={mappedSlides as any} />
+function HeroCarouselSection() {
+  return <HeroCarouselWrapper />
 }
 
 export const metadata: Metadata = {
