@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { useCart } from '@/context/cart-context'
 import { useRouter } from 'next/navigation'
 import { useSearch } from '@/context/search-context'
+import { useUserPreferences } from '@/context/user-preferences-context'
 
 import { ProductCard } from '@/components/product-card'
 
@@ -19,14 +20,35 @@ export function SearchModal() {
     const [results, setResults] = useState<any[]>([])
     const [suggestions, setSuggestions] = useState<{ categories: any[], tags: string[], materials?: any[] }>({ categories: [], tags: [], materials: [] })
     const [usedTags, setUsedTags] = useState<string[]>([])
-    const [loading, setLoading] = useState(false)
+    const { behavioralData } = useUserPreferences()
+    const loading = useRef(false)
     const inputRef = useRef<HTMLInputElement>(null)
+    const [isLoading, setIsLoading] = useState(false)
+
+    const TAGS_CACHE_KEY = 'aurerxa-search-tags-cache'
 
     useEffect(() => {
         if (isOpen) {
             if (inputRef.current) inputRef.current.focus()
-            // Fetch used tags on open
-            getUsedTags().then(setUsedTags)
+
+            // Fast-Track: Load from cache first
+            const cachedTags = localStorage.getItem(TAGS_CACHE_KEY)
+            if (cachedTags) {
+                const { tags, timestamp } = JSON.parse(cachedTags)
+                const isFresh = Date.now() - timestamp < 24 * 60 * 60 * 1000 // 24h
+                if (isFresh) {
+                    setUsedTags(tags)
+                }
+            }
+
+            // Sync with server
+            getUsedTags().then(tags => {
+                setUsedTags(tags)
+                localStorage.setItem(TAGS_CACHE_KEY, JSON.stringify({
+                    tags,
+                    timestamp: Date.now()
+                }))
+            })
         }
     }, [isOpen])
 
@@ -50,14 +72,14 @@ export function SearchModal() {
                 setResults([])
                 return
             }
-            setLoading(true)
+            setIsLoading(true)
             const [productData, suggestionData] = await Promise.all([
                 searchProducts(query),
                 getSearchSuggestions(query)
             ])
             setResults(productData)
             setSuggestions(suggestionData)
-            setLoading(false)
+            setIsLoading(false)
         }
 
         const debounce = setTimeout(handleSearch, 300)
@@ -124,7 +146,7 @@ export function SearchModal() {
                             aria-autocomplete="list"
                             aria-controls="search-results"
                         />
-                        {loading && (
+                        {isLoading && (
                             <Loader2 className="w-6 h-6 animate-spin text-primary" aria-label="Searching..." />
                         )}
                         <button type="submit" className="hidden" aria-hidden="true">Search</button>
@@ -244,6 +266,31 @@ export function SearchModal() {
                                                 >
                                                     Clear All
                                                 </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Personalized Discovery */}
+                                    {Object.keys(behavioralData.categories).length > 0 && (
+                                        <div className="mb-10">
+                                            <h4 className="text-[10px] text-primary uppercase tracking-[0.4em] mb-6 flex items-center gap-2">
+                                                <span className="w-1 h-1 bg-primary rounded-full animate-pulse" />
+                                                Discover For You
+                                            </h4>
+                                            <div className="flex flex-wrap gap-3">
+                                                {Object.entries(behavioralData.categories)
+                                                    .sort(([, a], [, b]) => b - a)
+                                                    .slice(0, 3)
+                                                    .map(([slug]) => (
+                                                        <Link
+                                                            key={slug}
+                                                            href={`/collections/${slug}`}
+                                                            onClick={onClose}
+                                                            className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg text-primary hover:bg-primary hover:text-white transition-all text-[11px] uppercase tracking-widest font-bold"
+                                                        >
+                                                            {slug.replace('-', ' ')}
+                                                        </Link>
+                                                    ))}
                                             </div>
                                         </div>
                                     )}

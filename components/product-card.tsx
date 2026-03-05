@@ -143,29 +143,26 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
         }
 
         setIsWishlisting(true)
-        try {
-            // Instant UI update via context
-            toggleWishlist(product.id)
+        // Centralized toggle handles both local state and server sync/queueing
+        await toggleWishlist(product.id)
 
-            if (isWishlisted) {
-                await removeFromWishlist(product.id)
-            } else {
-                await addToWishlist(product.id)
-                // When they wishlist something, it's a strong signal of preference
-                if (product.material_type) {
-                    setMetalPreference(product.material_type)
-                    trackEngagement('material', product.material_type)
-                }
-                if (product.categories?.slug) {
-                    trackEngagement('category', product.categories.slug)
-                }
+        if (!isWishlisted) {
+            // When they wishlist something, it's a strong signal of preference
+            if (product.material_type) {
+                setMetalPreference(product.material_type)
+                trackEngagement('material', product.material_type)
             }
-        } catch (error) {
-            // Revert on error
-            toggleWishlist(product.id)
-            toast.error('Failed to update wishlist')
-        } finally {
-            setIsWishlisting(false)
+            if (product.categories?.slug) {
+                trackEngagement('category', product.categories.slug)
+            }
+        }
+        setIsWishlisting(false)
+    }
+
+    const prehydrate = () => {
+        if (typeof window !== 'undefined' && product.image_url) {
+            const img = new (window as any).Image()
+            img.src = sanitizeImagePath(product.image_url)
         }
     }
 

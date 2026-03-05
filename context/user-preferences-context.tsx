@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { getWishlist } from '@/lib/actions/wishlist'
+import { getWishlist, addToWishlist, removeFromWishlist } from '@/lib/actions/wishlist'
 import { useAuth } from './auth-context'
 
 interface BehavioralData {
@@ -24,6 +24,7 @@ interface UserPreferencesContextType {
     setViewMode: (mode: 'grid' | 'list') => void
     behavioralData: BehavioralData
     trackEngagement: (type: 'category' | 'material', id: string) => void
+    syncNow: () => Promise<void>
 }
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined)
@@ -34,7 +35,8 @@ const STORAGE_KEYS = {
     RING_SIZE: 'aurerxa-ring-size',
     DISMISSED: 'aurerxa-dismissed-interstitials',
     VIEW_MODE: 'aurerxa-view-mode',
-    BEHAVIOR: 'aurerxa-behavior-data'
+    BEHAVIOR: 'aurerxa-behavior-data',
+    SYNC_QUEUE: 'aurerxa-sync-queue'
 }
 
 export function UserPreferencesProvider({ children }: { children: React.ReactNode }) {
@@ -49,6 +51,9 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
         materials: {},
         lastUpdate: new Date().toISOString()
     })
+    const [syncQueue, setSyncQueue] = useState<any[]>([])
+
+    const SYNC_RETRY_INTERVAL = 30000 // Retry every 30s if failed
 
     // 1. Instant Hydration
     useEffect(() => {
@@ -89,6 +94,8 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
                     setBehavioralData(parsed)
                 }
             }
+            const cachedSync = localStorage.getItem(STORAGE_KEYS.SYNC_QUEUE)
+            if (cachedSync) setSyncQueue(JSON.parse(cachedSync))
         } catch (e) {
             console.warn('Preferences hydration failed')
         }
@@ -119,8 +126,26 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
         setWishlistIds(newIds)
         localStorage.setItem(STORAGE_KEYS.WISHLIST, JSON.stringify(newIds))
 
-        // Actual server call should be handled by the component using addToWishlist/removeFromWishlist
-        // But we handle the local sync here
+        // Actual server call
+        try {
+            if (isCurrentlyIn) {
+                await removeFromWishlist(productId)
+            } else {
+                await addToWishlist(productId)
+            }
+        } catch (e) {
+            // Error handling: Queue for retry
+            console.warn('Wishlist sync failed, queuing for retry:', productId)
+            setSyncQueue(prev => [
+                ...prev.filter(a => a.id !== productId || a.type !== 'wishlist'), // Avoid duplicates
+                {
+                    type: 'wishlist',
+                    id: productId,
+                    method: isCurrentlyIn ? 'remove' : 'add',
+                    timestamp: Date.now()
+                }
+            ])
+        }
     }, [wishlistIds])
 
     const setMetalPreference = useCallback((metal: string) => {
@@ -165,6 +190,42 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
         })
     }, [])
 
+    const syncNow = useCallback(async () => {
+        if (syncQueue.length === 0) return
+
+        console.log('Elite Sync: Attempting to sync queued actions...', syncQueue.length)
+        const pending = [...syncQueue]
+        setSyncQueue([]) // Clear local state during attempt
+
+        for (const action of pending) {
+            try {
+                if (action.type === 'wishlist') {
+                    const { addToWishlist, removeFromWishlist } = await import('@/lib/actions/wishlist')
+                    if (action.method === 'add') await addToWishlist(action.id)
+                    else await removeFromWishlist(action.id)
+                }
+            } catch (e) {
+                // If failed, re-queue
+                setSyncQueue(prev => [...prev, action])
+            }
+        }
+    }, [syncQueue])
+
+    // Auto-sync on connection return or navigation
+    useEffect(() => {
+        const handleSync = () => syncNow()
+        window.addEventListener('online', handleSync)
+
+        // Save queue to local storage
+        if (syncQueue.length > 0) {
+            localStorage.setItem(STORAGE_KEYS.SYNC_QUEUE, JSON.stringify(syncQueue))
+        } else {
+            localStorage.removeItem(STORAGE_KEYS.SYNC_QUEUE)
+        }
+
+        return () => window.removeEventListener('online', handleSync)
+    }, [syncQueue, syncNow])
+
     return (
         <UserPreferencesContext.Provider value={{
             wishlistIds,
@@ -179,7 +240,8 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
             viewMode,
             setViewMode,
             behavioralData,
-            trackEngagement
+            trackEngagement,
+            syncNow
         }}>
             {children}
         </UserPreferencesContext.Provider>
