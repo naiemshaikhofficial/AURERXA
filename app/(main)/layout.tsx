@@ -93,13 +93,13 @@ export default async function MainLayout({
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
             />
             {marketingConfig.banner_enabled && (
-                <div className="fixed top-0 left-0 right-0 h-8 bg-[#D4AF37] text-black flex items-center justify-center text-[10px] md:text-xs font-bold tracking-widest uppercase z-[45]">
+                <div className="fixed top-0 inset-x-0 h-8 bg-[#D4AF37] text-black flex items-center justify-center text-[10px] md:text-xs font-bold tracking-widest uppercase z-[45] w-full fixed-header-container">
                     <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
                         {marketingConfig.banner_text}
                     </a>
                 </div>
             )}
-            <div className={cn("fixed left-0 right-0 z-[40]", marketingConfig.banner_enabled ? "top-8" : "top-0")}>
+            <div className={cn("fixed inset-x-0 z-[40] w-full fixed-header-container", marketingConfig.banner_enabled ? "top-8" : "top-0")}>
                 <Navbar marketingConfig={marketingConfig} />
                 <CategoryNav />
             </div>

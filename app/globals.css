@@ -5,6 +5,17 @@
 html {
   overflow-anchor: none;
   scroll-behavior: auto !important;
+  scrollbar-gutter: stable;
+}
+
+/* Prevent layout shift when Radix UI/Modals lock scroll */
+body[data-radix-scroll-lock] .fixed-header-container,
+body[style*="overflow: hidden"] .fixed-header-container {
+  padding-right: var(--removed-body-scroll-bar-size, 0px) !important;
+}
+
+.fixed-header-container {
+  transition: padding-right 0.2s ease;
 }
 
 @layer base {
