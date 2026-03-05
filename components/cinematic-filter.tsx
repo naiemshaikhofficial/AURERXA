@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Filter, X, Check, ChevronDown, SlidersHorizontal, Diamond, Gem, LayoutGrid, List } from 'lucide-react'
 import { useUserPreferences } from '@/context/user-preferences-context'
 import { cn, sanitizeImagePath } from '@/lib/utils'
+import Image from 'next/image'
 
 export type FilterState = {
     category: string
@@ -21,7 +22,7 @@ export type FilterState = {
 }
 
 export const PRODUCT_TYPES = [
-    { label: 'All Jewelry', value: 'all', iconId: '82711' },
+    { label: 'All Jewelry', value: 'all', iconId: 'aCPWW0PJ102K' },
     { label: 'Rings', value: 'Ring', iconId: '5z5Rvj2F4jZB' },
     { label: 'Necklaces', value: 'Necklace', iconId: '19731' },
     { label: 'Earrings', value: 'Earring', iconId: 'ksXSIChGyK69' },
@@ -34,6 +35,7 @@ export const PRODUCT_TYPES = [
 ]
 
 export const GENDERS = [
+
     { label: 'All Genders', value: 'all' },
     { label: 'Women', value: 'Women' },
     { label: 'Men', value: 'Men' },
@@ -201,11 +203,14 @@ export function CinematicFilter({
                                 onClick={() => setIsOpen(true)}
                                 className="group flex items-center gap-2 px-6 py-3 bg-muted border border-border rounded-full hover:bg-foreground hover:text-background hover:border-foreground transition-all active:scale-95"
                             >
-                                <img
-                                    src={sanitizeImagePath("https://img.icons8.com/?size=100&id=82746&format=png&color=FFFFFF")}
-                                    alt="Filter"
-                                    className="w-4 h-4 transition-all duration-300 group-hover:invert group-hover:rotate-180 opacity-60 group-hover:opacity-100 dark:invert-0 invert"
-                                />
+                                <div className="relative w-4 h-4 transition-all duration-300 group-hover:invert group-hover:rotate-180 opacity-60 group-hover:opacity-100">
+                                    <Image
+                                        src="https://img.icons8.com/?size=100&id=82746&format=png&color=FFFFFF"
+                                        alt="Filter"
+                                        fill
+                                        className="object-contain dark:invert-0 invert"
+                                    />
+                                </div>
                                 <span className="text-[9px] font-premium-sans text-foreground group-hover:text-background tracking-[0.2em] uppercase">Refine</span>
                                 {activeFilterCount > 0 && (
                                     <span className="ml-1 w-4 h-4 flex items-center justify-center bg-primary text-primary-foreground text-[8px] font-bold rounded-full">
@@ -247,11 +252,14 @@ export function CinematicFilter({
                                             onClick={clearFilters}
                                             className="group flex items-center gap-2 text-[10px] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-[0.2em] border-b border-border pb-px"
                                         >
-                                            <img
-                                                src={sanitizeImagePath("https://img.icons8.com/?size=100&id=13054&format=png&color=BF9B65")}
-                                                alt="Reset"
-                                                className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500"
-                                            />
+                                            <div className="relative w-3 h-3 group-hover:rotate-180 transition-transform duration-500">
+                                                <Image
+                                                    src="https://img.icons8.com/?size=100&id=13054&format=png&color=BF9B65"
+                                                    alt="Reset"
+                                                    fill
+                                                    className="object-contain"
+                                                />
+                                            </div>
                                             Reset
                                         </button>
                                     )}
@@ -354,20 +362,20 @@ export function CinematicFilter({
                                                                     : "bg-transparent border-border hover:border-foreground/30 hover:bg-muted"
                                                             )}
                                                         >
-                                                            <img
-                                                                src={type.iconId.startsWith('/')
-                                                                    ? type.iconId
-                                                                    : sanitizeImagePath(`https://img.icons8.com/?size=100&id=${(type as any).iconId}&format=png&color=${(type.value === 'Kids' ? filters.gender === 'Kids' : filters.type === type.value) ? '000000' : 'D4AF37'}`)
-                                                                }
-                                                                alt={type.label}
-                                                                style={type.iconId.startsWith('/') && (type.value === 'Kids' ? filters.gender !== 'Kids' : filters.type !== type.value) ? {
-                                                                    filter: 'invert(80%) sepia(34%) saturate(769%) hue-rotate(345deg) brightness(97%) contrast(87%)'
-                                                                } : {}}
-                                                                className={cn(
-                                                                    "w-8 h-8 transition-all duration-500 group-hover:scale-110",
-                                                                    (type.value === 'Kids' ? filters.gender === 'Kids' : filters.type === type.value) ? 'invert-0' : '',
-                                                                )}
-                                                            />
+                                                            <div className="relative w-8 h-8 transition-all duration-500 group-hover:scale-110">
+                                                                <Image
+                                                                    src={type.iconId.startsWith('/')
+                                                                        ? type.iconId
+                                                                        : `https://img.icons8.com/?size=100&id=${type.iconId}&format=png&color=${(type.value === 'Kids' ? filters.gender === 'Kids' : filters.type === type.value) ? '000000' : 'BF9B65'}`
+                                                                    }
+                                                                    alt={type.label}
+                                                                    fill
+                                                                    className={cn(
+                                                                        "object-contain transition-all duration-500",
+                                                                        !(type.value === 'Kids' ? filters.gender === 'Kids' : filters.type === type.value) && "opacity-90"
+                                                                    )}
+                                                                />
+                                                            </div>
                                                             <span className="text-[10px] uppercase tracking-[0.2em]">{type.label}</span>
                                                         </button>
                                                     ))}
