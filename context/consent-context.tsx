@@ -38,10 +38,12 @@ const ConsentContext = createContext<ConsentContextType | undefined>(undefined)
 
 export function ConsentProvider({
     children,
-    initialProfile
+    initialProfile,
+    initialProfilePromise
 }: {
     children: React.ReactNode,
     initialProfile?: UserDetails | null
+    initialProfilePromise?: Promise<any | null>
 }) {
     const [consentStatus, setConsentStatus] = useState<ConsentStatus>('undecided')
     const [preferences, setPreferences] = useState<ConsentPreferences>(DEFAULT_PREFERENCES)
@@ -129,6 +131,25 @@ export function ConsentProvider({
             document.cookie = `ua-sid=${sid}; path=/; max-age=${2 * 365 * 24 * 60 * 60}; SameSite=Lax`
         }
         setSessionId(sid)
+
+        // Resolve profile promise if provided
+        const resolveInitialProfile = async () => {
+            if (!initialProfilePromise) return
+            try {
+                const p = await initialProfilePromise
+                if (p && currentPrefs.personalization) {
+                    const syncedDetails = { ...p, ...currentDetails }
+                    setUserDetails(syncedDetails)
+                    syncToDB(status, syncedDetails, sid, currentPrefs)
+                }
+            } catch (err) {
+                console.error('Error resolving initial profile promise in Consent:', err)
+            }
+        }
+
+        if (initialProfilePromise) {
+            resolveInitialProfile()
+        }
 
         // Overwrite/Sync with initialProfile if personalization granted
         if (initialProfile && currentPrefs.personalization) {

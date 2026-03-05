@@ -53,9 +53,10 @@ export function Hero() {
             fill
             priority
             fetchPriority="high"
-            quality={75}
+            loading="eager"
+            quality={85}
             className="object-cover object-center scale-100 dark:opacity-70 opacity-30"
-            sizes="100vw"
+            sizes="(max-width: 1024px) 100vw, 100vw"
           />
         </div>
       </motion.div>

@@ -25,15 +25,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({
     children,
-    initialProfile
+    initialProfile,
+    initialProfilePromise
 }: {
     children: React.ReactNode
     initialProfile?: AuthProfile | null
+    initialProfilePromise?: Promise<AuthProfile | null>
 }) {
     const [user, setUser] = useState<User | null>(null)
     const [profile, setProfile] = useState<AuthProfile | null>(initialProfile || null)
     const [isAdmin, setIsAdmin] = useState<boolean>(initialProfile?.isAdmin || false)
-    const [loading, setLoading] = useState(initialProfile === undefined)
+    const [loading, setLoading] = useState(initialProfile === undefined && !initialProfilePromise)
 
     useEffect(() => {
         const initAuth = async () => {
@@ -75,9 +77,27 @@ export function AuthProvider({
             }
         }
 
-        if (!initialProfile) {
+        const resolveInitialProfile = async () => {
+            try {
+                const p = await initialProfilePromise
+                if (p) {
+                    setProfile(p)
+                    setIsAdmin(p.isAdmin || false)
+                }
+            } catch (err) {
+                console.error('Error resolving initial profile promise:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        if (initialProfilePromise) {
+            resolveInitialProfile()
+        }
+
+        if (!initialProfile && !initialProfilePromise) {
             initAuth()
-        } else {
+        } else if (initialProfile) {
             // Pre-fill user from session if available without full re-fetch
             supabase.auth.getSession().then(({ data: { session } }) => {
                 if (session?.user) setUser(session.user)

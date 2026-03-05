@@ -4,6 +4,7 @@ import { Geist, Cormorant_Garamond } from 'next/font/google'
 import { SmoothScroll } from '@/components/smooth-scroll'
 import { Toaster } from "@/components/ui/sonner"
 import dynamic from 'next/dynamic'
+import { LazyMotion, domMax } from 'framer-motion'
 
 import './globals.css'
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -184,11 +185,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  // Fetch profile globally - this is safe for static generation if it doesn't depend on headers/cookies 
-  // that vary per request in a way that breaks caching (currentUserProfile usually uses cookies, 
-  // so this might STILL make it dynamic, but by removing Pathname dependence we at least decouple it from UI toggles).
-  // Actually, to make it TRULY static, we should move profile fetch to a client component or use Suspense.
-  const profile = await getCurrentUserProfile()
+  // Fetch profile - This is now done without blocking the layout shell stream
+  // We remove the top-level await to allow the HTML shell to reach the browser faster.
+  const profilePromise = getCurrentUserProfile()
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
 
@@ -255,12 +254,14 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <SearchProvider>
-            <AuthProvider initialProfile={profile}>
-              <ConsentProvider initialProfile={profile}>
+            <AuthProvider initialProfilePromise={profilePromise}>
+              <ConsentProvider initialProfilePromise={profilePromise}>
                 <CartProvider>
                   <SmoothScroll>
                     <ErrorBoundary componentName="Application Root">
-                      {children}
+                      <LazyMotion features={domMax}>
+                        {children}
+                      </LazyMotion>
 
                       <CartSheet />
                       <MobileInstallPrompt />
