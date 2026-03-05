@@ -17,6 +17,8 @@ import { addToWishlist, removeFromWishlist } from '@/lib/actions/wishlist'
 import { useAuth } from '@/context/auth-context'
 import { useSiteConfig } from '@/context/site-config-context'
 import { toast } from 'sonner'
+import { preload } from 'swr'
+import { getProductBySlug } from '@/app/actions'
 
 export type MaterialType = 'real_gold' | 'gold_plated' | 'bentex' | 'silver' | 'diamond' | null
 
@@ -302,7 +304,11 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
             whileInView="animate"
             viewport={{ once: true }}
             variants={fadeInUp}
-            onMouseEnter={() => setIsHovered(true)}
+            onMouseEnter={() => {
+                setIsHovered(true)
+                // PREWARM: Prefetch product data when user hovers
+                preload(['product', product.slug], () => getProductBySlug(product.slug))
+            }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             style={{

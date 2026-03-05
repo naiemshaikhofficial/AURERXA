@@ -84,6 +84,13 @@ export async function GET(
                                 {formatCurrency(product.price)}
                             </div>
 
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 15 }}>
+                                <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#22c55e' }} />
+                                <div style={{ fontSize: 14, color: '#a3a3a3', letterSpacing: 2, textTransform: 'uppercase' }}>
+                                    BIS Hallmarked • Free Insured Shipping
+                                </div>
+                            </div>
+
                             <div style={{ display: 'flex', marginTop: 40, padding: '12px 24px', backgroundColor: '#D4AF37', color: 'black', fontSize: 20, fontWeight: 700, borderRadius: 4 }}>
                                 DISCOVER MORE AT AURERXA.COM
                             </div>

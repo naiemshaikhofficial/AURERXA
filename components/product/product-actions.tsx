@@ -3,6 +3,7 @@
 import React from 'react'
 import { Ruler, Loader2, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { MagneticButton } from '@/components/ui/magnetic-button'
 
 interface ProductActionsProps {
     product: any
@@ -97,21 +98,25 @@ export function ProductActions({
             <div className="flex flex-col gap-3">
                 {product.stock > 0 ? (
                     <>
-                        <Button
-                            onClick={handleBuyNow}
-                            disabled={addingToCart}
-                            className="w-full bg-white text-black h-14 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-neutral-200 transition-all rounded-none"
-                        >
-                            Buy It Now
-                        </Button>
-                        <div className="flex gap-2">
+                        <MagneticButton strength={0.15}>
                             <Button
-                                onClick={handleAddToCart}
+                                onClick={handleBuyNow}
                                 disabled={addingToCart}
-                                className="flex-[3] bg-transparent border border-white/20 text-white h-12 uppercase tracking-[0.2em] text-[9px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
+                                className="w-full bg-white text-black h-14 uppercase tracking-[0.3em] text-[10px] font-bold hover:bg-neutral-200 transition-all rounded-none"
                             >
-                                {addingToCart ? <Loader2 className="animate-spin w-3 h-3" /> : 'Add to Bag'}
+                                Buy It Now
                             </Button>
+                        </MagneticButton>
+                        <div className="flex gap-2">
+                            <MagneticButton className="flex-[3]" strength={0.2}>
+                                <Button
+                                    onClick={handleAddToCart}
+                                    disabled={addingToCart}
+                                    className="w-full bg-transparent border border-white/20 text-white h-12 uppercase tracking-[0.2em] text-[9px] font-bold hover:bg-white hover:text-black transition-all rounded-none"
+                                >
+                                    {addingToCart ? <Loader2 className="animate-spin w-3 h-3" /> : 'Add to Bag'}
+                                </Button>
+                            </MagneticButton>
                             <button
                                 onClick={handleAddToWishlist}
                                 className={`flex-1 h-12 flex items-center justify-center border transition-all duration-300 ${inWishlist ? 'bg-red-500/10 border-red-500/50 text-red-500' : 'bg-transparent border-white/20 text-white hover:bg-white/5'}`}

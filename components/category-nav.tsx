@@ -8,6 +8,8 @@ import { cn, sanitizeImagePath } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 import { useSiteConfig } from '@/context/site-config-context'
+import { preload } from 'swr'
+import { getFilteredProducts } from '@/app/actions'
 
 const DEFAULT_CATEGORIES = [
     { label: 'All Jewelry', href: '/collections', iconId: 'aCPWW0PJ102K' },
@@ -123,6 +125,22 @@ export function CategoryNav() {
                                     <Link
                                         key={cat.label}
                                         href={cat.href}
+                                        onMouseEnter={() => {
+                                            const parts = cat.href.split('/')
+                                            const catSlug = parts[parts.length - 1]
+                                            if (catSlug && cat.href.includes('/collections/')) {
+                                                // Elite SWR Prefetch: Pre-warm the specific category collection
+                                                preload(['filtered-products', catSlug, 'all', null, 'all', 'all', 'all', 0, undefined, 'newest', undefined, 0],
+                                                    async () => {
+                                                        return await getFilteredProducts({
+                                                            category: catSlug,
+                                                            limit: 20,
+                                                            offset: 0,
+                                                            sortBy: 'newest'
+                                                        })
+                                                    })
+                                            }
+                                        }}
                                         className={cn(
                                             "flex flex-col items-center justify-center gap-2 group transition-all duration-500 min-w-[70px] md:min-w-[80px]",
                                             isActive ? "opacity-100" : "opacity-60 hover:opacity-100"

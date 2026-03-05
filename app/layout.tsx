@@ -244,6 +244,12 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 
+        {/* Elite Resource Hinting */}
+        <link rel="preconnect" href="https://imageshack.com" />
+        <link rel="dns-prefetch" href="https://imageshack.com" />
+        <link rel="preconnect" href="https://v5.airtable.com" />
+        <link rel="dns-prefetch" href="https://v5.airtable.com" />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}

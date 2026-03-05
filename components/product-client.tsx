@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useUserPreferences } from '@/context/user-preferences-context'
 import { useAuth } from '@/context/auth-context'
+import { useCart } from '@/context/cart-context'
 import { toast } from 'sonner'
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { cn, sanitizeImagePath } from '@/lib/utils'
@@ -265,6 +266,23 @@ export function ProductClient({ product: initialProduct, related, isWishlisted }
             baseCost: undefined,
         }
     }, [selectedSize, product])
+
+    // 7. PREDICTIVE GALLERY PRELOADING (Elite Phase)
+    useEffect(() => {
+        if (!product || !product.images) return
+        const images = Array.isArray(product.images) ? product.images : []
+        if (images.length <= 1) return
+
+        // Wait for main interaction or a small delay
+        const timer = setTimeout(() => {
+            images.slice(1).forEach((src: string) => {
+                const img = new (window as any).Image()
+                img.src = sanitizeImagePath(src)
+            })
+        }, 2000)
+
+        return () => clearTimeout(timer)
+    }, [product])
 
     // Handle scroll for sticky bar
     useEffect(() => {

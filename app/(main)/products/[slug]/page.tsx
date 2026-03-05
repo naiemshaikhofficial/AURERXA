@@ -164,6 +164,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 name: 'AURERXA',
                 url: baseUrl,
                 logo: `${baseUrl}/icon-512.png`,
+                slogan: 'Authentic Luxury & Bespoke Jewelry Heritage'
             },
             aggregateRating: (reviewStats?.total > 0) ? {
                 '@type': 'AggregateRating',
