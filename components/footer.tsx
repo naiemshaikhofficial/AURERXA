@@ -65,8 +65,7 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
                 { name: 'Bulk Orders', href: '/bulk-order' },
                 { name: 'Custom Jewelry', href: '/custom-jewelry' },
                 { name: 'Ring Size Calculator', href: '/ring-size-calculator' },
-                { name: 'The Price of Perfection', href: '/the-price-of-perfection' },
-                { name: 'Live Rates', href: '/live-rates' }
+
               ].map((service) => (
                 <li key={service.name}>
                   <Link href={service.href} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors tracking-widest uppercase luxe-underline">

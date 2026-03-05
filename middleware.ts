@@ -25,6 +25,10 @@ const PUBLIC_PATHS = [
 
 export default async function proxy(request: NextRequest) {
     const { pathname, searchParams } = request.nextUrl
+    // 0. Hide inaccurate rates page
+    if (pathname === '/live-rates') {
+        return NextResponse.redirect(new URL('/', request.url))
+    }
 
     // 1. Scalability: Basic Rate Limiting & Bot Blocking
     const ua = request.headers.get('user-agent') || ''
