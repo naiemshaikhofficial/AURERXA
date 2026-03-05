@@ -30,6 +30,20 @@ export function SearchModal() {
         }
     }, [isOpen])
 
+    const [recentSearches, setRecentSearches] = useState<string[]>([])
+
+    useEffect(() => {
+        const saved = localStorage.getItem('aurerxa-recent-searches')
+        if (saved) setRecentSearches(JSON.parse(saved))
+    }, [])
+
+    const addToRecent = (term: string) => {
+        if (!term || term.length < 2) return
+        const newRecent = [term, ...recentSearches.filter(s => s !== term)].slice(0, 5)
+        setRecentSearches(newRecent)
+        localStorage.setItem('aurerxa-recent-searches', JSON.stringify(newRecent))
+    }
+
     useEffect(() => {
         const handleSearch = async () => {
             if (query.trim().length < 2) {
@@ -90,6 +104,7 @@ export function SearchModal() {
                         onSubmit={(e) => {
                             e.preventDefault()
                             if (query.trim()) {
+                                addToRecent(query.trim())
                                 onClose()
                                 router.push(`/collections?search=${encodeURIComponent(query.trim())}`)
                             }
@@ -130,7 +145,10 @@ export function SearchModal() {
                                                 <Link
                                                     key={mat.value}
                                                     href={`/collections?material_type=${mat.value}`}
-                                                    onClick={onClose}
+                                                    onClick={() => {
+                                                        addToRecent(mat.label)
+                                                        onClose()
+                                                    }}
                                                     className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 hover:border-primary/40 rounded-full transition-all group"
                                                 >
                                                     <div className={`w-1 h-1 rounded-full ${mat.value === 'silver' ? 'bg-blue-300' : 'bg-cyan-400'
@@ -149,7 +167,10 @@ export function SearchModal() {
                                             <Link
                                                 key={cat.slug}
                                                 href={`/collections/${cat.slug}`}
-                                                onClick={onClose}
+                                                onClick={() => {
+                                                    addToRecent(cat.name)
+                                                    onClose()
+                                                }}
                                                 className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-xs font-serif italic"
                                             >
                                                 <Compass className="w-3 h-3 text-primary" />
@@ -160,7 +181,10 @@ export function SearchModal() {
                                             <Link
                                                 key={tag}
                                                 href={`/collections/${tag.toLowerCase()}`}
-                                                onClick={onClose}
+                                                onClick={() => {
+                                                    addToRecent(tag)
+                                                    onClose()
+                                                }}
                                                 className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-white/60 hover:text-white hover:border-primary/50 transition-all text-[10px] uppercase tracking-widest font-light"
                                             >
                                                 <TagIcon className="w-3 h-3 text-primary" />
@@ -179,7 +203,10 @@ export function SearchModal() {
                                             product={product}
                                             viewMode="compact"
                                             index={idx}
-                                            onClose={onClose}
+                                            onClose={() => {
+                                                addToRecent(product.name)
+                                                onClose()
+                                            }}
                                         />
                                     ))}
                                 </div>
@@ -195,6 +222,32 @@ export function SearchModal() {
                             {/* Popular Searches */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                 <div>
+                                    {recentSearches.length > 0 && (
+                                        <div className="mb-10">
+                                            <h4 className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-6">Recent Journeys</h4>
+                                            <div className="flex flex-wrap gap-3">
+                                                {recentSearches.map(term => (
+                                                    <button
+                                                        key={term}
+                                                        onClick={() => setQuery(term)}
+                                                        className="px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-full text-primary hover:bg-primary hover:text-white transition-all text-[10px] uppercase tracking-widest font-bold"
+                                                    >
+                                                        {term}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    onClick={() => {
+                                                        localStorage.removeItem('aurerxa-recent-searches')
+                                                        setRecentSearches([])
+                                                    }}
+                                                    className="px-3 py-1.5 text-white/20 hover:text-red-400 transition-colors text-[9px] uppercase tracking-widest font-bold"
+                                                >
+                                                    Clear All
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <h4 className="text-[10px] text-white/30 uppercase tracking-[0.4em] mb-6">Popular Collections</h4>
                                     <div className="flex flex-col gap-4">
                                         {(usedTags.length > 0 ? usedTags : ['Silver', 'Platinum', 'Contemporary']).map((cat) => (

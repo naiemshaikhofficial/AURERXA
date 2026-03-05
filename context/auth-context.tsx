@@ -36,6 +36,46 @@ export function AuthProvider({
     const [profile, setProfile] = useState<AuthProfile | null>(initialProfile || null)
     const [isAdmin, setIsAdmin] = useState<boolean>(initialProfile?.isAdmin || false)
     const [loading, setLoading] = useState(initialProfile === undefined && !initialProfilePromise)
+    const [isMounted, setIsMounted] = useState(false)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
+
+    // 1. Instant Hydration from Local Status Cache (Eliminates the 'blank' blink)
+    useEffect(() => {
+        if (profile || !isMounted) return
+        try {
+            // Check cookie first (via document.cookie) then localStorage
+            const cookiesStr = document.cookie.split('; ')
+            const statusCookie = cookiesStr.find(row => row.startsWith('ua-status-cache='))
+            let cached = null
+
+            if (statusCookie) {
+                cached = JSON.parse(decodeURIComponent(statusCookie.split('=')[1]))
+            } else {
+                const ls = localStorage.getItem('aurerxa-status-cache')
+                if (ls) cached = JSON.parse(ls)
+            }
+
+            if (cached && cached.id) {
+                setProfile(prev => prev || cached)
+                setIsAdmin(prev => prev || !!cached.isAdmin)
+            }
+        } catch (e) { /* Silent fail for cache */ }
+    }, [profile, isMounted])
+
+    // Sync profile to localStorage for faster secondary loads
+    useEffect(() => {
+        if (profile) {
+            localStorage.setItem('aurerxa-status-cache', JSON.stringify({
+                id: profile.id,
+                full_name: profile.full_name,
+                avatar_url: (profile as any).avatar_url,
+                isAdmin: !!profile.isAdmin
+            }))
+        }
+    }, [profile])
 
     useEffect(() => {
         const initAuth = async () => {
@@ -153,16 +193,17 @@ export function AuthProvider({
 
             // 2. Clear all localStorage data from previous session
             try {
-                localStorage.removeItem('aurerxa_cart')
-                // Clear any other app-specific cached data
                 const keysToRemove: string[] = []
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i)
-                    if (key && (key.startsWith('aurerxa') || key.startsWith('sb-'))) {
+                    if (key && (key.startsWith('aurerxa') || key.startsWith('ua-') || key.startsWith('sb-'))) {
                         keysToRemove.push(key)
                     }
                 }
                 keysToRemove.forEach(k => localStorage.removeItem(k))
+
+                // Also clear specific cookies if any (Status Cache is on /)
+                document.cookie = 'ua-status-cache=; path=/; max-age=0'
             } catch (e) {
                 // localStorage may not be available in some contexts
             }

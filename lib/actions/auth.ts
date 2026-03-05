@@ -31,13 +31,34 @@ export async function getProfile() {
 
         const role = adminData?.role || 'user'
 
-        return {
-            ...profile,
+        const profileData = {
+            id: user.id,
+            full_name: profile.full_name,
+            avatar_url: profile.avatar_url,
             role,
             email: user.email,
             isAdmin: role === 'admin',
             isBanned: profile.is_banned === true
         }
+
+        // SET Status Cache Cookie for instant client-side hydration (expires in 7 days)
+        try {
+            const cookieStore = await cookies()
+            const statusCache = JSON.stringify({
+                id: profile.id,
+                full_name: profile.full_name,
+                avatar_url: profile.avatar_url,
+                isAdmin: role === 'admin'
+            })
+            cookieStore.set('ua-status-cache', statusCache, {
+                maxAge: 7 * 24 * 60 * 60,
+                path: '/',
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production'
+            })
+        } catch (e) { /* Headers already sent or not available in some contexts */ }
+
+        return profileData
     })
 }
 

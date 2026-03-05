@@ -163,22 +163,34 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         if (isRefreshing) return
         if (!silent) setLoading(true)
         setIsRefreshing(true)
+
+        const currentId = user?.id || 'guest'
+        const STORAGE_KEY = `aurerxa_cart_${currentId}`
+
         try {
+            // Instant Hydration from local storage for current user context
+            const localCart = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('aurerxa_cart')
+            if (localCart && items.length === 0) {
+                const parsed = JSON.parse(localCart)
+                setItems(parsed)
+            }
+
             if (user) {
                 // Sync guest items if any exist before loading from DB
-                const localCart = localStorage.getItem('aurerxa_cart')
-                if (localCart) {
+                const guestCart = localStorage.getItem('aurerxa_cart')
+                if (guestCart) {
                     await syncCart()
                 }
                 const data = await getCart()
-                console.log('CartProvider: Loaded authenticated cart', { count: data?.length || 0 })
                 setItems(data as any)
+
+                // Cache the fresh server data locally
+                if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
             } else {
                 // Load from localStorage for guests
                 const localCart = localStorage.getItem('aurerxa_cart')
                 if (localCart) {
                     const parsed = JSON.parse(localCart)
-                    console.log('CartProvider: Loaded guest cart', { count: parsed?.length || 0 })
                     setItems(parsed)
                 } else {
                     setItems([])
