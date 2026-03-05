@@ -161,6 +161,41 @@ export default function CheckoutPage() {
         is_default: false
     })
 
+    // Checkout Draft Caching Logic
+    const CHECKOUT_DRAFT_KEY = 'aurerxa-checkout-draft'
+
+    // Load draft on mount
+    useEffect(() => {
+        try {
+            const savedDraft = localStorage.getItem(CHECKOUT_DRAFT_KEY)
+            if (savedDraft) {
+                const draft = JSON.parse(savedDraft)
+                if (draft.paymentMethod) setPaymentMethod(draft.paymentMethod)
+                if (draft.giftWrap !== undefined) setGiftWrap(draft.giftWrap)
+                if (draft.giftMessage) setGiftMessage(draft.giftMessage)
+                if (draft.deliveryTimeSlot) setDeliveryTimeSlot(draft.deliveryTimeSlot)
+                if (draft.newAddress) setNewAddress(prev => ({ ...prev, ...draft.newAddress }))
+                if (draft.selectedAddress) setSelectedAddress(draft.selectedAddress)
+            }
+        } catch (e) {
+            console.warn('Failed to load checkout draft')
+        }
+    }, [])
+
+    // Save draft on changes
+    useEffect(() => {
+        const draft = {
+            paymentMethod,
+            giftWrap,
+            giftMessage,
+            deliveryTimeSlot,
+            newAddress,
+            selectedAddress,
+            updatedAt: new Date().toISOString()
+        }
+        localStorage.setItem(CHECKOUT_DRAFT_KEY, JSON.stringify(draft))
+    }, [paymentMethod, giftWrap, giftMessage, deliveryTimeSlot, newAddress, selectedAddress])
+
     const loadData = useCallback(async () => {
         setLoading(true)
         try {
@@ -348,6 +383,7 @@ export default function CheckoutPage() {
 
             if (paymentMethod === 'cod') {
                 await refreshCart(true); // Clear Navbar icon
+                localStorage.removeItem(CHECKOUT_DRAFT_KEY); // Clear draft on successful order
                 router.push(`/account/orders/${result.orderId!}?success=true`);
                 return;
             }
@@ -373,6 +409,7 @@ export default function CheckoutPage() {
             } else if (paymentResult.gateway === 'free') {
                 // Zero-amount order — already confirmed server-side
                 await refreshCart(true); // Clear Navbar icon
+                localStorage.removeItem(CHECKOUT_DRAFT_KEY); // Clear draft
                 router.push(`/account/orders/${result.orderId}?success=true`);
             }
         } catch (err: any) {

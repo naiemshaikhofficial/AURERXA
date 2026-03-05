@@ -11,6 +11,11 @@ import { cn, sanitizeImagePath } from '@/lib/utils'
 import supabaseLoader from '@/lib/supabase-loader'
 import { fadeInUp, PREMIUM_EASE } from '@/lib/animation-constants'
 import { formatWeight } from '@/lib/material-intelligence'
+import { Heart } from 'lucide-react'
+import { useUserPreferences } from '@/context/user-preferences-context'
+import { addToWishlist, removeFromWishlist } from '@/lib/actions/wishlist'
+import { useAuth } from '@/context/auth-context'
+import { toast } from 'sonner'
 
 export type MaterialType = 'real_gold' | 'gold_plated' | 'bentex' | 'silver' | 'diamond' | null
 
@@ -113,9 +118,60 @@ interface ProductCardProps {
 
 export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, className, onClose, priority = false }: ProductCardProps) => {
     const { addItem } = useCart()
+    const { user } = useAuth()
+    const { isInWishlist, toggleWishlist, setMetalPreference } = useUserPreferences()
     const router = useRouter()
     const [isAdding, setIsAdding] = useState(false)
     const [isBuying, setIsBuying] = useState(false)
+    const [isWishlisting, setIsWishlisting] = useState(false)
+
+    const isWishlisted = isInWishlist(product.id)
+
+    const handleWishlist = async (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (!user) {
+            toast.error('Please login to wishlist items', {
+                description: 'You need an account to save your favorite pieces.',
+                action: {
+                    label: 'Login',
+                    onClick: () => router.push('/login')
+                }
+            })
+            return
+        }
+
+        setIsWishlisting(true)
+        try {
+            // Instant UI update via context
+            toggleWishlist(product.id)
+
+            if (isWishlisted) {
+                await removeFromWishlist(product.id)
+            } else {
+                await addToWishlist(product.id)
+                // When they wishlist something, it's a strong signal of preference
+                if (product.material_type) {
+                    setMetalPreference(product.material_type)
+                }
+            }
+        } catch (error) {
+            // Revert on error
+            toggleWishlist(product.id)
+            toast.error('Failed to update wishlist')
+        } finally {
+            setIsWishlisting(false)
+        }
+    }
+
+    const handleProductClick = () => {
+        // Learn preference on click
+        if (product.material_type) {
+            setMetalPreference(product.material_type)
+        }
+        if (onClose) onClose()
+    }
 
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.preventDefault()
@@ -257,7 +313,20 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                 "relative overflow-hidden group/img bg-muted shrink-0",
                 viewMode === 'list' ? 'aspect-square w-full md:w-1/3' : 'aspect-square w-full'
             )}>
-                <Link href={`/products/${product.slug}`} className="absolute inset-0 z-30 block" onClick={onClose} aria-label={`View details for ${product.name}`} />
+                <Link href={`/products/${product.slug}`} className="absolute inset-0 z-30 block" onClick={handleProductClick} aria-label={`View details for ${product.name}`} />
+
+                {/* Wishlist Button - Luxury Style */}
+                <button
+                    onClick={handleWishlist}
+                    disabled={isWishlisting}
+                    className={cn(
+                        "absolute top-3 right-3 z-40 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500",
+                        "bg-black/20 backdrop-blur-xl border border-white/10 hover:bg-white hover:text-black hover:scale-110",
+                        isWishlisted ? "text-red-500 bg-white border-white" : "text-white/70"
+                    )}
+                >
+                    <Heart className={cn("w-4 h-4 transition-all", isWishlisted ? "fill-current scale-110" : "")} />
+                </button>
 
                 {/* Status Badges */}
                 <div className="absolute top-2.5 left-2.5 z-40 flex flex-col gap-1.5">
@@ -400,7 +469,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                         </p>
                     </div>
 
-                    <Link href={`/products/${product.slug}`} onClick={onClose}>
+                    <Link href={`/products/${product.slug}`} onClick={handleProductClick}>
                         <h3 className="text-sm md:text-lg font-serif text-foreground font-medium group-hover:text-primary transition-colors duration-700 leading-tight tracking-tight">
                             {product.name}
                         </h3>

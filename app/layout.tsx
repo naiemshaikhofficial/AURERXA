@@ -11,6 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
 import Script from 'next/script'
 import { GoogleAnalytics } from '@next/third-parties/google'
+import { UserPreferencesProvider } from "@/context/user-preferences-context"
 
 const geist = Geist({
   subsets: ['latin'],
@@ -258,32 +259,34 @@ export default async function RootLayout({
             <AuthProvider initialProfilePromise={profilePromise}>
               <ConsentProvider initialProfilePromise={profilePromise}>
                 <SiteConfigProvider>
-                  <CartProvider>
-                    <SmoothScroll>
-                      <ErrorBoundary componentName="Application Root">
-                        <LazyMotion features={domMax}>
-                          {children}
-                        </LazyMotion>
+                  <UserPreferencesProvider>
+                    <CartProvider>
+                      <SmoothScroll>
+                        <ErrorBoundary componentName="Application Root">
+                          <LazyMotion features={domMax}>
+                            {children}
+                          </LazyMotion>
 
-                        <CartSheet />
-                        <MobileInstallPrompt />
-                        <NotificationManager />
-                        <SearchModal />
-                        <DynamicTitle />
-                        <BottomNav />
+                          <CartSheet />
+                          <MobileInstallPrompt />
+                          <NotificationManager />
+                          <SearchModal />
+                          <DynamicTitle />
+                          <BottomNav />
 
-                        <Toaster />
-                        <Suspense fallback={null}>
-                          <SpeedInsights />
-                          <Analytics />
-                          <GoogleAnalytics gaId="GT-WPLW7ZX3" />
-                          <CookieConsent />
-                          <TrackingScripts />
-                          <BehaviorTracker />
-                        </Suspense>
-                      </ErrorBoundary>
-                    </SmoothScroll>
-                  </CartProvider>
+                          <Toaster />
+                          <Suspense fallback={null}>
+                            <SpeedInsights />
+                            <Analytics />
+                            <GoogleAnalytics gaId="GT-WPLW7ZX3" />
+                            <CookieConsent />
+                            <TrackingScripts />
+                            <BehaviorTracker />
+                          </Suspense>
+                        </ErrorBoundary>
+                      </SmoothScroll>
+                    </CartProvider>
+                  </UserPreferencesProvider>
                 </SiteConfigProvider>
               </ConsentProvider>
             </AuthProvider>

@@ -10,6 +10,9 @@ import { addToWishlist, checkPendingOrder } from '@/app/actions'
 import { useCart } from '@/context/cart-context'
 import { addToRecentlyViewed } from '@/components/recently-viewed'
 import { Heart, Shield, Truck, RefreshCw, ZoomIn, Loader2, ArrowLeft, ArrowRight, Share2, Maximize2, RotateCcw, Play, Ruler, ShoppingBag, ShieldAlert, Star } from 'lucide-react'
+import { useUserPreferences } from '@/context/user-preferences-context'
+import { useAuth } from '@/context/auth-context'
+import { toast } from 'sonner'
 import { DeliveryChecker } from '@/components/delivery-checker'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 import supabaseLoader from '@/lib/supabase-loader'
@@ -308,13 +311,15 @@ function ZoomableImage({ src, alt }: { src: string, alt: string }) {
 export function ProductClient({ product, related, isWishlisted }: ProductClientProps) {
     const router = useRouter()
     const { addItem } = useCart()
+    const { user } = useAuth()
+    const { isInWishlist, toggleWishlist, setMetalPreference, ringSize, setRingSize } = useUserPreferences()
 
     // State
-    const [selectedSize, setSelectedSize] = useState<string>(product.sizes?.[0] || '')
+    const [selectedSize, setSelectedSize] = useState<string>(ringSize || product.sizes?.[0] || '')
     const [customSizeInput, setCustomSizeInput] = useState('') // New Feature: Custom Size State
     const [quantity, setQuantity] = useState(1)
     const [addingToCart, setAddingToCart] = useState(false)
-    const [inWishlist, setInWishlist] = useState(!!isWishlisted)
+    const inWishlist = isInWishlist(product.id)
     const [message, setMessage] = useState<string | null>(null)
     const [selectedImage, setSelectedImage] = useState(0)
     const [isVTOOpen, setIsVTOOpen] = useState(false)
@@ -548,12 +553,27 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
 
     const handleAddToWishlist = async () => {
         if (!product) return
-        const result = await addToWishlist(product.id)
-        if (result.success) {
-            setInWishlist(true)
-            setMessage('Added to wishlist!')
-        } else {
-            setMessage(result.error || 'Failed to add')
+        if (!user) {
+            toast.error('Please login to wishlist items')
+            router.push('/login')
+            return
+        }
+
+        try {
+            toggleWishlist(product.id)
+            const result = await addToWishlist(product.id)
+            if (result.success) {
+                setMessage('Added to wishlist!')
+                if (product.material_type) {
+                    setMetalPreference(product.material_type)
+                }
+            } else {
+                toggleWishlist(product.id) // Revert
+                setMessage(result.error || 'Failed to add')
+            }
+        } catch (error) {
+            toggleWishlist(product.id) // Revert
+            setMessage('Error adding to wishlist')
         }
         setTimeout(() => setMessage(null), 3000)
     }
@@ -755,7 +775,10 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
                                 product={product}
                                 dynamicData={dynamicData}
                                 selectedSize={selectedSize}
-                                setSelectedSize={setSelectedSize}
+                                setSelectedSize={(size) => {
+                                    setSelectedSize(size)
+                                    setRingSize(size) // Save preference
+                                }}
                                 setCustomSizeInput={setCustomSizeInput}
                                 handleAddToCart={handleAddToCart}
                                 handleBuyNow={handleBuyNow}

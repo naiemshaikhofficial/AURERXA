@@ -1,12 +1,11 @@
 import React from 'react'
-import { Navbar } from '@/components/navbar'
-import { CategoryNav } from '@/components/category-nav'
 import { Footer } from '@/components/footer'
 import { AdminRouteGuard } from '@/components/admin-route-guard'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { redirect } from 'next/navigation'
 import { getSiteSetting } from '@/app/actions'
 import { cn } from '@/lib/utils'
+import { HeaderSection } from '@/components/header-section'
 
 export default async function MainLayout({
     children,
@@ -92,18 +91,10 @@ export default async function MainLayout({
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
             />
-            {marketingConfig.banner_enabled && (
-                <div className="fixed top-0 inset-x-0 h-8 bg-[#D4AF37] text-black flex items-center justify-center text-[10px] md:text-xs font-bold tracking-widest uppercase z-[45] w-full fixed-header-container">
-                    <a href={marketingConfig.banner_link} className="hover:underline flex items-center justify-center gap-2">
-                        {marketingConfig.banner_text}
-                    </a>
-                </div>
-            )}
-            <div className={cn("fixed inset-x-0 z-[40] w-full fixed-header-container", marketingConfig.banner_enabled ? "top-8" : "top-0")}>
-                <Navbar marketingConfig={marketingConfig} />
-                <CategoryNav />
-            </div>
-            <div className={cn(marketingConfig.banner_enabled ? "pt-[144px] md:pt-[160px]" : "pt-[112px] md:pt-[128px]")}>
+
+            <HeaderSection marketingConfig={marketingConfig} />
+
+            <div className="main-content-wrapper">
                 <ErrorBoundary componentName="Main Content">
                     <main>
                         {children}
