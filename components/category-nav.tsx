@@ -7,8 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 import { ChevronDown } from 'lucide-react'
 import Image from 'next/image'
+import { useSiteConfig } from '@/context/site-config-context'
 
-const categories = [
+const DEFAULT_CATEGORIES = [
     { label: 'All Jewelry', href: '/collections', iconId: 'aCPWW0PJ102K' },
     { label: 'Silver', href: '/collections/silver', iconId: '16356' },
     { label: 'Kids', href: '/collections/kids', iconId: 'J2uuDL01xwUL' },
@@ -22,9 +23,19 @@ const categories = [
 
 export function CategoryNav() {
     const pathname = usePathname()
+    const { categories: dynamicCategories } = useSiteConfig()
     const [isVisible, setIsVisible] = useState(true)
     const [lastScrollY, setLastScrollY] = useState(0)
     const [isInteracting, setIsInteracting] = useState(false)
+
+    // Map dynamic categories to nav items, or fallback to defaults
+    const navItems = dynamicCategories.length > 0
+        ? dynamicCategories.map((cat: any) => ({
+            label: cat.name,
+            href: `/collections/${cat.slug}`,
+            iconId: DEFAULT_CATEGORIES.find((d: any) => d.label === cat.name)?.iconId || '82711'
+        }))
+        : DEFAULT_CATEGORIES
 
     useEffect(() => {
         let ticking = false
@@ -82,7 +93,7 @@ export function CategoryNav() {
                         data-lenis-prevent
                     >
                         <div className="flex items-center justify-start gap-4 md:gap-8 px-4 md:px-8 mx-auto w-max min-w-full lg:justify-center">
-                            {categories.map((cat) => {
+                            {navItems.map((cat: any) => {
                                 const isActive = pathname === cat.href || (cat.href !== '/collections' && pathname.startsWith(cat.href))
 
                                 return (

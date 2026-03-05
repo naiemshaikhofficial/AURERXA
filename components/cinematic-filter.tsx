@@ -370,6 +370,9 @@ export function CinematicFilter({
                                                                     }
                                                                     alt={type.label}
                                                                     fill
+                                                                    style={type.iconId.startsWith('/') && !(type.value === 'Kids' ? filters.gender === 'Kids' : filters.type === type.value) ? {
+                                                                        filter: 'invert(67%) sepia(17%) saturate(1450%) hue-rotate(3deg) brightness(97%) contrast(92%)'
+                                                                    } : {}}
                                                                     className={cn(
                                                                         "object-contain transition-all duration-500",
                                                                         !(type.value === 'Kids' ? filters.gender === 'Kids' : filters.type === type.value) && "opacity-90"

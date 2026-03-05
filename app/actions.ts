@@ -155,4 +155,6 @@ export async function logVisitorEvent(id: string, event: string, meta: any = {})
 export async function triggerDatabaseMaintenance() { return maintenance.triggerDatabaseMaintenance() }
 export async function checkAbandonedCarts() { return maintenance.checkAbandonedCarts() }
 export async function cleanupPendingOrders() { return maintenance.cleanupPendingOrders() }
-export async function triggerAIContentIngestion() { return maintenance.triggerAIContentIngestion() }
+export const triggerAIContentIngestion = async () => maintenance.triggerAIContentIngestion()
+export const getSiteManifest = async () => maintenance.getSiteManifest()
+export const getSyncData = async (buckets: string[]) => maintenance.getSyncData(buckets)
