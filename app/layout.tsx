@@ -162,6 +162,7 @@ import { BottomNav } from '@/components/bottom-nav'
 import { AdminRouteGuard, AdminOnlyWrapper } from '@/components/admin-route-guard'
 import { ConsentProvider } from '@/context/consent-context'
 import { SiteConfigProvider } from '@/context/site-config-context'
+import { SWRProvider } from '@/components/swr-provider'
 import { TrackingScripts } from '@/components/scripts/tracking'
 import { getCurrentUserProfile, getSiteSetting } from '@/app/actions'
 import { redirect } from 'next/navigation'
@@ -259,34 +260,36 @@ export default async function RootLayout({
             <AuthProvider initialProfilePromise={profilePromise}>
               <ConsentProvider initialProfilePromise={profilePromise}>
                 <SiteConfigProvider>
-                  <UserPreferencesProvider>
-                    <CartProvider>
-                      <SmoothScroll>
-                        <ErrorBoundary componentName="Application Root">
-                          <LazyMotion features={domMax}>
-                            {children}
-                          </LazyMotion>
+                  <SWRProvider>
+                    <UserPreferencesProvider>
+                      <CartProvider>
+                        <SmoothScroll>
+                          <ErrorBoundary componentName="Application Root">
+                            <LazyMotion features={domMax}>
+                              {children}
+                            </LazyMotion>
 
-                          <CartSheet />
-                          <MobileInstallPrompt />
-                          <NotificationManager />
-                          <SearchModal />
-                          <DynamicTitle />
-                          <BottomNav />
+                            <CartSheet />
+                            <MobileInstallPrompt />
+                            <NotificationManager />
+                            <SearchModal />
+                            <DynamicTitle />
+                            <BottomNav />
 
-                          <Toaster />
-                          <Suspense fallback={null}>
-                            <SpeedInsights />
-                            <Analytics />
-                            <GoogleAnalytics gaId="GT-WPLW7ZX3" />
-                            <CookieConsent />
-                            <TrackingScripts />
-                            <BehaviorTracker />
-                          </Suspense>
-                        </ErrorBoundary>
-                      </SmoothScroll>
-                    </CartProvider>
-                  </UserPreferencesProvider>
+                            <Toaster />
+                            <Suspense fallback={null}>
+                              <SpeedInsights />
+                              <Analytics />
+                              <GoogleAnalytics gaId="GT-WPLW7ZX3" />
+                              <CookieConsent />
+                              <TrackingScripts />
+                              <BehaviorTracker />
+                            </Suspense>
+                          </ErrorBoundary>
+                        </SmoothScroll>
+                      </CartProvider>
+                    </UserPreferencesProvider>
+                  </SWRProvider>
                 </SiteConfigProvider>
               </ConsentProvider>
             </AuthProvider>

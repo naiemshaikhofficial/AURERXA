@@ -1,14 +1,15 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2, Search } from 'lucide-react'
+import { Loader2, Search, Plus } from 'lucide-react'
+import useSWRInfinite from 'swr/infinite'
 import { useSearch } from '@/context/search-context'
 import { useUserPreferences } from '@/context/user-preferences-context'
 import { getFilteredProducts } from '@/app/actions'
 import { HeritageHighlights } from '@/components/heritage-highlights'
-import { CinematicFilter, FilterState, PRICE_RANGES } from '@/components/cinematic-filter'
+import { CinematicFilter, FilterState } from '@/components/cinematic-filter'
 import { CategoryGrid } from '@/components/category-grid'
 import { ProductCard, Product } from '@/components/product-card'
 import { cn } from '@/lib/utils'
@@ -20,50 +21,75 @@ interface CollectionsClientProps {
     initialFilters: FilterState
 }
 
+const PAGE_SIZE = 20
+
 export function CollectionsClient({ initialProducts, categories, tags, initialFilters }: CollectionsClientProps) {
     const router = useRouter()
     const { openSearch } = useSearch()
     const { viewMode, trackEngagement } = useUserPreferences()
     const [filters, setFilters] = useState<FilterState>(initialFilters)
-    const [loading, setLoading] = useState(false)
-    const [products, setProducts] = useState<Product[]>(initialProducts)
     const [searchQuery, setSearchQuery] = useState(initialFilters.search || '')
 
-    // For tracking the latest request to prevent race conditions
-    const latestRequestId = useRef(0)
+    // SWR Infinite Key Generator
+    const getKey = (pageIndex: number, previousPageData: Product[]) => {
+        // reached the end
+        if (previousPageData && !previousPageData.length) return null
 
-    const handleFilterChange = useCallback(async (newFilters: FilterState) => {
-        const requestId = ++latestRequestId.current
-        setFilters(newFilters)
-        setLoading(true)
+        // SWR key: filters + pagination
+        return [
+            'filtered-products',
+            filters.category,
+            filters.sub_category,
+            filters.tag,
+            filters.occasion,
+            filters.gender,
+            filters.material_type,
+            filters.priceRange.min,
+            filters.priceRange.max,
+            filters.sortBy,
+            filters.search,
+            pageIndex // page index
+        ]
+    }
 
-        try {
-            const data = await getFilteredProducts({
-                sortBy: newFilters.sortBy,
-                category: newFilters.category === 'all' ? undefined : newFilters.category,
-                sub_category: newFilters.sub_category === 'all' ? undefined : newFilters.sub_category,
-                tag: newFilters.tag || undefined,
-                occasion: newFilters.occasion === 'all' ? undefined : newFilters.occasion,
-                gender: newFilters.gender === 'all' ? undefined : newFilters.gender,
-                type: newFilters.type === 'all' ? undefined : newFilters.type,
-                material_type: newFilters.material_type === 'all' ? undefined : newFilters.material_type,
-                minPrice: newFilters.priceRange.min,
-                maxPrice: newFilters.priceRange.max || undefined,
-                search: newFilters.search || undefined
+    const { data, error, size, setSize, isValidating, isLoading } = useSWRInfinite(
+        getKey,
+        async (key) => {
+            const [_prefix, category, sub_category, tag, occasion, gender, material_type, minPrice, maxPrice, sortBy, search, pageIndex] = key as any
+            const offset = pageIndex * PAGE_SIZE
+
+            const result = await getFilteredProducts({
+                category: category === 'all' ? undefined : category,
+                sub_category: sub_category === 'all' ? undefined : sub_category,
+                tag: tag || undefined,
+                occasion: occasion === 'all' ? undefined : occasion,
+                gender: gender === 'all' ? undefined : gender,
+                material_type: material_type === 'all' ? undefined : material_type,
+                minPrice,
+                maxPrice: maxPrice || undefined,
+                sortBy,
+                search: search || undefined,
+                limit: PAGE_SIZE,
+                offset
             })
-
-            // Only update products if this is still the latest request
-            if (requestId === latestRequestId.current) {
-                setProducts(data as unknown as Product[])
-            }
-        } catch (error) {
-            console.error('[CollectionsClient] Filter Update Error:', error)
-        } finally {
-            if (requestId === latestRequestId.current) {
-                setLoading(false)
-            }
+            return result as unknown as Product[]
+        },
+        {
+            fallbackData: [initialProducts],
+            revalidateFirstPage: false,
+            persistSize: true
         }
-    }, [])
+    )
+
+    const products = useMemo(() => data ? data.flat() : [], [data])
+    const isLoadingMore = isLoading || (size > 0 && data && typeof data[size - 1] === "undefined")
+    const isEmpty = data?.[0]?.length === 0
+    const isReachingEnd = isEmpty || (data && data[data.length - 1]?.length < PAGE_SIZE)
+
+    const handleFilterChange = useCallback((newFilters: FilterState) => {
+        setFilters(newFilters)
+        setSize(1) // Reset to first page
+    }, [setSize])
 
     // Debounce search input
     useEffect(() => {
@@ -74,7 +100,7 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
             }
         }, 500)
         if (searchQuery) {
-            trackEngagement('category', 'search-term') // Abstract signal that user is searching
+            trackEngagement('category', 'search-term')
         }
         return () => clearTimeout(timer)
     }, [searchQuery, filters, handleFilterChange, trackEngagement])
@@ -179,16 +205,14 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
                                             onClick={() => setSearchQuery('')}
                                             className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
                                         >
-                                            <Loader2 className={cn("w-3 h-3 text-muted-foreground/40", loading && "animate-spin")} />
+                                            <Loader2 className={cn("w-3 h-3 text-muted-foreground/40", (isLoadingMore || isValidating) && "animate-spin")} />
                                         </button>
                                     )}
                                 </div>
                             </div>
 
-                            {/* Product Listing logic starts here */}
-
                             {/* Product List */}
-                            {products.length === 0 && !loading ? (
+                            {products.length === 0 && !isLoading ? (
                                 <div className="min-h-[50vh] flex flex-col items-center justify-center text-center space-y-6 opacity-50">
                                     <span className="text-6xl text-muted-foreground/5 font-serif">Empty</span>
                                     <p className="text-xs text-muted-foreground/30 font-premium-sans tracking-widest uppercase">No artifacts found in this specific curation.</p>
@@ -224,24 +248,59 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
                                     </div>
                                 </div>
                             ) : (
-                                <motion.div
-                                    className={cn(
-                                        "grid gap-4 md:gap-px bg-card/5 border border-border p-px transition-opacity duration-300",
-                                        loading ? "opacity-30 pointer-events-none" : "opacity-100",
-                                        viewMode === 'grid' ? 'grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
-                                    )}
-                                >
-                                    {products.map((product, i) => (
-                                        <ProductCard
-                                            key={product.id}
-                                            product={product}
-                                            viewMode={viewMode}
-                                            index={i}
-                                            // Prioritize the first few images for LCP
-                                            priority={i < 4}
-                                        />
-                                    ))}
-                                </motion.div>
+                                <>
+                                    <motion.div
+                                        className={cn(
+                                            "grid gap-4 md:gap-px bg-card/5 border border-border p-px transition-opacity duration-300",
+                                            isLoading && products.length === 0 ? "opacity-30 pointer-events-none" : "opacity-100",
+                                            viewMode === 'grid' ? 'grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+                                        )}
+                                    >
+                                        {products.map((product, i) => (
+                                            <ProductCard
+                                                key={`${product.id}-${i}`}
+                                                product={product}
+                                                viewMode={viewMode}
+                                                index={i}
+                                                priority={i < 4}
+                                            />
+                                        ))}
+                                    </motion.div>
+
+                                    {/* Infinite Scroll / Load More Trigger */}
+                                    <div className="mt-20 flex flex-col items-center gap-8">
+                                        {!isReachingEnd && (
+                                            <button
+                                                onClick={() => setSize(size + 1)}
+                                                disabled={isLoadingMore}
+                                                className="group relative flex flex-col items-center gap-4 transition-all"
+                                            >
+                                                <div className="relative w-16 h-16 flex items-center justify-center">
+                                                    <motion.div
+                                                        animate={isLoadingMore ? { rotate: 360 } : { rotate: 0 }}
+                                                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                                        className="absolute inset-0 border border-foreground/10 rounded-full group-hover:border-primary/30 transition-colors"
+                                                    />
+                                                    {isLoadingMore ? (
+                                                        <Loader2 className="w-5 h-5 text-primary/60 animate-spin" />
+                                                    ) : (
+                                                        <Plus className="w-5 h-5 text-foreground/40 group-hover:text-primary transition-colors" />
+                                                    )}
+                                                </div>
+                                                <span className="text-[10px] font-premium-sans tracking-[0.4em] uppercase text-muted-foreground/60 group-hover:text-foreground transition-colors">
+                                                    {isLoadingMore ? 'UNVEILING...' : 'DISCOVER MORE'}
+                                                </span>
+                                            </button>
+                                        )}
+
+                                        {isReachingEnd && products.length > 0 && (
+                                            <div className="flex flex-col items-center gap-4 opacity-30">
+                                                <div className="h-px w-24 bg-foreground/10" />
+                                                <span className="text-[10px] font-premium-sans tracking-[0.3em] uppercase">END OF ARCHIVE</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
                             )}
                         </motion.div>
                     )}

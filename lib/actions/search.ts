@@ -111,6 +111,11 @@ export async function getFilteredProducts(options: any) {
                     case 'popular': query = query.order('bestseller', { ascending: false }); break
                 }
 
+                // Apply Pagination
+                const limit = options.limit || 20
+                const offset = options.offset || 0
+                query = query.range(offset, offset + limit - 1)
+
                 const { data, error } = await query
                 if (error) {
                     console.error('Error in getFilteredProducts:', error)

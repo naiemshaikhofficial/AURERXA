@@ -63,6 +63,19 @@ interface CinematicFilterProps {
     productCount: number
 }
 
+const DEFAULT_PRODUCT_TYPES = [
+    { label: 'All Jewelry', value: 'all', iconId: 'aCPWW0PJ102K' },
+    { label: 'Rings', value: 'Ring', iconId: '5z5Rvj2F4jZB' },
+    { label: 'Necklaces', value: 'Necklace', iconId: '19731' },
+    { label: 'Earrings', value: 'Earring', iconId: 'ksXSIChGyK69' },
+    { label: 'Bracelets', value: 'Bracelet', iconId: 'McP6FpfdzPWM' },
+    { label: 'Bangles', value: 'Bangle', iconId: '8YdZOEMppFxv' },
+    { label: 'Pendants', value: 'Pendant', iconId: '110325' },
+    { label: 'Chains', value: 'Chain', iconId: 'FWr93WQ0Gm9Q' },
+    { label: 'Mangalsutra', value: 'Mangalsutra', iconId: '/947771-200.png' },
+    { label: 'Kids', value: 'Kids', iconId: 'J2uuDL01xwUL' },
+]
+
 export function CinematicFilter({
     categories: propCategories,
     tags,
@@ -77,7 +90,7 @@ export function CinematicFilter({
     const [filters, setFilters] = useState<FilterState>(initialFilters)
     const [activeTab, setActiveTab] = useState<'type' | 'gender' | 'price' | 'sort' | 'material' | 'tags'>('type')
 
-    // Dynamic Category Icons Mapping
+    // Dynamic Category Icons Mapping for fallback/new items
     const categoryIcons: Record<string, string> = {
         'Ring': '5z5Rvj2F4jZB',
         'Necklace': '19731',
@@ -90,14 +103,23 @@ export function CinematicFilter({
         'Kids': 'J2uuDL01xwUL'
     }
 
-    const typeOptions = [
-        { label: 'All Jewelry', value: 'all', iconId: 'aCPWW0PJ102K' },
-        ...dynamicCategories.map((cat: any) => ({
-            label: cat.name,
-            value: cat.name,
-            iconId: categoryIcons[cat.name] || '82711'
-        }))
-    ]
+    const typeOptions = (() => {
+        const options = [...DEFAULT_PRODUCT_TYPES]
+
+        if (dynamicCategories && dynamicCategories.length > 0) {
+            dynamicCategories.forEach((cat: any) => {
+                const exists = options.some(o => o.label.toLowerCase() === cat.name.toLowerCase() || o.value.toLowerCase() === cat.name.toLowerCase())
+                if (!exists) {
+                    options.push({
+                        label: cat.name,
+                        value: cat.name,
+                        iconId: categoryIcons[cat.name] || '82711'
+                    })
+                }
+            })
+        }
+        return options
+    })()
 
     // Lock Body Scroll when Filter is Open
     useEffect(() => {

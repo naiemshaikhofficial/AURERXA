@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import Script from 'next/script'
-import { getOrders, initiatePayment, verifyPayment, getOrderById } from '@/app/actions'
+import useSWR from 'swr'
+import { getOrders, initiatePayment, verifyPayment } from '@/app/actions'
 import { Loader2, Package, ChevronRight, Search, Filter, X, Clock, CreditCard, RefreshCw } from 'lucide-react'
 import supabaseLoader from '@/lib/supabase-loader'
 import { sanitizeImagePath } from '@/lib/utils'
@@ -70,8 +70,11 @@ function CountdownTimer({ createdAt, onExpire }: { createdAt: string, onExpire?:
 }
 
 export default function OrdersPage() {
-    const [orders, setOrders] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
+    const { data: orders = [], mutate, isLoading: swrLoading } = useSWR('user-orders', getOrders, {
+        revalidateOnFocus: true,
+        dedupingInterval: 30000
+    })
+
     const [searchQuery, setSearchQuery] = useState('')
     const [statusFilter, setStatusFilter] = useState('all')
     const [verifying, setVerifying] = useState(false)
@@ -79,15 +82,7 @@ export default function OrdersPage() {
     const [paymentData, setPaymentData] = useState<any>(null)
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
-    const loadOrders = useCallback(async () => {
-        const data = await getOrders()
-        setOrders(data)
-        setLoading(false)
-    }, [])
-
-    useEffect(() => {
-        loadOrders()
-    }, [loadOrders])
+    const loading = swrLoading && orders.length === 0
 
     const handleRetryPayment = async (orderId: string) => {
         setRetryingOrderId(orderId)
@@ -121,9 +116,7 @@ export default function OrdersPage() {
                         const verifyResult = await verifyPayment(orderId, response)
                         if (verifyResult.success) {
                             toast.success('Payment successful!')
-                            // Refresh list
-                            const data = await getOrders()
-                            setOrders(data)
+                            mutate() // Refresh list via SWR
                         } else {
                             const res = verifyResult as any
                             toast.error(res.error || 'Verification failed')
@@ -150,10 +143,10 @@ export default function OrdersPage() {
                 rzp.open()
             } else if (paymentResult.gateway === 'ccavenue') {
                 const cv = paymentResult as any
-                const matchedOrder = orders.find(o => o.id === orderId)
+                const matchedOrder = orders.find((o: any) => o.id === orderId)
                 setPaymentData({ ...cv, amount: matchedOrder?.total || 0 })
                 setIsPaymentModalOpen(true)
-                setRetryingOrderId(null) // Reset loading state once modal opens
+                setRetryingOrderId(null)
             } else {
                 toast.error('Unsupported payment gateway')
                 setRetryingOrderId(null)
@@ -165,7 +158,7 @@ export default function OrdersPage() {
         }
     }
 
-    const filteredOrders = orders.filter(order => {
+    const filteredOrders = orders.filter((order: any) => {
         const matchesSearch =
             order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.order_items?.some((item: any) =>
@@ -198,9 +191,6 @@ export default function OrdersPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-
-
-            {/* Verifying Overlay */}
             {verifying && (
                 <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-6">
                     <RefreshCw className="w-12 h-12 mb-4 text-primary animate-spin" />
@@ -211,7 +201,6 @@ export default function OrdersPage() {
 
             <main className="pt-20 md:pt-28 pb-24 min-h-[70vh]">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Breadcrumb */}
                     <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-muted-foreground mb-8">
                         <Link href="/account" className="hover:text-primary">Account</Link>
                         <ChevronRight className="w-3 h-3" />
@@ -224,7 +213,6 @@ export default function OrdersPage() {
                             <p className="text-muted-foreground text-sm">Review, track, and manage your acquisitions.</p>
                         </div>
 
-                        {/* Search & Filter Bar */}
                         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                             <div className="relative flex-1 sm:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -236,10 +224,7 @@ export default function OrdersPage() {
                                     className="w-full pl-10 pr-4 py-2 bg-card border border-border text-sm focus:border-primary transition-all outline-none"
                                 />
                                 {searchQuery && (
-                                    <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2"
-                                    >
+                                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
                                         <X className="w-3.5 h-3.5 text-muted-foreground" />
                                     </button>
                                 )}
@@ -266,29 +251,19 @@ export default function OrdersPage() {
                         <div className="text-center py-20 border border-dashed border-border bg-card/50">
                             <Package className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
                             <p className="text-lg font-medium text-foreground">No orders matching your criteria</p>
-                            <button
-                                onClick={() => { setSearchQuery(''); setStatusFilter('all'); }}
-                                className="mt-4 text-sm text-primary hover:underline"
-                            >
+                            <button onClick={() => { setSearchQuery(''); setStatusFilter('all'); }} className="mt-4 text-sm text-primary hover:underline">
                                 Clear all filters
                             </button>
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {filteredOrders.map((order) => (
+                            {filteredOrders.map((order: any) => (
                                 <div key={order.id} className="bg-card border border-border overflow-hidden group hover:border-primary/20 transition-all">
-                                    {/* Order Header (Amazon-style) */}
                                     <div className="bg-muted/30 px-6 py-4 border-b border-border flex flex-wrap items-center justify-between gap-6">
                                         <div className="flex gap-10">
                                             <div>
                                                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1">Order Placed</p>
-                                                <p className="text-sm font-medium">
-                                                    {new Date(order.created_at).toLocaleDateString('en-IN', {
-                                                        day: 'numeric',
-                                                        month: 'long',
-                                                        year: 'numeric'
-                                                    })}
-                                                </p>
+                                                <p className="text-sm font-medium">{new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                                             </div>
                                             <div>
                                                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1">Total</p>
@@ -296,39 +271,23 @@ export default function OrdersPage() {
                                             </div>
                                             <div>
                                                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1">Payment</p>
-                                                <p className="text-sm font-medium capitalize">
-                                                    {order.payment_method === 'cod' ? 'COD' :
-                                                        order.payment_method === 'online' ? 'Online' :
-                                                            order.payment_method}
-                                                </p>
+                                                <p className="text-sm font-medium capitalize">{order.payment_method === 'cod' ? 'COD' : order.payment_method === 'online' ? 'Online' : order.payment_method}</p>
                                             </div>
                                         </div>
                                         <div className="flex-1 flex flex-col items-end min-w-[120px]">
                                             <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mb-1">Order # {order.order_number}</p>
                                             <div className="flex items-center gap-4">
-                                                <Link
-                                                    href={`/account/orders/${order.id}`}
-                                                    className="text-[11px] uppercase tracking-widest font-bold text-primary hover:underline"
-                                                >
-                                                    View Details
-                                                </Link>
-                                                {/* Hide Invoice for Pending Orders */}
+                                                <Link href={`/account/orders/${order.id}`} className="text-[11px] uppercase tracking-widest font-bold text-primary hover:underline">View Details</Link>
                                                 {order.status !== 'pending' && (
                                                     <>
                                                         <span className="text-border">|</span>
-                                                        <Link
-                                                            href={`/account/orders/${order.id}`}
-                                                            className="text-[11px] uppercase tracking-widest font-bold text-primary hover:underline"
-                                                        >
-                                                            Invoice
-                                                        </Link>
+                                                        <Link href={`/account/orders/${order.id}`} className="text-[11px] uppercase tracking-widest font-bold text-primary hover:underline">Invoice</Link>
                                                     </>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Order Items Body */}
                                     <div className="p-6">
                                         <div className="flex flex-col md:flex-row justify-between gap-8">
                                             <div className="flex-1 space-y-6">
@@ -336,108 +295,51 @@ export default function OrdersPage() {
                                                     <div className="flex items-center gap-2">
                                                         <span className={`w-2 h-2 rounded-full ${order.status === 'delivered' ? 'bg-emerald-500' : 'bg-primary animate-pulse'}`} />
                                                         <h3 className={`text-base font-bold uppercase tracking-tight ${getStatusColor(order.status)}`}>
-                                                            {order.status === 'pending' ? 'Payment Pending' :
-                                                                order.status === 'payment_failed' ? 'Payment Failed' :
-                                                                    order.status}
+                                                            {order.status === 'pending' ? 'Payment Pending' : order.status === 'payment_failed' ? 'Payment Failed' : order.status}
                                                         </h3>
                                                     </div>
-                                                    {order.payment_status === 'flagged_mismatch' && (
-                                                        <div className="text-[10px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded border border-red-500/20 font-bold uppercase tracking-widest mt-1">
-                                                            Security Alert: Amount Mismatch Detected
-                                                        </div>
-                                                    )}
-                                                    {order.payment_error_reason && order.status === 'pending' && (
-                                                        <p className="text-[10px] text-destructive/60 italic max-w-sm mt-0.5 font-medium">
-                                                            Note: {order.payment_error_reason}
-                                                        </p>
-                                                    )}
-                                                    {/* Timer for Pending/Failed Orders */}
-                                                    {(order.status === 'pending' || order.status === 'payment_failed') && order.payment_status !== 'flagged_mismatch' && (
+                                                    {(order.status === 'pending' || order.status === 'payment_failed') && (
                                                         <div className="mt-2 text-left">
-                                                            <CountdownTimer
-                                                                createdAt={order.created_at}
-                                                                onExpire={() => loadOrders()}
-                                                            />
+                                                            <CountdownTimer createdAt={order.created_at} onExpire={() => mutate()} />
                                                         </div>
                                                     )}
                                                 </div>
 
-                                                {order.order_items?.map((item: any, i: number) => {
-                                                    const productSlug = item.products?.slug
-                                                    const productLink = productSlug ? `/product/${productSlug}` : `/account/orders/${order.id}`
-
-                                                    return (
-                                                        <div key={i} className="flex gap-4 group/item">
-                                                            <Link href={productLink} className="relative w-20 h-20 bg-muted flex-shrink-0 border border-border group-hover/item:border-primary/30 transition-colors">
-                                                                {item.product_image && (
-                                                                    <Image
-                                                                        src={sanitizeImagePath(item.product_image)}
-                                                                        alt={item.product_name}
-                                                                        fill
-                                                                        className="object-cover"
-                                                                        loader={supabaseLoader}
-                                                                    />
-                                                                )}
-                                                            </Link>
-                                                            <div className="flex-1">
-                                                                <Link href={productLink} className="text-sm font-medium hover:text-primary transition-colors block mb-1">
-                                                                    {item.product_name}
-                                                                </Link>
-                                                                <p className="text-xs text-muted-foreground">Quantity: {item.quantity}</p>
-                                                            </div>
+                                                {order.order_items?.map((item: any, i: number) => (
+                                                    <div key={i} className="flex gap-4 group/item">
+                                                        <Link href={`/product/${item.products?.slug || '#'}`} className="relative w-20 h-20 bg-muted flex-shrink-0 border border-border group-hover/item:border-primary/30 transition-colors">
+                                                            {item.product_image && <Image src={sanitizeImagePath(item.product_image)} alt={item.product_name} fill className="object-cover" loader={supabaseLoader} />}
+                                                        </Link>
+                                                        <div className="flex-1">
+                                                            <Link href={`/product/${item.products?.slug || '#'}`} className="text-sm font-medium hover:text-primary transition-colors block mb-1">{item.product_name}</Link>
+                                                            <p className="text-xs text-muted-foreground">Quantity: {item.quantity}</p>
                                                         </div>
-                                                    )
-                                                })}
+                                                    </div>
+                                                ))}
                                             </div>
 
                                             <div className="flex flex-col gap-2 min-w-[180px]">
                                                 {order.status === 'pending' || order.status === 'payment_failed' ? (
                                                     (() => {
                                                         const isExpired = new Date(order.created_at).getTime() + (30 * 60 * 1000) < Date.now()
-                                                        if (isExpired) return (
-                                                            <div className="w-full py-3 bg-muted text-muted-foreground text-[10px] font-bold uppercase tracking-[0.2em] text-center border border-border">
-                                                                Session Expired
-                                                            </div>
-                                                        )
+                                                        if (isExpired) return <div className="w-full py-3 bg-muted text-muted-foreground text-[10px] font-bold uppercase tracking-[0.2em] text-center border border-border">Session Expired</div>
                                                         return (
                                                             <button
                                                                 onClick={() => handleRetryPayment(order.id)}
-                                                                disabled={retryingOrderId === order.id || order.payment_status === 'flagged_mismatch'}
+                                                                disabled={retryingOrderId === order.id}
                                                                 className="w-full py-3 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                                                             >
-                                                                {retryingOrderId === order.id ? (
-                                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                                                ) : (
-                                                                    <>
-                                                                        <CreditCard className="w-3.5 h-3.5" />
-                                                                        Complete Payment
-                                                                    </>
-                                                                )}
+                                                                {retryingOrderId === order.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><CreditCard className="w-3.5 h-3.5" /> Complete Payment</>}
                                                             </button>
                                                         )
                                                     })()
                                                 ) : (
                                                     <>
-                                                        <Link
-                                                            href={`/account/orders/${order.id}`}
-                                                            className="w-full py-2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-primary/90 transition-all"
-                                                        >
-                                                            Track Package
-                                                        </Link>
-                                                        <Link
-                                                            href={`/account/orders/${order.id}`}
-                                                            className="w-full py-2 bg-card border border-border text-foreground text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-muted transition-all"
-                                                        >
-                                                            Return Items
-                                                        </Link>
+                                                        <Link href={`/account/orders/${order.id}`} className="w-full py-2 bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-primary/90 transition-all">Track Package</Link>
+                                                        <Link href={`/account/orders/${order.id}`} className="w-full py-2 bg-card border border-border text-foreground text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-muted transition-all">Return Items</Link>
                                                     </>
                                                 )}
-                                                <Link
-                                                    href={`/account/orders/${order.id}`}
-                                                    className="w-full py-2 bg-card border border-border text-foreground text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-muted transition-all"
-                                                >
-                                                    View Detail
-                                                </Link>
+                                                <Link href={`/account/orders/${order.id}`} className="w-full py-2 bg-card border border-border text-foreground text-[10px] font-bold uppercase tracking-[0.2em] text-center hover:bg-muted transition-all">View Detail</Link>
                                             </div>
                                         </div>
                                     </div>
@@ -448,11 +350,7 @@ export default function OrdersPage() {
                 </div>
             </main>
 
-            <SecurePaymentModal
-                isOpen={isPaymentModalOpen}
-                onClose={() => setIsPaymentModalOpen(false)}
-                paymentData={paymentData}
-            />
+            <SecurePaymentModal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} paymentData={paymentData} />
         </div>
     )
 }

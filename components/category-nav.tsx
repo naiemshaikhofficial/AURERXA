@@ -28,14 +28,37 @@ export function CategoryNav() {
     const [lastScrollY, setLastScrollY] = useState(0)
     const [isInteracting, setIsInteracting] = useState(false)
 
-    // Map dynamic categories to nav items, or fallback to defaults
-    const navItems = dynamicCategories.length > 0
-        ? dynamicCategories.map((cat: any) => ({
-            label: cat.name,
-            href: `/collections/${cat.slug}`,
-            iconId: DEFAULT_CATEGORIES.find((d: any) => d.label === cat.name)?.iconId || '82711'
-        }))
-        : DEFAULT_CATEGORIES
+    // Map dynamic categories to nav items, ensuring defaults are preserved
+    const navItems = (() => {
+        // 1. Start with the defaults as the base
+        const items = [...DEFAULT_CATEGORIES]
+
+        // 2. Supplement with dynamic categories that aren't already represented
+        if (dynamicCategories && dynamicCategories.length > 0) {
+            dynamicCategories.forEach((cat: any) => {
+                const existingIndex = items.findIndex(i =>
+                    i.label.toLowerCase() === cat.name.toLowerCase()
+                )
+
+                if (existingIndex !== -1) {
+                    // Update existing item with DB slug if needed (but keep icon)
+                    items[existingIndex] = {
+                        ...items[existingIndex],
+                        href: `/collections/${cat.slug}`
+                    }
+                } else {
+                    // Add new unique category from DB
+                    items.push({
+                        label: cat.name,
+                        href: `/collections/${cat.slug}`,
+                        iconId: '82711' // Default generic jewelry icon
+                    })
+                }
+            })
+        }
+
+        return items
+    })()
 
     useEffect(() => {
         let ticking = false

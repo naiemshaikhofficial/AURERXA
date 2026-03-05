@@ -1,10 +1,11 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
+import useSWR, { mutate } from 'swr'
 import { getCart, addToCart as addToCartAction, updateCartItem as updateCartItemAction, removeFromCart as removeFromCartAction } from '@/app/actions'
 import { supabase } from '@/lib/supabase'
 
-interface CartItem {
+export interface CartItem {
     id: string
     product_id: string
     quantity: number
@@ -41,43 +42,49 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-    const [items, setItems] = useState<CartItem[]>([])
-    const [savedItems, setSavedItems] = useState<CartItem[]>([])
-    const [loading, setLoading] = useState(true)
     const [user, setUser] = useState<any>(null)
-    const [isRefreshing, setIsRefreshing] = useState(false)
     const [isCartOpen, setIsCartOpen] = useState(false)
+    const [savedItems, setSavedItems] = useState<CartItem[]>([])
+    const [guestItems, setGuestItems] = useState<CartItem[]>([])
+
+    // SWR for Server-side Cart
+    const { data: serverItems, error, isLoading, mutate: mutateCart } = useSWR(
+        user ? ['cart', user.id] : null,
+        async () => {
+            const data = await getCart()
+            return data as CartItem[]
+        },
+        {
+            revalidateOnFocus: false,
+            dedupingInterval: 5000,
+        }
+    )
+
+    // Derived consistent state: Server items for logged in, state for guests
+    const items = user ? (serverItems || []) : guestItems
+    const loading = user ? isLoading : false
 
     const SAVED_ITEMS_KEY = `aurerxa_saved_${user?.id || 'guest'}`
 
     const openCart = () => setIsCartOpen(true)
     const closeCart = () => setIsCartOpen(false)
 
+    // Auth Sync & User Context
     useEffect(() => {
-        let authListener: { subscription: { unsubscribe: () => void } } | null = null
+        let authListener: any = null
 
         const checkUser = async () => {
             const { data: { session } } = await supabase.auth.getSession()
-            console.log('CartProvider: Initial session check', { hasSession: !!session, userId: session?.user?.id })
             setUser(session?.user || null)
 
             const { data } = supabase.auth.onAuthStateChange((event, session) => {
-                console.log('CartProvider: Auth state changed', { event, userId: session?.user?.id })
-
                 if (event === 'SIGNED_OUT') {
-                    // Immediately clear all cart state on sign-out
                     setUser(null)
-                    setItems([])
-                    hasRefreshedRef.current = null // Reset so next login triggers a fresh fetch
-                    try {
-                        localStorage.removeItem('aurerxa_cart')
-                    } catch (e) { /* ignore */ }
+                    setGuestItems([])
+                    // Explicitly clear SWR cache for the user's cart
+                    mutate(['cart', session?.user?.id], [], false)
                 } else {
                     setUser(session?.user || null)
-                    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-                        // Reset ref so the useEffect below triggers a fresh cart load
-                        hasRefreshedRef.current = null
-                    }
                 }
             })
             authListener = data
@@ -85,86 +92,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         checkUser()
 
         return () => {
-            if (authListener) {
-                authListener.subscription.unsubscribe()
-            }
+            if (authListener) authListener.subscription.unsubscribe()
         }
     }, [])
 
-    const hasRefreshedRef = useRef<string | null>(null)
+    // Guest Cart Persistence
     useEffect(() => {
-        // Prevent redundant refreshes for the same user ID (includes null)
-        const currentId = user?.id || 'guest'
-        if (hasRefreshedRef.current === currentId) return
-        hasRefreshedRef.current = currentId
-
-        refreshCart(false) // Initial load should show loader
-    }, [user?.id])
-
-    const syncCart = async () => {
-        const localCart = localStorage.getItem('aurerxa_cart')
-        if (localCart && user) {
-            console.log('CartProvider: Syncing guest cart to user account', { userId: user.id })
-            try {
-                const guestItems = JSON.parse(localCart)
-                if (!Array.isArray(guestItems)) {
-                    console.warn('CartProvider: Local cart data is not an array, clearing.')
-                    localStorage.removeItem('aurerxa_cart')
-                    return
-                }
-
-                let allSuccess = true
-                for (const item of guestItems) {
-                    const result = await addToCartAction(item.product_id, item.size, item.quantity)
-                    if (!result.success) {
-                        console.error('CartProvider: Failed to sync item', item.product_id, result.error)
-                        allSuccess = false
-                    }
-                }
-
-                if (allSuccess) {
-                    console.log('CartProvider: Successfully synced all guest items')
+        if (!user) {
+            const localCart = localStorage.getItem('aurerxa_cart')
+            if (localCart) {
+                try {
+                    setGuestItems(JSON.parse(localCart))
+                } catch (e) {
                     localStorage.removeItem('aurerxa_cart')
                 }
-            } catch (error) {
-                console.error('CartProvider: Error syncing cart:', error)
             }
         }
-    }
+    }, [user])
 
-    const handleGuestAdd = (productId: string, size?: string, quantity: number = 1, productData?: any) => {
-        setItems(prev => {
-            const currentCart = [...prev]
-            const existingItemIndex = currentCart.findIndex(
-                item => item.product_id === productId && item.size === size
-            )
-
-            if (existingItemIndex > -1) {
-                const updatedItem = { ...currentCart[existingItemIndex] }
-                updatedItem.quantity += quantity
-                currentCart[existingItemIndex] = updatedItem
+    useEffect(() => {
+        if (!user) {
+            if (guestItems.length > 0) {
+                localStorage.setItem('aurerxa_cart', JSON.stringify(guestItems))
             } else {
-                currentCart.push({
-                    id: `guest_${Math.random().toString(36).substr(2, 9)}`,
-                    product_id: productId,
-                    quantity,
-                    size,
-                    products: productData
-                })
+                localStorage.removeItem('aurerxa_cart')
             }
-            return currentCart
-        })
-        openCart()
-    }
-
-    // Single source of truth for Persistence
-    useEffect(() => {
-        if (!user && items.length > 0) {
-            localStorage.setItem('aurerxa_cart', JSON.stringify(items.filter(item => item.id.startsWith('guest_'))))
-        } else if (!user && items.length === 0) {
-            localStorage.removeItem('aurerxa_cart')
         }
-    }, [items, user])
+    }, [guestItems, user])
 
     // Save for Later Persistence
     useEffect(() => {
@@ -182,138 +136,139 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [savedItems, SAVED_ITEMS_KEY])
 
-    const refreshCart = async (silent: boolean = true) => {
-        if (isRefreshing) return
-        if (!silent) setLoading(true)
-        setIsRefreshing(true)
-
-        const currentId = user?.id || 'guest'
-        const STORAGE_KEY = `aurerxa_cart_${currentId}`
-
-        try {
-            // Instant Hydration from local storage for current user context
-            const localCart = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('aurerxa_cart')
-            if (localCart && items.length === 0) {
-                const parsed = JSON.parse(localCart)
-                setItems(parsed)
-            }
-
-            if (user) {
-                // Sync guest items if any exist before loading from DB
-                const guestCart = localStorage.getItem('aurerxa_cart')
-                if (guestCart) {
-                    await syncCart()
+    // Guest to User Cart Sync
+    const syncCart = async () => {
+        const localCart = localStorage.getItem('aurerxa_cart')
+        if (localCart && user) {
+            try {
+                const guestItemsToSync = JSON.parse(localCart)
+                if (Array.isArray(guestItemsToSync)) {
+                    for (const item of guestItemsToSync) {
+                        await addToCartAction(item.product_id, item.size, item.quantity)
+                    }
+                    localStorage.removeItem('aurerxa_cart')
+                    await mutateCart()
                 }
-                const data = await getCart()
-                setItems(data as any)
-
-                // Cache the fresh server data locally
-                if (data) localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-            } else {
-                // Load from localStorage for guests
-                const localCart = localStorage.getItem('aurerxa_cart')
-                if (localCart) {
-                    const parsed = JSON.parse(localCart)
-                    setItems(parsed)
-                } else {
-                    setItems([])
-                }
+            } catch (error) {
+                console.error('CartProvider: Error syncing cart:', error)
             }
-        } catch (error) {
-            console.error('Error refreshing cart:', error)
-        } finally {
-            setLoading(false)
-            setIsRefreshing(false)
         }
     }
 
+    useEffect(() => {
+        if (user) syncCart()
+    }, [user?.id])
+
+    const refreshCart = async (silent: boolean = true) => {
+        if (user) await mutateCart()
+    }
+
+    // --- OPTIMISTIC UI ACTIONS ---
+
     const addItem = async (productId: string, size?: string, quantity: number = 1, productData?: any) => {
         if (!user) {
-            handleGuestAdd(productId, size, quantity, productData)
+            setGuestItems(prev => {
+                const currentCart = [...prev]
+                const existingItemIndex = currentCart.findIndex(
+                    item => item.product_id === productId && item.size === size
+                )
+
+                if (existingItemIndex > -1) {
+                    const updatedItem = { ...currentCart[existingItemIndex] }
+                    updatedItem.quantity += quantity
+                    currentCart[existingItemIndex] = updatedItem
+                } else {
+                    currentCart.push({
+                        id: `guest_${Math.random().toString(36).substr(2, 9)}`,
+                        product_id: productId,
+                        quantity,
+                        size,
+                        products: productData
+                    })
+                }
+                return currentCart
+            })
+            openCart()
             return
         }
 
-        // Optimistic update state
-        let tempId = `temp_${Date.now()}`
-        setItems(prev => {
-            const existing = prev.find(item => item.product_id === productId && item.size === size)
-            if (existing) {
-                return prev.map(item => item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item)
+        // Optimistic SWR Update for Logged-in User
+        const optimisticData = [...items]
+        const existingIdx = optimisticData.findIndex(i => i.product_id === productId && i.size === size)
+
+        if (existingIdx > -1) {
+            optimisticData[existingIdx] = {
+                ...optimisticData[existingIdx],
+                quantity: optimisticData[existingIdx].quantity + quantity
             }
-            return [...prev, {
-                id: tempId,
+        } else {
+            optimisticData.push({
+                id: `temp_${Date.now()}`,
                 product_id: productId,
                 quantity,
                 size,
                 products: productData
-            }]
-        })
-        openCart()
-
-        try {
-            const result = await addToCartAction(productId, size, quantity)
-            console.log('CartProvider: addItem result', result)
-            if (result.success) {
-                // If we got the new item back, we could use it, but for now just refresh silently
-                await refreshCart(true)
-            } else {
-                console.error('CartProvider: addItem failed', result.error)
-                // Revert optimistic update on failure
-                await refreshCart(true)
-            }
-        } catch (error) {
-            console.error('CartProvider: addItem exception', error)
-            await refreshCart(true)
+            })
         }
+
+        mutateCart(
+            addToCartAction(productId, size, quantity).then(() => getCart()),
+            {
+                optimisticData: optimisticData as any,
+                rollbackOnError: true,
+                revalidate: true,
+            }
+        )
+        openCart()
     }
 
     const updateQuantity = async (cartId: string, quantity: number) => {
         const newQuantity = Math.max(1, quantity)
-        const previousItems = [...items]
 
-        // Optimistic update
-        setItems(prev => prev.map(item =>
-            item.id === cartId ? { ...item, quantity: newQuantity } : item
-        ))
-
-        if (user && !cartId.startsWith('guest_') && !cartId.startsWith('temp_')) {
-            try {
-                const result = await updateCartItemAction(cartId, newQuantity)
-                if (!result.success) {
-                    setItems(previousItems)
-                    await refreshCart(true)
-                }
-            } catch (error) {
-                setItems(previousItems)
-                await refreshCart(true)
-            }
+        if (!user || cartId.startsWith('guest_')) {
+            setGuestItems(prev => prev.map(item =>
+                item.id === cartId ? { ...item, quantity: newQuantity } : item
+            ))
+            return
         }
+
+        // Optimistic SWR Update
+        const optimisticData = items.map(item =>
+            item.id === cartId ? { ...item, quantity: newQuantity } : item
+        )
+
+        mutateCart(
+            updateCartItemAction(cartId, newQuantity).then(() => getCart()),
+            {
+                optimisticData,
+                rollbackOnError: true,
+                revalidate: true,
+            }
+        )
     }
 
     const removeItem = async (cartId: string) => {
-        const previousItems = [...items]
-
-        // Optimistic update
-        setItems(prev => prev.filter(item => item.id !== cartId))
-
-        if (user && !cartId.startsWith('guest_') && !cartId.startsWith('temp_')) {
-            try {
-                const result = await removeFromCartAction(cartId)
-                if (!result.success) {
-                    setItems(previousItems)
-                    await refreshCart(true)
-                }
-            } catch (error) {
-                setItems(previousItems)
-                await refreshCart(true)
-            }
+        if (!user || cartId.startsWith('guest_')) {
+            setGuestItems(prev => prev.filter(item => item.id !== cartId))
+            return
         }
+
+        // Optimistic SWR Update
+        const optimisticData = items.filter(item => item.id !== cartId)
+
+        mutateCart(
+            removeFromCartAction(cartId).then(() => getCart()),
+            {
+                optimisticData,
+                rollbackOnError: true,
+                revalidate: true,
+            }
+        )
     }
 
     const saveForLater = async (cartId: string) => {
         const item = items.find(i => i.id === cartId)
         if (item) {
-            // Check if already in saved items to avoid duplicates
             setSavedItems(prev => {
                 const exists = prev.find(i => i.product_id === item.product_id && i.size === item.size)
                 if (exists) return prev
@@ -359,9 +314,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 export function useCart() {
     const context = useContext(CartContext)
 
-    // During SSR, some components might trigger this early. 
-    // Return a dummy context object to prevent crashing, 
-    // as it will re-render correctly on the client.
     if (context === undefined) {
         return {
             items: [],
