@@ -15,9 +15,10 @@ interface TopStylesClientProps {
 
 const FILTERS = [
     { label: 'ALL', slug: 'all' },
+    { label: 'EARRINGS', slug: 'earrings' },
     { label: 'CHAINS', slug: 'chains' },
     { label: 'RINGS', slug: 'rings' },
-    { label: 'BRACELETS', slug: 'bracelates' },
+    { label: 'BRACELETS', slug: 'bracelets' },
 ]
 
 export function TopStylesClient({ dataMap }: TopStylesClientProps) {

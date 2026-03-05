@@ -43,9 +43,8 @@ export async function getFilteredProducts(options: any) {
                                 _cacheSet(sk, subCat.id);
                                 subCatId = subCat.id
                             } else if (subCategorySlug.toLowerCase().includes('bracel')) {
-                                // Try common alternate spellings
-                                const alt = subCategorySlug.toLowerCase().includes('lates') ? 'bracelets' : 'bracelates'
-                                const { data: subCatAlt } = await supabaseServer.from('sub_categories').select('id').ilike('slug', alt).maybeSingle()
+                                // Standardize bracelets/bracelates to whatever is in DB
+                                const { data: subCatAlt } = await supabaseServer.from('sub_categories').select('id').or('slug.ilike.bracelets,slug.ilike.bracelates').maybeSingle()
                                 if (subCatAlt) { _cacheSet(sk, subCatAlt.id); subCatId = subCatAlt.id }
                             }
                         }
