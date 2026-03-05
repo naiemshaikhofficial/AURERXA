@@ -162,11 +162,15 @@ export default function CheckoutPage() {
     })
 
     // Checkout Draft Caching Logic
+    // Checkout Draft & Resilience Caching Keys
     const CHECKOUT_DRAFT_KEY = 'aurerxa-checkout-draft'
+    const ADDRESS_CACHE_KEY = 'aurerxa-address-cache'
+    const SUMMARY_CACHE_KEY = 'aurerxa-checkout-summary'
 
-    // Load draft on mount
+    // Load drafts and cached data on mount
     useEffect(() => {
         try {
+            // Restore Form Draft
             const savedDraft = localStorage.getItem(CHECKOUT_DRAFT_KEY)
             if (savedDraft) {
                 const draft = JSON.parse(savedDraft)
@@ -177,8 +181,19 @@ export default function CheckoutPage() {
                 if (draft.newAddress) setNewAddress(prev => ({ ...prev, ...draft.newAddress }))
                 if (draft.selectedAddress) setSelectedAddress(draft.selectedAddress)
             }
+
+            // Hydrate Addresses from Cache (Resilience)
+            const cachedAddresses = localStorage.getItem(ADDRESS_CACHE_KEY)
+            if (cachedAddresses) {
+                const { data, timestamp } = JSON.parse(cachedAddresses)
+                const isFresh = Date.now() - timestamp < 24 * 60 * 60 * 1000 // 24h
+                if (isFresh && data.length > 0) {
+                    setAddresses(data)
+                    setLoading(false) // Speed up UI if we have data
+                }
+            }
         } catch (e) {
-            console.warn('Failed to load checkout draft')
+            console.warn('Checkout: Resilience hydration failed', e)
         }
     }, [])
 
@@ -203,17 +218,29 @@ export default function CheckoutPage() {
                 getAddresses(),
                 import('@/app/actions').then(m => m.getPaymentGatewayConfig())
             ])
-            setAddresses(addressData)
+
+            if (addressData) {
+                setAddresses(addressData)
+                // Update Cache
+                localStorage.setItem(ADDRESS_CACHE_KEY, JSON.stringify({
+                    data: addressData,
+                    timestamp: Date.now()
+                }))
+            }
+
             setEnableCod(config.enableCod)
 
-            if (addressData.length > 0) {
+            if (addressData && addressData.length > 0) {
                 const defaultAddr = addressData.find((a: any) => a.is_default) || addressData[0]
-                setSelectedAddress(defaultAddr.id)
-            } else {
+                if (!selectedAddress) setSelectedAddress(defaultAddr.id)
+            } else if (addressData && addressData.length === 0) {
                 setShowAddressForm(true)
             }
         } catch (err) {
             console.error('Failed to load checkout data:', err)
+            // Error resilience: don't clear addresses if they exist in state/cache
+            setError('Limited connectivity. Retrying in background...')
+            setTimeout(loadData, 5000) // Silent retry
         } finally {
             setLoading(false)
         }
@@ -421,6 +448,23 @@ export default function CheckoutPage() {
 
 
 
+    // Order Summary Persistence (Resilience)
+    useEffect(() => {
+        if (cart.length > 0) {
+            const summary = cart.map((item: any) => ({
+                id: item.id,
+                name: item.products?.name,
+                price: item.products?.price,
+                image: item.products?.image_url,
+                quantity: item.quantity
+            }))
+            localStorage.setItem(SUMMARY_CACHE_KEY, JSON.stringify({
+                items: summary,
+                timestamp: Date.now()
+            }))
+        }
+    }, [cart])
+
     if (loading || cartLoading) {
         return (
             <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -437,9 +481,25 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                 </header>
-                <main className="flex-1 flex flex-col items-center justify-center py-24">
-                    <Loader2 className="w-8 h-8 text-primary animate-spin mb-4" />
-                    <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground/60">Securing Session...</p>
+                <main className="flex-1 flex flex-col items-center justify-center py-24 px-6 text-center">
+                    <div className="relative mb-8">
+                        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <Lock size={14} className="text-primary/40" />
+                        </div>
+                    </div>
+                    <h2 className="text-xl font-serif italic mb-2">Securing your session</h2>
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 max-w-xs leading-relaxed">
+                        Initializing the AURERXA Vault with high-end encryption.
+                    </p>
+
+                    {/* Resilience Action */}
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="mt-12 text-[9px] uppercase tracking-[0.2em] text-primary hover:underline"
+                    >
+                        Taking too long? Tap to refresh
+                    </button>
                 </main>
             </div>
         )

@@ -103,12 +103,17 @@ export default async function proxy(request: NextRequest) {
 
     try {
         if (!isPublicPath || isDashboard) {
-            // 4. Auth Check with tight timeout
-            const { data: { user: authUser } } = await Promise.race([
-                supabase.auth.getUser(),
-                new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
-            ]).catch(() => ({ data: { user: null } }))
-            user = authUser;
+            // 4. Auth Check with tight timeout and robust catch
+            try {
+                const { data: { user: authUser } } = await Promise.race([
+                    supabase.auth.getUser(),
+                    new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+                ])
+                user = authUser;
+            } catch (err) {
+                console.warn('Middleware: Auth check non-fatal failure:', err instanceof Error ? err.message : 'Unknown');
+                // Non-fatal: user remains null, logic continues
+            }
         }
 
         // 5. Redirection Logic (with loop prevention)
