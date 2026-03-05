@@ -47,11 +47,12 @@ export function SWRProvider({ children }: { children: ReactNode }) {
                     return res.json()
                 },
 
-                // Best Practice: 1 minute deduping to prevent double-fetching on same page
-                dedupingInterval: 60000,
+                // Elite Efficiency: 5 minute deduping to drastically reduce redundant hits
+                dedupingInterval: 300000,
 
-                // Best Practice: Disable focus revalidation for e-commerce to avoid layout shifts
+                // Elite Efficiency: Disable focus & reconnect revalidation to prevent "chattiness"
                 revalidateOnFocus: false,
+                revalidateOnReconnect: false,
 
                 // Use persistent localStorage provider
                 provider: typeof window !== 'undefined' ? (localStorageProvider as any) : undefined,

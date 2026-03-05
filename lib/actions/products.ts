@@ -195,7 +195,7 @@ const _getBestsellers = unstable_cache(
         return data || []
     },
     ['bestsellers'],
-    { revalidate: 60, tags: ['products', 'bestsellers'] }
+    { revalidate: 86400, tags: ['products', 'bestsellers'] }
 )
 
 export async function getBestsellers() {
@@ -218,7 +218,7 @@ export async function getNewReleases(limit: number = 8) {
             return data || []
         },
         ['new-releases', limit.toString()],
-        { revalidate: 60, tags: ['products', 'new-releases'] }
+        { revalidate: 86400, tags: ['products', 'new-releases'] }
     )()
 }
 
@@ -361,7 +361,7 @@ export async function getProductBySlug(slug: string) {
             return serializedProduct
         },
         [`product-${slug}`],
-        { revalidate: 3600, tags: [`product:${slug}`, 'products'] }
+        { revalidate: 86400, tags: [`product:${slug}`, 'products'] }
     )()
 }
 
@@ -491,7 +491,7 @@ export async function getHeroSlides() {
             return data || []
         },
         ['hero-slides'],
-        { revalidate: 60, tags: ['hero-slides'] }
+        { revalidate: 86400, tags: ['hero-slides'] }
     )()
 }
 

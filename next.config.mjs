@@ -167,6 +167,15 @@ const nextConfig = {
     ],
   },
   turbopack: {},
+  async redirects() {
+    return [
+      {
+        source: '/live-rates',
+        destination: '/',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 const withPWA = (await import("@ducanh2912/next-pwa")).default({

@@ -203,7 +203,7 @@ export async function getGlobalConfig(): Promise<GlobalConfig> {
             }
         },
         ['global-config'],
-        { revalidate: 600, tags: ['settings', 'config'] }
+        { revalidate: 86400, tags: ['settings', 'config'] }
     )()
 }
 
@@ -227,6 +227,11 @@ export async function updateGlobalConfig(key: string, value: number): Promise<Ac
 // =====================================================
 // PRICING & METALS SYNCHRONIZATION
 // =====================================================
+
+// Semaphore to prevent multiple background syncs in a single instance
+let _isSyncingGold = false
+let _lastSyncAttempt = 0
+const SYNC_RETRY_DELAY = 300000 // 5 minutes
 
 export async function getGoldRates() {
     return unstable_cache(
@@ -260,7 +265,14 @@ export async function getGoldRates() {
                 const isStale = !data || data.length === 0 || (Date.now() - lastUpdatedValue) > STALE_THRESHOLD
 
                 if (isStale) {
-                    syncLiveGoldRates().catch(err => console.error('[OPTIMIZATION] Background gold sync failed:', err))
+                    const now = Date.now()
+                    if (!_isSyncingGold && (now - _lastSyncAttempt) > SYNC_RETRY_DELAY) {
+                        _isSyncingGold = true
+                        _lastSyncAttempt = now
+                        syncLiveGoldRates()
+                            .catch(err => console.error('[OPTIMIZATION] Background gold sync failed:', err))
+                            .finally(() => { _isSyncingGold = false })
+                    }
                 }
 
                 return { rates: ratesObj, lastUpdated }
@@ -271,7 +283,7 @@ export async function getGoldRates() {
         },
         ['gold-rates'],
         {
-            revalidate: 3600, // Cache for 1 hour at the Next.js level
+            revalidate: 86400, // Increase to 24 hours for next.js level cache
             tags: ['rates']
         }
     )()
