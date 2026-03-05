@@ -30,7 +30,13 @@ async function CategoryBrowsingSection() {
     { name: 'Necklaces', slug: 'necklaces', image_url: '/closeup-shot-female-wearing-beautiful-silver-necklace-with-pendant.jpg' },
     { name: 'Earrings', slug: 'earrings', image_url: '/long-earring-with-violet-precious-stones-hang-from-woman-s-ear.jpg' },
     { name: 'Rings', slug: 'rings', image_url: '/closeup-diamond-ring.jpg' },
-    { name: 'Mangalsutra', slug: 'mangalsutra', image_url: '/mangalsutra-golden-necklace-worn-by-married-hindu-women-arranged-with-traditional-saree-with-huldi-kumkum-mogra-flowers-gajra-selective-focus_466689-60648 (2).avif' }
+    { name: 'Mangalsutra', slug: 'mangalsutra', image_url: '/mangalsutra-golden-necklace-worn-by-married-hindu-women-arranged-with-traditional-saree-with-huldi-kumkum-mogra-flowers-gajra-selective-focus_466689-60648 (2).avif' },
+    { name: 'Bracelets', slug: 'bracelets', image_url: '/luxury-bracelet.png' },
+    { name: 'Chains', slug: 'chains', image_url: '/luxury-chains.png' },
+    { name: 'Bangles', slug: 'bangles', image_url: '/luxury-bangles.png' },
+    { name: 'Pendants', slug: 'pendants', image_url: '/luxury-pendant.png' },
+    { name: 'Nose Pins', slug: 'nose-pins', image_url: '/luxury-nose-pin.png' },
+    { name: 'Anklets', slug: 'anklets', image_url: '/luxury-anklet.png' }
   ]
   return <CategoryBrowsing categories={categories} />
 }
