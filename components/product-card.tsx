@@ -119,7 +119,7 @@ interface ProductCardProps {
 export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, className, onClose, priority = false }: ProductCardProps) => {
     const { addItem } = useCart()
     const { user } = useAuth()
-    const { isInWishlist, toggleWishlist, setMetalPreference } = useUserPreferences()
+    const { isInWishlist, toggleWishlist, setMetalPreference, trackEngagement } = useUserPreferences()
     const router = useRouter()
     const [isAdding, setIsAdding] = useState(false)
     const [isBuying, setIsBuying] = useState(false)
@@ -154,6 +154,10 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                 // When they wishlist something, it's a strong signal of preference
                 if (product.material_type) {
                     setMetalPreference(product.material_type)
+                    trackEngagement('material', product.material_type)
+                }
+                if (product.categories?.slug) {
+                    trackEngagement('category', product.categories.slug)
                 }
             }
         } catch (error) {
@@ -169,6 +173,10 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
         // Learn preference on click
         if (product.material_type) {
             setMetalPreference(product.material_type)
+            trackEngagement('material', product.material_type)
+        }
+        if (product.categories?.slug) {
+            trackEngagement('category', product.categories.slug)
         }
         if (onClose) onClose()
     }

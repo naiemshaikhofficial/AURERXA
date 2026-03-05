@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Filter, X, Check, ChevronDown, SlidersHorizontal, Diamond, Gem } from 'lucide-react'
+import { Filter, X, Check, ChevronDown, SlidersHorizontal, Diamond, Gem, LayoutGrid, List } from 'lucide-react'
+import { useUserPreferences } from '@/context/user-preferences-context'
 import { cn, sanitizeImagePath } from '@/lib/utils'
 
 export type FilterState = {
@@ -80,6 +81,7 @@ export function CinematicFilter({
     productCount
 }: CinematicFilterProps) {
     const router = useRouter()
+    const { viewMode, setViewMode } = useUserPreferences()
     const [isOpen, setIsOpen] = useState(false)
     const [filters, setFilters] = useState<FilterState>(initialFilters)
     const [activeTab, setActiveTab] = useState<'type' | 'gender' | 'price' | 'sort' | 'material' | 'tags'>('type')
@@ -170,22 +172,48 @@ export function CinematicFilter({
                             {productCount} Artifacts
                         </span>
 
-                        <button
-                            onClick={() => setIsOpen(true)}
-                            className="group flex items-center gap-2 px-6 py-3 bg-muted border border-border rounded-full hover:bg-foreground hover:text-background hover:border-foreground transition-all active:scale-95"
-                        >
-                            <img
-                                src={sanitizeImagePath("https://img.icons8.com/?size=100&id=82746&format=png&color=FFFFFF")}
-                                alt="Filter"
-                                className="w-4 h-4 transition-all duration-300 group-hover:invert group-hover:rotate-180 opacity-60 group-hover:opacity-100 dark:invert-0 invert"
-                            />
-                            <span className="text-[9px] font-premium-sans text-foreground group-hover:text-background tracking-[0.2em] uppercase">Refine</span>
-                            {activeFilterCount > 0 && (
-                                <span className="ml-1 w-4 h-4 flex items-center justify-center bg-primary text-primary-foreground text-[8px] font-bold rounded-full">
-                                    {activeFilterCount}
-                                </span>
-                            )}
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {/* View Mode Toggle */}
+                            <div className="flex bg-muted p-1 rounded-full border border-border mr-2">
+                                <button
+                                    onClick={() => setViewMode('grid')}
+                                    className={cn(
+                                        "p-2 rounded-full transition-all duration-300",
+                                        viewMode === 'grid' ? "bg-foreground text-background shadow-md" : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                    title="Grid View"
+                                >
+                                    <LayoutGrid className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    className={cn(
+                                        "p-2 rounded-full transition-all duration-300",
+                                        viewMode === 'list' ? "bg-foreground text-background shadow-md" : "text-muted-foreground hover:text-foreground"
+                                    )}
+                                    title="List View"
+                                >
+                                    <List className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => setIsOpen(true)}
+                                className="group flex items-center gap-2 px-6 py-3 bg-muted border border-border rounded-full hover:bg-foreground hover:text-background hover:border-foreground transition-all active:scale-95"
+                            >
+                                <img
+                                    src={sanitizeImagePath("https://img.icons8.com/?size=100&id=82746&format=png&color=FFFFFF")}
+                                    alt="Filter"
+                                    className="w-4 h-4 transition-all duration-300 group-hover:invert group-hover:rotate-180 opacity-60 group-hover:opacity-100 dark:invert-0 invert"
+                                />
+                                <span className="text-[9px] font-premium-sans text-foreground group-hover:text-background tracking-[0.2em] uppercase">Refine</span>
+                                {activeFilterCount > 0 && (
+                                    <span className="ml-1 w-4 h-4 flex items-center justify-center bg-primary text-primary-foreground text-[8px] font-bold rounded-full">
+                                        {activeFilterCount}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </motion.div>
             </div>

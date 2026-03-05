@@ -32,16 +32,23 @@ interface CartContextType {
     isCartOpen: boolean
     openCart: () => void
     closeCart: () => void
+    savedItems: CartItem[]
+    saveForLater: (cartId: string) => Promise<void>
+    moveToCart: (item: CartItem) => Promise<void>
+    removeSavedItem: (productId: string, size?: string) => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([])
+    const [savedItems, setSavedItems] = useState<CartItem[]>([])
     const [loading, setLoading] = useState(true)
     const [user, setUser] = useState<any>(null)
     const [isRefreshing, setIsRefreshing] = useState(false)
     const [isCartOpen, setIsCartOpen] = useState(false)
+
+    const SAVED_ITEMS_KEY = `aurerxa_saved_${user?.id || 'guest'}`
 
     const openCart = () => setIsCartOpen(true)
     const closeCart = () => setIsCartOpen(false)
@@ -150,7 +157,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         openCart()
     }
 
-    // Single source of truth for Guest Persistence
+    // Single source of truth for Persistence
     useEffect(() => {
         if (!user && items.length > 0) {
             localStorage.setItem('aurerxa_cart', JSON.stringify(items.filter(item => item.id.startsWith('guest_'))))
@@ -158,6 +165,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             localStorage.removeItem('aurerxa_cart')
         }
     }, [items, user])
+
+    // Save for Later Persistence
+    useEffect(() => {
+        try {
+            const localSaved = localStorage.getItem(SAVED_ITEMS_KEY)
+            if (localSaved) setSavedItems(JSON.parse(localSaved))
+        } catch (e) { /* ignore */ }
+    }, [SAVED_ITEMS_KEY])
+
+    useEffect(() => {
+        if (savedItems.length > 0) {
+            localStorage.setItem(SAVED_ITEMS_KEY, JSON.stringify(savedItems))
+        } else {
+            localStorage.removeItem(SAVED_ITEMS_KEY)
+        }
+    }, [savedItems, SAVED_ITEMS_KEY])
 
     const refreshCart = async (silent: boolean = true) => {
         if (isRefreshing) return
@@ -287,10 +310,47 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
+    const saveForLater = async (cartId: string) => {
+        const item = items.find(i => i.id === cartId)
+        if (item) {
+            // Check if already in saved items to avoid duplicates
+            setSavedItems(prev => {
+                const exists = prev.find(i => i.product_id === item.product_id && i.size === item.size)
+                if (exists) return prev
+                return [...prev, item]
+            })
+            await removeItem(cartId)
+        }
+    }
+
+    const moveToCart = async (item: CartItem) => {
+        await addItem(item.product_id, item.size, item.quantity, item.products)
+        setSavedItems(prev => prev.filter(i => !(i.product_id === item.product_id && i.size === item.size)))
+    }
+
+    const removeSavedItem = (productId: string, size?: string) => {
+        setSavedItems(prev => prev.filter(i => !(i.product_id === productId && i.size === size)))
+    }
+
     const cartCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
     return (
-        <CartContext.Provider value={{ items, loading, addItem, updateQuantity, removeItem, refreshCart, cartCount, isCartOpen, openCart, closeCart }}>
+        <CartContext.Provider value={{
+            items,
+            loading,
+            addItem,
+            updateQuantity,
+            removeItem,
+            refreshCart,
+            cartCount,
+            isCartOpen,
+            openCart,
+            closeCart,
+            savedItems,
+            saveForLater,
+            moveToCart,
+            removeSavedItem
+        }}>
             {children}
         </CartContext.Provider>
     )
@@ -313,7 +373,11 @@ export function useCart() {
             cartCount: 0,
             isCartOpen: false,
             openCart: () => { },
-            closeCart: () => { }
+            closeCart: () => { },
+            savedItems: [],
+            saveForLater: async () => { },
+            moveToCart: async () => { },
+            removeSavedItem: () => { }
         } as CartContextType
     }
     return context

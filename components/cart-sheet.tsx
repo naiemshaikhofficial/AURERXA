@@ -10,7 +10,18 @@ import { CartEmptyState } from './cart/cart-empty-state'
 import { CartFooter } from './cart/cart-footer'
 
 export function CartSheet() {
-    const { items, isCartOpen, closeCart, updateQuantity, removeItem, cartCount } = useCart()
+    const {
+        items,
+        savedItems,
+        isCartOpen,
+        closeCart,
+        updateQuantity,
+        removeItem,
+        cartCount,
+        saveForLater,
+        moveToCart,
+        removeSavedItem
+    } = useCart()
 
     const subtotal = useMemo(() => {
         return items.reduce((sum, item) => sum + (item.products?.price || 0) * item.quantity, 0)
@@ -55,23 +66,62 @@ export function CartSheet() {
                 </div>
 
                 <ScrollArea className="flex-1">
-                    {items.length === 0 ? (
+                    {items.length === 0 && savedItems.length === 0 ? (
                         <CartEmptyState closeCart={closeCart} />
                     ) : (
                         <div className="p-6 space-y-8">
-                            <div className="space-y-6">
-                                <AnimatePresence mode="popLayout">
-                                    {items.map((item) => (
-                                        <CartItem
-                                            key={item.id}
-                                            item={item}
-                                            removeItem={removeItem}
-                                            updateQuantity={updateQuantity}
-                                            closeCart={closeCart}
-                                        />
-                                    ))}
-                                </AnimatePresence>
-                            </div>
+                            {/* Active Items */}
+                            {items.length > 0 && (
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">In Your Cart</h4>
+                                    </div>
+                                    <AnimatePresence mode="popLayout">
+                                        {items.map((item) => (
+                                            <CartItem
+                                                key={item.id}
+                                                item={item}
+                                                removeItem={removeItem}
+                                                updateQuantity={updateQuantity}
+                                                closeCart={closeCart}
+                                                saveForLater={saveForLater}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+
+                            {/* Saved Items */}
+                            {savedItems.length > 0 && (
+                                <div className="pt-8 border-t border-border/40 space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold">Saved for Later</h4>
+                                        <span className="text-[9px] text-muted-foreground uppercase tracking-widest bg-muted px-2 py-0.5 rounded-full">
+                                            {savedItems.length} {savedItems.length === 1 ? 'Item' : 'Items'}
+                                        </span>
+                                    </div>
+                                    <AnimatePresence mode="popLayout">
+                                        {savedItems.map((item) => (
+                                            <CartItem
+                                                key={`saved-${item.id}`}
+                                                item={item}
+                                                removeItem={() => removeSavedItem(item.product_id, item.size)}
+                                                updateQuantity={() => { }}
+                                                closeCart={closeCart}
+                                                isSaved={true}
+                                                moveToCart={moveToCart}
+                                            />
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+
+                            {/* Show empty cart state but with saved items below */}
+                            {items.length === 0 && savedItems.length > 0 && (
+                                <div className="pt-4 text-center">
+                                    <p className="text-xs text-muted-foreground mb-4 font-light">Your cart is empty, but you have items saved.</p>
+                                </div>
+                            )}
                         </div>
                     )}
                 </ScrollArea>

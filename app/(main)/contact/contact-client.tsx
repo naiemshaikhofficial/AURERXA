@@ -1,7 +1,7 @@
 'use client'
 
 import React from "react"
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -32,7 +32,8 @@ export default function ContactClient({ contactConfig }: { contactConfig: any })
         register,
         handleSubmit,
         formState: { errors },
-        reset
+        reset,
+        watch
     } = useForm<ContactValues>({
         resolver: zodResolver(contactSchema),
         defaultValues: {
@@ -42,6 +43,32 @@ export default function ContactClient({ contactConfig }: { contactConfig: any })
             message: '',
         }
     })
+
+    const CONTACT_DRAFT_KEY = 'aurerxa-contact-draft'
+
+    // Load draft on mount
+    useEffect(() => {
+        try {
+            const savedDraft = localStorage.getItem(CONTACT_DRAFT_KEY)
+            if (savedDraft) {
+                const draft = JSON.parse(savedDraft)
+                reset(draft)
+            }
+        } catch (e) {
+            console.warn('Failed to load contact draft')
+        }
+    }, [reset])
+
+    // Save draft on changes (Debounced)
+    const formValues = watch()
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (Object.values(formValues).some(v => v !== '')) {
+                localStorage.setItem(CONTACT_DRAFT_KEY, JSON.stringify(formValues))
+            }
+        }, 1000)
+        return () => clearTimeout(timer)
+    }, [formValues])
 
     const onSubmit = async (data: ContactValues) => {
         setIsLoading(true)
@@ -54,6 +81,7 @@ export default function ContactClient({ contactConfig }: { contactConfig: any })
                 setStatus('success')
                 setMessage(result.message!)
                 reset()
+                localStorage.removeItem(CONTACT_DRAFT_KEY)
             } else {
                 setStatus('error')
                 setMessage(result.error!)

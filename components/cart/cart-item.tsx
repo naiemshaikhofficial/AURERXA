@@ -4,18 +4,29 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Minus, Plus, Trash2 } from 'lucide-react'
+import { Minus, Plus, Trash2, Bookmark, ShoppingBag } from 'lucide-react'
 import supabaseLoader from '@/lib/supabase-loader'
-import { sanitizeImagePath } from '@/lib/utils'
+import { sanitizeImagePath, cn } from '@/lib/utils'
 
 interface CartItemProps {
     item: any
     removeItem: (id: string) => void
     updateQuantity: (id: string, qty: number) => void
     closeCart: () => void
+    isSaved?: boolean
+    saveForLater?: (id: string) => void
+    moveToCart?: (item: any) => void
 }
 
-export function CartItem({ item, removeItem, updateQuantity, closeCart }: CartItemProps) {
+export function CartItem({
+    item,
+    removeItem,
+    updateQuantity,
+    closeCart,
+    isSaved = false,
+    saveForLater,
+    moveToCart
+}: CartItemProps) {
     return (
         <motion.div
             layout
@@ -41,12 +52,36 @@ export function CartItem({ item, removeItem, updateQuantity, closeCart }: CartIt
                         <Link href={`/products/${item.products?.slug}`} onClick={closeCart} className="text-sm font-medium hover:text-primary transition-colors line-clamp-2">
                             {item.products?.name}
                         </Link>
-                        <button
-                            onClick={() => removeItem(item.id)}
-                            className="p-1.5 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex gap-1">
+                            {!isSaved && saveForLater && (
+                                <button
+                                    onClick={() => saveForLater(item.id)}
+                                    className="p-1.5 text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                                    title="Save for Later"
+                                >
+                                    <Bookmark className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                            {isSaved && moveToCart && (
+                                <button
+                                    onClick={() => moveToCart(item)}
+                                    className="p-1.5 text-muted-foreground hover:text-primary transition-colors"
+                                    title="Move to Cart"
+                                >
+                                    <ShoppingBag className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                            <button
+                                onClick={() => removeItem(item.id)}
+                                className={cn(
+                                    "p-1.5 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100",
+                                    isSaved && "opacity-100" // Always show for saved items
+                                )}
+                                title="Remove Item"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
                     </div>
                     {item.products?.sku && (
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">SKU: {item.products.sku}</p>
@@ -54,24 +89,30 @@ export function CartItem({ item, removeItem, updateQuantity, closeCart }: CartIt
                 </div>
 
                 <div className="flex justify-between items-center mt-2">
-                    <div className="flex items-center gap-1 bg-muted/50 rounded-sm border border-border/20 p-0.5">
-                        <button
-                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                            className="p-1 hover:text-primary transition-colors disabled:opacity-30"
-                            disabled={item.quantity <= 1}
-                        >
-                            <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
-                        <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="p-1 hover:text-primary transition-colors"
-                        >
-                            <Plus className="w-3 h-3" />
-                        </button>
-                    </div>
+                    {!isSaved ? (
+                        <div className="flex items-center gap-1 bg-muted/50 rounded-sm border border-border/20 p-0.5">
+                            <button
+                                onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                                className="p-1 hover:text-primary transition-colors disabled:opacity-30"
+                                disabled={item.quantity <= 1}
+                            >
+                                <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="w-6 text-center text-xs font-medium">{item.quantity}</span>
+                            <button
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                className="p-1 hover:text-primary transition-colors"
+                            >
+                                <Plus className="w-3 h-3" />
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-widest bg-muted px-2 py-0.5 rounded-full">
+                            Saved Item
+                        </div>
+                    )}
                     <div className="text-sm font-serif italic text-foreground">
-                        ₹{((item.products?.price || 0) * item.quantity).toLocaleString('en-IN')}
+                        ₹{((item.products?.price || 0) * (isSaved ? 1 : item.quantity)).toLocaleString('en-IN')}
                     </div>
                 </div>
             </div>

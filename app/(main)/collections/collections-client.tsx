@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, Search } from 'lucide-react'
 import { useSearch } from '@/context/search-context'
+import { useUserPreferences } from '@/context/user-preferences-context'
 import { getFilteredProducts } from '@/app/actions'
 import { HeritageHighlights } from '@/components/heritage-highlights'
 import { CinematicFilter, FilterState, PRICE_RANGES } from '@/components/cinematic-filter'
@@ -22,7 +23,7 @@ interface CollectionsClientProps {
 export function CollectionsClient({ initialProducts, categories, tags, initialFilters }: CollectionsClientProps) {
     const router = useRouter()
     const { openSearch } = useSearch()
-    const [viewMode] = useState<'grid' | 'list'>('grid')
+    const { viewMode, trackEngagement } = useUserPreferences()
     const [filters, setFilters] = useState<FilterState>(initialFilters)
     const [loading, setLoading] = useState(false)
     const [products, setProducts] = useState<Product[]>(initialProducts)
@@ -72,8 +73,11 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
                 handleFilterChange({ ...filters, search: searchQuery })
             }
         }, 500)
+        if (searchQuery) {
+            trackEngagement('category', 'search-term') // Abstract signal that user is searching
+        }
         return () => clearTimeout(timer)
-    }, [searchQuery, filters, handleFilterChange])
+    }, [searchQuery, filters, handleFilterChange, trackEngagement])
 
     const formatTitle = (text: string) => {
         if (!text) return ''

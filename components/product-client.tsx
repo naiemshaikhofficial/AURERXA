@@ -312,7 +312,17 @@ export function ProductClient({ product, related, isWishlisted }: ProductClientP
     const router = useRouter()
     const { addItem } = useCart()
     const { user } = useAuth()
-    const { isInWishlist, toggleWishlist, setMetalPreference, ringSize, setRingSize } = useUserPreferences()
+    const { isInWishlist, toggleWishlist, setMetalPreference, ringSize, setRingSize, trackEngagement } = useUserPreferences()
+
+    // track initial view
+    useEffect(() => {
+        if (product.material_type) {
+            trackEngagement('material', product.material_type)
+        }
+        if (product.categories?.slug) {
+            trackEngagement('category', product.categories.slug)
+        }
+    }, [product.id, product.material_type, product.categories?.slug, trackEngagement])
 
     // State
     const [selectedSize, setSelectedSize] = useState<string>(ringSize || product.sizes?.[0] || '')

@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { useUserPreferences } from '@/context/user-preferences-context'
 
 export interface CategoryBrowsingProps {
     categories: any[]
@@ -12,7 +13,23 @@ export interface CategoryBrowsingProps {
 export function CategoryBrowsing({ categories }: CategoryBrowsingProps) {
     const containerRef = useRef<HTMLElement>(null)
     const [isMounted, setIsMounted] = useState(false)
-    useEffect(() => { setIsMounted(true) }, [])
+    const { behavioralData } = useUserPreferences()
+    const [sortedCategories, setSortedCategories] = useState(categories)
+
+    useEffect(() => {
+        setIsMounted(true)
+
+        // Adaptive Personalization: Re-order based on engagement
+        const interestData = behavioralData.categories
+        if (Object.keys(interestData).length > 0) {
+            const sorted = [...categories].sort((a, b) => {
+                const scoreA = interestData[a.slug] || 0
+                const scoreB = interestData[b.slug] || 0
+                return scoreB - scoreA // Higher score comes first
+            })
+            setSortedCategories(sorted)
+        }
+    }, [behavioralData.categories, categories])
 
     const { scrollYProgress } = useScroll({
         target: isMounted ? containerRef : undefined,
@@ -65,7 +82,7 @@ export function CategoryBrowsing({ categories }: CategoryBrowsingProps) {
 
                 {/* Categories Grid */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-12">
-                    {categories.map((cat, idx) => (
+                    {sortedCategories.map((cat, idx) => (
                         <motion.div
                             key={cat.name}
                             initial={{ opacity: 0, y: 30 }}

@@ -4,6 +4,12 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { getWishlist } from '@/lib/actions/wishlist'
 import { useAuth } from './auth-context'
 
+interface BehavioralData {
+    categories: Record<string, number>
+    materials: Record<string, number>
+    lastUpdate: string
+}
+
 interface UserPreferencesContextType {
     wishlistIds: string[]
     toggleWishlist: (productId: string) => Promise<void>
@@ -14,6 +20,10 @@ interface UserPreferencesContextType {
     dismissedInterstitials: string[]
     dismissInterstitial: (id: string) => void
     isInWishlist: (productId: string) => boolean
+    viewMode: 'grid' | 'list'
+    setViewMode: (mode: 'grid' | 'list') => void
+    behavioralData: BehavioralData
+    trackEngagement: (type: 'category' | 'material', id: string) => void
 }
 
 const UserPreferencesContext = createContext<UserPreferencesContextType | undefined>(undefined)
@@ -22,7 +32,9 @@ const STORAGE_KEYS = {
     WISHLIST: 'aurerxa-wishlist-cache',
     METAL_PREF: 'aurerxa-metal-pref',
     RING_SIZE: 'aurerxa-ring-size',
-    DISMISSED: 'aurerxa-dismissed-interstitials'
+    DISMISSED: 'aurerxa-dismissed-interstitials',
+    VIEW_MODE: 'aurerxa-view-mode',
+    BEHAVIOR: 'aurerxa-behavior-data'
 }
 
 export function UserPreferencesProvider({ children }: { children: React.ReactNode }) {
@@ -31,6 +43,12 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
     const [metalPreference, setMetalPreferenceState] = useState<string | null>(null)
     const [ringSize, setRingSizeState] = useState<string | null>(null)
     const [dismissedInterstitials, setDismissedInterstitials] = useState<string[]>([])
+    const [viewMode, setViewModeState] = useState<'grid' | 'list'>('grid')
+    const [behavioralData, setBehavioralData] = useState<BehavioralData>({
+        categories: {},
+        materials: {},
+        lastUpdate: new Date().toISOString()
+    })
 
     // 1. Instant Hydration
     useEffect(() => {
@@ -46,6 +64,31 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
 
             const cachedDismissed = localStorage.getItem(STORAGE_KEYS.DISMISSED)
             if (cachedDismissed) setDismissedInterstitials(JSON.parse(cachedDismissed))
+
+            const cachedViewMode = localStorage.getItem(STORAGE_KEYS.VIEW_MODE) as 'grid' | 'list'
+            if (cachedViewMode) setViewModeState(cachedViewMode)
+
+            const cachedBehavior = localStorage.getItem(STORAGE_KEYS.BEHAVIOR)
+            if (cachedBehavior) {
+                const parsed = JSON.parse(cachedBehavior)
+                // Decay logic: If last update was > 7 days ago, reset scores partially or fully
+                const lastDate = new Date(parsed.lastUpdate).getTime()
+                const now = new Date().getTime()
+                const daysDiff = (now - lastDate) / (1000 * 60 * 60 * 24)
+
+                if (daysDiff > 7) {
+                    // Reset but keep some memory (50% decay)
+                    const decayed: BehavioralData = {
+                        categories: Object.fromEntries(Object.entries(parsed.categories as Record<string, number>).map(([k, v]) => [k, Math.floor(v / 2)])),
+                        materials: Object.fromEntries(Object.entries(parsed.materials as Record<string, number>).map(([k, v]) => [k, Math.floor(v / 2)])),
+                        lastUpdate: new Date().toISOString()
+                    }
+                    setBehavioralData(decayed)
+                    localStorage.setItem(STORAGE_KEYS.BEHAVIOR, JSON.stringify(decayed))
+                } else {
+                    setBehavioralData(parsed)
+                }
+            }
         } catch (e) {
             console.warn('Preferences hydration failed')
         }
@@ -100,6 +143,28 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
         return wishlistIds.includes(productId)
     }, [wishlistIds])
 
+    const setViewMode = useCallback((mode: 'grid' | 'list') => {
+        setViewModeState(mode)
+        localStorage.setItem(STORAGE_KEYS.VIEW_MODE, mode)
+    }, [])
+
+    const trackEngagement = useCallback((type: 'category' | 'material', id: string) => {
+        setBehavioralData(prev => {
+            const key = type === 'category' ? 'categories' : 'materials'
+            const currentScore = prev[key][id] || 0
+            const newData = {
+                ...prev,
+                [key]: {
+                    ...prev[key],
+                    [id]: Math.min(currentScore + 1, 100) // Cap at 100
+                },
+                lastUpdate: new Date().toISOString()
+            }
+            localStorage.setItem(STORAGE_KEYS.BEHAVIOR, JSON.stringify(newData))
+            return newData
+        })
+    }, [])
+
     return (
         <UserPreferencesContext.Provider value={{
             wishlistIds,
@@ -110,7 +175,11 @@ export function UserPreferencesProvider({ children }: { children: React.ReactNod
             setRingSize,
             dismissedInterstitials,
             dismissInterstitial,
-            isInWishlist
+            isInWishlist,
+            viewMode,
+            setViewMode,
+            behavioralData,
+            trackEngagement
         }}>
             {children}
         </UserPreferencesContext.Provider>
