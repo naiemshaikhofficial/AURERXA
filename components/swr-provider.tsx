@@ -1,37 +1,30 @@
-'use client'
-
 import { SWRConfig } from 'swr'
 import React, { ReactNode, useEffect } from 'react'
+import { getCache, setCache } from '@/lib/utils/indexed-db'
 
 /**
- * CUSTOM CACHE PROVIDER
- * Persists SWR cache to localStorage to enable instant loading on subsequent visits.
- * This complements our manual SiteConfig synchronization.
+ * ELITE CACHE PROVIDER
+ * Persists SWR cache to IndexedDB for high-volume, reliable client-side storage.
  */
-function localStorageProvider() {
-    if (typeof window === 'undefined') return new Map()
+function indexedDBProvider() {
+    const map = new Map()
 
-    // Initialize from localStorage
-    const map = new Map(JSON.parse(localStorage.getItem('aurerxa-swr-cache') || '[]'))
+    if (typeof window !== 'undefined') {
+        // Hydrate from IndexedDB on start
+        getCache().then(cachedMap => {
+            cachedMap.forEach((val, key) => {
+                map.set(key, val)
+            })
+        })
 
-    // Sync back to localStorage on window unload or visibility change
-    const syncToStorage = () => {
-        try {
-            const appCache = JSON.stringify(Array.from(map.entries()))
-            localStorage.setItem('aurerxa-swr-cache', appCache)
-        } catch (e) {
-            console.error('SWR Cache Persistence Error:', e)
+        // Listen for changes to sync back (simple approach)
+        // Note: For high frequency, consider batching
+        const originalSet = map.set.bind(map)
+        map.set = (key, value) => {
+            setCache(key, value).catch(console.error)
+            return originalSet(key, value)
         }
     }
-
-    window.addEventListener('beforeunload', syncToStorage)
-
-    // Also sync on visibility change (mobile friendly)
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-            syncToStorage()
-        }
-    })
 
     return map
 }
@@ -54,8 +47,8 @@ export function SWRProvider({ children }: { children: ReactNode }) {
                 revalidateOnFocus: false,
                 revalidateOnReconnect: false,
 
-                // Use persistent localStorage provider
-                provider: typeof window !== 'undefined' ? (localStorageProvider as any) : undefined,
+                // Use persistent IndexedDB provider
+                provider: typeof window !== 'undefined' ? (indexedDBProvider as any) : undefined,
 
                 // Global error handling for consistent UX
                 onError: (error) => {

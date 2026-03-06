@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue } from 'framer-motion'
@@ -125,9 +125,10 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
     const { reviewStats } = useSiteConfig()
     const { isInWishlist, toggleWishlist, setMetalPreference, trackEngagement } = useUserPreferences()
     const router = useRouter()
+    const [isWishlisting, setIsWishlisting] = useState(false)
+    const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const [isAdding, setIsAdding] = useState(false)
     const [isBuying, setIsBuying] = useState(false)
-    const [isWishlisting, setIsWishlisting] = useState(false)
 
     const isWishlisted = isInWishlist(product.id)
     const stats = reviewStats[product.id] || null
@@ -306,11 +307,20 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
             variants={fadeInUp}
             onMouseEnter={() => {
                 setIsHovered(true)
-                // PREWARM: Prefetch product data when user hovers
-                preload(['product', product.slug], () => getProductBySlug(product.slug))
+                // ELITE PREWARM: Prefetch product data when user hovers for >200ms
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current)
+                hoverTimeoutRef.current = setTimeout(() => {
+                    preload(['product', product.slug], () => getProductBySlug(product.slug))
+                }, 200)
             }}
             onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
+            onMouseLeave={() => {
+                handleMouseLeave()
+                if (hoverTimeoutRef.current) {
+                    clearTimeout(hoverTimeoutRef.current)
+                    hoverTimeoutRef.current = null
+                }
+            }}
             style={{
                 perspective: 1000,
                 rotateX: isHovered ? rotateX : 0,
