@@ -9,6 +9,7 @@ export interface AuthProfile {
     full_name?: string
     email?: string
     phone?: string
+    avatar_url?: string
     isBanned?: boolean
     isAdmin?: boolean
 }
@@ -19,6 +20,7 @@ interface AuthContextType {
     isAdmin: boolean
     loading: boolean
     signOut: () => Promise<void>
+    refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -78,44 +80,75 @@ export function AuthProvider({
     }, [profile])
 
     useEffect(() => {
-        const initAuth = async () => {
-            try {
-                const { data: { session } } = await supabase.auth.getSession()
-                const currentUser = session?.user || null
-                setUser(currentUser)
+        setIsMounted(true)
+    }, [])
 
-                if (currentUser) {
-                    const [profileRes, adminRes] = await Promise.all([
-                        supabase.from('profiles').select('id, full_name, email, phone_number, is_banned').eq('id', currentUser.id).maybeSingle(),
-                        supabase.from('admin_users').select('role').eq('id', currentUser.id).maybeSingle()
-                    ])
+    const initAuth = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession()
+            const currentUser = session?.user || null
+            setUser(currentUser)
 
-                    if (profileRes.data) {
-                        setProfile({
-                            id: currentUser.id,
-                            full_name: profileRes.data.full_name,
-                            email: profileRes.data.email,
-                            phone: profileRes.data.phone_number,
-                            isBanned: !!profileRes.data.is_banned,
-                            isAdmin: !!adminRes.data
-                        })
-                    } else {
-                        // Fallback if profile doesn't exist yet but user is logged in
-                        setProfile({
-                            id: currentUser.id,
-                            email: currentUser.email,
-                            full_name: currentUser.user_metadata?.full_name || currentUser.email,
-                            isAdmin: !!adminRes.data
-                        })
-                    }
-                    setIsAdmin(!!adminRes.data)
+            if (currentUser) {
+                const [profileRes, adminRes] = await Promise.all([
+                    supabase.from('profiles').select('id, full_name, email, phone_number, is_banned').eq('id', currentUser.id).maybeSingle(),
+                    supabase.from('admin_users').select('role').eq('id', currentUser.id).maybeSingle()
+                ])
+
+                if (profileRes.data) {
+                    const profileData = profileRes.data as any
+                    setProfile({
+                        id: currentUser.id,
+                        full_name: profileData.full_name,
+                        email: profileData.email,
+                        phone: profileData.phone_number,
+                        avatar_url: profileData.avatar_url,
+                        isBanned: !!profileData.is_banned,
+                        isAdmin: !!adminRes.data
+                    })
+                } else {
+                    // Fallback if profile doesn't exist yet but user is logged in
+                    setProfile({
+                        id: currentUser.id,
+                        email: currentUser.email,
+                        full_name: currentUser.user_metadata?.full_name || currentUser.email,
+                        avatar_url: currentUser.user_metadata?.avatar_url,
+                        isAdmin: !!adminRes.data
+                    })
                 }
-            } catch (error) {
-                console.error('Error initializing auth:', error)
-            } finally {
-                setLoading(false)
+                setIsAdmin(!!adminRes.data)
             }
+        } catch (error) {
+            console.error('Error initializing auth:', error)
+        } finally {
+            setLoading(false)
         }
+    }
+}
+
+const refreshProfile = async () => {
+    try {
+        const { getProfile } = await import('@/app/actions')
+        const freshProfile: any = await getProfile()
+        if (freshProfile) {
+            setProfile({
+                id: freshProfile.id,
+                full_name: freshProfile.full_name,
+                email: freshProfile.email,
+                phone: freshProfile.phone,
+                avatar_url: freshProfile.avatar_url,
+                isBanned: freshProfile.isBanned,
+                isAdmin: freshProfile.isAdmin
+            })
+            setIsAdmin(freshProfile.isAdmin)
+        }
+    } catch (err) {
+        console.error('Error refreshing profile:', err)
+    }
+}
+
+useEffect(() => {
+    const initAuth = async () => {
 
         const resolveInitialProfile = async () => {
             try {
@@ -155,12 +188,14 @@ export function AuthProvider({
                         supabase.from('admin_users').select('role').eq('id', currentUser.id).maybeSingle()
                     ])
                     if (profileRes.data) {
+                        const profileData = profileRes.data as any
                         setProfile({
                             id: currentUser.id,
-                            full_name: profileRes.data.full_name,
-                            email: profileRes.data.email,
-                            phone: profileRes.data.phone_number,
-                            isBanned: !!profileRes.data.is_banned,
+                            full_name: profileData.full_name,
+                            email: profileData.email,
+                            phone: profileData.phone_number,
+                            avatar_url: profileData.avatar_url,
+                            isBanned: !!profileData.is_banned,
                             isAdmin: !!adminRes.data
                         })
                     } else {
@@ -168,6 +203,7 @@ export function AuthProvider({
                             id: currentUser.id,
                             email: currentUser.email,
                             full_name: currentUser.user_metadata?.full_name || currentUser.email,
+                            avatar_url: currentUser.user_metadata?.avatar_url,
                             isAdmin: !!adminRes.data
                         })
                     }
@@ -177,62 +213,63 @@ export function AuthProvider({
                 setUser(null)
                 setProfile(null)
                 setIsAdmin(false)
+                if (isMounted) refreshProfile()
             }
             setLoading(false)
         })
 
         return () => subscription.unsubscribe()
-    }, [initialProfile])
+    }, [initialProfile, isMounted])
 
-    const signOut = async () => {
+const signOut = async () => {
+    try {
+        // 1. Immediately clear client-side state
+        setUser(null)
+        setProfile(null)
+        setIsAdmin(false)
+
+        // 2. Clear all localStorage data from previous session
         try {
-            // 1. Immediately clear client-side state
-            setUser(null)
-            setProfile(null)
-            setIsAdmin(false)
-
-            // 2. Clear all localStorage data from previous session
-            try {
-                const keysToRemove: string[] = []
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i)
-                    if (key && (key.startsWith('aurerxa') || key.startsWith('ua-') || key.startsWith('sb-'))) {
-                        keysToRemove.push(key)
-                    }
+            const keysToRemove: string[] = []
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i)
+                if (key && (key.startsWith('aurerxa') || key.startsWith('ua-') || key.startsWith('sb-'))) {
+                    keysToRemove.push(key)
                 }
-                keysToRemove.forEach(k => localStorage.removeItem(k))
-
-                // Also clear specific cookies if any (Status Cache is on /)
-                document.cookie = 'ua-status-cache=; path=/; max-age=0'
-            } catch (e) {
-                // localStorage may not be available in some contexts
             }
+            keysToRemove.forEach(k => localStorage.removeItem(k))
 
-            // 3. Sign out from Supabase client (clears in-memory session)
-            await supabase.auth.signOut()
-
-            // 4. Sign out from server (clears server-side cookies)
-            try {
-                const { signOutAction } = await import('@/app/actions')
-                await signOutAction()
-            } catch (e) {
-                // Server action may fail if session already expired, that's OK
-            }
-
-            // 5. Hard reload to fully reset all React state (contexts, refs, etc.)
-            window.location.href = '/'
-        } catch (error) {
-            console.error('Sign out error:', error)
-            // Even on error, force a hard reload to clear state
-            window.location.href = '/'
+            // Also clear specific cookies if any (Status Cache is on /)
+            document.cookie = 'ua-status-cache=; path=/; max-age=0'
+        } catch (e) {
+            // localStorage may not be available in some contexts
         }
-    }
 
-    return (
-        <AuthContext.Provider value={{ user, profile, isAdmin, loading, signOut }}>
-            {children}
-        </AuthContext.Provider>
-    )
+        // 3. Sign out from Supabase client (clears in-memory session)
+        await supabase.auth.signOut()
+
+        // 4. Sign out from server (clears server-side cookies)
+        try {
+            const { signOutAction } = await import('@/app/actions')
+            await signOutAction()
+        } catch (e) {
+            // Server action may fail if session already expired, that's OK
+        }
+
+        // 5. Hard reload to fully reset all React state (contexts, refs, etc.)
+        window.location.href = '/'
+    } catch (error) {
+        console.error('Sign out error:', error)
+        // Even on error, force a hard reload to clear state
+        window.location.href = '/'
+    }
+}
+
+return (
+    <AuthContext.Provider value={{ user, profile, isAdmin, loading, signOut, refreshProfile }}>
+        {children}
+    </AuthContext.Provider>
+)
 }
 
 export function useAuth() {

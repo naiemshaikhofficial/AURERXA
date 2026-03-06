@@ -10,6 +10,7 @@ import { Loader2, User, MapPin, Package, Edit2, Trash2, Plus, Check, Star, LifeB
 import { motion } from 'framer-motion'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/auth-context'
 
 export default function AccountPage() {
     const router = useRouter()
@@ -39,6 +40,8 @@ export default function AccountPage() {
         loadData()
     }, [])
 
+    const { refreshProfile } = useAuth()
+
     async function loadData() {
         const [profileData, addressData] = await Promise.all([getProfile(), getAddresses()])
         if (!profileData) {
@@ -46,7 +49,7 @@ export default function AccountPage() {
             return
         }
         setProfile(profileData)
-        setProfileForm({ full_name: profileData.full_name || '', phone_number: profileData.phone_number || '' })
+        setProfileForm({ full_name: profileData.full_name || '', phone_number: (profileData as any).phone_number || profileData.phone || '' })
         setAddresses(addressData)
         setLoading(false)
     }
@@ -58,6 +61,8 @@ export default function AccountPage() {
         if (result.success) {
             setMessage('Profile updated!')
             setEditingProfile(false)
+            // Refresh global auth context to update navbar initials/avatar
+            await refreshProfile()
             await loadData()
         }
         setSaving(false)

@@ -65,6 +65,7 @@ export async function getProfile() {
 export async function updateProfile(profileData: {
     full_name?: string
     phone_number?: string
+    avatar_url?: string
 }) {
     const client = await getAuthClient()
     const { data: { user } } = await client.auth.getUser()
@@ -76,6 +77,31 @@ export async function updateProfile(profileData: {
         .eq('id', user.id)
 
     if (error) return { success: false, error: 'Failed to update profile' }
+
+    // Proactively refresh the status cache cookie to reflect changes immediately
+    try {
+        const { data: profile } = await client.from('profiles').select('full_name, avatar_url').eq('id', user.id).single()
+        const { data: adminData } = await client.from('admin_users').select('role').eq('id', user.id).single()
+
+        if (profile) {
+            const cookieStore = await cookies()
+            const statusCache = JSON.stringify({
+                id: user.id,
+                full_name: profile.full_name,
+                avatar_url: profile.avatar_url,
+                isAdmin: adminData?.role === 'admin'
+            })
+            cookieStore.set('ua-status-cache', statusCache, {
+                maxAge: 7 * 24 * 60 * 60,
+                path: '/',
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production'
+            })
+        }
+    } catch (e) {
+        // Failing to update cookie is non-fatal
+    }
+
     return { success: true }
 }
 

@@ -306,12 +306,24 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                           ) : user ? (
                             <>
                               <div className="flex items-center gap-3 mb-2 p-2 rounded-sm bg-muted/10 border border-border">
-                                <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-serif text-lg">
-                                  {getInitials()}
-                                </div>
-                                <div className="flex flex-col gap-1">
-                                  <span className="text-xs font-medium text-foreground/80 uppercase tracking-wider break-words line-clamp-2">{profile?.full_name || 'My Account'}</span>
-                                  <span className="text-[10px] text-muted-foreground font-light break-all">{user.email}</span>
+                                {profile?.avatar_url ? (
+                                  <div className="w-10 h-10 relative overflow-hidden bg-muted flex-shrink-0">
+                                    <Image
+                                      src={profile.avatar_url}
+                                      alt={profile.full_name || 'Profile'}
+                                      fill
+                                      className="object-cover"
+                                      unoptimized
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="w-10 h-10 bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-serif text-lg">
+                                    {getInitials()}
+                                  </div>
+                                )}
+                                <div className="flex flex-col gap-1 min-w-0">
+                                  <span className="text-xs font-medium text-foreground/80 uppercase tracking-wider break-words line-clamp-1">{profile?.full_name || 'My Account'}</span>
+                                  <span className="text-[10px] text-muted-foreground font-light break-all line-clamp-1">{user.email}</span>
                                 </div>
                               </div>
                               <div className="grid grid-cols-2 gap-3">
@@ -384,10 +396,20 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                 ) : user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger className="outline-none">
-                      <div className="w-9 h-9 rounded-full bg-muted/20 hover:bg-muted/30 border border-border/40 flex items-center justify-center text-primary/80 font-serif font-medium text-xs transition-all cursor-pointer relative">
-                        {getInitials()}
+                      <div className="w-9 h-9 rounded-full bg-muted/20 hover:bg-muted/30 border border-border/40 flex items-center justify-center text-primary/80 font-serif font-medium text-xs transition-all cursor-pointer relative overflow-hidden">
+                        {profile?.avatar_url ? (
+                          <Image
+                            src={profile.avatar_url}
+                            alt={profile.full_name || 'Profile'}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          getInitials()
+                        )}
                         {isAdmin && notificationCount > 0 && (
-                          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary text-primary-foreground text-[8px] font-bold rounded-full flex items-center justify-center animate-pulse border-2 border-background shadow-lg">
+                          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-primary text-primary-foreground text-[8px] font-bold rounded-full flex items-center justify-center animate-pulse border-2 border-background shadow-lg z-10">
                             {notificationCount > 9 ? '9+' : notificationCount}
                           </span>
                         )}
