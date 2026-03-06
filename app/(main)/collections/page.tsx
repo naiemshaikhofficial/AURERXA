@@ -35,20 +35,29 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     ].filter(Boolean)
 
     const title = `${parts.join(' ')} - Latest 2026 Designs | Buy Online at AURERXA`
-    const description = `Shop the exclusive ${parts.join(' ').toLowerCase()} at AURERXA India. Discover handcrafted luxury masterpieces, certified quality, and free insured shipping on our latest heritage collection.`
+    const description = `Shop the exclusive ${parts.join(' ').toLowerCase()} at AURERXA India. Discover handcrafted luxury masterpieces, BIS Hallmarked gold, certified silver, and free insured shipping.`
     const baseUrl = 'https://www.aurerxa.com'
-    const url = `${baseUrl}/collections${category ? `?category=${category}` : ''}`
+    const queryParams = new URLSearchParams()
+    if (category) queryParams.set('category', category)
+    if (sub_category) queryParams.set('sub_category', sub_category)
+    if (gender) queryParams.set('gender', gender)
+    if (material) queryParams.set('material_type', material)
+
+    const queryString = queryParams.toString()
+    const url = `${baseUrl}/collections${queryString ? `?${queryString}` : ''}`
 
     return {
         title,
         description,
         alternates: { canonical: url },
+        keywords: [...parts, 'Buy Jewelry Online', 'Handcrafted Jewelry India', 'BIS Hallmarked', 'Certified Silver'],
         openGraph: {
             title,
             description,
             url,
             siteName: 'AURERXA',
-            type: 'website'
+            type: 'website',
+            images: [`${baseUrl}/luxury-boutique-cover.jpg`]
         }
     }
 }
@@ -98,7 +107,8 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
         url: `${baseUrl}/collections${params.sub_category ? `?sub_category=${params.sub_category}` : params.category ? `?category=${params.category}` : ''}`,
         mainEntity: {
             '@type': 'ItemList',
-            'itemListElement': products.slice(0, 10).map((product: any, index: number) => ({
+            'numberOfItems': products.length,
+            'itemListElement': products.slice(0, 20).map((product: any, index: number) => ({
                 '@type': 'ListItem',
                 'position': index + 1,
                 'url': `${baseUrl}/products/${product.slug}`,
@@ -111,19 +121,31 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
     const breadcrumbLd = {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
-        itemListElement: [
+        'itemListElement': [
             {
                 '@type': 'ListItem',
-                position: 1,
-                name: 'Home',
-                item: baseUrl,
+                'position': 1,
+                'name': 'Home',
+                'item': baseUrl,
             },
             {
                 '@type': 'ListItem',
-                position: 2,
-                name: 'Collections',
-                item: `${baseUrl}/collections`,
-            }
+                'position': 2,
+                'name': 'Collections',
+                'item': `${baseUrl}/collections`,
+            },
+            ...(params.category ? [{
+                '@type': 'ListItem',
+                'position': 3,
+                'name': params.category,
+                'item': `${baseUrl}/collections?category=${params.category}`,
+            }] : []),
+            ...(params.sub_category ? [{
+                '@type': 'ListItem',
+                'position': params.category ? 4 : 3,
+                'name': params.sub_category,
+                'item': `${baseUrl}/collections?sub_category=${params.sub_category}`,
+            }] : [])
         ],
     }
 

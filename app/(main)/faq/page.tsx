@@ -1,8 +1,6 @@
-'use client'
-
-import { useState } from 'react'
+import { Metadata } from 'next'
 import Link from 'next/link'
-import { ChevronDown } from 'lucide-react'
+import { FAQClient } from './FAQClient'
 
 const faqs = [
     {
@@ -164,49 +162,38 @@ const faqs = [
     }
 ]
 
-export default function FAQPage() {
-    const [openIndex, setOpenIndex] = useState<string | null>(null)
+export const metadata: Metadata = {
+    title: 'Frequently Asked Questions | AURERXA – BIS Hallmarked Gold & 925 Silver',
+    description: 'Find answers to common questions about AURERXA jewelry, custom bespoke orders, shipping, hallmarking, and our heritage craftsmanship. Everything you need to know about your luxury purchase.',
+    keywords: ['AURERXA FAQ', 'Jewelry Buying Guide', 'Custom Jewelry FAQ', 'BIS Hallmarking FAQ', 'Jewelry Care Tips', 'Shipping and Returns FAQ', 'Bespoke Jewelry Process'],
+}
 
-    const toggleQuestion = (id: string) => {
-        setOpenIndex(openIndex === id ? null : id)
+export default function FAQPage() {
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        'mainEntity': faqs.flatMap(cat => cat.questions.map(q => ({
+            '@type': 'Question',
+            'name': q.q,
+            'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': q.a
+            }
+        })))
     }
 
     return (
         <div className="min-h-screen bg-background text-foreground">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
             <main className="pt-24 pb-24">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                     <h1 className="text-4xl font-serif font-bold mb-4 text-center">Frequently Asked Questions</h1>
                     <div className="w-16 h-px mx-auto bg-gradient-to-r from-transparent via-primary to-transparent mb-12" />
 
-                    <div className="space-y-12">
-                        {faqs.map((category, catIndex) => (
-                            <section key={catIndex}>
-                                <h2 className="text-lg font-serif font-medium text-primary mb-4">{category.category}</h2>
-                                <div className="space-y-2">
-                                    {category.questions.map((item, qIndex) => {
-                                        const id = `${catIndex}-${qIndex}`
-                                        const isOpen = openIndex === id
-                                        return (
-                                            <div key={id} className="border border-border bg-card">
-                                                <button
-                                                    onClick={() => toggleQuestion(id)}
-                                                    className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-muted/50 transition-colors"
-                                                >
-                                                    <span className="font-medium pr-4">{item.q}</span>
-                                                    <ChevronDown className={`w-5 h-5 text-primary flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-                                                </button>
-                                                {isOpen && (
-                                                    <div className="px-6 pb-4 text-muted-foreground leading-relaxed border-t border-border pt-4">
-                                                        {item.a}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            </section>
-                        ))}
-                    </div>
+                    <FAQClient faqs={faqs} />
 
                     <div className="mt-16 text-center p-8 bg-card border border-border">
                         <h3 className="font-serif text-xl font-medium mb-3">Still have questions?</h3>

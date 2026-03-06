@@ -212,15 +212,21 @@ export default async function RootLayout({
     '@type': 'JewelryStore',
     'additionalType': ['Brand', 'Organization'],
     'name': 'AURERXA',
-    'alternateName': ['AURERXA Luxury', 'AURERXA Heritage', 'AURERXA Jewelry'],
+    'alternateName': ['AURERXA Luxury', 'AURERXA Heritage', 'AURERXA Jewelry', 'AURERXA Official'],
     'url': baseUrl,
     'logo': `${baseUrl}/icon-512.png`,
-    'description': 'AURERXA is a premium luxury jewelry brand specializing in bespoke silver jewelry and handcrafted masterpieces.',
+    'image': [`${baseUrl}/luxury-boutique-cover.jpg`, `${baseUrl}/icon-512.png`],
+    'description': 'AURERXA is a premium luxury jewelry brand specializing in BIS Hallmarked gold, certified silver jewelry, and handcrafted masterpieces with a 50-year heritage.',
+    'priceRange': '₹₹₹',
+    'telephone': '+91-9075250260',
+    'email': 'support@aurerxa.com',
     'sameAs': [
       'https://facebook.com/aurerxa',
       'https://instagram.com/aurerxa',
       'https://youtube.com/@aurerxa',
-      'https://linkedin.com/company/aurerxa'
+      'https://linkedin.com/company/aurerxa',
+      'https://twitter.com/aurerxa',
+      'https://pinterest.com/aurerxa'
     ],
     'address': {
       '@type': 'PostalAddress',
@@ -230,12 +236,33 @@ export default async function RootLayout({
       'postalCode': '422605',
       'addressCountry': 'IN'
     },
-    'contactPoint': {
-      '@type': 'ContactPoint',
-      'telephone': '+91-9391032677',
-      'contactType': 'customer service',
-      'areaServed': 'IN',
-      'availableLanguage': ['English', 'Hindi', 'Marathi']
+    'contactPoint': [
+      {
+        '@type': 'ContactPoint',
+        'telephone': '+91-9075250260',
+        'contactType': 'customer service',
+        'areaServed': 'IN',
+        'availableLanguage': ['English', 'Hindi', 'Marathi']
+      },
+      {
+        '@type': 'ContactPoint',
+        'telephone': '+91-9075250260',
+        'contactType': 'sales',
+        'areaServed': 'IN',
+        'availableLanguage': ['English', 'Hindi', 'Marathi']
+      }
+    ],
+    'openingHoursSpecification': {
+      '@type': 'OpeningHoursSpecification',
+      'dayOfWeek': [
+        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+      ],
+      'opens': '11:00',
+      'closes': '20:00'
+    },
+    'founder': {
+      '@type': 'Person',
+      'name': 'Naiem Shaikh'
     }
   }
 
