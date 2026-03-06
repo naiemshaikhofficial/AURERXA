@@ -77,19 +77,39 @@ export async function getCached<T>(key: string, ttlSeconds: number, fetcher: () 
 // SECURITY & CONFIG HELPERS
 // =====================================================
 
+const _checkAdminStatus = unstable_cache(
+    async (userId: string) => {
+        try {
+            // Use admin client to bypass RLS for this specific system check
+            const adminClient = await createSupabaseAdminClient()
+            const { data, error } = await adminClient
+                .from('admin_users')
+                .select('id')
+                .eq('id', userId)
+                .maybeSingle()
+
+            if (error) {
+                console.error('[SECURITY] Admin check error:', error)
+                return false
+            }
+            return !!data
+        } catch (err) {
+            console.error('[SECURITY] Admin check exception:', err)
+            return false
+        }
+    },
+    ['admin-status-check'],
+    { revalidate: 1800, tags: ['admin-auth'] } // 30 minute cache
+)
+
 export async function checkIsAdmin() {
     try {
         const client = await getAuthClient()
         const { data: { user } } = await client.auth.getUser()
         if (!user) return false
 
-        const { data } = await client
-            .from('admin_users')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
-        return !!data
+        // Fetch from persistent server cache
+        return _checkAdminStatus(user.id)
     } catch (err: any) {
         const errorMsg = err.message || ''
         if (
@@ -99,7 +119,7 @@ export async function checkIsAdmin() {
         ) {
             return false
         }
-        console.error('Error checking admin status:', err)
+        console.error('Error in checkIsAdmin shell:', err)
         return false
     }
 }
@@ -260,20 +280,7 @@ export async function getGoldRates() {
 
                 const lastUpdated = lastUpdatedValue > 0 ? new Date(lastUpdatedValue).toISOString() : null
 
-                // PROACTIVE Background Sync: If rates are older than 4 hours (optimized from 8)
-                const STALE_THRESHOLD = 4 * 3600000
-                const isStale = !data || data.length === 0 || (Date.now() - lastUpdatedValue) > STALE_THRESHOLD
-
-                if (isStale) {
-                    const now = Date.now()
-                    if (!_isSyncingGold && (now - _lastSyncAttempt) > SYNC_RETRY_DELAY) {
-                        _isSyncingGold = true
-                        _lastSyncAttempt = now
-                        syncLiveGoldRates()
-                            .catch(err => console.error('[OPTIMIZATION] Background gold sync failed:', err))
-                            .finally(() => { _isSyncingGold = false })
-                    }
-                }
+                const lastUpdated = lastUpdatedValue > 0 ? new Date(lastUpdatedValue).toISOString() : null
 
                 return { rates: ratesObj, lastUpdated }
             } catch (err) {
@@ -283,7 +290,7 @@ export async function getGoldRates() {
         },
         ['gold-rates'],
         {
-            revalidate: 86400, // Increase to 24 hours for next.js level cache
+            revalidate: 86400, // 24 hours - Rely on background sync for freshness
             tags: ['rates']
         }
     )()

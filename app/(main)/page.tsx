@@ -1,4 +1,4 @@
-export const revalidate = 3600; // Cache homepage for 1 hour to prevent excessive DB calls
+export const revalidate = 86400; // Cache homepage for 24 hours to maximize performance and minimize DB/Vercel hits
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { Hero } from '@/components/hero'
@@ -131,8 +131,6 @@ async function MaterialShowcaseSection() {
 }
 
 export default function HomePage() {
-  getGoldRates().catch(err => console.error('Gold sync trigger error:', err));
-
   return (
     <div className="min-h-screen bg-background">
       <script
