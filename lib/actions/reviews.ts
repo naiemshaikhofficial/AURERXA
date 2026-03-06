@@ -8,7 +8,7 @@ import { z } from 'zod'
 export async function getProductReviews(productId: string) {
     const { data, error } = await supabaseServer
         .from('product_reviews')
-        .select('*')
+        .select('id, user_id, rating, comment, is_verified, created_at, profiles(full_name, avatar_url)')
         .eq('product_id', productId)
         .order('created_at', { ascending: false })
 

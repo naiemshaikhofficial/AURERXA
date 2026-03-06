@@ -52,7 +52,7 @@ export async function createOrder(addressId: string, paymentMethod: string, opti
         if (!shippingAddress && addressId) {
             const { data: addr } = await client
                 .from('addresses')
-                .select('*')
+                .select('id, street_address, city, state, pincode, phone, full_name')
                 .eq('id', addressId)
                 .single()
             if (addr) shippingAddress = addr
@@ -282,7 +282,7 @@ export async function requestReturn(orderId: string, formData: any) {
 
         const { data: order } = await client
             .from('orders')
-            .select('*')
+            .select('id, status, updated_at')
             .eq('id', orderId)
             .eq('user_id', user.id)
             .single()
@@ -321,7 +321,7 @@ export async function getReturnByOrderId(orderId: string) {
     const client = await getAuthClient()
     const { data, error } = await client
         .from('return_requests')
-        .select('*')
+        .select('id, status, reason, created_at')
         .eq('order_id', orderId)
         .maybeSingle()
     if (error) return null

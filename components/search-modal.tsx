@@ -299,6 +299,7 @@ export function SearchModal() {
                                         <Link
                                             href="/collections"
                                             onClick={onClose}
+                                            prefetch={false}
                                             className="inline-block text-[10px] text-primary uppercase tracking-widest border-b border-primary/30 pb-1 hover:border-primary transition-colors"
                                         >
                                             Explore Complete Vault

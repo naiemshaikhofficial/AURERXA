@@ -7,7 +7,7 @@ const _getBlogPosts = unstable_cache(
     async (category?: string) => {
         let query = supabaseServer
             .from('blog_posts')
-            .select('*')
+            .select('id, title, excerpt, image_url, slug, category, published_at, reading_time')
             .order('published_at', { ascending: false })
 
         if (category && category !== 'All') {

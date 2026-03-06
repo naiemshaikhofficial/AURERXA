@@ -329,6 +329,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                               <div className="grid grid-cols-2 gap-3">
                                 <Link
                                   href="/account"
+                                  prefetch={false}
                                   className="flex flex-col items-center justify-center p-2 rounded-sm bg-muted/10 border border-border hover:bg-muted/20 transition-all group"
                                 >
                                   <Settings className="w-4 h-4 mb-1 text-muted-foreground group-hover:text-primary/60 transition-colors stroke-1" />
@@ -344,6 +345,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                                 {isAdmin && (
                                   <Link
                                     href="/admin"
+                                    prefetch={false}
                                     className="flex flex-col items-center justify-center p-2 rounded-sm bg-[#D4AF37]/10 border border-[#D4AF37]/20 hover:bg-[#D4AF37]/20 transition-all group col-span-2 active:scale-95 tactile-press ml-1 mr-1"
                                   >
                                     <div className="relative">
@@ -424,7 +426,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                       </DropdownMenuLabel>
                       <DropdownMenuSeparator className="bg-border my-2" />
                       <DropdownMenuItem asChild className="focus:bg-muted focus:text-primary cursor-pointer group p-3 rounded-sm">
-                        <Link href="/account" className="flex items-center">
+                        <Link href="/account" prefetch={false} className="flex items-center">
                           <User className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />
                           <span className="text-[10px] tracking-widest uppercase text-muted-foreground group-hover:text-primary">Profile</span>
                         </Link>
@@ -437,7 +439,7 @@ export function Navbar({ marketingConfig }: { marketingConfig?: any }) {
                       </DropdownMenuItem>
                       {isAdmin && (
                         <DropdownMenuItem asChild className="focus:bg-muted focus:text-primary cursor-pointer group p-3 rounded-sm">
-                          <Link href="/admin" className="flex items-center">
+                          <Link href="/admin" prefetch={false} className="flex items-center">
                             <Shield className="mr-3 h-3 w-3 opacity-50 group-hover:opacity-100" />
                             <span className="text-[10px] tracking-widest uppercase text-[#D4AF37] group-hover:text-[#D4AF37]">Admin Panel</span>
                           </Link>
