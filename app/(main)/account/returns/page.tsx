@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import React, { useState, useEffect } from 'react'
 import { getReturnRequests } from '@/app/actions'
 import { Loader2, Package, ArrowLeft, Clock, CheckCircle, Truck, RefreshCw, AlertCircle, FileText, ChevronRight } from 'lucide-react'

@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { Metadata } from 'next'
 
 // Note: In Next.js App Router, metadata must be in a Server Component. 

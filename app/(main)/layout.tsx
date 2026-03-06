@@ -26,6 +26,10 @@ export default async function MainLayout({
 
     // Parallel fetch: Profile, Maintenance, Marketing, Contact with safety catch
     const profilePromise = import('@/app/actions').then(m => m.getCurrentUserProfile()).catch(err => {
+        // Suppress "crash" logs for dynamic server usage errors during static generation
+        if (err.digest === 'DYNAMIC_SERVER_USAGE' || err.message?.includes('dynamic server usage')) {
+            return null
+        }
         console.error('Layout Profile Fetch Crash:', err)
         return null
     })

@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -9,9 +11,9 @@ import { Loader2, Package, ChevronRight, Search, Filter, X, Clock, CreditCard, R
 import supabaseLoader from '@/lib/supabase-loader'
 import { sanitizeImagePath } from '@/lib/utils'
 import { toast } from 'sonner'
-import dynamic from 'next/dynamic'
+import NextDynamic from 'next/dynamic'
 
-const SecurePaymentModal = dynamic(() => import('@/components/checkout/secure-payment-modal'), {
+const SecurePaymentModal = NextDynamic(() => import('@/components/checkout/secure-payment-modal'), {
     ssr: false,
     loading: () => null
 })

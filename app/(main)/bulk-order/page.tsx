@@ -1,4 +1,6 @@
 import React, { Suspense } from 'react'
+
+export const dynamic = 'force-dynamic'
 import type { Metadata } from 'next'
 import { getProducts, getCurrentUserProfile } from '@/app/actions'
 import { BulkOrderForm } from '@/components/bulk-order-form'

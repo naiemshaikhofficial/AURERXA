@@ -192,7 +192,17 @@ export default async function RootLayout({
 }>) {
   // Fetch profile - This is now done without blocking the layout shell stream
   // We remove the top-level await to allow the HTML shell to reach the browser faster.
-  const profilePromise = getCurrentUserProfile()
+  const profilePromise = (() => {
+    try {
+      return getCurrentUserProfile()
+    } catch (err: any) {
+      if (err.digest === 'DYNAMIC_SERVER_USAGE' || err.message?.includes('dynamic server usage')) {
+        return Promise.resolve(null)
+      }
+      console.error('Root Layout Profile Fetch Error:', err)
+      return Promise.resolve(null)
+    }
+  })()
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
 
