@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from "react"
+import React, { Suspense } from "react"
 import type { Metadata, Viewport } from 'next'
 import { Geist, Cormorant_Garamond } from 'next/font/google'
 import { SmoothScroll } from '@/components/smooth-scroll'
@@ -144,17 +144,7 @@ export const metadata: Metadata = {
   },
 }
 
-const ServiceWorkerRegistration = () => {
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((reg) => console.log('SW registered:', reg.scope))
-        .catch((err) => console.log('SW registration failed:', err));
-    }
-  }, []);
-  return null;
-};
+import { ServiceWorkerRegistration } from '@/components/service-worker-registration'
 
 export const viewport: Viewport = {
   themeColor: '#D4AF37',

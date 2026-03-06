@@ -1,5 +1,7 @@
+'use client'
+
 import { SWRConfig } from 'swr'
-import React, { ReactNode, useEffect } from 'react'
+import React, { ReactNode } from 'react'
 import { getCache, setCache } from '@/lib/utils/indexed-db'
 
 /**

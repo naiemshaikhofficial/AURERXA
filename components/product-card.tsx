@@ -344,12 +344,12 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                     onClick={handleWishlist}
                     disabled={isWishlisting}
                     className={cn(
-                        "absolute top-3 right-3 z-40 w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500",
+                        "absolute top-2 right-2 z-40 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500",
                         "bg-black/20 backdrop-blur-xl border border-white/10 hover:bg-white hover:text-black hover:scale-110",
                         isWishlisted ? "text-red-500 bg-white border-white" : "text-white/70"
                     )}
                 >
-                    <Heart className={cn("w-4 h-4 transition-all", isWishlisted ? "fill-current scale-110" : "")} />
+                    <Heart className={cn("w-3.5 h-3.5 transition-all", isWishlisted ? "fill-current scale-110" : "")} />
                 </button>
 
                 {/* Status Badges */}
