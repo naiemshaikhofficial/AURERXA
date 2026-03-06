@@ -280,8 +280,6 @@ export async function getGoldRates() {
 
                 const lastUpdated = lastUpdatedValue > 0 ? new Date(lastUpdatedValue).toISOString() : null
 
-                const lastUpdated = lastUpdatedValue > 0 ? new Date(lastUpdatedValue).toISOString() : null
-
                 return { rates: ratesObj, lastUpdated }
             } catch (err) {
                 console.error('Error in getGoldRates:', err)

@@ -495,7 +495,7 @@ export async function triggerOrderInvoice(orderId: string) {
 
         const { data: order, error } = await client
             .from('orders')
-            .select('*, order_items(*)')
+            .select('id, user_id, order_number, total, created_at, shipping_address, payment_method, payment_id, order_items(id, product_name, quantity, price)')
             .eq('id', orderId)
             .single()
 

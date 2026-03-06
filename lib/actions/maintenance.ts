@@ -75,17 +75,17 @@ export async function getSyncData(buckets: string[]) {
         const results: Record<string, any> = {}
 
         if (buckets.includes('categories')) {
-            const { data } = await supabaseServer.from('categories').select('*').order('name')
+            const { data } = await supabaseServer.from('categories').select('id, slug, name, image_url').order('name')
             results.categories = data
         }
 
         if (buckets.includes('collections')) {
-            const { data } = await supabaseServer.from('sub_categories').select('*').order('name')
+            const { data } = await supabaseServer.from('sub_categories').select('id, slug, name, category_id').order('name')
             results.collections = data
         }
 
         if (buckets.includes('hero_slides')) {
-            const { data } = await supabaseServer.from('hero_slides').select('*').eq('is_active', true).order('sort_order', { ascending: true })
+            const { data } = await supabaseServer.from('hero_slides').select('id, title, image_url, link_url, is_active, sort_order').eq('is_active', true).order('sort_order', { ascending: true })
             results.hero_slides = data
         }
 

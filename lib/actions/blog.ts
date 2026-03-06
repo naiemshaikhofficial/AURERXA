@@ -33,8 +33,10 @@ const _getBlogPostBySlug = unstable_cache(
     async (slug: string) => {
         const { data, error } = await supabaseServer
             .from('blog_posts')
-            .select('*')
+            .select('id, title, excerpt, image_url, slug, category, published_at, reading_time')
             .eq('slug', slug)
+            .eq('status', 'published')
+            .order('published_at', { ascending: false })
             .single()
 
         if (error) return null

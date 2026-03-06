@@ -483,7 +483,7 @@ export async function getHeroSlides() {
         async () => {
             const { data, error } = await supabaseServer
                 .from('hero_slides')
-                .select('*')
+                .select('id, title, subtitle, image_url, mobile_image_url, link_url, button_text')
                 .eq('is_active', true)
                 .order('sort_order', { ascending: true })
 
