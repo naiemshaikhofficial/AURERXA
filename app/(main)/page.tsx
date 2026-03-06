@@ -18,11 +18,16 @@ import { RecentlyViewed } from '@/components/recently-viewed'
 import { TopStyles } from '@/components/top-styles'
 
 import { HeroCarouselWrapper } from '@/components/hero-carousel-wrapper'
+import { LazySection } from '@/components/lazy-section'
 
 async function NewReleasesSection() {
   const { getNewReleases } = await import('@/app/actions')
   const newReleases = await getNewReleases()
-  return <NewReleases products={newReleases} />
+  return (
+    <LazySection fallback={<div className="min-h-[500px]" />}>
+      <NewReleases products={newReleases} />
+    </LazySection>
+  )
 }
 
 async function CategoryBrowsingSection() {
@@ -44,23 +49,39 @@ async function CategoryBrowsingSection() {
 async function ShopByGenderSection() {
   const { getGenderStats } = await import('@/app/actions')
   const stats = await getGenderStats()
-  return <ShopByGender genderStats={stats} />
+  return (
+    <LazySection fallback={<div className="min-h-[400px]" />}>
+      <ShopByGender genderStats={stats} />
+    </LazySection>
+  )
 }
 
 async function BestsellersSection() {
   const { getBestsellers } = await import('@/app/actions')
   const bestsellers = await getBestsellers()
-  return <Bestsellers products={bestsellers as any} />
+  return (
+    <LazySection fallback={<div className="min-h-[600px]" />}>
+      <Bestsellers products={bestsellers as any} />
+    </LazySection>
+  )
 }
 
 async function FeaturedCollectionsSection() {
   const { getCategories } = await import('@/app/actions')
   const categories = await getCategories()
-  return <FeaturedCollections categories={categories} />
+  return (
+    <LazySection fallback={<div className="min-h-[400px]" />}>
+      <FeaturedCollections categories={categories} />
+    </LazySection>
+  )
 }
 
 function HeroCarouselSection() {
-  return <HeroCarouselWrapper />
+  return (
+    <LazySection fallback={<div className="aspect-[21/9] bg-neutral-900 animate-pulse" />}>
+      <HeroCarouselWrapper />
+    </LazySection>
+  )
 }
 
 export const metadata: Metadata = {
@@ -122,11 +143,13 @@ async function MaterialShowcaseSection() {
   ])
   const { MaterialShowcase } = await import('@/components/material-showcase')
   return (
-    <MaterialShowcase
-      realGoldProducts={realGold as any}
-      goldPlatedProducts={goldPlated as any}
-      bentexProducts={bentex as any}
-    />
+    <LazySection fallback={<div className="min-h-[500px]" />}>
+      <MaterialShowcase
+        realGoldProducts={realGold as any}
+        goldPlatedProducts={goldPlated as any}
+        bentexProducts={bentex as any}
+      />
+    </LazySection>
   )
 }
 

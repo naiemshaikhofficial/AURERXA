@@ -441,7 +441,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                                         "object-cover transition-transform duration-700 will-change-transform",
                                         isHovered ? "scale-110" : "scale-100"
                                     )}
-                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                    sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 20vw"
                                     fetchPriority={priority || index < 4 ? "high" : "auto"}
                                     unoptimized={allImages[currentImageIndex]?.startsWith('blob:') || allImages[currentImageIndex]?.includes('imageshack.com')}
                                 />
