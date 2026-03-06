@@ -22,14 +22,46 @@ export async function getProfile() {
             return null
         }
 
-        // 2. Fetch role from admin_users (if exists)
-        const { data: adminData } = await client
-            .from('admin_users')
-            .select('role')
-            .eq('id', user.id)
-            .single()
+        // 2. Fetch role from admin_users ONLY if needed (Lazy Detection)
+        // Check if we have an admin hint in the status cache
+        let isAdmin = false
+        try {
+            const cookieStore = await cookies()
+            const statusCache = cookieStore.get('ua-status-cache')?.value
+            if (statusCache) {
+                const parsed = JSON.parse(decodeURIComponent(statusCache))
+                // If cache says they are NOT an admin, we skip the DB hit entirely
+                if (parsed.isAdmin === false) {
+                    isAdmin = false
+                } else {
+                    // If they are an admin or unknown, we do the real check
+                    const { data: adminData } = await client
+                        .from('admin_users')
+                        .select('role')
+                        .eq('id', user.id)
+                        .single()
+                    isAdmin = adminData?.role === 'admin'
+                }
+            } else {
+                // No cache? Do the check
+                const { data: adminData } = await client
+                    .from('admin_users')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single()
+                isAdmin = adminData?.role === 'admin'
+            }
+        } catch (e) {
+            // Fallback for cookie parsing issues
+            const { data: adminData } = await client
+                .from('admin_users')
+                .select('role')
+                .eq('id', user.id)
+                .single()
+            isAdmin = adminData?.role === 'admin'
+        }
 
-        const role = adminData?.role || 'user'
+        const role = isAdmin ? 'admin' : 'user'
 
         const profileData = {
             id: user.id,

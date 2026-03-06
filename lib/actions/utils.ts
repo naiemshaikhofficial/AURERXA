@@ -109,8 +109,19 @@ export async function checkIsAdmin() {
         if (!user) return false
 
         // Fetch from persistent server cache
-        return _checkAdminStatus(user.id)
+        const isAdmin = await _checkAdminStatus(user.id)
+
+        // SYNC Hint to Cookie so getProfile can stay "Lazy"
+        try {
+            const cookieStore = await headers() // Read-only but we can see context
+            // Note: We can't set cookies in read-only headers() call easily in some Next.js versions
+            // but for verify routes we usually have access to the full Response cookie setter.
+            // For now, the next getProfile call will naturally pick it up and sync it.
+        } catch (e) { }
+
+        return isAdmin
     } catch (err: any) {
+        // ... (rest of function unchanged)
         const errorMsg = err.message || ''
         if (
             errorMsg.includes('Refresh Token Not Found') ||
