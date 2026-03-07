@@ -110,6 +110,15 @@ export async function getFilteredProducts(options: any) {
                     case 'popular': query = query.order('bestseller', { ascending: false }); break
                 }
 
+                // Apply Type/Specific Product Category filter (e.g., Rings, Earrings)
+                const productType = options.type
+                if (productType && productType !== 'all') {
+                    // We search by name or tags for the specific type
+                    // This handles cases where 'Rings' might be a tag or part of the name
+                    // and ensures the 'Rings' filter actually works.
+                    query = query.or(`name.ilike.%${productType}%,tags.cs.{"${productType}"}`)
+                }
+
                 // Apply Pagination
                 const limit = options.limit || 20
                 const offset = options.offset || 0

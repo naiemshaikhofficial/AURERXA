@@ -48,6 +48,7 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
             filters.priceRange.max,
             filters.sortBy,
             filters.search,
+            filters.type,
             pageIndex // page index
         ]
     }
@@ -55,7 +56,7 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
     const { data, error, size, setSize, isValidating, isLoading } = useSWRInfinite(
         getKey,
         async (key) => {
-            const [_prefix, category, sub_category, tag, occasion, gender, material_type, minPrice, maxPrice, sortBy, search, pageIndex] = key as any
+            const [_prefix, category, sub_category, tag, occasion, gender, material_type, minPrice, maxPrice, sortBy, search, type, pageIndex] = key as any
             const offset = pageIndex * PAGE_SIZE
 
             const result = await getFilteredProducts({
@@ -69,6 +70,7 @@ export function CollectionsClient({ initialProducts, categories, tags, initialFi
                 maxPrice: maxPrice || undefined,
                 sortBy,
                 search: search || undefined,
+                type: type === 'all' ? undefined : type,
                 limit: PAGE_SIZE,
                 offset
             })
