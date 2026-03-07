@@ -6,8 +6,7 @@
 const CACHE_NAME = 'aurerxa-v1';
 const STATIC_ASSETS = [
     '/',
-    '/index.css',
-    '/manifest.json',
+    '/manifest.webmanifest',
     '/favicon.ico'
 ];
 
