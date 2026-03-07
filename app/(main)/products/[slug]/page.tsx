@@ -4,8 +4,6 @@ import { ProductClient } from '@/components/product-client'
 import { notFound } from 'next/navigation'
 
 // Force dynamic rendering — product pages depend on live gold rates and dynamic pricing.
-// The old working build (pre-refactor) never used generateStaticParams.
-// unstable_cache inside getProductBySlug already provides caching (1hr TTL).
 export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -24,9 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         const materialLabel = product.material_type || 'Jewelry'
         const purityLabel = product.purity ? `${product.purity} ` : ''
 
-        // Premium title: [Purity] [Metal] [Category] | [Product Name] | AURERXA
         const title = `${purityLabel}${materialLabel} ${categoryName || 'Jewelry'} | ${product.name} | AURERXA`
-
         const rawDescription = product.description || `Explore our exquisite ${purityLabel}${materialLabel} ${categoryName || 'jewelry'}. Handcrafted ${product.name} from AURERXA's heritage collection. Certified quality & Free Shipping.`
         const description = rawDescription.length > 160 ? rawDescription.substring(0, 157) + '...' : rawDescription
 
@@ -99,15 +95,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 }
 
-import { ArrowLeft, ShoppingBag } from 'lucide-react'
+import { ArrowLeft, ShoppingBag, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
     try {
         const { slug } = await params
-        console.log('🔹 Product Page Slug:', slug)
         const product = await getProductBySlug(slug)
-        console.log('🔹 Fetch Result:', product ? 'Found' : 'Not Found')
 
         if (!product) {
             return (
@@ -286,7 +288,37 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         }
 
         return (
-            <>
+            <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-12 md:pt-24">
+                <Breadcrumb className="mb-8">
+                    <BreadcrumbList className="text-[10px] uppercase tracking-[0.2em] font-medium text-muted-foreground/60">
+                        <BreadcrumbItem>
+                            <BreadcrumbLink asChild>
+                                <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbLink asChild>
+                                <Link href="/collections" className="hover:text-primary transition-colors">Collections</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        {categoryName && (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <BreadcrumbLink asChild>
+                                        <Link href={`/collections?category=${categorySlug}`} className="hover:text-primary transition-colors">{categoryName}</Link>
+                                    </BreadcrumbLink>
+                                </BreadcrumbItem>
+                            </>
+                        )}
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage className="text-primary font-bold">{product.name}</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
+
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -299,21 +331,24 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     product={product}
                     isWishlisted={isWishlisted}
                 />
-            </>
+            </div>
         )
     } catch (e: any) {
         console.error('❌ Error in ProductPage:', e)
         return (
-            <div className="p-20 text-center">
-                <h1 className="text-2xl font-serif mb-4">Elegance Interrupted</h1>
-                <p className="text-white/40 uppercase tracking-widest text-[10px] mb-8">A technical issue occurred while loading this masterpiece.</p>
-                <div className="bg-white/5 p-4 rounded text-left overflow-auto max-w-2xl mx-auto">
-                    <pre className="text-[9px] text-red-400">{e.message}</pre>
-                    <pre className="text-[8px] text-white/20 mt-2">{e.stack}</pre>
+            <div className="min-h-screen flex items-center justify-center px-6 py-24 text-center bg-background">
+                <div className="max-w-md mx-auto">
+                    <h1 className="text-2xl font-serif mb-4 italic text-foreground">Elegance Interrupted</h1>
+                    <p className="text-muted-foreground uppercase tracking-[0.2em] text-[10px] mb-8 leading-relaxed">
+                        A technical issue occurred while loading this masterpiece. Our curators have been notified.
+                    </p>
+                    <Link href="/collections">
+                        <button className="px-10 py-4 bg-primary/10 border border-primary/20 text-primary font-bold uppercase tracking-[0.2em] text-[10px] hover:bg-primary hover:text-primary-foreground transition-all">
+                            Browse Collection
+                        </button>
+                    </Link>
                 </div>
-                <Link href="/collections" className="inline-block mt-8 text-[10px] uppercase tracking-[0.3em] text-amber-500 border-b border-amber-500/20 pb-1">Back to Gallery</Link>
             </div>
         )
     }
 }
-

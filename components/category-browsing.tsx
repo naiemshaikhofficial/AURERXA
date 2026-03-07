@@ -97,7 +97,7 @@ export function CategoryBrowsing({ categories }: CategoryBrowsingProps) {
                                 <div className="relative aspect-[4/5] overflow-hidden border border-border bg-card group-hover:border-primary/30 transition-[border-color,box-shadow] duration-700 shadow-2xl will-change-transform">
                                     <Image
                                         src={cat.image_url || '/placeholder.webp'}
-                                        alt={cat.name}
+                                        alt={`Luxury ${cat.name} Collection - Handcrafted Jewellery by AURERXA`}
                                         fill
                                         priority={idx < 4} // First row of categories load instantly
                                         className="object-cover transition-transform duration-1000 scale-105 group-hover:scale-110 will-change-transform"

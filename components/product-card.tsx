@@ -433,7 +433,7 @@ export const ProductCard = React.memo(({ product, viewMode = 'grid', index = 0, 
                             {(currentImageIndex === 0 || isHovered) && (
                                 <Image
                                     src={sanitizeImagePath(allImages[currentImageIndex])}
-                                    alt={`${product.name} - ${product.categories?.name || 'Jewellery'}`}
+                                    alt={`${product.name} - ${product.purity || ''} ${product.material_type ? (MATERIAL_CONFIG[product.material_type]?.label || '') : ''} ${product.categories?.name || 'Jewellery'} handcrafted by AURERXA Heritage Collection`}
                                     fill
                                     priority={priority || index < 4}
                                     loader={supabaseLoader}

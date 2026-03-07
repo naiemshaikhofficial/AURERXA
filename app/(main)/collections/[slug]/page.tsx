@@ -43,6 +43,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
 }
 
+import Link from 'next/link'
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+
 export default async function DynamicCollectionsPage({ params }: PageProps) {
     const { slug } = await params
 
@@ -122,11 +132,13 @@ export default async function DynamicCollectionsPage({ params }: PageProps) {
     })
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const pageTitle = categoryMatch?.name || subCategoryMatch?.name || (genderMatch ? `${genderMatch.charAt(0).toUpperCase() + genderMatch.slice(1)}'s Jewelry` : tagMatch || slug)
+
     const jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        name: categoryMatch ? `${categoryMatch.name} Collection | AURERXA` : subCategoryMatch ? `${subCategoryMatch.name} Collection | AURERXA` : `${slug} | AURERXA`,
-        description: `Explore our exclusive ${categoryMatch?.name || subCategoryMatch?.name || slug} jewelry collection. Handcrafted masterpieces and timeless luxury at AURERXA.`,
+        name: `${pageTitle} Collection | AURERXA`,
+        description: `Explore our exclusive ${pageTitle} jewelry collection. Handcrafted masterpieces and timeless luxury at AURERXA.`,
         url: `${baseUrl}/collections/${slug}`,
         mainEntity: {
             '@type': 'ItemList',
@@ -160,7 +172,7 @@ export default async function DynamicCollectionsPage({ params }: PageProps) {
             {
                 '@type': 'ListItem',
                 'position': 3,
-                'name': categoryMatch?.name || subCategoryMatch?.name || slug,
+                'name': pageTitle,
                 'item': `${baseUrl}/collections/${slug}`,
             }
         ],
@@ -176,12 +188,33 @@ export default async function DynamicCollectionsPage({ params }: PageProps) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
             />
-            <CollectionsClient
-                initialProducts={products as any}
-                categories={subCategories as any}
-                tags={tags}
-                initialFilters={initialFilters as any}
-            />
+            <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-12 md:pt-24 min-h-screen">
+                <Breadcrumb className="mb-8">
+                    <BreadcrumbList className="text-[10px] uppercase tracking-[0.2em] font-medium text-muted-foreground/60">
+                        <BreadcrumbItem>
+                            <BreadcrumbLink asChild>
+                                <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbLink asChild>
+                                <Link href="/collections" className="hover:text-primary transition-colors">Collections</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            <BreadcrumbPage className="text-primary font-bold">{pageTitle}</BreadcrumbPage>
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
+                <CollectionsClient
+                    initialProducts={products as any}
+                    categories={subCategories as any}
+                    tags={tags}
+                    initialFilters={initialFilters as any}
+                />
+            </div>
         </main>
     )
 }

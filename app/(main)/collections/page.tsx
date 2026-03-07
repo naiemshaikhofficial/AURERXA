@@ -1,5 +1,6 @@
 import { CollectionsClient } from './collections-client'
 import { getFilteredProducts, getCategories, getUsedTags, getSubCategories } from '@/app/actions'
+import Link from 'next/link'
 
 interface PageProps {
     searchParams: Promise<{
@@ -61,6 +62,15 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
         }
     }
 }
+
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 export default async function CollectionsPage({ searchParams }: PageProps) {
     const params = await searchParams
@@ -159,12 +169,55 @@ export default async function CollectionsPage({ searchParams }: PageProps) {
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
             />
-            <CollectionsClient
-                initialProducts={products as any}
-                categories={subCategories as any}
-                tags={tags}
-                initialFilters={initialFilters as any}
-            />
+            <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-12 md:pt-24 min-h-screen">
+                <Breadcrumb className="mb-8">
+                    <BreadcrumbList className="text-[10px] uppercase tracking-[0.2em] font-medium text-muted-foreground/60">
+                        <BreadcrumbItem>
+                            <BreadcrumbLink asChild>
+                                <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                            </BreadcrumbLink>
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                            {(!params.category && !params.sub_category) ? (
+                                <BreadcrumbPage className="text-primary font-bold">Collections</BreadcrumbPage>
+                            ) : (
+                                <BreadcrumbLink asChild>
+                                    <Link href="/collections" className="hover:text-primary transition-colors">Collections</Link>
+                                </BreadcrumbLink>
+                            )}
+                        </BreadcrumbItem>
+                        {params.category && (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    {!params.sub_category ? (
+                                        <BreadcrumbPage className="text-primary font-bold">{params.category}</BreadcrumbPage>
+                                    ) : (
+                                        <BreadcrumbLink asChild>
+                                            <Link href={`/collections?category=${params.category}`} className="hover:text-primary transition-colors">{params.category}</Link>
+                                        </BreadcrumbLink>
+                                    )}
+                                </BreadcrumbItem>
+                            </>
+                        )}
+                        {params.sub_category && (
+                            <>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <BreadcrumbPage className="text-primary font-bold">{params.sub_category}</BreadcrumbPage>
+                                </BreadcrumbItem>
+                            </>
+                        )}
+                    </BreadcrumbList>
+                </Breadcrumb>
+                <CollectionsClient
+                    initialProducts={products as any}
+                    categories={subCategories as any}
+                    tags={tags}
+                    initialFilters={initialFilters as any}
+                />
+            </div>
         </main>
     )
 }
