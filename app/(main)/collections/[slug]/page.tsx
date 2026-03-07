@@ -1,5 +1,6 @@
 import { CollectionsClient } from '../collections-client'
 import { getFilteredProducts, getCategories, getSubCategories, getUsedTags } from '@/app/actions'
+import { Metadata } from 'next'
 
 interface PageProps {
     params: Promise<{
@@ -12,6 +13,34 @@ export async function generateStaticParams() {
     return categories.map((cat: any) => ({
         slug: cat.slug,
     }))
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { slug } = await params
+    const categories = await getCategories()
+    const subCategories = await getSubCategories()
+
+    const categoryMatch = categories?.find((c: any) => c.slug.toLowerCase() === slug.toLowerCase())
+    const subCategoryMatch = !categoryMatch ? subCategories?.find((s: any) => s.slug.toLowerCase() === slug.toLowerCase()) : null
+
+    const title = categoryMatch ? `${categoryMatch.name} Collection | AURERXA` : subCategoryMatch ? `${subCategoryMatch.name} Collection | AURERXA` : `${slug.charAt(0).toUpperCase() + slug.slice(1)} | AURERXA`
+    const description = `Explore our exclusive ${categoryMatch?.name || subCategoryMatch?.name || slug} jewelry collection. Handcrafted masterpieces and timeless luxury at AURERXA.`
+    const baseUrl = 'https://www.aurerxa.com'
+    const url = `${baseUrl}/collections/${slug}`
+
+    return {
+        title,
+        description,
+        alternates: { canonical: url },
+        openGraph: {
+            title,
+            description,
+            url,
+            siteName: 'AURERXA',
+            type: 'website',
+            images: [`${baseUrl}/luxury-boutique-cover.jpg`]
+        }
+    }
 }
 
 export default async function DynamicCollectionsPage({ params }: PageProps) {
@@ -92,8 +121,61 @@ export default async function DynamicCollectionsPage({ params }: PageProps) {
         maxPrice: undefined
     })
 
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: categoryMatch ? `${categoryMatch.name} Collection | AURERXA` : subCategoryMatch ? `${subCategoryMatch.name} Collection | AURERXA` : `${slug} | AURERXA`,
+        description: `Explore our exclusive ${categoryMatch?.name || subCategoryMatch?.name || slug} jewelry collection. Handcrafted masterpieces and timeless luxury at AURERXA.`,
+        url: `${baseUrl}/collections/${slug}`,
+        mainEntity: {
+            '@type': 'ItemList',
+            'numberOfItems': products.length,
+            'itemListElement': (products as any[]).slice(0, 20).map((product: any, index: number) => ({
+                '@type': 'ListItem',
+                'position': index + 1,
+                'url': `${baseUrl}/products/${product.slug}`,
+                'name': product.name,
+                'image': product.image_url
+            }))
+        }
+    }
+
+    const breadcrumbLd = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+            {
+                '@type': 'ListItem',
+                'position': 1,
+                'name': 'Home',
+                'item': baseUrl,
+            },
+            {
+                '@type': 'ListItem',
+                'position': 2,
+                'name': 'Collections',
+                'item': `${baseUrl}/collections`,
+            },
+            {
+                '@type': 'ListItem',
+                'position': 3,
+                'name': categoryMatch?.name || subCategoryMatch?.name || slug,
+                'item': `${baseUrl}/collections/${slug}`,
+            }
+        ],
+    }
+
     return (
         <main>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+            />
             <CollectionsClient
                 initialProducts={products as any}
                 categories={subCategories as any}

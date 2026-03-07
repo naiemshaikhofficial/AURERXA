@@ -134,6 +134,18 @@ const localBusinessSchema = {
   ]
 }
 
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  'name': 'AURERXA',
+  'url': 'https://www.aurerxa.com',
+  'potentialAction': {
+    '@type': 'SearchAction',
+    'target': 'https://www.aurerxa.com/collections?search={search_term_string}',
+    'query-input': 'required name=search_term_string'
+  }
+}
+
 async function MaterialShowcaseSection() {
   const { getFilteredProducts } = await import('@/app/actions')
   const [realGold, goldPlated, bentex] = await Promise.all([
@@ -159,6 +171,10 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
       />
       <section id="boutique-hero">
         <Hero />
