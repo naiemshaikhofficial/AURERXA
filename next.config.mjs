@@ -174,6 +174,16 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
+      {
+        source: '/en-US',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/en-IN',
+        destination: '/',
+        permanent: true,
+      },
     ]
   },
 }

@@ -24,13 +24,20 @@ const PUBLIC_PATHS = [
 ];
 
 export default async function proxy(request: NextRequest) {
-    const { pathname, searchParams } = request.nextUrl
-    // 1. Scalability: Basic Rate Limiting & Bot Blocking
+    const { pathname } = request.nextUrl
+    const host = request.headers.get('host') || ''
+    const isProd = process.env.NODE_ENV === 'production'
+
+    // 1. Canonical Domain Enforcement (www.aurerxa.com)
+    if (isProd && host === 'aurerxa.com') {
+        return NextResponse.redirect(`https://www.aurerxa.com${pathname}${request.nextUrl.search}`, 301)
+    }
+
+    // 2. Scalability: Basic Rate Limiting & Bot Blocking
     const ua = request.headers.get('user-agent') || ''
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || request.headers.get('x-real-ip') || 'anonymous'
 
-    // Security: Block high-intensity bursts from single IP (Basic implementation)
-    // In a real Vercel Edge environment, Upstash is preferred.
+    // Security: Block high-intensity bursts from single IP
     if (BLOCKED_UA_PATTERNS.some(p => p.test(ua))) {
         return new NextResponse('Forbidden', { status: 403 })
     }
@@ -64,7 +71,6 @@ export default async function proxy(request: NextRequest) {
                 setAll(cookiesToSet) {
                     cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
 
-                    // Crucial: Keep headers in sync when recreating response
                     const syncHeaders = new Headers(request.headers)
                     syncHeaders.set('x-pathname', pathname)
 
@@ -89,16 +95,13 @@ export default async function proxy(request: NextRequest) {
         }
     )
 
-    // OPTIMIZATION: Skip deep auth check for public GET requests that aren't admin paths
     const isPublicPath = PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
     const isDashboard = pathname.startsWith('/admin') || pathname.startsWith('/account');
 
-    // Default to null user if it's a public path and not a dashboard/admin route
     let user = null;
 
     try {
         if (!isPublicPath || isDashboard) {
-            // 4. Auth Check with tight timeout and robust catch
             try {
                 const { data: { user: authUser } } = await Promise.race([
                     supabase.auth.getUser(),
@@ -107,18 +110,15 @@ export default async function proxy(request: NextRequest) {
                 user = authUser;
             } catch (err) {
                 console.warn('Middleware: Auth check non-fatal failure:', err instanceof Error ? err.message : 'Unknown');
-                // Non-fatal: user remains null, logic continues
             }
         }
 
-        // 5. Redirection Logic (with loop prevention)
         const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup')
         const isAdminPage = pathname.startsWith('/admin')
 
         if (user) {
             if (isAuthPage) {
-                let redirectTo = searchParams.get('redirect') || '/'
-                // Avoid infinite redirect if redirectTo is the same auth page
+                let redirectTo = request.nextUrl.searchParams.get('redirect') || '/'
                 if (redirectTo === pathname || redirectTo.includes('/login') || redirectTo.includes('/signup')) {
                     redirectTo = '/'
                 }
@@ -132,10 +132,8 @@ export default async function proxy(request: NextRequest) {
             }
         }
 
-        // 6. Finalize Response with Security Fortification
         response.headers.set('x-pathname', pathname)
 
-        // HSTS & Security Headers
         if (!pathname.startsWith('/api/payment/ccavenue/callback')) {
             response.headers.set('X-Content-Type-Options', 'nosniff')
             response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
@@ -143,7 +141,6 @@ export default async function proxy(request: NextRequest) {
             response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
             response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()')
 
-            // Scalable Content Security Policy (Optimized for Luxury)
             const cspHeaderValue = `
                 default-src 'self';
                 script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.google-analytics.com https://*.googletagmanager.com https://*.vercel-scripts.com https://va.vercel-scripts.com https://*.ccavenue.com https://ccavenue.com https://*.razorpay.com https://checkout.razorpay.com https://sdk.cashfree.com https://vercel.live https://www.youtube.com https://s.ytimg.com;

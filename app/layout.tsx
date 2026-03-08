@@ -121,12 +121,7 @@ export const metadata: Metadata = {
     images: ['/logo-new-v2.png'],
   },
   alternates: {
-    canonical: '/',
-    languages: {
-      'en-IN': '/en-IN',
-      'en-US': '/en-US',
-      'x-default': '/',
-    },
+    canonical: 'https://www.aurerxa.com',
   },
   icons: {
     icon: [
@@ -204,7 +199,7 @@ export default async function RootLayout({
     }
   })()
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://aurerxa.com'
+  const baseUrl = 'https://www.aurerxa.com'
 
   // SEO Schemas (Static)
   const organizationSchema = {
