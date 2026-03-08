@@ -85,8 +85,8 @@ export function Hero() {
 
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] font-serif font-black tracking-tighter text-foreground leading-[0.85] md:leading-[0.8] animate-in slide-in-from-bottom-4 fade-in duration-1000 ease-out">
-              PREMIUM<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200/40 via-amber-500/60 to-amber-700/40 italic">JEWELRY</span>
+              AURERXA:<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-200/40 via-amber-500/60 to-amber-700/40 italic">PREMIUM JEWELRY</span>
             </h1>
           </div>
 

@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         const materialLabel = product.material_type || 'Jewelry'
         const purityLabel = product.purity ? `${product.purity} ` : ''
 
-        const title = `${purityLabel}${materialLabel} ${categoryName || 'Jewelry'} | ${product.name} | AURERXA`
+        const title = `${product.name} - ${purityLabel}${materialLabel} ${categoryName || 'Jewelry'} | AURERXA`
         const rawDescription = product.description || `Explore our exquisite ${purityLabel}${materialLabel} ${categoryName || 'jewelry'}. Handcrafted ${product.name} from AURERXA's heritage collection. Certified quality & Free Shipping.`
         const description = rawDescription.length > 160 ? rawDescription.substring(0, 157) + '...' : rawDescription
 

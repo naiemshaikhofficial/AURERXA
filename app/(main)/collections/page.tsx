@@ -35,7 +35,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
         occasion ? `for ${occasion}` : ''
     ].filter(Boolean)
 
-    const title = `${parts.join(' ')} - Latest 2026 Designs | Buy Online at AURERXA`
+    const title = `AURERXA ${parts.join(' ')} - Latest 2026 Designs`
     const description = `Shop the exclusive ${parts.join(' ').toLowerCase()} at AURERXA India. Discover handcrafted luxury masterpieces, BIS Hallmarked gold, certified silver, and free insured shipping.`
     const baseUrl = 'https://www.aurerxa.com'
     const queryParams = new URLSearchParams()
