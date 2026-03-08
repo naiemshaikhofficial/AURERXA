@@ -39,22 +39,27 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
     const articleLd = {
         '@context': 'https://schema.org',
-        '@type': 'Article',
+        '@type': 'BlogPosting',
         headline: post.title,
         description: post.excerpt,
         image: [post.cover_image],
         datePublished: post.published_at,
+        dateModified: post.published_at, // Use published_at as fallback for now
+        mainEntityOfPage: {
+            '@type': 'WebPage',
+            '@id': `${baseUrl}/blog/${post.slug}`
+        },
         author: {
             '@type': 'Person',
-            name: post.author,
-            url: `${baseUrl}/about-us`
+            'name': post.author,
+            'url': `${baseUrl}/about-us`
         },
         publisher: {
             '@type': 'Organization',
-            name: 'AURERXA',
-            logo: {
+            'name': 'AURERXA',
+            'logo': {
                 '@type': 'ImageObject',
-                url: `${baseUrl}/logo.png`
+                'url': `${baseUrl}/logo.png`
             }
         }
     }

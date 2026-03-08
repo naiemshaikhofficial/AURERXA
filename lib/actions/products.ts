@@ -582,7 +582,7 @@ export async function getRecommendedProducts(productId: string, limit: number = 
 export async function getAllProductSlugs() {
     const { data, error } = await supabaseServer
         .from('products')
-        .select('slug, updated_at')
+        .select('slug, updated_at, name, image_url')
         .order('created_at', { ascending: false })
 
     if (error) return []

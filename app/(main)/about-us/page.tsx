@@ -9,5 +9,28 @@ export const metadata = {
 export const revalidate = 3600 // revalidate every hour
 
 export default function AboutPage() {
-    return <AboutClient />
+    const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'AboutPage',
+        'mainEntity': {
+            '@type': 'Person',
+            'name': 'Naiem Shaikh',
+            'jobTitle': 'Founder & Creative Director',
+            'affiliation': {
+                '@type': 'Organization',
+                'name': 'AURERXA'
+            },
+            'description': 'Naiem Shaikh is the founder of AURERXA, a luxury jewelry boutique built on 50+ years of artisan heritage.'
+        }
+    }
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+            <AboutClient />
+        </>
+    )
 }
