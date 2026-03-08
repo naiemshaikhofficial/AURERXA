@@ -480,7 +480,7 @@ export function ProductClient({ product: initialProduct, related, isWishlisted }
                                 else if (info.offset.x > swipeThreshold) setSelectedImage((prev) => (prev === 0 ? allImages.length - 1 : prev - 1))
                             }}
                         >
-                            <ZoomableImage src={sanitizeImagePath(allImages[selectedImage])} alt={product.name} />
+                            <ZoomableImage src={sanitizeImagePath(allImages[selectedImage])} alt={`${product.name} - ${product.purity || ''} ${product.material_type || ''} Jewellery by AURERXA`} />
                         </motion.div>
 
                         {allImages.length > 1 && (
@@ -520,7 +520,7 @@ export function ProductClient({ product: initialProduct, related, isWishlisted }
                                         selectedImage === i ? "ring-1 ring-amber-200/40 opacity-100 grayscale-0" : "opacity-30 grayscale hover:opacity-100 hover:grayscale-0"
                                     )}
                                 >
-                                    <Image src={sanitizeImagePath(img)} alt={`${product.name} v${i}`} fill className="object-cover" sizes="80px" loader={supabaseLoader} />
+                                    <Image src={sanitizeImagePath(img)} alt={`${product.name} Heritage Collection View ${i + 1} - AURERXA`} fill className="object-cover" sizes="80px" loader={supabaseLoader} />
                                     {selectedImage === i && <motion.div layoutId="thumb-border" className="absolute inset-0 border border-amber-200/20 z-10" />}
                                 </motion.button>
                             ))}
@@ -591,7 +591,7 @@ export function ProductClient({ product: initialProduct, related, isWishlisted }
                         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-white/5 border border-white/5 overflow-hidden">
-                                    <Image src={sanitizeImagePath(product.image_url)} alt={product.name} width={100} height={100} className="w-full h-full object-cover" loader={supabaseLoader} />
+                                    <Image src={sanitizeImagePath(product.image_url)} alt={`AURERXA ${product.name}`} width={100} height={100} className="w-full h-full object-cover" loader={supabaseLoader} />
                                 </div>
                                 <div className="hidden sm:block">
                                     <h4 className="text-xs font-serif italic text-white">{product.name}</h4>

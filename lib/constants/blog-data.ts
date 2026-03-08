@@ -146,5 +146,31 @@ Aurerxa jewellery is crafted for durability, but proper care keeps it shining lo
         author: 'Naiem Shaikh',
         published_at: '2026-03-04T14:00:00Z',
         tags: ['Gold', 'Storage', 'Care', 'Maintenance']
+    },
+    {
+        id: '6',
+        slug: '925-silver-jewelry-trends-india-2026',
+        title: '925 Silver Jewelry Trends in India 2026: The AURERXA Guide',
+        excerpt: 'Discover the top 925 sterling silver jewelry trends for 2026, from minimal office wear to bold heritage statement pieces.',
+        content: `**In 2026, 925 sterling silver is taking center stage in India with a focus on "Modern Heritage"—combining traditional motifs with sleek, anti-tarnish minimalist finishes.** High-shine rhodium plating and sustainable lab-grown accents are the top choices for the conscious luxury consumer.
+
+## 1. Minimalist Daily Wear
+Small, dainty silver rings and "skinny" bracelets are perfect for stacking. These pieces from AURERXA are designed to be worn 24/7.
+
+## 2. Statement Silver Necklaces
+Bold, chunky silver links and heritage pendants are making a massive comeback. Look for pieces that tell a story of craftsmanship.
+
+## 3. Anti-Tarnish Technology
+At AURERXA, our [925 Silver Collection](/collections?material_type=silver) features advanced protective coatings so your jewelry stays bright for years.
+
+## 4. Gifting trends
+Personalized silver charms and birthstone rings are the #1 gifting choice for 2026.
+
+Explore our latest [New Arrivals](/collections?sort=newest) to find your next signature piece.`,
+        cover_image: '/blog/silver-trends-2026.png',
+        category: 'Trends',
+        author: 'Naiem Shaikh',
+        published_at: '2026-03-08T10:00:00Z',
+        tags: ['Silver', '2026 Trends', 'AURERXA', 'Luxury']
     }
 ];

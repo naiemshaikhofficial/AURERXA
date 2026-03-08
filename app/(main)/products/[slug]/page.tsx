@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { getProductBySlug, getRelatedProducts, isInWishlist, getReviewStats } from '@/app/actions'
+import { getProductReviews } from '@/lib/actions/reviews'
 import { ProductClient } from '@/components/product-client'
 import { notFound } from 'next/navigation'
 
@@ -141,9 +142,10 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             )
         }
 
-        const [isWishlisted, reviewStats] = await Promise.all([
+        const [isWishlisted, reviewStats, reviews] = await Promise.all([
             isInWishlist(product.id),
-            getReviewStats(product.id)
+            getReviewStats(product.id),
+            getProductReviews(product.id)
         ])
 
         const baseUrl = 'https://www.aurerxa.com'
@@ -176,6 +178,21 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 bestRating: '5',
                 worstRating: '1'
             } : undefined,
+            review: reviews?.length > 0 ? reviews.map((r: any) => ({
+                '@type': 'Review',
+                author: {
+                    '@type': 'Person',
+                    name: r.profiles?.full_name || 'Verified Customer',
+                },
+                datePublished: r.created_at,
+                reviewBody: r.comment || '',
+                reviewRating: {
+                    '@type': 'Rating',
+                    ratingValue: r.rating,
+                    bestRating: '5',
+                    worstRating: '1',
+                },
+            })) : undefined,
             offers: {
                 '@type': 'Offer',
                 url: productUrl,

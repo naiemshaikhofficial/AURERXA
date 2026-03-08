@@ -179,7 +179,7 @@ export function Footer({ contactConfig }: { contactConfig?: any }) {
         {/* Bottom copyright section */}
         <div className="pt-12 flex flex-col md:flex-row justify-between items-center gap-8 text-muted-foreground/60 text-[10px] uppercase tracking-widest border-t border-border/10">
           <span>© {new Date().getFullYear()} AURERXA. All Rights Reserved.</span>
-          <div className="flex gap-12">
+          <div className="flex flex-wrap justify-center md:justify-end gap-x-8 gap-y-4">
             <Link href="/about-us" prefetch={false} className="hover:text-foreground transition-colors font-medium text-primary">About Us</Link>
             <Link href="/shipping" prefetch={false} className="hover:text-foreground transition-colors">Shipping</Link>
             <Link href="/privacy" prefetch={false} className="hover:text-foreground transition-colors">Privacy</Link>
