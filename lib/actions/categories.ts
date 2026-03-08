@@ -106,7 +106,7 @@ export async function deleteSubCategory(id: string) {
 export async function getAllCategorySlugs() {
     const { data, error } = await supabaseServer
         .from('categories')
-        .select('slug')
+        .select('slug, updated_at')
         .order('name')
 
     if (error) return []

@@ -20,6 +20,10 @@ export default function AboutPage() {
                 '@type': 'Organization',
                 'name': 'AURERXA'
             },
+            'sameAs': [
+                'https://www.linkedin.com/in/naiemshaikhofficial',
+                'https://www.instagram.com/naiemshaikhofficial'
+            ],
             'description': 'Naiem Shaikh is the founder of AURERXA, a luxury jewelry boutique built on 50+ years of artisan heritage.'
         }
     }

@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const categoryEntries: MetadataRoute.Sitemap = categories.map((c: any) => ({
         url: `${baseUrl}/collections/${c.slug}`,
-        lastModified: new Date(),
+        lastModified: c.updated_at ? new Date(c.updated_at) : new Date(),
         changeFrequency: 'daily',
         priority: 0.9,
     }))

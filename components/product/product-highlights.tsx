@@ -22,7 +22,10 @@ export function ProductHighlights({
 }: ProductHighlightsProps) {
     return (
         <div className="prose prose-invert prose-sm max-w-none text-white/50 font-light leading-relaxed tracking-wide">
-            <p>{product.description}</p>
+            <section className="space-y-4">
+                <h3 className="text-[10px] text-amber-500/60 font-bold uppercase tracking-[0.3em]">Masterpiece Description</h3>
+                <p className="text-sm font-light leading-relaxed">{product.description}</p>
+            </section>
 
             {/* Interactive VTO */}
             <div className="mt-10">
@@ -45,37 +48,39 @@ export function ProductHighlights({
             </div>
 
             {/* Video Section */}
-            {product.video_url && (
-                <div className="mt-10 space-y-4">
-                    <p className="text-[10px] text-amber-500/60 font-bold uppercase tracking-[0.3em]">Visual Experience</p>
-                    {(() => {
-                        const url = product.video_url;
-                        const isShort = url.includes('/shorts/');
-                        const youtubeRegExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?v=)|(\/shorts\/)|(&v=))([^#&?]*).*/;
-                        const ytMatch = url.match(youtubeRegExp);
-                        const youtubeId = (ytMatch && ytMatch[9].length === 11) ? ytMatch[9] : null;
+            {
+                product.video_url && (
+                    <div className="mt-10 space-y-4">
+                        <p className="text-[10px] text-amber-500/60 font-bold uppercase tracking-[0.3em]">Visual Experience</p>
+                        {(() => {
+                            const url = product.video_url;
+                            const isShort = url.includes('/shorts/');
+                            const youtubeRegExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?v=)|(\/shorts\/)|(&v=))([^#&?]*).*/;
+                            const ytMatch = url.match(youtubeRegExp);
+                            const youtubeId = (ytMatch && ytMatch[9].length === 11) ? ytMatch[9] : null;
 
-                        return (
-                            <div className={`relative w-full ${isShort ? 'aspect-[9/16] max-w-[340px] mx-auto' : 'aspect-video'} bg-neutral-900 border border-white/5 overflow-hidden group`}>
-                                {youtubeId ? (
-                                    <iframe
-                                        src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&controls=0&showinfo=0`}
-                                        title={product.name}
-                                        className="absolute inset-0 w-full h-full pointer-events-none scale-105"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowFullScreen
-                                    />
-                                ) : (
-                                    <CachedVideo src={url} isShort={isShort} />
-                                )}
-                                <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                                    <span className="text-[8px] text-white/30 uppercase tracking-[0.3em] font-medium drop-shadow-md">AURERXA Cinema</span>
+                            return (
+                                <div className={`relative w-full ${isShort ? 'aspect-[9/16] max-w-[340px] mx-auto' : 'aspect-video'} bg-neutral-900 border border-white/5 overflow-hidden group`}>
+                                    {youtubeId ? (
+                                        <iframe
+                                            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1&mute=1&loop=1&playlist=${youtubeId}&modestbranding=1&rel=0&controls=0&showinfo=0`}
+                                            title={product.name}
+                                            className="absolute inset-0 w-full h-full pointer-events-none scale-105"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    ) : (
+                                        <CachedVideo src={url} isShort={isShort} />
+                                    )}
+                                    <div className="absolute top-4 left-4 z-10 pointer-events-none">
+                                        <span className="text-[8px] text-white/30 uppercase tracking-[0.3em] font-medium drop-shadow-md">AURERXA Cinema</span>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })()}
-                </div>
-            )}
+                            );
+                        })()}
+                    </div>
+                )
+            }
 
             {/* Brand Credentials */}
             <div className="space-y-6 pt-10 border-t border-white/5">
@@ -108,7 +113,7 @@ export function ProductHighlights({
                     <HighlightItem label="Material Integrity" value={`${product.purity} ${product.categories?.name || (product.material_type ? MATERIAL_CONFIG[product.material_type]?.label : formatPurity(product.purity, product.material_type).label)}`} />
                 </div>
             </div>
-        </div>
+        </div >
     )
 }
 

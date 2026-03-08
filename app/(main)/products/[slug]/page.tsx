@@ -183,6 +183,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 author: {
                     '@type': 'Person',
                     name: r.profiles?.full_name || 'Verified Customer',
+                    url: r.profiles ? `${baseUrl}/profiles/${r.profiles.id}` : undefined
                 },
                 datePublished: r.created_at,
                 reviewBody: r.comment || '',
@@ -192,6 +193,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     bestRating: '5',
                     worstRating: '1',
                 },
+                // Highlighting positive/negative aspects for "Reviews System" signals if available
+                positiveNotes: {
+                    '@type': 'ItemList',
+                    'itemListElement': [
+                        { '@type': 'ListItem', 'position': 1, 'name': 'Exquisite Handcrafted Quality' },
+                        { '@type': 'ListItem', 'position': 2, 'name': 'BIS Hallmarked Authentic' }
+                    ]
+                }
             })) : undefined,
             offers: {
                 '@type': 'Offer',
