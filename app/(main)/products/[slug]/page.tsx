@@ -164,6 +164,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             description: product.description || `Buy ${product.name} online at AURERXA. Premium ${product.material_type || ''} ${categoryName || 'jewelry'}.`,
             sku: product.id,
             mpn: product.slug,
+            dateModified: product.updated_at || new Date().toISOString(),
             brand: {
                 '@type': 'Brand',
                 name: 'AURERXA',
@@ -200,7 +201,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                         '@type': 'Organization',
                         'name': 'AURERXA'
                     },
-                    'reviewBody': `The ${product.name} represents a pinnacle of ${product.material_type || 'jewelry'} craftsmanship. Our technical analysis confirms the purity and artisan technique meet the highest standards of the AURERXA heritage collection.`
+                    'positiveNotes': {
+                        '@type': 'ItemList',
+                        'itemListElement': [
+                            { '@type': 'ListItem', 'position': 1, 'name': 'Exquisite Handcrafted Quality' },
+                            { '@type': 'ListItem', 'position': 2, 'name': 'BIS Hallmarked Authentic' }
+                        ]
+                    },
+                    'negativeNotes': {
+                        '@type': 'ItemList',
+                        'itemListElement': [
+                            { '@type': 'ListItem', 'position': 1, 'name': 'Limited Edition Stock' }
+                        ]
+                    }
                 },
                 ...(reviews?.length > 0 ? reviews.map((r: any) => ({
                     '@type': 'Review',
@@ -220,8 +233,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     'positiveNotes': {
                         '@type': 'ItemList',
                         'itemListElement': [
-                            { '@type': 'ListItem', 'position': 1, 'name': 'Exquisite Handcrafted Quality' },
-                            { '@type': 'ListItem', 'position': 2, 'name': 'BIS Hallmarked Authentic' }
+                            { '@type': 'ListItem', 'position': 1, 'name': 'Authentic Design' },
+                            { '@type': 'ListItem', 'position': 2, 'name': 'Premium Packaging' }
                         ]
                     }
                 })) : [])
@@ -307,6 +320,48 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             } : undefined,
         }
 
+        const faqLd = {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            'mainEntity': [
+                {
+                    '@type': 'Question',
+                    'name': `Is the ${product.name} BIS Hallmarked?`,
+                    'acceptedAnswer': {
+                        '@type': 'Answer',
+                        'text': `Yes, all ${product.material_type || 'jewelry'} from AURERXA, including the ${product.name}, is BIS Hallmarked and certified for purity.`
+                    }
+                },
+                {
+                    '@type': 'Question',
+                    'name': 'What is the shipping time for this item?',
+                    'acceptedAnswer': {
+                        '@type': 'Answer',
+                        'text': 'We provide free insured shipping across India. Delivery typically takes 3-5 business days.'
+                    }
+                },
+                {
+                    '@type': 'Question',
+                    'name': 'Can I return this product?',
+                    'acceptedAnswer': {
+                        '@type': 'Answer',
+                        'text': 'Yes, we offer a 15-day return policy for this product. Please ensure the tag remains intact.'
+                    }
+                }
+            ]
+        }
+
+        const videoLd = product.video_url ? {
+            '@context': 'https://schema.org',
+            '@type': 'VideoObject',
+            'name': `${product.name} - Artisan Presentation`,
+            'description': `Visual presentation of the handcrafted ${product.name} at AURERXA.`,
+            'thumbnailUrl': product.image_url,
+            'uploadDate': product.created_at || new Date().toISOString(),
+            'contentUrl': product.video_url,
+            'embedUrl': product.video_url
+        } : null
+
         const breadcrumbItems = [
             { name: 'Home', item: '/' },
             { name: 'Collections', item: '/collections' },
@@ -356,6 +411,16 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
                 />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+                />
+                {videoLd && (
+                    <script
+                        type="application/ld+json"
+                        dangerouslySetInnerHTML={{ __html: JSON.stringify(videoLd) }}
+                    />
+                )}
                 <ProductClient
                     product={product}
                     isWishlisted={isWishlisted}

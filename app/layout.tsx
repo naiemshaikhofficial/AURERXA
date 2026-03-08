@@ -231,6 +231,8 @@ export default async function RootLayout({
       'postalCode': '422605',
       'addressCountry': 'IN'
     },
+    'areaServed': ['IN', 'AE', 'US', 'GB'],
+    'knowsAbout': ['Fine Jewelry', 'Silver Jewelry', 'BIS Hallmarked Gold', 'Gemology', 'Bespoke Design'],
     'contactPoint': [
       {
         '@type': 'ContactPoint',
@@ -257,7 +259,14 @@ export default async function RootLayout({
     },
     'founder': {
       '@type': 'Person',
-      'name': 'Naiem Shaikh'
+      'name': 'Naiem Shaikh',
+      'jobTitle': 'Founder & Creative Director',
+      'knowsLanguage': ['English', 'Hindi', 'Marathi'],
+      'knowsAbout': ['Jewelry Design', 'Gemology', 'Luxury Retail', 'Artisan Craftsmanship'],
+      'sameAs': [
+        'https://www.linkedin.com/in/naiemshaikhofficial',
+        'https://www.instagram.com/naiemshaikhofficial'
+      ]
     }
   }
 
@@ -269,7 +278,7 @@ export default async function RootLayout({
     'url': baseUrl,
     'potentialAction': {
       '@type': 'SearchAction',
-      'target': `${baseUrl}/search?q={search_term_string}`,
+      'target': `${baseUrl}/collections?search={search_term_string}`,
       'query-input': 'required name=search_term_string'
     }
   }
