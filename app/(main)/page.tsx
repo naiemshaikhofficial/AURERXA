@@ -102,11 +102,18 @@ const localBusinessSchema = {
   '@context': 'https://schema.org',
   '@type': 'JewelryStore',
   'name': 'AURERXA',
-  'image': 'https://www.aurerxa.com/icon-512.png',
+  'description': 'AURERXA is a premium luxury jewelry brand in Sangamner, specializing in BIS Hallmarked gold, certified 925 silver jewelry, and bespoke handcrafted masterpieces with a 50-year heritage.',
+  'image': [
+    'https://www.aurerxa.com/logo-new-v2.png',
+    'https://www.aurerxa.com/luxury-boutique-cover.jpg',
+    'https://www.aurerxa.com/icon-512.png'
+  ],
   '@id': 'https://www.aurerxa.com',
   'url': 'https://www.aurerxa.com',
   'telephone': '+91-9391032677',
   'priceRange': '₹₹₹',
+  'currenciesAccepted': 'INR',
+  'paymentAccepted': 'Cash, Credit Card, UPI, Debit Card',
   'address': {
     '@type': 'PostalAddress',
     'streetAddress': 'Captain Lakshmi Chowk, Rangargalli',
@@ -120,17 +127,26 @@ const localBusinessSchema = {
     'latitude': 19.575916,
     'longitude': 74.204618
   },
-  'openingHoursSpecification': {
-    '@type': 'OpeningHoursSpecification',
-    'dayOfWeek': [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-    ],
-    'opens': '11:00',
-    'closes': '20:00'
+  'openingHoursSpecification': [
+    {
+      '@type': 'OpeningHoursSpecification',
+      'dayOfWeek': ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+      'opens': '11:00',
+      'closes': '20:00'
+    }
+  ],
+  'contactPoint': {
+    '@type': 'ContactPoint',
+    'telephone': '+91-9391032677',
+    'contactType': 'customer service',
+    'areaServed': 'IN',
+    'availableLanguage': ['English', 'Hindi', 'Marathi']
   },
   'sameAs': [
     'https://www.instagram.com/aurerxa',
-    'https://www.facebook.com/aurerxa'
+    'https://www.facebook.com/aurerxa',
+    'https://youtube.com/@aurerxa',
+    'https://linkedin.com/company/aurerxa'
   ]
 }
 
