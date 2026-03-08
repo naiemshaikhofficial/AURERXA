@@ -52,7 +52,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         author: {
             '@type': 'Person',
             'name': post.author,
-            'url': `${baseUrl}/about-us`
+            'url': `${baseUrl}/about-us`,
+            'sameAs': [
+                'https://www.linkedin.com/in/naiemshaikhofficial',
+                'https://www.instagram.com/naiemshaikhofficial'
+            ]
         },
         publisher: {
             '@type': 'Organization',

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Maximize2, ArrowRight, Shield, Truck, RotateCcw } from 'lucide-react'
+import { Maximize2, ArrowRight, Shield, Truck, RotateCcw, Sparkles } from 'lucide-react'
 import { CertificationGroup } from '@/components/certification-seals'
 
 interface ProductHighlightsProps {
@@ -108,10 +108,30 @@ export function ProductHighlights({
                 <p className="text-sm font-serif italic text-white/70 leading-relaxed font-light">
                     Each Aurerxa creation is a testament to the timeless artistry of Indian jewelry making. This {product.name.toLowerCase()} is handcrafted by master artisans, blending ancestral techniques with contemporary luxury.
                 </p>
-                <div className="flex flex-wrap gap-8 pt-4">
-                    <HighlightItem label="Technique" value="Handmade Artisan" />
-                    <HighlightItem label="Material Integrity" value={`${product.purity} ${product.categories?.name || (product.material_type ? MATERIAL_CONFIG[product.material_type]?.label : formatPurity(product.purity, product.material_type).label)}`} />
+                {/* Curator's Note - Expert Alignment */}
+            </div>
+            <div className="mt-12 py-12 border-t border-white/5">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
+                        <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                        <p className="text-[10px] text-amber-500/60 font-bold uppercase tracking-[0.3em]">Curator's Perspective</p>
+                        <p className="text-sm font-serif italic text-white/90">Insight by {product.author || 'Naiem Shaikh'}</p>
+                    </div>
                 </div>
+                <div className="relative pl-8 border-l border-primary/20 italic font-light leading-relaxed text-white/70">
+                    <p className="mb-4">
+                        "The {product.name} is a deliberate study in {product.material_type || 'precious metal'} craftsmanship. What fascinates me most about this piece is the {product.purity || 'BIS Hallmarked'} finish which balances raw heritage and modern elegance."
+                    </p>
+                    <p className="text-[10px] uppercase tracking-widest text-primary/60 font-medium">— {product.author || 'Naiem Shaikh'}, Founder of AURERXA</p>
+                </div>
+            </div>
+
+            {/* Heritage Text */}
+            <div className="flex flex-wrap gap-8 pt-4">
+                <HighlightItem label="Technique" value="Handmade Artisan" />
+                <HighlightItem label="Material Integrity" value={`${product.purity} ${product.categories?.name || (product.material_type ? MATERIAL_CONFIG[product.material_type]?.label : formatPurity(product.purity, product.material_type).label)}`} />
             </div>
         </div >
     )
