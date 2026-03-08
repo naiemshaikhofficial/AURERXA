@@ -212,7 +212,6 @@ export default async function RootLayout({
     'logo': `${baseUrl}/icon-512.png`,
     'image': [`${baseUrl}/luxury-boutique-cover.jpg`, `${baseUrl}/icon-512.png`],
     'description': 'AURERXA is a premium luxury jewelry brand specializing in BIS Hallmarked gold, certified silver jewelry, and handcrafted masterpieces with a 50-year heritage.',
-    'priceRange': '₹₹₹',
     'telephone': '+91-9075250260',
     'email': 'support@aurerxa.com',
     'sameAs': [
@@ -233,6 +232,9 @@ export default async function RootLayout({
     },
     'areaServed': ['IN', 'AE', 'US', 'GB'],
     'knowsAbout': ['Fine Jewelry', 'Silver Jewelry', 'BIS Hallmarked Gold', 'Gemology', 'Bespoke Design'],
+    'paymentAccepted': ['Cash', 'Credit Card', 'Debit Card', 'UPI', 'Net Banking'],
+    'currenciesAccepted': 'INR',
+    'priceRange': '₹₹ - ₹₹₹₹',
     'contactPoint': [
       {
         '@type': 'ContactPoint',

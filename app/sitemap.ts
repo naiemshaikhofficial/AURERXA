@@ -9,11 +9,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const categories = await getAllCategorySlugs()
     const blogs = await getAllBlogSlugs()
 
-    const productEntries: MetadataRoute.Sitemap = products.map((p: any) => ({
+    const productEntries: any = products.map((p: any) => ({
         url: `${baseUrl}/products/${p.slug}`,
         lastModified: p.updated_at ? new Date(p.updated_at) : new Date(),
         changeFrequency: 'daily',
         priority: 0.9,
+        images: p.image_url ? [p.image_url] : [],
     }))
 
     const categoryEntries: MetadataRoute.Sitemap = categories.map((c: any) => ({

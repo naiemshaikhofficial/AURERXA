@@ -318,6 +318,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 '@type': 'PeopleAudience',
                 suggestedGender: product.gender,
             } : undefined,
+            'isVariantOf': product.is_dynamic_pricing ? {
+                '@type': 'ProductModel',
+                'name': product.name,
+                'description': product.description,
+                'url': productUrl
+            } : undefined
         }
 
         const faqLd = {

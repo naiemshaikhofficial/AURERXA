@@ -58,6 +58,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 'https://www.instagram.com/naiemshaikhofficial'
             ]
         },
+        reviewedBy: {
+            '@type': 'Person',
+            'name': 'Naiem Shaikh',
+            'jobTitle': 'Founder & Creative Director',
+            'url': `${baseUrl}/about-us`
+        },
         publisher: {
             '@type': 'Organization',
             'name': 'AURERXA',
