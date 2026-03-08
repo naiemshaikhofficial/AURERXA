@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     'AURERXA', 'AURERXA Jewelry', 'Aurerxa Official',
     'AURERXA Heritage', 'AURERXA Boutique', 'AURERXA Sangamner',
     'Aurerxa India', 'Aurerxa Luxury', 'Aurerxa Fine Jewelry',
-    'rexa', 'aurer', 'aure',
+    'Aurexa', 'Aurexa Jewelry', 'Aurexa Official',
     // Jewelry Types
     'Silver Necklace', 'Silver Earrings', 'Silver Rings', 'Bridal Jewelry Sets',
     'Mangalsutra Online', 'Silver Bangles', 'Pendant Necklace', 'Stud Earrings',
@@ -212,7 +212,7 @@ export default async function RootLayout({
     '@type': 'JewelryStore',
     'additionalType': ['Brand', 'Organization'],
     'name': 'AURERXA',
-    'alternateName': ['AURERXA Luxury', 'AURERXA Heritage', 'AURERXA Jewelry', 'AURERXA Official'],
+    'alternateName': ['AURERXA Luxury', 'AURERXA Heritage', 'AURERXA Jewelry', 'AURERXA Official', 'Aurexa', 'Aurexa Jewelry', 'Aurexa Official'],
     'url': baseUrl,
     'logo': `${baseUrl}/icon-512.png`,
     'image': [`${baseUrl}/luxury-boutique-cover.jpg`, `${baseUrl}/icon-512.png`],
@@ -266,6 +266,19 @@ export default async function RootLayout({
     }
   }
 
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    'name': 'AURERXA',
+    'alternateName': ['Aurexa', 'AURERXA Luxury'],
+    'url': baseUrl,
+    'potentialAction': {
+      '@type': 'SearchAction',
+      'target': `${baseUrl}/search?q={search_term_string}`,
+      'query-input': 'required name=search_term_string'
+    }
+  }
+
   return (
     <html lang="en" suppressHydrationWarning className={`${geist.variable} ${cormorant.variable}`}>
       <head>
@@ -289,9 +302,16 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://v5.airtable.com" />
         <link rel="dns-prefetch" href="https://v5.airtable.com" />
 
+        {/* Google Site Verification - Add your code here */}
+        {/* <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" /> */}
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body className="font-sans antialiased bg-background text-foreground">

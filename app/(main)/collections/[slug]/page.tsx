@@ -52,6 +52,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { generateBreadcrumbSchema } from '@/lib/seo-utils'
 
 export default async function DynamicCollectionsPage({ params }: PageProps) {
     const { slug } = await params
@@ -153,30 +154,13 @@ export default async function DynamicCollectionsPage({ params }: PageProps) {
         }
     }
 
-    const breadcrumbLd = {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        'itemListElement': [
-            {
-                '@type': 'ListItem',
-                'position': 1,
-                'name': 'Home',
-                'item': baseUrl,
-            },
-            {
-                '@type': 'ListItem',
-                'position': 2,
-                'name': 'Collections',
-                'item': `${baseUrl}/collections`,
-            },
-            {
-                '@type': 'ListItem',
-                'position': 3,
-                'name': pageTitle,
-                'item': `${baseUrl}/collections/${slug}`,
-            }
-        ],
-    }
+    const breadcrumbItems = [
+        { name: 'Home', item: '/' },
+        { name: 'Collections', item: '/collections' },
+        { name: pageTitle, item: `/collections/${slug}` }
+    ]
+
+    const breadcrumbLd = generateBreadcrumbSchema(breadcrumbItems)
 
     return (
         <main>

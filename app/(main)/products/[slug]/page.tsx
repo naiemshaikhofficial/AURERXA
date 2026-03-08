@@ -105,6 +105,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { generateBreadcrumbSchema } from '@/lib/seo-utils'
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
     try {
@@ -256,36 +257,14 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             } : undefined,
         }
 
-        const breadcrumbLd = {
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-                {
-                    '@type': 'ListItem',
-                    position: 1,
-                    name: 'Home',
-                    item: baseUrl,
-                },
-                {
-                    '@type': 'ListItem',
-                    position: 2,
-                    name: 'Collections',
-                    item: `${baseUrl}/collections`,
-                },
-                ...(categoryName ? [{
-                    '@type': 'ListItem',
-                    position: 3,
-                    name: categoryName,
-                    item: `${baseUrl}/collections?category=${categorySlug}`,
-                }] : []),
-                {
-                    '@type': 'ListItem',
-                    position: categoryName ? 4 : 3,
-                    name: product.name,
-                    item: productUrl,
-                },
-            ],
-        }
+        const breadcrumbItems = [
+            { name: 'Home', item: '/' },
+            { name: 'Collections', item: '/collections' },
+            ...(categoryName ? [{ name: categoryName, item: `/collections?category=${categorySlug}` }] : []),
+            { name: product.name, item: `/products/${product.slug}` }
+        ]
+
+        const breadcrumbLd = generateBreadcrumbSchema(breadcrumbItems)
 
         return (
             <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-12 md:pt-24">
