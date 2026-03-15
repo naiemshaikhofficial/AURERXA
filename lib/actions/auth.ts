@@ -177,7 +177,7 @@ export async function getAddresses() {
 
     const { data, error } = await client
         .from('addresses')
-        .select('id, full_name, email, phone, avatar_url, billing_address, shipping_address, rewards_points')
+        .select('*')
         .eq('user_id', user.id)
         .order('is_default', { ascending: false })
         .order('created_at', { ascending: false })

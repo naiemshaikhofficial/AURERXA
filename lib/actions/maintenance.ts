@@ -47,7 +47,7 @@ export async function getSiteManifest() {
                 supabaseServer.from('products').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
                 supabaseServer.from('blog_posts').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle(),
                 supabaseServer.from('global_config').select('value').eq('key', 'site_version').maybeSingle(),
-                supabaseServer.from('hero_slides').select('updated_at').order('updated_at', { ascending: false }).limit(1).maybeSingle()
+                supabaseServer.from('hero_slides').select('created_at').order('created_at', { ascending: false }).limit(1).maybeSingle()
             ]),
             new Promise<any>((_, reject) => setTimeout(() => reject(new Error('Manifest timeout')), 3000))
         ])
@@ -57,7 +57,7 @@ export async function getSiteManifest() {
             products: prodRes?.data?.updated_at || 'initial',
             blog: blogRes?.data?.updated_at || 'initial',
             config: configRes?.data?.value || 'v1',
-            hero: heroRes?.data?.updated_at || 'initial',
+            hero: heroRes?.data?.created_at || 'initial',
             reviews: prodRes?.data?.updated_at || 'initial' // Using products updated_at as proxy for review activity
         }
 
